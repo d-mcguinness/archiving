@@ -212,72 +212,78 @@
     <div class="loading">
       <div class="spinner"></div>
     </div>
+  {:else if archives.length === 0}
+    <div class="empty-state">
+      <p>No archives found. Create your first archive to get started!</p>
+    </div>
   {:else}
-    <div class="archives-grid">
-      {#each archives as archive (archive.id)}
-        <div class="archive-card">
-          <div class="archive-header">
-            <h3>{archive.title}</h3>
-            <div class="badges">
-              <span class="badge {getStatusBadgeClass(archive.status)}">{archive.status}</span>
-              <span class="badge standard-badge">{archive.standard}</span>
-            </div>
-          </div>
-
-          {#if archive.description}
-            <p class="description">{archive.description}</p>
-          {/if}
-
-          <div class="content-preview">
-            {archive.content.substring(0, 100)}{archive.content.length > 100 ? '...' : ''}
-          </div>
-
-          <div class="archive-details">
-            <div class="detail-item">
-              <span class="label">Owner:</span>
-              <span class="value">{getUserName(archive.ownerId)}</span>
-            </div>
-            <div class="detail-item">
-              <span class="label">Created:</span>
-              <span class="value">{new Date(archive.createdAt).toLocaleDateString()}</span>
-            </div>
-            <div class="detail-item">
-              <span class="label">Updated:</span>
-              <span class="value">{new Date(archive.updatedAt).toLocaleDateString()}</span>
-            </div>
-            {#if archive.assignedUsers && archive.assignedUsers.length > 0}
-              <div class="detail-item">
-                <span class="label">Assigned:</span>
-                <span class="value">{archive.assignedUsers.length} user(s)</span>
-              </div>
-            {/if}
-          </div>
-
-          {#if archive.assignedUsers && archive.assignedUsers.length > 0}
-            <div class="assigned-users">
-              {#each archive.assignedUsers as assignment}
-                <div class="user-assignment">
-                  <span class="user-name">{getUserName(assignment.userId)}</span>
-                  <span class="role-badge">{assignment.role}</span>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Standard</th>
+            <th>Owner</th>
+            <th>Created</th>
+            <th>Updated</th>
+            <th>Assigned Users</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each archives as archive (archive.id)}
+            <tr>
+              <td class="id-cell">{archive.id}</td>
+              <td class="title-cell">
+                <div class="title-wrapper">
+                  <div class="archive-title">{archive.title}</div>
+                  {#if archive.description}
+                    <div class="archive-description">{archive.description}</div>
+                  {/if}
+                  {#if archive.content}
+                    <div class="content-preview">
+                      {archive.content.substring(0, 100)}{archive.content.length > 100 ? '...' : ''}
+                    </div>
+                  {/if}
                 </div>
-              {/each}
-            </div>
-          {/if}
-
-          <div class="archive-id">ID: {archive.id}</div>
-
-          <div class="archive-actions">
-            <button class="view-structure-btn" on:click={() => openStructureModal(archive)}>
-              📋 View Structure
-            </button>
-            <button class="assign-btn" on:click={() => openAssignModal(archive)}>Assign User</button>
-          </div>
-        </div>
-      {:else}
-        <div class="empty-state">
-          <p>No archives found. Create your first archive to get started!</p>
-        </div>
-      {/each}
+              </td>
+              <td class="status-cell">
+                <span class="badge {getStatusBadgeClass(archive.status)}">{archive.status}</span>
+              </td>
+              <td class="standard-cell">
+                <span class="badge standard-badge">{archive.standard}</span>
+              </td>
+              <td class="owner-cell">{getUserName(archive.ownerId)}</td>
+              <td class="date-cell">{new Date(archive.createdAt).toLocaleDateString()}</td>
+              <td class="date-cell">{new Date(archive.updatedAt).toLocaleDateString()}</td>
+              <td class="assigned-cell">
+                {#if archive.assignedUsers && archive.assignedUsers.length > 0}
+                  <div class="assigned-users-compact">
+                    {#each archive.assignedUsers.slice(0, 2) as assignment}
+                      <span class="user-badge">{getUserName(assignment.userId)}</span>
+                    {/each}
+                    {#if archive.assignedUsers.length > 2}
+                      <span class="more-badge">+{archive.assignedUsers.length - 2}</span>
+                    {/if}
+                  </div>
+                {:else}
+                  <span class="no-users">None</span>
+                {/if}
+              </td>
+              <td class="actions-cell">
+                <button class="btn-action btn-structure" on:click={() => openStructureModal(archive)}>
+                  📋 Structure
+                </button>
+                <button class="btn-action btn-assign" on:click={() => openAssignModal(archive)}>
+                  Assign
+                </button>
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
     </div>
   {/if}
 </div>
@@ -408,8 +414,9 @@
 
 <style>
   .archives-page {
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
+    padding: 2rem;
   }
 
   .page-header {
@@ -422,89 +429,169 @@
   .page-header h1 {
     margin: 0;
     color: #1e293b;
+    font-size: 2rem;
   }
 
   .add-archive-btn {
     background: #3b82f6;
     color: white;
-    padding: 0.5rem 1.5rem;
-    border-radius: 0.25rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
     text-decoration: none;
     font-weight: 500;
-    transition: background 0.2s;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
   .add-archive-btn:hover {
     background: #2563eb;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
   .error {
     background: #fee;
-    border: 1px solid #fcc;
-    padding: 1rem;
-    border-radius: 0.25rem;
     color: #c00;
+    padding: 1rem;
+    border-radius: 0.375rem;
     margin-bottom: 1rem;
+    border: 1px solid #fcc;
   }
 
   .loading {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 200px;
+    min-height: 400px;
   }
 
   .spinner {
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
     width: 40px;
     height: 40px;
-    border: 4px solid #e2e8f0;
-    border-top-color: #3b82f6;
-    border-radius: 50%;
     animation: spin 1s linear infinite;
   }
 
   @keyframes spin {
-    to { transform: rotate(360deg); }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 
-  .archives-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    color: #64748b;
   }
 
-  .archive-card {
+  /* Table Styles */
+  .table-container {
     background: white;
-    padding: 1.5rem;
     border-radius: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
     border: 1px solid #e2e8f0;
   }
 
-  .archive-header {
-    margin-bottom: 1rem;
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1400px;
   }
 
-  .archive-header h3 {
-    margin: 0 0 0.5rem 0;
+  .data-table thead {
+    background: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .data-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .data-table tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.15s;
+  }
+
+  .data-table tbody tr:hover {
+    background: #f8fafc;
+  }
+
+  .data-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .data-table td {
+    padding: 1rem;
     color: #1e293b;
   }
 
-  .badges {
+  .id-cell {
+    font-family: 'Monaco', 'Courier New', monospace;
+    color: #64748b;
+    font-size: 0.875rem;
+    width: 60px;
+  }
+
+  .title-cell {
+    min-width: 300px;
+    max-width: 400px;
+  }
+
+  .title-wrapper {
     display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .archive-title {
+    font-weight: 500;
+    color: #1e293b;
+  }
+
+  .archive-description {
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.4;
+  }
+
+  .content-preview {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-family: 'Monaco', 'Courier New', monospace;
+    line-height: 1.4;
+    margin-top: 0.25rem;
+    max-height: 2.8em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .status-cell,
+  .standard-cell {
+    white-space: nowrap;
   }
 
   .badge {
+    display: inline-block;
     padding: 0.25rem 0.75rem;
     border-radius: 0.25rem;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
+    letter-spacing: 0.025em;
   }
 
-  .badge.active {
+  .badge.active,
+  .badge.published {
     background: #dcfce7;
     color: #166534;
   }
@@ -514,14 +601,10 @@
     color: #6b7280;
   }
 
-  .badge.archived {
+  .badge.archived,
+  .badge.deleted {
     background: #fef3c7;
     color: #92400e;
-  }
-
-  .badge.pending {
-    background: #dbeafe;
-    color: #1e40af;
   }
 
   .standard-badge {
@@ -529,141 +612,89 @@
     color: #4338ca;
   }
 
-  .description {
+  .owner-cell {
     color: #64748b;
-    margin: 0.75rem 0;
     font-size: 0.875rem;
-    line-height: 1.4;
+    white-space: nowrap;
   }
 
-  .content-preview {
-    background: #f8fafc;
-    padding: 0.75rem;
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
-    color: #475569;
-    margin: 0.75rem 0;
-    font-family: 'Monaco', 'Menlo', monospace;
-    line-height: 1.5;
-  }
-
-  .archive-details {
-    margin: 1rem 0;
-    padding: 1rem;
-    background: #f8fafc;
-    border-radius: 0.25rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-  }
-
-  .detail-item {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .detail-item .label {
+  .date-cell {
     color: #64748b;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .detail-item .value {
-    color: #1e293b;
-    font-weight: 500;
-    margin-top: 0.25rem;
-  }
-
-  .assigned-users {
-    margin: 1rem 0;
-    padding: 0.75rem;
-    background: #f8fafc;
-    border-radius: 0.25rem;
-  }
-
-  .user-assignment {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem;
-    margin-bottom: 0.25rem;
-    background: white;
-    border-radius: 0.25rem;
     font-size: 0.875rem;
+    white-space: nowrap;
+    width: 120px;
   }
 
-  .user-assignment:last-child {
-    margin-bottom: 0;
+  .assigned-cell {
+    min-width: 150px;
   }
 
-  .user-name {
-    color: #1e293b;
-    font-weight: 500;
+  .assigned-users-compact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
   }
 
-  .role-badge {
+  .user-badge {
+    display: inline-block;
     padding: 0.125rem 0.5rem;
+    background: #dbeafe;
+    color: #1e40af;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .more-badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    background: #f1f5f9;
+    color: #64748b;
     border-radius: 0.25rem;
     font-size: 0.75rem;
     font-weight: 600;
-    background: #dbeafe;
-    color: #1e40af;
   }
 
-  .archive-id {
-    font-size: 0.75rem;
-    color: #9ca3af;
-    margin-top: 1rem;
-    font-family: monospace;
+  .no-users {
+    color: #cbd5e1;
+    font-style: italic;
+    font-size: 0.875rem;
   }
 
-  .archive-actions {
-    margin-top: 1rem;
-    display: flex;
-    gap: 1rem;
+  .actions-cell {
+    text-align: right;
+    white-space: nowrap;
+    width: 250px;
   }
 
-  .view-structure-btn {
+  .btn-action {
+    display: inline-block;
     padding: 0.5rem 1rem;
     border-radius: 0.25rem;
+    font-size: 0.875rem;
     font-weight: 500;
-    transition: background 0.2s;
-    flex: 1;
-    text-align: center;
-    background: #3b82f6;
-    color: white;
+    transition: all 0.2s;
+    margin-left: 0.5rem;
     border: none;
     cursor: pointer;
   }
 
-  .view-structure-btn:hover {
+  .btn-structure {
+    background: #3b82f6;
+    color: white;
+  }
+
+  .btn-structure:hover {
     background: #2563eb;
   }
 
-  .assign-btn {
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    font-weight: 500;
-    transition: background 0.2s;
-    flex: 1;
-    text-align: center;
-    background: #4caf50;
+  .btn-assign {
+    background: #10b981;
     color: white;
-    border: none;
-    cursor: pointer;
   }
 
-  .assign-btn:hover {
-    background: #388e3c;
-  }
-
-  .empty-state {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 3rem;
-    color: #64748b;
+  .btn-assign:hover {
+    background: #059669;
   }
 
   /* Modal styles */
@@ -805,25 +836,6 @@
     background: #cbd5e1;
   }
 
-  @media (max-width: 768px) {
-    .archives-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .archive-details {
-      grid-template-columns: 1fr;
-    }
-
-    .modal {
-      min-width: 300px;
-      margin: 1rem;
-    }
-
-    .structure-modal {
-      min-width: 300px;
-    }
-  }
-
   /* Structure Modal Styles */
   .loading-structure {
     display: flex;
@@ -893,5 +905,16 @@
 
   .element-tree-item:last-child {
     margin-bottom: 0;
+  }
+
+  @media (max-width: 768px) {
+    .modal {
+      min-width: 300px;
+      margin: 1rem;
+    }
+
+    .structure-modal {
+      min-width: 300px;
+    }
   }
 </style>

@@ -49,34 +49,46 @@
     <div class="loading">
       <div class="spinner"></div>
     </div>
+  {:else if users.length === 0}
+    <div class="empty-state">
+      <p>No users found. Create your first user to get started!</p>
+    </div>
   {:else}
-    <div class="users-grid">
-      {#each users as user (user.id)}
-        <div class="user-card">
-          <h3>{user.name}</h3>
-          <p class="email">{user.email}</p>
-          {#if user.age}
-            <p class="age">Age: {user.age}</p>
-          {/if}
-          <div class="user-id">ID: {user.id}</div>
-          <div class="user-actions">
-            <a href={`/users/update?userId=${user.id}`} class="update-btn">Update</a>
-            <a href={`/users/delete?userId=${user.id}`} class="delete-btn">Delete</a>
-          </div>
-        </div>
-      {:else}
-        <div class="empty-state">
-          <p>No users found. Create your first user to get started!</p>
-        </div>
-      {/each}
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Age</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each users as user (user.id)}
+            <tr>
+              <td class="id-cell">{user.id}</td>
+              <td class="name-cell">{user.name}</td>
+              <td class="email-cell">{user.email}</td>
+              <td class="age-cell">{user.age || '-'}</td>
+              <td class="actions-cell">
+                <a href={`/users/update?userId=${user.id}`} class="btn-action btn-update">Update</a>
+                <a href={`/users/delete?userId=${user.id}`} class="btn-action btn-delete">Delete</a>
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
     </div>
   {/if}
 </div>
 
 <style>
   .users-page {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
+    padding: 2rem;
   }
 
   .page-header {
@@ -89,92 +101,165 @@
   .page-header h1 {
     margin: 0;
     color: #1e293b;
+    font-size: 2rem;
   }
 
   .add-user-btn {
     background: #3b82f6;
     color: white;
-    padding: 0.5rem 1.5rem;
-    border-radius: 0.25rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
     text-decoration: none;
     font-weight: 500;
-    transition: background 0.2s;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
+
   .add-user-btn:hover {
     background: #2563eb;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
-  .users-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
+  .error {
+    background: #fee;
+    color: #c00;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+    border: 1px solid #fcc;
   }
 
-  .user-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
-  }
-
-  .user-card h3 {
-    margin: 0 0 0.5rem 0;
-    color: #1e293b;
-  }
-
-  .email {
-    color: #3b82f6;
-    margin: 0.5rem 0;
-  }
-
-  .age {
-    color: #64748b;
-    margin: 0.5rem 0;
-  }
-
-  .user-id {
-    font-size: 0.75rem;
-    color: #9ca3af;
-    margin-top: 1rem;
-    font-family: monospace;
-  }
-
-  .user-actions {
-    margin-top: 1rem;
+  .loading {
     display: flex;
-    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
   }
 
-  .update-btn,
-  .delete-btn {
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    text-decoration: none;
-    font-weight: 500;
-    transition: background 0.2s;
+  .spinner {
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
   }
 
-  .update-btn {
-    background: #4caf50;
-    color: white;
-  }
-  .update-btn:hover {
-    background: #388e3c;
-  }
-
-  .delete-btn {
-    background: #f44336;
-    color: white;
-  }
-  .delete-btn:hover {
-    background: #c62828;
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 
   .empty-state {
-    grid-column: 1 / -1;
     text-align: center;
-    padding: 3rem;
+    padding: 4rem 2rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
     color: #64748b;
   }
+
+  /* Table Styles */
+  .table-container {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .data-table thead {
+    background: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .data-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .data-table tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.15s;
+  }
+
+  .data-table tbody tr:hover {
+    background: #f8fafc;
+  }
+
+  .data-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .data-table td {
+    padding: 1rem;
+    color: #1e293b;
+  }
+
+  .id-cell {
+    font-family: 'Monaco', 'Courier New', monospace;
+    color: #64748b;
+    font-size: 0.875rem;
+    width: 80px;
+  }
+
+  .name-cell {
+    font-weight: 500;
+    color: #1e293b;
+  }
+
+  .email-cell {
+    color: #3b82f6;
+  }
+
+  .age-cell {
+    color: #64748b;
+    width: 100px;
+  }
+
+  .actions-cell {
+    text-align: right;
+    white-space: nowrap;
+    width: 200px;
+  }
+
+  .btn-action {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    margin-left: 0.5rem;
+  }
+
+  .btn-update {
+    background: #3b82f6;
+    color: white;
+  }
+
+  .btn-update:hover {
+    background: #2563eb;
+  }
+
+  .btn-delete {
+    background: #ef4444;
+    color: white;
+  }
+
+  .btn-delete:hover {
+    background: #dc2626;
+  }
 </style>
+
+

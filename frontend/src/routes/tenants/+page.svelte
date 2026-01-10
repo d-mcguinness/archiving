@@ -27,11 +27,6 @@
     }
   }
 
-  function formatBytes(bytes: number | null | undefined): string {
-    if (!bytes) return 'N/A';
-    const gb = bytes / (1024 ** 3);
-    return `${gb.toFixed(0)} GB`;
-  }
 
   function getStatusBadgeClass(status: string): string {
     const classes: Record<string, string> = {
@@ -77,69 +72,65 @@
     <div class="loading">
       <div class="spinner"></div>
     </div>
+  {:else if tenants.length === 0}
+    <div class="empty-state">
+      <p>No tenants found. Create your first tenant to get started!</p>
+    </div>
   {:else}
-    <div class="tenants-grid">
-      {#each tenants as tenant (tenant.id)}
-        <div class="tenant-card">
-          <div class="tenant-header">
-            <h3>{tenant.displayName || tenant.name}</h3>
-            <div class="badges">
-              <span class="badge {getStatusBadgeClass(tenant.status)}">{tenant.status}</span>
-              <span class="badge {getPlanBadgeClass(tenant.plan)}">{tenant.plan}</span>
-            </div>
-          </div>
-
-          <p class="domain">{tenant.domain}</p>
-
-          {#if tenant.description}
-            <p class="description">{tenant.description}</p>
-          {/if}
-
-          <div class="tenant-details">
-            <div class="detail-item">
-              <span class="label">Owner:</span>
-              <span class="value">{tenant.ownerId}</span>
-            </div>
-            {#if tenant.settings}
-              <div class="detail-item">
-                <span class="label">Max Users:</span>
-                <span class="value">{tenant.settings.maxUsers || 'N/A'}</span>
-              </div>
-              <div class="detail-item">
-                <span class="label">Max Archives:</span>
-                <span class="value">{tenant.settings.maxArchives || 'N/A'}</span>
-              </div>
-              <div class="detail-item">
-                <span class="label">Storage:</span>
-                <span class="value">{formatBytes(tenant.settings.maxStorageBytes)}</span>
-              </div>
-              <div class="detail-item">
-                <span class="label">Timezone:</span>
-                <span class="value">{tenant.settings.timezone || 'N/A'}</span>
-              </div>
-            {/if}
-          </div>
-
-          <div class="tenant-id">ID: {tenant.id}</div>
-
-          <div class="tenant-actions">
-            <a href={`/tenants/update?tenantId=${tenant.id}`} class="update-btn">Update</a>
-            <a href={`/tenants/delete?tenantId=${tenant.id}`} class="delete-btn">Delete</a>
-          </div>
-        </div>
-      {:else}
-        <div class="empty-state">
-          <p>No tenants found. Create your first tenant to get started!</p>
-        </div>
-      {/each}
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Domain</th>
+            <th>Status</th>
+            <th>Plan</th>
+            <th>Owner ID</th>
+            <th>Created</th>
+            <th>Updated</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each tenants as tenant (tenant.id)}
+            <tr>
+              <td class="id-cell">{tenant.id}</td>
+              <td class="name-cell">
+                <div class="name-wrapper">
+                  <div class="display-name">{tenant.displayName || tenant.name}</div>
+                  {#if tenant.description}
+                    <div class="description-text">{tenant.description}</div>
+                  {/if}
+                </div>
+              </td>
+              <td class="domain-cell">{tenant.domain}</td>
+              <td class="status-cell">
+                <span class="badge {getStatusBadgeClass(tenant.status)}">{tenant.status}</span>
+              </td>
+              <td class="plan-cell">
+                <span class="badge {getPlanBadgeClass(tenant.plan)}">{tenant.plan}</span>
+              </td>
+              <td class="owner-cell">{tenant.ownerId}</td>
+              <td class="date-cell">{new Date(tenant.createdAt).toLocaleDateString()}</td>
+              <td class="date-cell">{tenant.updatedAt ? new Date(tenant.updatedAt).toLocaleDateString() : '-'}</td>
+              <td class="actions-cell">
+                <a href={`/tenants/update?tenantId=${tenant.id}`} class="btn-action btn-update">Update</a>
+                <a href={`/tenants/delete?tenantId=${tenant.id}`} class="btn-action btn-delete">Delete</a>
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
     </div>
   {/if}
 </div>
 
 <style>
   .tenants-page {
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
+    padding: 2rem;
   }
 
   .page-header {
@@ -152,86 +143,159 @@
   .page-header h1 {
     margin: 0;
     color: #1e293b;
+    font-size: 2rem;
   }
 
   .add-tenant-btn {
     background: #3b82f6;
     color: white;
-    padding: 0.5rem 1.5rem;
-    border-radius: 0.25rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
     text-decoration: none;
     font-weight: 500;
-    transition: background 0.2s;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
   .add-tenant-btn:hover {
     background: #2563eb;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
   .error {
     background: #fee;
-    border: 1px solid #fcc;
-    padding: 1rem;
-    border-radius: 0.25rem;
     color: #c00;
+    padding: 1rem;
+    border-radius: 0.375rem;
     margin-bottom: 1rem;
+    border: 1px solid #fcc;
   }
 
   .loading {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 200px;
+    min-height: 400px;
   }
 
   .spinner {
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
     width: 40px;
     height: 40px;
-    border: 4px solid #e2e8f0;
-    border-top-color: #3b82f6;
-    border-radius: 50%;
     animation: spin 1s linear infinite;
   }
 
   @keyframes spin {
-    to { transform: rotate(360deg); }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 
-  .tenants-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    color: #64748b;
   }
 
-  .tenant-card {
+  /* Table Styles */
+  .table-container {
     background: white;
-    padding: 1.5rem;
     border-radius: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
     border: 1px solid #e2e8f0;
   }
 
-  .tenant-header {
-    margin-bottom: 1rem;
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1200px;
   }
 
-  .tenant-header h3 {
-    margin: 0 0 0.5rem 0;
+  .data-table thead {
+    background: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .data-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .data-table tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.15s;
+  }
+
+  .data-table tbody tr:hover {
+    background: #f8fafc;
+  }
+
+  .data-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .data-table td {
+    padding: 1rem;
     color: #1e293b;
   }
 
-  .badges {
+  .id-cell {
+    font-family: 'Monaco', 'Courier New', monospace;
+    color: #64748b;
+    font-size: 0.875rem;
+    width: 60px;
+  }
+
+  .name-cell {
+    min-width: 200px;
+  }
+
+  .name-wrapper {
     display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .display-name {
+    font-weight: 500;
+    color: #1e293b;
+  }
+
+  .description-text {
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.4;
+  }
+
+  .domain-cell {
+    color: #3b82f6;
+    font-weight: 500;
+    min-width: 200px;
+  }
+
+  .status-cell,
+  .plan-cell {
+    white-space: nowrap;
   }
 
   .badge {
+    display: inline-block;
     padding: 0.25rem 0.75rem;
     border-radius: 0.25rem;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
+    letter-spacing: 0.025em;
   }
 
   .status-active {
@@ -289,104 +353,52 @@
     color: #6b21a8;
   }
 
-  .domain {
-    color: #3b82f6;
-    margin: 0.5rem 0;
-    font-weight: 500;
-  }
-
-  .description {
+  .owner-cell {
     color: #64748b;
-    margin: 0.75rem 0;
-    font-size: 0.875rem;
-    line-height: 1.4;
-  }
-
-  .tenant-details {
-    margin: 1rem 0;
-    padding: 1rem;
-    background: #f8fafc;
-    border-radius: 0.25rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
     font-size: 0.875rem;
   }
 
-  .detail-item {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .detail-item .label {
+  .date-cell {
     color: #64748b;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    width: 120px;
   }
 
-  .detail-item .value {
-    color: #1e293b;
-    font-weight: 500;
-    margin-top: 0.25rem;
+  .actions-cell {
+    text-align: right;
+    white-space: nowrap;
+    width: 220px;
   }
 
-  .tenant-id {
-    font-size: 0.75rem;
-    color: #9ca3af;
-    margin-top: 1rem;
-    font-family: monospace;
-  }
-
-  .tenant-actions {
-    margin-top: 1rem;
-    display: flex;
-    gap: 1rem;
-  }
-
-  .update-btn,
-  .delete-btn {
+  .btn-action {
+    display: inline-block;
     padding: 0.5rem 1rem;
     border-radius: 0.25rem;
     text-decoration: none;
+    font-size: 0.875rem;
     font-weight: 500;
-    transition: background 0.2s;
-    flex: 1;
-    text-align: center;
+    transition: all 0.2s;
+    margin-left: 0.5rem;
   }
 
-  .update-btn {
-    background: #4caf50;
+  .btn-update {
+    background: #3b82f6;
     color: white;
   }
 
-  .update-btn:hover {
-    background: #388e3c;
+  .btn-update:hover {
+    background: #2563eb;
   }
 
-  .delete-btn {
-    background: #f44336;
+  .btn-delete {
+    background: #ef4444;
     color: white;
   }
 
-  .delete-btn:hover {
-    background: #c62828;
-  }
-
-  .empty-state {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 3rem;
-    color: #64748b;
-  }
-
-  @media (max-width: 768px) {
-    .tenants-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .tenant-details {
-      grid-template-columns: 1fr;
-    }
+  .btn-delete:hover {
+    background: #dc2626;
   }
 </style>
+
+

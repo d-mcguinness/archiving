@@ -91,18 +91,17 @@ async function saveTenant() {
         }
       });
     } else {
-      // Update existing tenant
+      // Update existing tenant - only send updateable fields
       await client.mutate({
         mutation: UPDATE_TENANT,
         variables: {
           input: {
             tenantId,
-            displayName: form.displayName || form.name,
             name: form.name,
-            domain: form.domain,
+            displayName: form.displayName || form.name,
             description: form.description,
-            ownerId: form.ownerId,
             plan: form.plan
+            // Note: domain and ownerId are NOT updateable
           }
         }
       });
@@ -182,9 +181,13 @@ function goBack() {
               id="domain"
               bind:value={form.domain}
               required
-              disabled={updating}
+              disabled={updating || !isCreateMode}
               placeholder={isCreateMode ? "acme" : "Enter domain"}
+              title={!isCreateMode ? "Domain cannot be changed after creation" : ""}
             />
+            {#if !isCreateMode}
+              <small class="field-note">Domain cannot be changed after creation</small>
+            {/if}
           </div>
         </div>
 
@@ -213,12 +216,15 @@ function goBack() {
         <div class="form-row">
           <div class="form-group">
             <label for="ownerId">Owner *</label>
-            <select id="ownerId" bind:value={form.ownerId} required disabled={updating}>
+            <select id="ownerId" bind:value={form.ownerId} required disabled={updating || !isCreateMode}>
               <option value="">Select an owner</option>
               {#each users as user}
                 <option value={user.id}>{user.name} ({user.email})</option>
               {/each}
             </select>
+            {#if !isCreateMode}
+              <small class="field-note">Owner cannot be changed after creation</small>
+            {/if}
           </div>
           <div class="form-group">
             <label for="plan">Plan *</label>
@@ -486,6 +492,14 @@ function goBack() {
   .form-group textarea {
     resize: vertical;
     min-height: 3rem;
+  }
+
+  .field-note {
+    display: block;
+    margin-top: 0.5rem;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-style: italic;
   }
 
   .form-actions {
