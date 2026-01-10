@@ -1,0 +1,338 @@
+{
+  "standard": "OAIS",
+  "fullName": "Open Archival Information System",
+  "reference": "CCSDS 650.0-M-2 / ISO 14721:2012",
+  "description": "Reference Model for an Open Archival Information System (OAIS)",
+  "version": "2.0",
+  "url": "https://public.ccsds.org/Pubs/650x0m2.pdf",
+  "entities": [
+    {
+      "name": "OAIS Archive",
+      "type": "root",
+      "description": "The complete OAIS archive system",
+      "parent": null,
+      "children": ["Ingest", "Archival Storage", "Data Management", "Administration", "Preservation Planning", "Access"]
+    },
+    {
+      "name": "Ingest",
+      "type": "functional_entity",
+      "description": "Provides the services and functions to accept Submission Information Packages (SIPs) from Producers and prepare contents for storage and management",
+      "parent": "OAIS Archive",
+      "children": ["Receive Submission", "Quality Assurance", "Generate AIP", "Generate Descriptive Info", "Coordinate Updates"],
+      "processes": [
+        "Receive Submission",
+        "Quality Assurance",
+        "Generate AIP",
+        "Generate Descriptive Info",
+        "Coordinate Updates"
+      ]
+    },
+    {
+      "name": "Archival Storage",
+      "type": "functional_entity",
+      "description": "Provides the services and functions for the storage, maintenance and retrieval of Archival Information Packages (AIPs)",
+      "parent": "OAIS Archive",
+      "children": ["Receive Data", "Manage Storage Hierarchy", "Replace Media", "Error Checking", "Provide Data"],
+      "processes": [
+        "Receive Data",
+        "Manage Storage Hierarchy",
+        "Replace Media",
+        "Error Checking",
+        "Provide Data"
+      ]
+    },
+    {
+      "name": "Data Management",
+      "type": "functional_entity",
+      "description": "Provides the services and functions for populating, maintaining, and accessing both Descriptive Information and administrative data",
+      "parent": "OAIS Archive",
+      "children": ["Administer Database", "Query Database", "Generate Report", "Receive Database Updates"],
+      "processes": [
+        "Administer Database",
+        "Query Database",
+        "Generate Report",
+        "Receive Database Updates"
+      ]
+    },
+    {
+      "name": "Administration",
+      "type": "functional_entity",
+      "description": "Provides the services and functions for the overall operation of the archive system",
+      "parent": "OAIS Archive",
+      "children": ["Negotiate Submission Agreement", "Manage Configuration", "Manage Archive", "Physical Access Controls", "Customer Service", "Activation Requests"],
+      "processes": [
+        "Negotiate Submission Agreement",
+        "Manage Configuration",
+        "Manage Archive",
+        "Physical Access Controls",
+        "Customer Service",
+        "Activation Requests"
+      ]
+    },
+    {
+      "name": "Preservation Planning",
+      "type": "functional_entity",
+      "description": "Provides the services and functions for monitoring the environment of the OAIS and providing recommendations to ensure that the information stored remains accessible over the long term",
+      "parent": "OAIS Archive",
+      "children": ["Monitor Designated Community", "Monitor Technology", "Monitor Product", "Develop Preservation Strategies", "Develop Preservation Plans", "Develop Migration Plans"],
+      "processes": [
+        "Monitor Designated Community",
+        "Monitor Technology",
+        "Monitor Product",
+        "Develop Preservation Strategies",
+        "Develop Preservation Plans",
+        "Develop Migration Plans"
+      ]
+    },
+    {
+      "name": "Access",
+      "type": "functional_entity",
+      "description": "Provides the services and functions that support Consumers in determining the existence, description, location and availability of information stored in the OAIS",
+      "parent": "OAIS Archive",
+      "children": ["Coordinate Access Activities", "Generate DIP", "Deliver Response"],
+      "processes": [
+        "Coordinate Access Activities",
+        "Generate DIP",
+        "Deliver Response"
+      ]
+    },
+    {
+      "name": "Receive Submission",
+      "type": "process",
+      "description": "Accepts SIPs from Producers and performs quality checks",
+      "parent": "Ingest",
+      "children": []
+    },
+    {
+      "name": "Quality Assurance",
+      "type": "process",
+      "description": "Validates the quality of SIPs and ensures completeness",
+      "parent": "Ingest",
+      "children": []
+    },
+    {
+      "name": "Generate AIP",
+      "type": "process",
+      "description": "Transforms SIPs into AIPs for long-term preservation",
+      "parent": "Ingest",
+      "children": []
+    },
+    {
+      "name": "Generate Descriptive Info",
+      "type": "process",
+      "description": "Extracts or creates descriptive information about the content",
+      "parent": "Ingest",
+      "children": []
+    },
+    {
+      "name": "Coordinate Updates",
+      "type": "process",
+      "description": "Coordinates updates to Archival Storage and Data Management",
+      "parent": "Ingest",
+      "children": []
+    },
+    {
+      "name": "Receive Data",
+      "type": "process",
+      "description": "Receives AIPs from Ingest for storage",
+      "parent": "Archival Storage",
+      "children": []
+    },
+    {
+      "name": "Manage Storage Hierarchy",
+      "type": "process",
+      "description": "Manages the storage hierarchy and migration between storage levels",
+      "parent": "Archival Storage",
+      "children": []
+    },
+    {
+      "name": "Replace Media",
+      "type": "process",
+      "description": "Manages media replacement and refreshing",
+      "parent": "Archival Storage",
+      "children": []
+    },
+    {
+      "name": "Error Checking",
+      "type": "process",
+      "description": "Performs routine error checking and data integrity verification",
+      "parent": "Archival Storage",
+      "children": []
+    },
+    {
+      "name": "Provide Data",
+      "type": "process",
+      "description": "Retrieves and provides AIPs to Access function",
+      "parent": "Archival Storage",
+      "children": []
+    },
+    {
+      "name": "Administer Database",
+      "type": "process",
+      "description": "Administers the database systems",
+      "parent": "Data Management",
+      "children": []
+    },
+    {
+      "name": "Query Database",
+      "type": "process",
+      "description": "Executes queries against the database",
+      "parent": "Data Management",
+      "children": []
+    },
+    {
+      "name": "Generate Report",
+      "type": "process",
+      "description": "Generates reports from database information",
+      "parent": "Data Management",
+      "children": []
+    },
+    {
+      "name": "Receive Database Updates",
+      "type": "process",
+      "description": "Receives and processes database updates from Ingest and Administration",
+      "parent": "Data Management",
+      "children": []
+    },
+    {
+      "name": "Negotiate Submission Agreement",
+      "type": "process",
+      "description": "Negotiates submission agreements with Producers",
+      "parent": "Administration",
+      "children": []
+    },
+    {
+      "name": "Manage Configuration",
+      "type": "process",
+      "description": "Manages system configuration and software",
+      "parent": "Administration",
+      "children": []
+    },
+    {
+      "name": "Manage Archive",
+      "type": "process",
+      "description": "Manages archive operations and policies",
+      "parent": "Administration",
+      "children": []
+    },
+    {
+      "name": "Physical Access Controls",
+      "type": "process",
+      "description": "Manages physical access to the archive facility",
+      "parent": "Administration",
+      "children": []
+    },
+    {
+      "name": "Customer Service",
+      "type": "process",
+      "description": "Provides customer service to Producers and Consumers",
+      "parent": "Administration",
+      "children": []
+    },
+    {
+      "name": "Activation Requests",
+      "type": "process",
+      "description": "Processes requests for activating archived data",
+      "parent": "Administration",
+      "children": []
+    },
+    {
+      "name": "Monitor Designated Community",
+      "type": "process",
+      "description": "Monitors the knowledge and requirements of the designated community",
+      "parent": "Preservation Planning",
+      "children": []
+    },
+    {
+      "name": "Monitor Technology",
+      "type": "process",
+      "description": "Monitors changes in technology and storage media",
+      "parent": "Preservation Planning",
+      "children": []
+    },
+    {
+      "name": "Monitor Product",
+      "type": "process",
+      "description": "Monitors the condition and accessibility of archived products",
+      "parent": "Preservation Planning",
+      "children": []
+    },
+    {
+      "name": "Develop Preservation Strategies",
+      "type": "process",
+      "description": "Develops strategies for long-term preservation",
+      "parent": "Preservation Planning",
+      "children": []
+    },
+    {
+      "name": "Develop Preservation Plans",
+      "type": "process",
+      "description": "Develops detailed preservation plans",
+      "parent": "Preservation Planning",
+      "children": []
+    },
+    {
+      "name": "Develop Migration Plans",
+      "type": "process",
+      "description": "Develops plans for migrating data to new formats or media",
+      "parent": "Preservation Planning",
+      "children": []
+    },
+    {
+      "name": "Coordinate Access Activities",
+      "type": "process",
+      "description": "Coordinates access request processing",
+      "parent": "Access",
+      "children": []
+    },
+    {
+      "name": "Generate DIP",
+      "type": "process",
+      "description": "Generates Dissemination Information Packages from AIPs",
+      "parent": "Access",
+      "children": []
+    },
+    {
+      "name": "Deliver Response",
+      "type": "process",
+      "description": "Delivers responses and DIPs to Consumers",
+      "parent": "Access",
+      "children": []
+    }
+  ],
+  "informationPackages": [
+    {
+      "name": "SIP",
+      "fullName": "Submission Information Package",
+      "description": "Information package delivered by the Producer to the OAIS for use in the construction of one or more AIPs",
+      "usedBy": ["Ingest"]
+    },
+    {
+      "name": "AIP",
+      "fullName": "Archival Information Package",
+      "description": "Information package consisting of the Content Information and associated Preservation Description Information (PDI), preserved within an OAIS",
+      "usedBy": ["Archival Storage", "Preservation Planning", "Access"]
+    },
+    {
+      "name": "DIP",
+      "fullName": "Dissemination Information Package",
+      "description": "Information package derived from one or more AIPs and sent by the OAIS to the Consumer in response to a request",
+      "usedBy": ["Access"]
+    }
+  ],
+  "roles": [
+    {
+      "name": "Producer",
+      "description": "The role played by those persons or client systems that provide the information to be preserved"
+    },
+    {
+      "name": "Consumer",
+      "description": "The role played by those persons or client systems that interact with OAIS services to find preserved information of interest and to access that information"
+    },
+    {
+      "name": "Management",
+      "description": "The role played by those who set overall OAIS policy as one component in a broader policy domain"
+    }
+  ]
+}
+

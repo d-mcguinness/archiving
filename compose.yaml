@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # Spring Boot Application
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/archiving
+      - SPRING_DATASOURCE_HOST=db
+      - SPRING_DATASOURCE_PORT=5432
+      - SPRING_DATASOURCE_DB=archiving
+      - SPRING_DATASOURCE_USERNAME=archiving_user
+      - SPRING_DATASOURCE_PASSWORD=archiving_pass
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - archiving-network
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: archiving
+      POSTGRES_USER: archiving_user
+      POSTGRES_PASSWORD: archiving_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U archiving_user -d archiving"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - archiving-network
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - archiving-network
+
+volumes:
+  postgres_data:
+
+networks:
+  archiving-network:
+    driver: bridge

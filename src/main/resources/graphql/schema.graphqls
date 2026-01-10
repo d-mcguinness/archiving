@@ -1,0 +1,294 @@
+# User Module Types
+type User {
+    id: ID!
+    name: String!
+    email: String!
+    age: Int
+}
+
+input CreateUserInput {
+    name: String!
+    email: String!
+    age: Int
+}
+
+# Tenancy Module Types
+type Tenant {
+    id: ID!
+    name: String!
+    domain: String!
+    displayName: String
+    description: String
+    status: TenantStatus!
+    plan: TenantPlan!
+    createdAt: String!
+    updatedAt: String
+    ownerId: String!
+    settings: TenantSettings
+}
+
+type TenantSettings {
+    maxUsers: Int
+    maxArchives: Int
+    maxStorageBytes: String
+    allowExternalSharing: Boolean
+    enableAuditLog: Boolean
+    timezone: String
+    defaultLanguage: String
+    customDomain: String
+}
+
+enum TenantStatus {
+    ACTIVE
+    INACTIVE
+    SUSPENDED
+    PENDING_ACTIVATION
+    TRIAL
+    EXPIRED
+}
+
+enum TenantPlan {
+    FREE
+    BASIC
+    PROFESSIONAL
+    ENTERPRISE
+    CUSTOM
+}
+
+input CreateTenantInput {
+    name: String!
+    domain: String!
+    displayName: String
+    description: String
+    ownerId: String!
+    plan: TenantPlan!
+}
+
+input UpdateTenantInput {
+    tenantId: ID!
+    name: String
+    displayName: String
+    description: String
+    status: TenantStatus
+    plan: TenantPlan
+}
+
+# Archive Module Types
+type Archive {
+    id: ID!
+    ownerId: ID!
+    title: String!
+    description: String
+    content: String!
+    createdAt: String!
+    updatedAt: String
+    status: ArchiveStatus!
+    standard: ArchiveStandard!
+    scheme: Scheme
+    assignedUsers: [UserAssignment!]!
+}
+
+# Element Type - represents actual instances of scheme definitions
+type Element {
+    id: ID!
+    archive: Archive!
+    scheme: Scheme!
+    parent: Element
+    children: [Element!]!
+    elementIdentifier: String!
+    title: String!
+    description: String
+    createdAt: String!
+    createdBy: String
+    updatedAt: String
+    updatedBy: String
+    closedAt: String
+    closedBy: String
+    status: String!
+    sortOrder: Int
+    metadata: String
+    isRoot: Boolean!
+    elementType: String
+    norwegianName: String
+    englishName: String
+    path: String
+    depth: Int
+    isLeaf: Boolean
+    descendantsCount: Int
+}
+
+# Scheme Types
+type Scheme {
+    id: ID!
+    standard: ArchiveStandard!
+    entityName: String!
+    norwegianName: String
+    englishName: String
+    entityType: String!
+    description: String
+    parent: Scheme
+    children: [Scheme!]!
+    isRoot: Boolean!
+    sortOrder: Int
+    notes: String
+}
+
+type SchemeNode {
+    id: ID!
+    entityName: String!
+    norwegianName: String
+    englishName: String
+    entityType: String!
+    description: String
+    notes: String
+    children: [SchemeNode!]!
+}
+
+type SchemeHierarchy {
+    standard: ArchiveStandard!
+    root: SchemeNode
+}
+
+
+type UserAssignment {
+    id: ID!
+    userId: ID!
+    role: UserRole!
+    assignedAt: String!
+}
+
+enum UserRole {
+    OWNER
+    EDITOR
+    REVIEWER
+    VIEWER
+}
+
+enum ArchiveStatus {
+    DRAFT
+    PUBLISHED
+    ARCHIVED
+    DELETED
+}
+
+enum ArchiveStandard {
+    NOARK5
+    OAIS
+}
+
+input CreateArchiveInput {
+    userId: ID!
+    title: String!
+    description: String
+    content: String!
+    standard: ArchiveStandard!
+}
+
+input CreateElementInput {
+    archiveId: ID!
+    schemeId: ID!
+    parentElementId: ID
+    elementIdentifier: String!
+    title: String!
+    description: String
+    createdBy: String!
+}
+
+input UpdateElementInput {
+    title: String!
+    description: String
+    updatedBy: String!
+}
+
+input AssignUserInput {
+    archiveId: ID!
+    userId: ID!
+    role: UserRole!
+}
+
+input UnassignUserInput {
+    archiveId: ID!
+    userId: ID!
+}
+
+# Root Query Type
+type Query {
+    # User Queries
+    getAllUsers: [User!]!
+    getUser(id: ID!): User
+
+    # Tenancy Queries
+    getAllTenants: [Tenant!]!
+    getTenant(id: ID!): Tenant
+    getTenantsByStatus(status: TenantStatus!): [Tenant!]!
+    getTenantsByOwner(ownerId: ID!): [Tenant!]!
+
+    # Archive Queries
+    getAllArchives: [Archive!]!
+    getArchive(id: ID!): Archive
+    getArchivesByUser(userId: ID!): [Archive!]!
+    getArchivesByUserAssignment(userId: ID!): [Archive!]!
+    getArchivesByUserRole(userId: ID!, role: UserRole!): [Archive!]!
+
+    # Scheme Queries
+    getSchemeEntities(standard: ArchiveStandard!): [Scheme!]!
+    getSchemeEntity(standard: ArchiveStandard!, entityName: String!): Scheme
+    getSchemeRootEntity(standard: ArchiveStandard!): Scheme
+    getAllowedChildEntities(standard: ArchiveStandard!, parentEntityName: String!): [String!]!
+    canContainEntity(standard: ArchiveStandard!, parentEntityName: String!, childEntityName: String!): Boolean!
+
+    # Element Queries
+    getElement(id: ID!): Element
+    getElementsByArchive(archiveId: ID!): [Element!]!
+    getRootElements(archiveId: ID!): [Element!]!
+    getElementChildren(elementId: ID!): [Element!]!
+    getElementByIdentifier(archiveId: ID!, elementIdentifier: String!): Element
+    searchElements(archiveId: ID!, searchTerm: String!): [Element!]!
+    getElementsByStatus(archiveId: ID!, status: String!): [Element!]!
+    getElementHierarchy(archiveId: ID!): [Element!]!
+    getLeafElements(archiveId: ID!): [Element!]!
+    countElements(archiveId: ID!): Int!
+}
+
+# Root Mutation Type
+type Mutation {
+    # User Mutations
+    createUser(input: CreateUserInput!): User!
+    updateUser(id: ID!, input: CreateUserInput!): User
+    deleteUser(id: ID!): Boolean!
+
+    # Tenancy Mutations
+    createTenant(input: CreateTenantInput!): Tenant!
+    updateTenant(input: UpdateTenantInput!): Tenant!
+    addUserToTenant(userId: ID!, tenantId: ID!): Boolean!
+    removeUserFromTenant(userId: ID!): Boolean!
+    deleteTenant(id: ID!): Boolean!
+
+    # Archive Mutations
+    createArchive(input: CreateArchiveInput!): Archive!
+    updateArchiveStatus(archiveId: ID!, status: ArchiveStatus!): Archive
+
+    # User Assignment Mutations
+    assignUserToArchive(input: AssignUserInput!): Archive!
+    unassignUserFromArchive(input: UnassignUserInput!): Archive!
+
+    # Element Mutations
+    createElement(input: CreateElementInput!): Element!
+    updateElement(id: ID!, input: UpdateElementInput!): Element!
+    updateElementStatus(id: ID!, status: String!, updatedBy: String!): Element!
+    closeElement(id: ID!, closedBy: String!): Element!
+    deleteElement(id: ID!): Boolean!
+    moveElement(elementId: ID!, newParentId: ID, updatedBy: String!): Element!
+
+    # Scheme Mutations
+    createScheme(
+        standard: ArchiveStandard!
+        entityName: String!
+        norwegianName: String
+        englishName: String
+        entityType: String!
+        description: String
+        isRoot: Boolean!
+        allowedChildren: [String!]!
+    ): Scheme!
+}
