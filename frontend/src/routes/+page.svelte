@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   import { client } from '$lib/apollo';
   import { GET_ALL_USERS, GET_ALL_TENANTS, GET_ALL_ARCHIVES } from '$lib/graphql/queries';
@@ -9,7 +9,7 @@
     archives: 0
   };
   let loading = true;
-  let error = null;
+  let error: string | null = null;
 
   onMount(async () => {
     try {
@@ -21,12 +21,13 @@
       ]);
 
       stats = {
-        users: usersResult.data.getAllUsers?.length || 0,
-        tenants: tenantsResult.data.getAllTenants?.length || 0,
-        archives: archivesResult.data.getAllArchives?.length || 0
+        users: usersResult?.data?.getAllUsers?.length || 0,
+        tenants: tenantsResult?.data?.getAllTenants?.length || 0,
+        archives: archivesResult?.data?.getAllArchives?.length || 0
       };
     } catch (e) {
       error = e instanceof Error ? e.message : 'An unknown error occurred';
+      console.error('Dashboard error:', e);
     } finally {
       loading = false;
     }

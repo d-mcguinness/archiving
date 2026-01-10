@@ -60,6 +60,11 @@ public class ArchiveController {
         return archiveService.updateArchiveStatus(archiveId, status);
     }
 
+    @MutationMapping
+    public Archive setArchiveRootElement(@Argument Long archiveId, @Argument Long rootElementId) {
+        return archiveService.setArchiveRootElement(archiveId, rootElementId);
+    }
+
     // New mutation methods for user assignment
     @MutationMapping
     public Archive assignUserToArchive(@Argument AssignUserInput input) {

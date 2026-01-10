@@ -23,6 +23,7 @@
   let designedElements: any[] = [];
   let showElementForm = false;
   let selectedScheme: any = null;
+  let selectedSchemeName: string = ''; // Add this to track the selected scheme name
   let selectedParent: any = null;
 
   let elementForm = {
@@ -39,14 +40,22 @@
   onMount(async () => {
     try {
       const result = await client.query({ query: GET_ALL_USERS });
-      users = result.data.getAllUsers || [];
+      users = result?.data?.getAllUsers || [];
 
       // Load initial scheme data
       await loadSchemeDefinition(newArchive.standard);
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to load users';
+      console.error('Load users error:', e);
     }
   });
+
+  // Reactive statement to update selectedScheme when selectedSchemeName changes
+  $: if (selectedSchemeName && schemes.length > 0) {
+    selectedScheme = schemes.find(s => s.entityName === selectedSchemeName) || null;
+  } else if (!selectedSchemeName) {
+    selectedScheme = null;
+  }
 
   async function loadSchemeDefinition(standard: string) {
     try {
@@ -113,6 +122,7 @@
 
   function openElementForm(scheme: any = null, parent: any = null) {
     selectedScheme = scheme;
+    selectedSchemeName = scheme ? scheme.entityName : '';
     selectedParent = parent;
     elementForm = {
       elementIdentifier: '',
@@ -125,6 +135,7 @@
   function cancelElementForm() {
     showElementForm = false;
     selectedScheme = null;
+    selectedSchemeName = '';
     selectedParent = null;
     elementForm = {
       elementIdentifier: '',
@@ -134,13 +145,22 @@
   }
 
   function addElement() {
+    console.log('addElement called', {
+      elementForm,
+      selectedScheme,
+      selectedParent,
+      schemes: schemes.length
+    });
+
     if (!elementForm.elementIdentifier || !elementForm.title) {
       error = 'Element identifier and title are required';
+      console.error('Validation failed: missing identifier or title');
       return;
     }
 
     if (!selectedScheme) {
       error = 'Please select an element type';
+      console.error('Validation failed: no scheme selected');
       return;
     }
 
@@ -154,18 +174,26 @@
       children: []
     };
 
+    console.log('Creating new element:', newElement);
+
     if (selectedParent) {
       // Add as child to parent
       const parentInList = findElementById(designedElements, selectedParent.tempId);
       if (parentInList) {
+        console.log('Adding as child to parent:', selectedParent.tempId);
         parentInList.children.push(newElement);
         // Trigger reactivity by reassigning the array
         designedElements = [...designedElements];
+      } else {
+        console.error('Parent not found in list:', selectedParent.tempId);
       }
     } else {
       // Add as root element
+      console.log('Adding as root element');
       designedElements = [...designedElements, newElement];
     }
+
+    console.log('Updated designedElements:', designedElements);
 
     cancelElementForm();
     error = null;
@@ -215,14 +243,14 @@
       creating = true;
       error = null;
 
-      // Step 1: Ensure all schemes used in the hierarchy exist in the database
-      await ensureSchemesExist();
-
-      // Step 2: Create the archive
+      // Step 1: Create the archive
       const CREATE_ARCHIVE_MUTATION = gql`
         mutation CreateArchive($input: CreateArchiveInput!) {
           createArchive(input: $input) {
             id
+            title
+            standard
+            createdAt
           }
         }
       `;
@@ -237,114 +265,59 @@
             content: newArchive.content,
             standard: newArchive.standard
           }
-        }
+        },
+        // Refetch archives list to update the cache
+        refetchQueries: ['GetAllArchives'],
+        awaitRefetchQueries: true
       });
 
       const archiveId = archiveResult.data.createArchive.id;
 
-      // Step 3: Create all elements in hierarchy order
+      // Step 2: Create all elements in hierarchy order
+      let rootElementId = null;
       if (designedElements.length > 0) {
-        await createElementsRecursively(archiveId, designedElements, null);
+        rootElementId = await createElementsRecursively(archiveId, designedElements, null);
       }
 
+      // Step 3: Set the root element on the archive if elements were created
+      if (rootElementId) {
+        const SET_ROOT_ELEMENT_MUTATION = gql`
+          mutation SetArchiveRootElement($archiveId: ID!, $rootElementId: ID!) {
+            setArchiveRootElement(archiveId: $archiveId, rootElementId: $rootElementId) {
+              id
+              rootElement {
+                id
+                elementIdentifier
+                title
+              }
+            }
+          }
+        `;
+
+        await client.mutate({
+          mutation: SET_ROOT_ELEMENT_MUTATION,
+          variables: {
+            archiveId: archiveId,
+            rootElementId: rootElementId
+          },
+          // Refetch archives list again to include the updated rootElement
+          refetchQueries: ['GetAllArchives'],
+          awaitRefetchQueries: true
+        });
+      }
+
+      // Navigate to archives list - the cache is now updated with the new archive
       goto('/archives');
     } catch (e) {
       error = e instanceof Error ? e.message : 'An unknown error occurred';
+      console.error('Create archive error:', e);
     } finally {
       creating = false;
     }
   }
 
-  async function ensureSchemesExist() {
-    // Collect all unique schemes used in the designed elements
-    const usedSchemes = new Set<string>();
 
-    function collectSchemes(elements: any[]) {
-      for (const element of elements) {
-        usedSchemes.add(element.scheme.entityName);
-        if (element.children && element.children.length > 0) {
-          collectSchemes(element.children);
-        }
-      }
-    }
-
-    collectSchemes(designedElements);
-
-    // Check and create schemes in the database
-    const CREATE_SCHEME_MUTATION = gql`
-      mutation CreateScheme(
-        $standard: ArchiveStandard!
-        $entityName: String!
-        $norwegianName: String
-        $englishName: String
-        $entityType: String!
-        $description: String
-        $isRoot: Boolean!
-        $allowedChildren: [String!]!
-      ) {
-        createScheme(
-          standard: $standard
-          entityName: $entityName
-          norwegianName: $norwegianName
-          englishName: $englishName
-          entityType: $entityType
-          description: $description
-          isRoot: $isRoot
-          allowedChildren: $allowedChildren
-        ) {
-          id
-        }
-      }
-    `;
-
-    const GET_SCHEME_BY_NAME = gql`
-      query GetSchemeByName($standard: ArchiveStandard!, $entityName: String!) {
-        getSchemeEntity(standard: $standard, entityName: $entityName) {
-          id
-        }
-      }
-    `;
-
-    // For each used scheme, check if it exists, if not create it
-    for (const entityName of usedSchemes) {
-      const schemeData = schemes.find(s => s.entityName === entityName);
-      if (!schemeData) continue;
-
-      try {
-        // Check if scheme exists
-        const existingScheme = await client.query({
-          query: GET_SCHEME_BY_NAME,
-          variables: {
-            standard: newArchive.standard,
-            entityName: entityName
-          },
-          fetchPolicy: 'network-only'
-        });
-
-        if (!existingScheme.data.getSchemeEntity) {
-          // Scheme doesn't exist, create it
-          await client.mutate({
-            mutation: CREATE_SCHEME_MUTATION,
-            variables: {
-              standard: newArchive.standard,
-              entityName: schemeData.entityName,
-              norwegianName: schemeData.norwegianName,
-              englishName: schemeData.englishName,
-              entityType: schemeData.entityType,
-              description: schemeData.description,
-              isRoot: schemeData.isRoot,
-              allowedChildren: schemeData.children || []
-            }
-          });
-        }
-      } catch (e) {
-        console.error(`Error ensuring scheme ${entityName} exists:`, e);
-        // Continue with other schemes even if one fails
-      }
-    }
-  }
-
-  async function createElementsRecursively(archiveId: string, elements: any[], parentId: string | null) {
+  async function createElementsRecursively(archiveId: string, elements: any[], parentId: string | null): Promise<string | null> {
     const CREATE_ELEMENT_MUTATION = gql`
       mutation CreateElement($input: CreateElementInput!) {
         createElement(input: $input) {
@@ -353,53 +326,42 @@
       }
     `;
 
-    // First, we need to get the actual scheme IDs from the database
-    const GET_SCHEME_BY_NAME = gql`
-      query GetSchemeByName($standard: ArchiveStandard!, $entityName: String!) {
-        getSchemeEntity(standard: $standard, entityName: $entityName) {
-          id
-        }
-      }
-    `;
+    let firstElementId = null;
 
     for (const element of elements) {
-      // Get the scheme ID from database by name
-      const schemeResult = await client.query({
-        query: GET_SCHEME_BY_NAME,
-        variables: {
-          standard: newArchive.standard,
-          entityName: element.scheme.entityName
-        }
-      });
-
-      if (!schemeResult.data.getSchemeEntity) {
-        throw new Error(`Scheme not found: ${element.scheme.entityName}`);
-      }
-
-      const schemeId = schemeResult.data.getSchemeEntity.id;
-
+      // Create element using the scheme data stored in the element
       const result = await client.mutate({
         mutation: CREATE_ELEMENT_MUTATION,
         variables: {
           input: {
             archiveId: archiveId,
-            schemeId: schemeId,
             parentElementId: parentId,
             elementIdentifier: element.elementIdentifier,
+            entityName: element.scheme.entityName,
+            entityType: element.scheme.entityType,
+            norwegianName: element.scheme.norwegianName,
+            englishName: element.scheme.englishName,
             title: element.title,
             description: element.description || null,
-            createdBy: 'system' // TODO: Use actual user
+            createdBy: newArchive.userId // Use the archive owner as creator
           }
         }
       });
 
       const createdElementId = result.data.createElement.id;
 
+      // Track the first root element
+      if (!parentId && !firstElementId) {
+        firstElementId = createdElementId;
+      }
+
       // Create children
       if (element.children && element.children.length > 0) {
         await createElementsRecursively(archiveId, element.children, createdElementId);
       }
     }
+
+    return firstElementId;
   }
 
   function handleCancel() {
@@ -562,7 +524,7 @@
           type="button"
           class="btn btn-primary"
           on:click={createArchive}
-          disabled={creating || designedElements.length === 0}
+          disabled={creating}
         >
           {creating ? 'Creating...' : 'Create Archive'}
         </button>
@@ -599,10 +561,10 @@
             <label for="schemeSelect">Element Type *</label>
             <select
               id="schemeSelect"
-              bind:value={selectedScheme}
+              bind:value={selectedSchemeName}
               required
             >
-              <option value={null}>
+              <option value="">
                 {#if selectedParent}
                   Select child element type...
                 {:else}
@@ -610,7 +572,7 @@
                 {/if}
               </option>
               {#each getAvailableChildSchemes() as scheme}
-                <option value={scheme}>
+                <option value={scheme.entityName}>
                   {scheme.norwegianName || scheme.englishName || scheme.entityName}
                   ({scheme.entityType})
                 </option>

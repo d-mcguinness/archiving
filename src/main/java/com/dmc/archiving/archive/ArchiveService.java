@@ -1,5 +1,7 @@
 package com.dmc.archiving.archive;
 
+import com.dmc.archiving.archive.entity.Element;
+import com.dmc.archiving.archive.entity.ElementRepository;
 import com.dmc.archiving.archive.input.CreateArchiveInput;
 import com.dmc.archiving.archive.input.AssignUserInput;
 import com.dmc.archiving.archive.input.UnassignUserInput;
@@ -19,10 +21,12 @@ public class ArchiveService {
 
     private final ArchiveRepository archiveRepository;
     private final UserService userService;
+    private final ElementRepository elementRepository;
 
-    public ArchiveService(ArchiveRepository archiveRepository, UserService userService) {
+    public ArchiveService(ArchiveRepository archiveRepository, UserService userService, ElementRepository elementRepository) {
         this.archiveRepository = archiveRepository;
         this.userService = userService;
+        this.elementRepository = elementRepository;
     }
 
     public Archive createArchive(CreateArchiveInput input) {
@@ -119,6 +123,25 @@ public class ArchiveService {
             return archiveRepository.save(archive);
         }
         return null;
+    }
+
+    public Archive setArchiveRootElement(Long archiveId, Long rootElementId) {
+        Archive archive = archiveRepository.findById(archiveId)
+                .orElseThrow(() -> new IllegalArgumentException("Archive with ID " + archiveId + " does not exist"));
+
+        Element rootElement = elementRepository.findById(rootElementId)
+                .orElseThrow(() -> new IllegalArgumentException("Element with ID " + rootElementId + " does not exist"));
+
+        // Verify the element belongs to this archive
+        if (!rootElement.getArchive().getId().equals(archiveId)) {
+            throw new IllegalArgumentException("Element does not belong to this archive");
+        }
+
+        // Set the root element
+        archive.setRootElement(rootElement);
+        archive.setUpdatedAt(LocalDateTime.now());
+
+        return archiveRepository.save(archive);
     }
 
     // Additional convenience methods using JPA repository

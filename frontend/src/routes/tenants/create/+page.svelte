@@ -20,9 +20,10 @@ const plans = ['FREE', 'BASIC', 'PROFESSIONAL', 'ENTERPRISE', 'CUSTOM'];
 onMount(async () => {
   try {
     const result = await client.query({ query: GET_ALL_USERS });
-    users = result.data.getAllUsers || [];
+    users = result?.data?.getAllUsers || [];
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to load users';
+    console.error('Load users error:', e);
   }
 });
 

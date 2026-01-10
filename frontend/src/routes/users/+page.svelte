@@ -1,11 +1,11 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   import { client } from '$lib/apollo';
   import { GET_ALL_USERS } from '$lib/graphql/queries';
 
-  let users = [];
+  let users: any[] = [];
   let loading = true;
-  let error = null;
+  let error: string | null = null;
 
   onMount(async () => {
     await loadUsers();
@@ -18,10 +18,11 @@
         query: GET_ALL_USERS,
         fetchPolicy: 'network-only'
       });
-      users = result.data.getAllUsers || [];
+      users = result?.data?.getAllUsers || [];
       error = null;
     } catch (e) {
       error = e instanceof Error ? e.message : 'An unknown error occurred';
+      console.error('Load users error:', e);
     } finally {
       loading = false;
     }

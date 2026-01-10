@@ -1,7 +1,6 @@
 package com.dmc.archiving.archive.entity;
 
 import com.dmc.archiving.archive.model.Archive;
-import com.dmc.archiving.archive.scheme.Scheme;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +13,7 @@ import java.util.List;
 
 /**
  * Represents an actual instance of an element in an archive structure
- * based on a scheme definition (e.g., an actual "arkiv", "mappe", "registrering" instance)
+ * (e.g., an actual "arkiv", "mappe", "registrering" instance)
  */
 @Entity
 @Table(name = "elements")
@@ -33,10 +32,6 @@ public class Element {
     private Archive archive;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "scheme_id", nullable = false)
-    private Scheme scheme;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_element_id")
     private Element parent;
 
@@ -45,6 +40,18 @@ public class Element {
 
     @Column(name = "element_identifier", nullable = false, length = 255)
     private String elementIdentifier;
+
+    @Column(name = "entity_name", nullable = false, length = 100)
+    private String entityName;
+
+    @Column(name = "entity_type", nullable = false, length = 100)
+    private String entityType;
+
+    @Column(name = "norwegian_name", length = 255)
+    private String norwegianName;
+
+    @Column(name = "english_name", length = 255)
+    private String englishName;
 
     @Column(name = "title", nullable = false, length = 500)
     private String title;
@@ -98,36 +105,6 @@ public class Element {
         }
     }
 
-    /**
-     * Check if this element can contain the given element type based on scheme rules
-     */
-    public boolean canContainElementType(String elementName) {
-        if (scheme == null) {
-            return false;
-        }
-        return scheme.canContainEntityType(elementName);
-    }
-
-    /**
-     * Get the element type name from the scheme
-     */
-    public String getElementType() {
-        return scheme != null ? scheme.getEntityName() : null;
-    }
-
-    /**
-     * Get the Norwegian name from the scheme
-     */
-    public String getNorwegianName() {
-        return scheme != null ? scheme.getNorwegianName() : null;
-    }
-
-    /**
-     * Get the English name from the scheme
-     */
-    public String getEnglishName() {
-        return scheme != null ? scheme.getEnglishName() : null;
-    }
 
     /**
      * Get the full path of this element in the hierarchy

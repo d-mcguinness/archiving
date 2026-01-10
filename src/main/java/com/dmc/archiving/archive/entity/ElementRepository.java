@@ -21,10 +21,6 @@ public interface ElementRepository extends JpaRepository<Element, Long> {
      */
     List<Element> findByArchiveIdAndIsRootTrue(Long archiveId);
 
-    /**
-     * Find elements by archive and scheme
-     */
-    List<Element> findByArchiveIdAndSchemeId(Long archiveId, Long schemeId);
 
     /**
      * Find elements by parent
@@ -61,10 +57,6 @@ public interface ElementRepository extends JpaRepository<Element, Long> {
      */
     long countByArchiveId(Long archiveId);
 
-    /**
-     * Count elements by archive and scheme
-     */
-    long countByArchiveIdAndSchemeId(Long archiveId, Long schemeId);
 
     /**
      * Find all leaf elements (elements without children)

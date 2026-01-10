@@ -84,18 +84,21 @@ type Archive {
     updatedAt: String
     status: ArchiveStatus!
     standard: ArchiveStandard!
-    scheme: Scheme
+    rootElement: Element
     assignedUsers: [UserAssignment!]!
 }
 
-# Element Type - represents actual instances of scheme definitions
+# Element Type - represents actual instances in archive hierarchy
 type Element {
     id: ID!
     archive: Archive!
-    scheme: Scheme!
     parent: Element
     children: [Element!]!
     elementIdentifier: String!
+    entityName: String!
+    entityType: String!
+    norwegianName: String
+    englishName: String
     title: String!
     description: String
     createdAt: String!
@@ -108,45 +111,10 @@ type Element {
     sortOrder: Int
     metadata: String
     isRoot: Boolean!
-    elementType: String
-    norwegianName: String
-    englishName: String
     path: String
     depth: Int
     isLeaf: Boolean
     descendantsCount: Int
-}
-
-# Scheme Types
-type Scheme {
-    id: ID!
-    standard: ArchiveStandard!
-    entityName: String!
-    norwegianName: String
-    englishName: String
-    entityType: String!
-    description: String
-    parent: Scheme
-    children: [Scheme!]!
-    isRoot: Boolean!
-    sortOrder: Int
-    notes: String
-}
-
-type SchemeNode {
-    id: ID!
-    entityName: String!
-    norwegianName: String
-    englishName: String
-    entityType: String!
-    description: String
-    notes: String
-    children: [SchemeNode!]!
-}
-
-type SchemeHierarchy {
-    standard: ArchiveStandard!
-    root: SchemeNode
 }
 
 
@@ -186,9 +154,12 @@ input CreateArchiveInput {
 
 input CreateElementInput {
     archiveId: ID!
-    schemeId: ID!
     parentElementId: ID
     elementIdentifier: String!
+    entityName: String!
+    entityType: String!
+    norwegianName: String
+    englishName: String
     title: String!
     description: String
     createdBy: String!
@@ -230,12 +201,6 @@ type Query {
     getArchivesByUserAssignment(userId: ID!): [Archive!]!
     getArchivesByUserRole(userId: ID!, role: UserRole!): [Archive!]!
 
-    # Scheme Queries
-    getSchemeEntities(standard: ArchiveStandard!): [Scheme!]!
-    getSchemeEntity(standard: ArchiveStandard!, entityName: String!): Scheme
-    getSchemeRootEntity(standard: ArchiveStandard!): Scheme
-    getAllowedChildEntities(standard: ArchiveStandard!, parentEntityName: String!): [String!]!
-    canContainEntity(standard: ArchiveStandard!, parentEntityName: String!, childEntityName: String!): Boolean!
 
     # Element Queries
     getElement(id: ID!): Element
@@ -267,6 +232,7 @@ type Mutation {
     # Archive Mutations
     createArchive(input: CreateArchiveInput!): Archive!
     updateArchiveStatus(archiveId: ID!, status: ArchiveStatus!): Archive
+    setArchiveRootElement(archiveId: ID!, rootElementId: ID!): Archive!
 
     # User Assignment Mutations
     assignUserToArchive(input: AssignUserInput!): Archive!
@@ -279,16 +245,4 @@ type Mutation {
     closeElement(id: ID!, closedBy: String!): Element!
     deleteElement(id: ID!): Boolean!
     moveElement(elementId: ID!, newParentId: ID, updatedBy: String!): Element!
-
-    # Scheme Mutations
-    createScheme(
-        standard: ArchiveStandard!
-        entityName: String!
-        norwegianName: String
-        englishName: String
-        entityType: String!
-        description: String
-        isRoot: Boolean!
-        allowedChildren: [String!]!
-    ): Scheme!
 }

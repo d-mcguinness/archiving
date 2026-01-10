@@ -38,12 +38,12 @@ onMount(async () => {
   try {
     // Always load users for the owner dropdown
     const usersResult = await client.query({ query: GET_ALL_USERS });
-    users = usersResult.data.getAllUsers || [];
+    users = usersResult?.data?.getAllUsers || [];
 
     // Only load tenant data if we're in update mode
     if (!isCreateMode) {
       const tenantsResult = await client.query({ query: GET_ALL_TENANTS });
-      tenant = tenantsResult.data.getAllTenants.find((t: any) => t.id === tenantId);
+      tenant = tenantsResult?.data?.getAllTenants?.find((t: any) => t.id === tenantId);
 
       if (tenant) {
         form = {

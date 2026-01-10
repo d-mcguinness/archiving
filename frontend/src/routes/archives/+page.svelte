@@ -34,12 +34,13 @@
       loading = true;
       const result = await client.query({
         query: GET_ALL_ARCHIVES,
-        fetchPolicy: 'cache-first'
+        fetchPolicy: 'network-only' // Always fetch fresh data
       });
-      archives = result.data.getAllArchives || [];
+      archives = result?.data?.getAllArchives || [];
       error = null;
     } catch (e) {
       error = e instanceof Error ? e.message : 'An unknown error occurred';
+      console.error('Load archives error:', e);
     } finally {
       loading = false;
     }
@@ -127,18 +128,19 @@
             status
             createdAt
             isRoot
-            scheme {
-              id
-              entityName
-              norwegianName
-              englishName
-              entityType
-            }
+            entityName
+            entityType
+            norwegianName
+            englishName
             parent {
               id
             }
             children {
               id
+              elementIdentifier
+              title
+              entityName
+              entityType
             }
           }
         }
@@ -150,8 +152,12 @@
         fetchPolicy: 'network-only'
       });
 
+      console.log('Archive elements loaded:', result?.data?.getElementsByArchive);
+
       // Build hierarchy from flat list
-      archiveElements = buildHierarchy(result.data.getElementsByArchive || []);
+      archiveElements = buildHierarchy(result?.data?.getElementsByArchive || []);
+
+      console.log('Built hierarchy:', archiveElements);
     } catch (e) {
       console.error('Failed to load archive structure:', e);
       archiveElements = [];

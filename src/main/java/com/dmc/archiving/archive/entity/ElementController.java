@@ -2,8 +2,6 @@ package com.dmc.archiving.archive.entity;
 
 import com.dmc.archiving.archive.repository.ArchiveRepository;
 import com.dmc.archiving.archive.model.Archive;
-import com.dmc.archiving.archive.scheme.Scheme;
-import com.dmc.archiving.archive.scheme.SchemeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -20,7 +18,6 @@ public class ElementController {
 
     private final ElementService elementService;
     private final ArchiveRepository archiveRepository;
-    private final SchemeRepository schemeRepository;
 
     // Queries
     @QueryMapping
@@ -77,24 +74,25 @@ public class ElementController {
     @MutationMapping
     public Element createElement(@Argument Map<String, Object> input) {
         Long archiveId = Long.parseLong(input.get("archiveId").toString());
-        Long schemeId = Long.parseLong(input.get("schemeId").toString());
         Long parentElementId = input.get("parentElementId") != null ?
             Long.parseLong(input.get("parentElementId").toString()) : null;
         String elementIdentifier = input.get("elementIdentifier").toString();
+        String entityName = input.get("entityName").toString();
+        String entityType = input.get("entityType").toString();
+        String norwegianName = input.get("norwegianName") != null ? input.get("norwegianName").toString() : null;
+        String englishName = input.get("englishName") != null ? input.get("englishName").toString() : null;
         String title = input.get("title").toString();
         String description = input.get("description") != null ? input.get("description").toString() : null;
         String createdBy = input.get("createdBy").toString();
 
         Archive archive = archiveRepository.findById(archiveId)
             .orElseThrow(() -> new IllegalArgumentException("Archive not found"));
-        Scheme scheme = schemeRepository.findById(schemeId)
-            .orElseThrow(() -> new IllegalArgumentException("Scheme not found"));
         Element parent = parentElementId != null ?
             elementService.getElement(parentElementId)
                 .orElseThrow(() -> new IllegalArgumentException("Parent element not found")) : null;
 
-        return elementService.createElement(archive, scheme, parent, elementIdentifier,
-                                         title, description, createdBy);
+        return elementService.createElement(archive, parent, elementIdentifier, entityName, entityType,
+                                         norwegianName, englishName, title, description, createdBy);
     }
 
     @MutationMapping
@@ -128,20 +126,6 @@ public class ElementController {
     }
 
     // Field resolvers
-    @SchemaMapping(typeName = "Element", field = "elementType")
-    public String elementType(Element element) {
-        return element.getElementType();
-    }
-
-    @SchemaMapping(typeName = "Element", field = "norwegianName")
-    public String norwegianName(Element element) {
-        return element.getNorwegianName();
-    }
-
-    @SchemaMapping(typeName = "Element", field = "englishName")
-    public String englishName(Element element) {
-        return element.getEnglishName();
-    }
 
     @SchemaMapping(typeName = "Element", field = "path")
     public String path(Element element) {

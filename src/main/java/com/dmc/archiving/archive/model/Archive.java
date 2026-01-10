@@ -1,6 +1,6 @@
 package com.dmc.archiving.archive.model;
 
-import com.dmc.archiving.archive.scheme.Scheme;
+import com.dmc.archiving.archive.entity.Element;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -51,8 +51,8 @@ public class Archive {
     private ArchiveStandard standard;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "scheme_id")
-    private Scheme scheme;
+    @JoinColumn(name = "root_element_id")
+    private Element rootElement;
 
     @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<UserAssignment> assignedUsers = new HashSet<>();
@@ -115,6 +115,15 @@ public class Archive {
                 .map(UserAssignment::getRole)
                 .findFirst()
                 .orElse(null);
+    }
+
+    // Helper method for root element management
+    public void setRootElement(Element element) {
+        this.rootElement = element;
+        if (element != null) {
+            element.setArchive(this);
+            element.setIsRoot(true);
+        }
     }
 
     // Custom equals and hashCode to avoid circular reference

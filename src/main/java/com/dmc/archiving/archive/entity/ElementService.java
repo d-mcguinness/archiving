@@ -1,7 +1,6 @@
 package com.dmc.archiving.archive.entity;
 
 import com.dmc.archiving.archive.model.Archive;
-import com.dmc.archiving.archive.scheme.Scheme;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,27 +19,23 @@ public class ElementService {
      * Create a new element in an archive
      */
     @Transactional
-    public Element createElement(Archive archive, Scheme scheme, Element parent,
-                              String elementIdentifier, String title, String description,
-                              String createdBy) {
-        // Validate that parent can contain this element type if parent exists
-        if (parent != null && !parent.canContainElementType(scheme.getEntityName())) {
-            throw new IllegalArgumentException(
-                "Parent element of type '" + parent.getElementType() +
-                "' cannot contain child of type '" + scheme.getEntityName() + "'"
-            );
-        }
-
+    public Element createElement(Archive archive, Element parent,
+                              String elementIdentifier, String entityName, String entityType,
+                              String norwegianName, String englishName,
+                              String title, String description, String createdBy) {
         Element element = new Element();
         element.setArchive(archive);
-        element.setScheme(scheme);
         element.setParent(parent);
         element.setElementIdentifier(elementIdentifier);
+        element.setEntityName(entityName);
+        element.setEntityType(entityType);
+        element.setNorwegianName(norwegianName);
+        element.setEnglishName(englishName);
         element.setTitle(title);
         element.setDescription(description);
         element.setCreatedBy(createdBy);
         element.setCreatedAt(LocalDateTime.now());
-        element.setIsRoot(parent == null && scheme.getIsRoot());
+        element.setIsRoot(parent == null);
         element.setStatus("Opprettet");
 
         if (parent != null) {
@@ -195,11 +190,6 @@ public class ElementService {
 
         // Validate move
         if (newParent != null) {
-            if (!newParent.canContainElementType(element.getElementType())) {
-                throw new IllegalArgumentException(
-                    "New parent cannot contain element of type '" + element.getElementType() + "'"
-                );
-            }
             if (!newParent.getArchive().getId().equals(element.getArchive().getId())) {
                 throw new IllegalArgumentException("Cannot move element to different archive");
             }

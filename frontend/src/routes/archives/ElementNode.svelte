@@ -20,7 +20,9 @@
         <div class="element-title">{elementNode.title}</div>
         <div class="element-meta">
           <span class="element-id">{elementNode.elementIdentifier}</span>
-          <span class="element-type">{elementNode.scheme.norwegianName || elementNode.scheme.entityName}</span>
+          <span class="element-type">
+            {elementNode.norwegianName || elementNode.entityName || elementNode.scheme?.norwegianName || elementNode.scheme?.entityName}
+          </span>
           {#if elementNode.status}
             <span class="element-status status-{elementNode.status.toLowerCase()}">{elementNode.status}</span>
           {/if}

@@ -88,3 +88,10 @@ SELECT 7, 5, 'EDITOR', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_as
 INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
 SELECT 8, 5, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 8 AND user_id = 5);
 
+-- Reset sequences to prevent duplicate key errors
+-- This ensures that auto-generated IDs start after the manually inserted IDs
+SELECT setval('users_id_seq', (SELECT COALESCE(MAX(id), 1) FROM users), true);
+SELECT setval('tenants_id_seq', (SELECT COALESCE(MAX(id), 1) FROM tenants), true);
+SELECT setval('archives_id_seq', (SELECT COALESCE(MAX(id), 1) FROM archives), true);
+SELECT setval('user_assignments_id_seq', (SELECT COALESCE(MAX(id), 1) FROM user_assignments), true);
+SELECT setval('elements_id_seq', (SELECT COALESCE(MAX(id), 1) FROM elements), true);
