@@ -3,7 +3,7 @@
   import { client } from '$lib/apollo';
   import { GET_ALL_ARCHIVES, GET_ALL_USERS, ASSIGN_USER_TO_ARCHIVE } from '$lib/graphql/queries';
   import { gql } from '@apollo/client/core';
-  import ElementNode from './create/ElementNode.svelte';
+  import ElementNode from './ElementNode.svelte';
 
   let archives: any[] = [];
   let users: any[] = [];
