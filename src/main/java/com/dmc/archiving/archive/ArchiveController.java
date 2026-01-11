@@ -1,6 +1,7 @@
 package com.dmc.archiving.archive;
 
 import com.dmc.archiving.archive.input.CreateArchiveInput;
+import com.dmc.archiving.archive.input.UpdateArchiveInput;
 import com.dmc.archiving.archive.input.AssignUserInput;
 import com.dmc.archiving.archive.input.UnassignUserInput;
 import com.dmc.archiving.archive.model.Archive;
@@ -56,6 +57,11 @@ public class ArchiveController {
     }
 
     @MutationMapping
+    public Archive updateArchive(@Argument Long id, @Argument UpdateArchiveInput input) {
+        return archiveService.updateArchive(id, input);
+    }
+
+    @MutationMapping
     public Archive updateArchiveStatus(@Argument Long archiveId, @Argument ArchiveStatus status) {
         return archiveService.updateArchiveStatus(archiveId, status);
     }
@@ -63,6 +69,11 @@ public class ArchiveController {
     @MutationMapping
     public Archive setArchiveRootElement(@Argument Long archiveId, @Argument Long rootElementId) {
         return archiveService.setArchiveRootElement(archiveId, rootElementId);
+    }
+
+    @MutationMapping
+    public Boolean deleteArchive(@Argument Long id) {
+        return archiveService.deleteArchive(id);
     }
 
     // New mutation methods for user assignment

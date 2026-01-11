@@ -1,4 +1,4 @@
-package com.dmc.archiving.archive.entity;
+package com.dmc.archiving.archive.element;
 
 import com.dmc.archiving.archive.repository.ArchiveRepository;
 import com.dmc.archiving.archive.model.Archive;
@@ -85,6 +85,10 @@ public class ElementController {
         String description = input.get("description") != null ? input.get("description").toString() : null;
         String createdBy = input.get("createdBy").toString();
 
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> fieldsInput = input.get("fields") != null ?
+            (List<Map<String, Object>>) input.get("fields") : List.of();
+
         Archive archive = archiveRepository.findById(archiveId)
             .orElseThrow(() -> new IllegalArgumentException("Archive not found"));
         Element parent = parentElementId != null ?
@@ -92,16 +96,16 @@ public class ElementController {
                 .orElseThrow(() -> new IllegalArgumentException("Parent element not found")) : null;
 
         return elementService.createElement(archive, parent, elementIdentifier, entityName, entityType,
-                                         norwegianName, englishName, title, description, createdBy);
+                                         norwegianName, englishName, title, description, createdBy, fieldsInput);
     }
 
     @MutationMapping
-    public Element updateElement(@Argument Long id, @Argument Map<String, Object> input) {
+    public Element updateElement(@Argument Long id, @Argument Map<String, Object> input, @Argument List<Map<String, Object>> fields) {
         String title = input.get("title").toString();
         String description = input.get("description") != null ? input.get("description").toString() : null;
         String updatedBy = input.get("updatedBy").toString();
 
-        return elementService.updateElement(id, title, description, updatedBy);
+        return elementService.updateElement(id, title, description, updatedBy, fields);
     }
 
     @MutationMapping

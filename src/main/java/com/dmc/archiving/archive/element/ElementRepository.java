@@ -1,9 +1,11 @@
-package com.dmc.archiving.archive.entity;
+package com.dmc.archiving.archive.element;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,6 +59,14 @@ public interface ElementRepository extends JpaRepository<Element, Long> {
      */
     long countByArchiveId(Long archiveId);
 
+    /**
+     * Delete all elements for a specific archive
+     * This is used when deleting an archive to avoid foreign key constraint violations
+     */
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM Element e WHERE e.archive.id = :archiveId")
+    void deleteByArchiveId(@Param("archiveId") Long archiveId);
 
     /**
      * Find all leaf elements (elements without children)

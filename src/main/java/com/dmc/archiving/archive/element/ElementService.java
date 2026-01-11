@@ -1,5 +1,6 @@
-package com.dmc.archiving.archive.entity;
+package com.dmc.archiving.archive.element;
 
+import com.dmc.archiving.archive.element.field.Field;
 import com.dmc.archiving.archive.model.Archive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -7,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -22,7 +24,8 @@ public class ElementService {
     public Element createElement(Archive archive, Element parent,
                               String elementIdentifier, String entityName, String entityType,
                               String norwegianName, String englishName,
-                              String title, String description, String createdBy) {
+                              String title, String description, String createdBy,
+                              List<Map<String, Object>> fieldsInput) {
         Element element = new Element();
         element.setArchive(archive);
         element.setParent(parent);
@@ -42,7 +45,26 @@ public class ElementService {
             parent.addChild(element);
         }
 
-        return elementRepository.save(element);
+        Element savedElement = elementRepository.save(element);
+
+        // Create fields for the element
+        if (fieldsInput != null && !fieldsInput.isEmpty()) {
+            for (Map<String, Object> fieldInput : fieldsInput) {
+                Field field = new Field();
+                field.setElement(savedElement);
+                field.setName(fieldInput.get("name").toString());
+                field.setLabel(fieldInput.get("label") != null ? fieldInput.get("label").toString() : null);
+                field.setType(fieldInput.get("type").toString());
+                field.setValue(fieldInput.get("value") != null ? fieldInput.get("value").toString() : null);
+
+                savedElement.addField(field);
+            }
+
+            // Save again to persist the fields relationship
+            savedElement = elementRepository.save(savedElement);
+        }
+
+        return savedElement;
     }
 
     /**
@@ -84,16 +106,54 @@ public class ElementService {
      * Update element
      */
     @Transactional
-    public Element updateElement(Long id, String title, String description, String updatedBy) {
+    public Element updateElement(Long id, String title, String description, String updatedBy, List<Map<String, Object>> fieldsInput) {
         Element element = elementRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Element not found"));
+
+        System.out.println("=== Updating Element ===");
+        System.out.println("Element ID: " + id);
+        System.out.println("Title: " + title);
+        System.out.println("Description: " + description);
+        System.out.println("Updated By: " + updatedBy);
+        System.out.println("Fields Input: " + fieldsInput);
+        System.out.println("Current fields count: " + element.getFields().size());
 
         element.setTitle(title);
         element.setDescription(description);
         element.setUpdatedBy(updatedBy);
         element.setUpdatedAt(LocalDateTime.now());
 
-        return elementRepository.save(element);
+        // Update fields if provided
+        if (fieldsInput != null && !fieldsInput.isEmpty()) {
+            System.out.println("Processing " + fieldsInput.size() + " fields");
+
+            // Clear existing fields
+            element.getFields().clear();
+            System.out.println("Cleared existing fields");
+
+            // Add updated fields
+            for (Map<String, Object> fieldInput : fieldsInput) {
+                Field field = new Field();
+                field.setElement(element);
+                field.setName(fieldInput.get("name").toString());
+                field.setLabel(fieldInput.get("label") != null ? fieldInput.get("label").toString() : null);
+                field.setType(fieldInput.get("type").toString());
+                field.setValue(fieldInput.get("value") != null ? fieldInput.get("value").toString() : null);
+
+                System.out.println("Adding field: " + field.getName() + " = " + field.getValue());
+                element.addField(field);
+            }
+
+            System.out.println("New fields count: " + element.getFields().size());
+        } else {
+            System.out.println("No fields to update (fieldsInput is null or empty)");
+        }
+
+        Element savedElement = elementRepository.save(element);
+        System.out.println("Element saved with " + savedElement.getFields().size() + " fields");
+        System.out.println("=== Update Complete ===");
+
+        return savedElement;
     }
 
     /**

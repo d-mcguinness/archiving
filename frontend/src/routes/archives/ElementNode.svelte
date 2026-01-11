@@ -3,6 +3,7 @@
   export let level: number = 0;
   export let onAddChild: ((parent: any) => void) | null = null;
   export let onDelete: ((id: string) => void) | null = null;
+  export let onEdit: ((element: any) => void) | null = null;
   export let readonly: boolean = false;
 </script>
 
@@ -29,8 +30,17 @@
         </div>
       </div>
     </div>
-    {#if !readonly && (onAddChild || onDelete)}
+    {#if !readonly && (onAddChild || onDelete || onEdit)}
       <div class="element-actions">
+        {#if onEdit}
+          <button
+            class="btn-icon btn-edit"
+            on:click={() => onEdit(elementNode)}
+            title="Edit element fields"
+          >
+            ✏️
+          </button>
+        {/if}
         {#if onAddChild}
           <button
             class="btn-icon"
@@ -43,7 +53,7 @@
         {#if onDelete}
           <button
             class="btn-icon btn-danger"
-            on:click={() => onDelete(elementNode.tempId)}
+            on:click={() => onDelete(elementNode.id || elementNode.tempId)}
             title="Delete element"
           >
             🗑️
@@ -58,7 +68,7 @@
   {#if elementNode.children && elementNode.children.length > 0}
     <div class="element-children">
       {#each elementNode.children as child}
-        <svelte:self elementNode={child} level={level + 1} {onAddChild} {onDelete} {readonly} />
+        <svelte:self elementNode={child} level={level + 1} {onAddChild} {onDelete} {onEdit} {readonly} />
       {/each}
     </div>
   {/if}
@@ -167,6 +177,11 @@
 
   .btn-icon:hover {
     background: #e2e8f0;
+  }
+
+  .btn-icon.btn-edit:hover {
+    background: #dbeafe;
+    border-color: #bfdbfe;
   }
 
   .btn-icon.btn-danger:hover {

@@ -94,6 +94,7 @@ type Element {
     archive: Archive!
     parent: Element
     children: [Element!]!
+    fields: [Field!]!
     elementIdentifier: String!
     entityName: String!
     entityType: String!
@@ -115,6 +116,16 @@ type Element {
     depth: Int
     isLeaf: Boolean
     descendantsCount: Int
+}
+
+# Field Type - represents metadata fields for elements
+type Field {
+    id: ID!
+    element: Element!
+    name: String!
+    label: String
+    type: String!
+    value: String
 }
 
 
@@ -152,6 +163,13 @@ input CreateArchiveInput {
     standard: ArchiveStandard!
 }
 
+input UpdateArchiveInput {
+    title: String!
+    description: String
+    content: String!
+    status: ArchiveStatus!
+}
+
 input CreateElementInput {
     archiveId: ID!
     parentElementId: ID
@@ -163,6 +181,14 @@ input CreateElementInput {
     title: String!
     description: String
     createdBy: String!
+    fields: [FieldInput!]
+}
+
+input FieldInput {
+    name: String!
+    label: String
+    type: String!
+    value: String
 }
 
 input UpdateElementInput {
@@ -231,8 +257,10 @@ type Mutation {
 
     # Archive Mutations
     createArchive(input: CreateArchiveInput!): Archive!
+    updateArchive(id: ID!, input: UpdateArchiveInput!): Archive!
     updateArchiveStatus(archiveId: ID!, status: ArchiveStatus!): Archive
     setArchiveRootElement(archiveId: ID!, rootElementId: ID!): Archive!
+    deleteArchive(id: ID!): Boolean!
 
     # User Assignment Mutations
     assignUserToArchive(input: AssignUserInput!): Archive!
@@ -240,7 +268,7 @@ type Mutation {
 
     # Element Mutations
     createElement(input: CreateElementInput!): Element!
-    updateElement(id: ID!, input: UpdateElementInput!): Element!
+    updateElement(id: ID!, input: UpdateElementInput!, fields: [FieldInput!]): Element!
     updateElementStatus(id: ID!, status: String!, updatedBy: String!): Element!
     closeElement(id: ID!, closedBy: String!): Element!
     deleteElement(id: ID!): Boolean!

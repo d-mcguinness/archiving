@@ -1,10 +1,11 @@
 <script lang="ts">
   import { client } from '$lib/apollo';
-  import { GET_ALL_USERS } from '$lib/graphql/queries';
+  import { GET_ALL_USERS, GET_ALL_ARCHIVES } from '$lib/graphql/queries';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import { gql } from '@apollo/client/core';
   import ElementNode from '../ElementNode.svelte';
+  import ArchiveCanvas from '../ArchiveCanvas.svelte';
 
   // Step tracking
   let currentStep = 1;
@@ -29,13 +30,15 @@
   let elementForm = {
     elementIdentifier: '',
     title: '',
-    description: ''
+    description: '',
+    fieldValues: {} as Record<string, any> // Store field values dynamically
   };
 
   let users: any[] = [];
   let creating = false;
   let error: string | null = null;
   let loadingSchemes = false;
+  let previousSchemeName = '';
 
   onMount(async () => {
     try {
@@ -53,8 +56,34 @@
   // Reactive statement to update selectedScheme when selectedSchemeName changes
   $: if (selectedSchemeName && schemes.length > 0) {
     selectedScheme = schemes.find(s => s.entityName === selectedSchemeName) || null;
+
+    console.log('🔍 Scheme selected:', {
+      selectedSchemeName,
+      previousSchemeName,
+      selectedScheme,
+      hasFields: selectedScheme?.fields,
+      fieldCount: selectedScheme?.fields?.length,
+      fields: selectedScheme?.fields
+    });
+
+    // Initialize field values ONLY when scheme actually changes
+    if (selectedScheme && selectedScheme.fields && selectedSchemeName !== previousSchemeName) {
+      console.log('🔄 Scheme changed, initializing fields...');
+      // Clear existing fieldValues and add new ones
+      elementForm.fieldValues = {};
+      selectedScheme.fields.forEach((field: any) => {
+        elementForm.fieldValues[field.name] = '';
+      });
+      // Trigger reactivity by reassigning
+      elementForm.fieldValues = elementForm.fieldValues;
+      console.log('✅ Field values initialized:', elementForm.fieldValues);
+      previousSchemeName = selectedSchemeName;
+    }
   } else if (!selectedSchemeName) {
     selectedScheme = null;
+    // Clear field values when no scheme selected
+    elementForm.fieldValues = {};
+    previousSchemeName = '';
   }
 
   async function loadSchemeDefinition(standard: string) {
@@ -71,6 +100,13 @@
 
       const schemeData = await response.json();
 
+      console.log('📦 Loaded scheme data:', {
+        standard,
+        entitiesCount: schemeData.entities?.length,
+        firstEntity: schemeData.entities?.[0],
+        firstEntityFields: schemeData.entities?.[0]?.fields
+      });
+
       // Transform entities to schemes array
       if (schemeData.entities && Array.isArray(schemeData.entities)) {
         schemes = schemeData.entities.map((entity: any) => ({
@@ -81,8 +117,14 @@
           entityType: entity.type,
           description: entity.description,
           isRoot: entity.parent === null,
-          children: entity.children || [] // Store allowed children
+          children: entity.children || [], // Store allowed children
+          fields: entity.fields || [] // Store field definitions
         }));
+
+        console.log('✅ Schemes loaded:', {
+          count: schemes.length,
+          schemes: schemes.map(s => ({ name: s.entityName, fieldCount: s.fields?.length }))
+        });
       }
 
       designedElements = [];
@@ -124,10 +166,20 @@
     selectedScheme = scheme;
     selectedSchemeName = scheme ? scheme.entityName : '';
     selectedParent = parent;
+
+    // Initialize field values based on scheme
+    const fieldValues: Record<string, any> = {};
+    if (scheme && scheme.fields) {
+      scheme.fields.forEach((field: any) => {
+        fieldValues[field.name] = '';
+      });
+    }
+
     elementForm = {
       elementIdentifier: '',
       title: '',
-      description: ''
+      description: '',
+      fieldValues
     };
     showElementForm = true;
   }
@@ -140,8 +192,15 @@
     elementForm = {
       elementIdentifier: '',
       title: '',
-      description: ''
+      description: '',
+      fieldValues: {}
     };
+  }
+
+  function backToEntitySelection() {
+    selectedScheme = null;
+    selectedSchemeName = '';
+    elementForm.fieldValues = {};
   }
 
   function addElement() {
@@ -152,29 +211,37 @@
       schemes: schemes.length
     });
 
-    if (!elementForm.elementIdentifier || !elementForm.title) {
-      error = 'Element identifier and title are required';
-      console.error('Validation failed: missing identifier or title');
-      return;
-    }
-
     if (!selectedScheme) {
       error = 'Please select an element type';
       console.error('Validation failed: no scheme selected');
       return;
     }
 
+    // Use systemID from field values as element identifier, or generate one
+    const elementIdentifier = elementForm.fieldValues['systemID'] || `${selectedScheme.entityName}-${Date.now()}`;
+    // Use title from field values, or use entity name as fallback
+    const title = elementForm.fieldValues['title'] || selectedScheme.entityName;
+
     const newElement = {
       tempId: `temp-${Date.now()}-${Math.random()}`,
       scheme: selectedScheme,
       parent: selectedParent,
-      elementIdentifier: elementForm.elementIdentifier,
-      title: elementForm.title,
-      description: elementForm.description,
+      elementIdentifier: elementIdentifier,
+      title: title,
+      description: elementForm.fieldValues['description'] || '',
+      fieldValues: elementForm.fieldValues, // Include dynamic field values
       children: []
     };
 
-    console.log('Creating new element:', newElement);
+    console.log('✨ Creating new element:', {
+      newElement,
+      elementFormFieldValues: elementForm.fieldValues,
+      elementFormFieldValuesKeys: Object.keys(elementForm.fieldValues),
+      elementFormFieldValuesSample: {
+        systemID: elementForm.fieldValues['systemID'],
+        title: elementForm.fieldValues['title']
+      }
+    });
 
     if (selectedParent) {
       // Add as child to parent
@@ -267,7 +334,7 @@
           }
         },
         // Refetch archives list to update the cache
-        refetchQueries: ['GetAllArchives'],
+        refetchQueries: [{ query: GET_ALL_ARCHIVES }],
         awaitRefetchQueries: true
       });
 
@@ -301,7 +368,7 @@
             rootElementId: rootElementId
           },
           // Refetch archives list again to include the updated rootElement
-          refetchQueries: ['GetAllArchives'],
+          refetchQueries: [{ query: GET_ALL_ARCHIVES }],
           awaitRefetchQueries: true
         });
       }
@@ -322,6 +389,13 @@
       mutation CreateElement($input: CreateElementInput!) {
         createElement(input: $input) {
           id
+          fields {
+            id
+            name
+            label
+            type
+            value
+          }
         }
       }
     `;
@@ -329,6 +403,22 @@
     let firstElementId = null;
 
     for (const element of elements) {
+      // Transform fieldValues object to fields array
+      const fields = element.scheme.fields ? element.scheme.fields.map((fieldDef: any) => ({
+        name: fieldDef.name,
+        label: fieldDef.label,
+        type: fieldDef.type,
+        value: element.fieldValues?.[fieldDef.name] || ''
+      })) : [];
+
+      console.log('🔍 Creating element with fields:', {
+        elementIdentifier: element.elementIdentifier,
+        title: element.title,
+        elementFieldValues: element.fieldValues,
+        transformedFields: fields,
+        schemeFields: element.scheme.fields
+      });
+
       // Create element using the scheme data stored in the element
       const result = await client.mutate({
         mutation: CREATE_ELEMENT_MUTATION,
@@ -343,7 +433,8 @@
             englishName: element.scheme.englishName,
             title: element.title,
             description: element.description || null,
-            createdBy: newArchive.userId // Use the archive owner as creator
+            createdBy: newArchive.userId, // Use the archive owner as creator
+            fields: fields // Include the fields
           }
         }
       });
@@ -484,36 +575,13 @@
         </div>
 
         <!-- Canvas with Add Element Button -->
-        <div class="canvas-container">
-          <div class="canvas-header">
-            <h3>Archive Canvas ({designedElements.length} element{designedElements.length !== 1 ? 's' : ''})</h3>
-            <button type="button" class="btn btn-add" on:click={() => openElementForm(null)}>
-              ➕ Add Element
-            </button>
-          </div>
-
-          <!-- Blank Canvas -->
-          <div class="canvas">
-            {#if designedElements.length === 0}
-              <div class="canvas-empty">
-                <div class="empty-icon">📋</div>
-                <h4>No Elements Yet</h4>
-                <p>Click "Add Element" to start designing your archive structure</p>
-              </div>
-            {:else}
-              <div class="canvas-content">
-                {#each designedElements as element}
-                  <ElementNode
-                    elementNode={element}
-                    level={0}
-                    onAddChild={(parent) => openElementForm(null, parent)}
-                    onDelete={deleteElement}
-                  />
-                {/each}
-              </div>
-            {/if}
-          </div>
-        </div>
+        <ArchiveCanvas
+          elements={designedElements}
+          readonly={false}
+          onAddChild={(parent) => openElementForm(null, parent)}
+          onDelete={deleteElement}
+          on:addElement={() => openElementForm(null)}
+        />
       {/if}
 
       <div class="form-actions">
@@ -594,51 +662,88 @@
           </div>
         {/if}
 
-        <div class="form-group">
-          <label for="elementId">Element Identifier *</label>
-          <input
-            type="text"
-            id="elementId"
-            bind:value={elementForm.elementIdentifier}
-            placeholder="e.g., ARKIV-2024, 2024/001"
-            required
-          />
-        </div>
 
-        <div class="form-group">
-          <label for="elementTitle">Title *</label>
-          <input
-            type="text"
-            id="elementTitle"
-            bind:value={elementForm.title}
-            placeholder="Enter element title"
-            required
-          />
-        </div>
+        <!-- Dynamic Fields Based on Selected Scheme -->
+        {#if selectedScheme && selectedScheme.fields && selectedScheme.fields.length > 0}
+          {#key selectedScheme.entityName}
+            <div class="dynamic-fields-section">
+              <h4>Entity Fields</h4>
+              <p class="helper-text" style="margin-bottom: 1rem;">
+                Debug: {JSON.stringify(Object.keys(elementForm.fieldValues))}
+              </p>
+              {#each selectedScheme.fields as field}
+                <div class="form-group">
+                  <label for={`field-${field.name}`}>
+                    {field.label || field.name}
+                    {#if field.type === 'string' || field.type === 'date' || field.type === 'number'}
+                      <span class="field-type">({field.type})</span>
+                    {/if}
+                  </label>
 
-        <div class="form-group">
-          <label for="elementDesc">Description</label>
-          <textarea
-            id="elementDesc"
-            bind:value={elementForm.description}
-            rows="3"
-            placeholder="Optional description"
-          ></textarea>
-        </div>
+                  {#if field.type === 'date'}
+                    <input
+                      type="date"
+                      id={`field-${field.name}`}
+                      value={elementForm.fieldValues[field.name] || ''}
+                      on:input={(e) => {
+                        elementForm.fieldValues[field.name] = e.currentTarget?.value || '';
+                        elementForm.fieldValues = elementForm.fieldValues;
+                        console.log(`📝 Updated ${field.name}:`, e.currentTarget?.value);
+                      }}
+                      placeholder={`Enter ${field.label || field.name}`}
+                    />
+                  {:else if field.type === 'number'}
+                    <input
+                      type="number"
+                      id={`field-${field.name}`}
+                      value={elementForm.fieldValues[field.name] || ''}
+                      on:input={(e) => {
+                        elementForm.fieldValues[field.name] = e.currentTarget?.value || '';
+                        elementForm.fieldValues = elementForm.fieldValues;
+                        console.log(`📝 Updated ${field.name}:`, e.currentTarget?.value);
+                      }}
+                      placeholder={`Enter ${field.label || field.name}`}
+                    />
+                  {:else}
+                    <input
+                      type="text"
+                      id={`field-${field.name}`}
+                      value={elementForm.fieldValues[field.name] || ''}
+                      on:input={(e) => {
+                        elementForm.fieldValues[field.name] = e.currentTarget?.value || '';
+                        elementForm.fieldValues = elementForm.fieldValues;
+                        console.log(`📝 Updated ${field.name}:`, e.currentTarget?.value);
+                      }}
+                      placeholder={`Enter ${field.label || field.name}`}
+                    />
+                  {/if}
+                  <small class="helper-text">Value: {elementForm.fieldValues[field.name] || '(empty)'}</small>
+                </div>
+              {/each}
+            </div>
+          {/key}
+        {/if}
       </div>
 
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" on:click={cancelElementForm}>
           Cancel
         </button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          on:click={addElement}
-          disabled={!selectedScheme}
-        >
-          Add Element
-        </button>
+        <div class="button-group">
+          {#if selectedScheme}
+            <button type="button" class="btn btn-secondary" on:click={backToEntitySelection}>
+              Back
+            </button>
+          {/if}
+          <button
+            type="button"
+            class="btn btn-primary"
+            on:click={addElement}
+            disabled={!selectedScheme}
+          >
+            Add Element
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -858,89 +963,6 @@
     font-size: 0.875rem;
   }
 
-  /* Canvas Container */
-  .canvas-container {
-    margin-bottom: 2rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 0.5rem;
-    overflow: hidden;
-  }
-
-  .canvas-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    background: #f8fafc;
-    border-bottom: 2px solid #e2e8f0;
-  }
-
-  .canvas-header h3 {
-    margin: 0;
-    color: #1e293b;
-    font-size: 1rem;
-    font-weight: 600;
-  }
-
-  .btn-add {
-    padding: 0.5rem 1rem;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 0.375rem;
-    font-weight: 500;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .btn-add:hover {
-    background: #2563eb;
-    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
-  }
-
-  /* Canvas */
-  .canvas {
-    min-height: 400px;
-    padding: 2rem;
-    background: white;
-  }
-
-  .canvas-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 350px;
-    text-align: center;
-  }
-
-  .empty-icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-    opacity: 0.3;
-  }
-
-  .canvas-empty h4 {
-    margin: 0 0 0.5rem 0;
-    color: #64748b;
-    font-size: 1.125rem;
-    font-weight: 600;
-  }
-
-  .canvas-empty p {
-    margin: 0;
-    color: #94a3b8;
-    font-size: 0.875rem;
-  }
-
-  .canvas-content {
-    /* Elements will be rendered here */
-  }
-
 
   /* Modal */
   .modal-overlay {
@@ -1029,12 +1051,39 @@
     font-weight: 500;
   }
 
+  /* Dynamic Fields Section */
+  .dynamic-fields-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #e2e8f0;
+  }
+
+  .dynamic-fields-section h4 {
+    margin: 0 0 1rem 0;
+    color: #1e293b;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .field-type {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 400;
+    font-style: italic;
+  }
+
   .modal-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     gap: 0.75rem;
     padding: 1.5rem;
     border-top: 1px solid #e2e8f0;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 0.75rem;
   }
 
   /* Form Actions */

@@ -1,15 +1,15 @@
 package com.dmc.archiving.archive;
 
-import com.dmc.archiving.archive.entity.Element;
-import com.dmc.archiving.archive.entity.ElementRepository;
+import com.dmc.archiving.archive.element.Element;
+import com.dmc.archiving.archive.element.ElementRepository;
 import com.dmc.archiving.archive.input.CreateArchiveInput;
+import com.dmc.archiving.archive.input.UpdateArchiveInput;
 import com.dmc.archiving.archive.input.AssignUserInput;
 import com.dmc.archiving.archive.input.UnassignUserInput;
 import com.dmc.archiving.archive.model.Archive;
 import com.dmc.archiving.archive.model.ArchiveStatus;
 import com.dmc.archiving.archive.model.UserRole;
 import com.dmc.archiving.archive.repository.ArchiveRepository;
-import com.dmc.archiving.user.api.UserApi;
 import com.dmc.archiving.user.service.UserService;
 import org.springframework.stereotype.Service;
 
@@ -125,6 +125,19 @@ public class ArchiveService {
         return null;
     }
 
+    public Archive updateArchive(Long id, UpdateArchiveInput input) {
+        Archive archive = archiveRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Archive with ID " + id + " does not exist"));
+
+        archive.setTitle(input.getTitle());
+        archive.setDescription(input.getDescription());
+        archive.setContent(input.getContent());
+        archive.setStatus(input.getStatus());
+        archive.setUpdatedAt(LocalDateTime.now());
+
+        return archiveRepository.save(archive);
+    }
+
     public Archive setArchiveRootElement(Long archiveId, Long rootElementId) {
         Archive archive = archiveRepository.findById(archiveId)
                 .orElseThrow(() -> new IllegalArgumentException("Archive with ID " + archiveId + " does not exist"));
@@ -142,6 +155,17 @@ public class ArchiveService {
         archive.setUpdatedAt(LocalDateTime.now());
 
         return archiveRepository.save(archive);
+    }
+
+    public Boolean deleteArchive(Long id) {
+        Archive archive = archiveRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Archive with ID " + id + " does not exist"));
+
+        // Delete the archive
+        // JPA will automatically cascade delete all associated elements, fields, and user assignments
+        // due to @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+        archiveRepository.delete(archive);
+        return true;
     }
 
     // Additional convenience methods using JPA repository

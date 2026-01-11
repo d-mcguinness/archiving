@@ -1,5 +1,6 @@
-package com.dmc.archiving.archive.entity;
+package com.dmc.archiving.archive.element;
 
+import com.dmc.archiving.archive.element.field.Field;
 import com.dmc.archiving.archive.model.Archive;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -37,6 +38,9 @@ public class Element {
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Element> children = new ArrayList<>();
+
+    @OneToMany(mappedBy = "element", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Field> fields = new ArrayList<>();
 
     @Column(name = "element_identifier", nullable = false, length = 255)
     private String elementIdentifier;
@@ -105,6 +109,21 @@ public class Element {
         }
     }
 
+    public void addField(Field field) {
+        if (fields == null) {
+            fields = new ArrayList<>();
+        }
+        fields.add(field);
+        field.setElement(this);
+    }
+
+    public void removeField(Field field) {
+        if (fields != null) {
+            fields.remove(field);
+            field.setElement(null);
+        }
+    }
+
 
     /**
      * Get the full path of this element in the hierarchy
@@ -162,4 +181,3 @@ public class Element {
         updatedAt = LocalDateTime.now();
     }
 }
-

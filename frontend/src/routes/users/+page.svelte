@@ -59,8 +59,7 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
+            <th>User</th>
             <th>Age</th>
             <th>Actions</th>
           </tr>
@@ -69,12 +68,20 @@
           {#each users as user (user.id)}
             <tr>
               <td class="id-cell">{user.id}</td>
-              <td class="name-cell">{user.name}</td>
-              <td class="email-cell">{user.email}</td>
+              <td class="title-cell">
+                <div class="title-wrapper">
+                  <div class="user-title">{user.name}</div>
+                  <div class="user-email">{user.email}</div>
+                </div>
+              </td>
               <td class="age-cell">{user.age || '-'}</td>
               <td class="actions-cell">
-                <a href={`/users/update?userId=${user.id}`} class="btn-action btn-update">Update</a>
-                <a href={`/users/delete?userId=${user.id}`} class="btn-action btn-delete">Delete</a>
+                <a href="/users/update?userId={user.id}" class="btn-action btn-edit">
+                  ✏️ Edit
+                </a>
+                <a href="/users/delete?userId={user.id}" class="btn-action btn-delete">
+                  🗑️ Delete
+                </a>
               </td>
             </tr>
           {/each}
@@ -163,13 +170,14 @@
     background: white;
     border-radius: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    overflow-x: auto;
     border: 1px solid #e2e8f0;
   }
 
   .data-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 800px;
   }
 
   .data-table thead {
@@ -185,6 +193,7 @@
     font-size: 0.875rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    white-space: nowrap;
   }
 
   .data-table tbody tr {
@@ -209,56 +218,72 @@
     font-family: 'Monaco', 'Courier New', monospace;
     color: #64748b;
     font-size: 0.875rem;
-    width: 80px;
+    width: 60px;
   }
 
-  .name-cell {
+  .title-cell {
+    min-width: 300px;
+    max-width: 400px;
+  }
+
+  .title-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .user-title {
     font-weight: 500;
     color: #1e293b;
   }
 
-  .email-cell {
-    color: #3b82f6;
+  .user-email {
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.4;
   }
 
   .age-cell {
     color: #64748b;
+    font-size: 0.875rem;
     width: 100px;
   }
 
   .actions-cell {
     text-align: right;
     white-space: nowrap;
-    width: 200px;
+    width: 250px;
   }
 
   .btn-action {
     display: inline-block;
     padding: 0.5rem 1rem;
     border-radius: 0.25rem;
-    text-decoration: none;
     font-size: 0.875rem;
     font-weight: 500;
     transition: all 0.2s;
     margin-left: 0.5rem;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
   }
 
-  .btn-update {
+  .btn-edit {
     background: #3b82f6;
     color: white;
   }
 
-  .btn-update:hover {
+  .btn-edit:hover {
     background: #2563eb;
   }
 
   .btn-delete {
-    background: #ef4444;
+    background: #dc2626;
     color: white;
   }
 
   .btn-delete:hover {
-    background: #dc2626;
+    background: #b91c1c;
   }
 </style>
 

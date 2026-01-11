@@ -1,6 +1,6 @@
 package com.dmc.archiving.archive.model;
 
-import com.dmc.archiving.archive.entity.Element;
+import com.dmc.archiving.archive.element.Element;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -55,6 +55,9 @@ public class Archive {
     private Element rootElement;
 
     @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<Element> elements = new HashSet<>();
+
+    @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<UserAssignment> assignedUsers = new HashSet<>();
 
     // Constructor for backward compatibility (without assignments)
@@ -70,6 +73,7 @@ public class Archive {
         this.updatedAt = updatedAt;
         this.status = status;
         this.standard = standard;
+        this.elements = new HashSet<>();
         this.assignedUsers = new HashSet<>();
     }
 

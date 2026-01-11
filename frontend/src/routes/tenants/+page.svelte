@@ -96,11 +96,11 @@
           {#each tenants as tenant (tenant.id)}
             <tr>
               <td class="id-cell">{tenant.id}</td>
-              <td class="name-cell">
-                <div class="name-wrapper">
-                  <div class="display-name">{tenant.displayName || tenant.name}</div>
+              <td class="title-cell">
+                <div class="title-wrapper">
+                  <div class="tenant-title">{tenant.displayName || tenant.name}</div>
                   {#if tenant.description}
-                    <div class="description-text">{tenant.description}</div>
+                    <div class="tenant-description">{tenant.description}</div>
                   {/if}
                 </div>
               </td>
@@ -115,8 +115,12 @@
               <td class="date-cell">{new Date(tenant.createdAt).toLocaleDateString()}</td>
               <td class="date-cell">{tenant.updatedAt ? new Date(tenant.updatedAt).toLocaleDateString() : '-'}</td>
               <td class="actions-cell">
-                <a href={`/tenants/update?tenantId=${tenant.id}`} class="btn-action btn-update">Update</a>
-                <a href={`/tenants/delete?tenantId=${tenant.id}`} class="btn-action btn-delete">Delete</a>
+                <a href="/tenants/update?tenantId={tenant.id}" class="btn-action btn-edit">
+                  ✏️ Edit
+                </a>
+                <a href="/tenants/delete?tenantId={tenant.id}" class="btn-action btn-delete">
+                  🗑️ Delete
+                </a>
               </td>
             </tr>
           {/each}
@@ -256,31 +260,32 @@
     width: 60px;
   }
 
-  .name-cell {
-    min-width: 200px;
+  .title-cell {
+    min-width: 250px;
+    max-width: 350px;
   }
 
-  .name-wrapper {
+  .title-wrapper {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
   }
 
-  .display-name {
+  .tenant-title {
     font-weight: 500;
     color: #1e293b;
   }
 
-  .description-text {
+  .tenant-description {
     font-size: 0.875rem;
     color: #64748b;
     line-height: 1.4;
   }
 
   .domain-cell {
-    color: #3b82f6;
-    font-weight: 500;
-    min-width: 200px;
+    color: #64748b;
+    font-size: 0.875rem;
+    font-family: 'Monaco', 'Courier New', monospace;
   }
 
   .status-cell,
@@ -368,36 +373,38 @@
   .actions-cell {
     text-align: right;
     white-space: nowrap;
-    width: 220px;
+    width: 250px;
   }
 
   .btn-action {
     display: inline-block;
     padding: 0.5rem 1rem;
     border-radius: 0.25rem;
-    text-decoration: none;
     font-size: 0.875rem;
     font-weight: 500;
     transition: all 0.2s;
     margin-left: 0.5rem;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
   }
 
-  .btn-update {
+  .btn-edit {
     background: #3b82f6;
     color: white;
   }
 
-  .btn-update:hover {
+  .btn-edit:hover {
     background: #2563eb;
   }
 
   .btn-delete {
-    background: #ef4444;
+    background: #dc2626;
     color: white;
   }
 
   .btn-delete:hover {
-    background: #dc2626;
+    background: #b91c1c;
   }
 </style>
 
