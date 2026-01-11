@@ -10,7 +10,7 @@ import com.dmc.archiving.archive.model.Archive;
 import com.dmc.archiving.archive.model.ArchiveStatus;
 import com.dmc.archiving.archive.model.UserRole;
 import com.dmc.archiving.archive.repository.ArchiveRepository;
-import com.dmc.archiving.user.service.UserService;
+import com.dmc.archiving.user.api.UserApi;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,18 +20,18 @@ import java.util.List;
 public class ArchiveService {
 
     private final ArchiveRepository archiveRepository;
-    private final UserService userService;
+    private final UserApi userApi;
     private final ElementRepository elementRepository;
 
-    public ArchiveService(ArchiveRepository archiveRepository, UserService userService, ElementRepository elementRepository) {
+    public ArchiveService(ArchiveRepository archiveRepository, UserApi userApi, ElementRepository elementRepository) {
         this.archiveRepository = archiveRepository;
-        this.userService = userService;
+        this.userApi = userApi;
         this.elementRepository = elementRepository;
     }
 
     public Archive createArchive(CreateArchiveInput input) {
         // Validate that user exists using the public API
-        if (!userService.userExists(input.getUserId())) {
+        if (!userApi.userExists(input.getUserId())) {
             throw new IllegalArgumentException("User with ID " + input.getUserId() + " does not exist");
         }
 
@@ -56,8 +56,8 @@ public class ArchiveService {
     }
 
     public Archive assignUserToArchive(AssignUserInput input) {
-        // Validate that user exists
-        if (!userService.userExists(input.getUserId())) {
+        // Validate that user exists using the public API
+        if (!userApi.userExists(input.getUserId())) {
             throw new IllegalArgumentException("User with ID " + input.getUserId() + " does not exist");
         }
 

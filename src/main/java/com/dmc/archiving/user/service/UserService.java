@@ -1,5 +1,6 @@
 package com.dmc.archiving.user.service;
 
+import com.dmc.archiving.user.api.UserApi;
 import com.dmc.archiving.user.input.CreateUserInput;
 import com.dmc.archiving.user.model.User;
 
@@ -7,7 +8,11 @@ import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
-public interface UserService {
+/**
+ * UserService extends UserApi to provide both internal service methods
+ * and expose public API methods to other modules.
+ */
+public interface UserService extends UserApi {
 
     /**
      * Get a user by ID

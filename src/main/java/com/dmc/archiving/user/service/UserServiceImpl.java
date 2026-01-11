@@ -62,4 +62,29 @@ public class UserServiceImpl implements UserService {
         return userRepository.existsById(userId);
     }
 
+    // UserApi implementation methods (adapter methods)
+
+    @Override
+    public Long createUser(CreateUserRequest request) {
+        // Convert CreateUserRequest to CreateUserInput
+        CreateUserInput input = new CreateUserInput();
+        input.setName(request.getName());
+        input.setEmail(request.getEmail());
+        input.setAge(request.getAge());
+
+        User user = createUser(input);
+        return user.getId();
+    }
+
+    @Override
+    public User updateUser(Long id, CreateUserRequest input) {
+        // Convert CreateUserRequest to CreateUserInput
+        CreateUserInput updateInput = new CreateUserInput();
+        updateInput.setName(input.getName());
+        updateInput.setEmail(input.getEmail());
+        updateInput.setAge(input.getAge());
+
+        return updateUser(id, updateInput);
+    }
+
 }

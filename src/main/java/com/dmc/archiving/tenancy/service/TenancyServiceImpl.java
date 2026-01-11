@@ -8,10 +8,7 @@ import com.dmc.archiving.tenancy.model.TenantSettings;
 import com.dmc.archiving.tenancy.repository.TenancyRepository;
 import com.dmc.archiving.user.api.UserApi;
 import com.dmc.archiving.user.model.User;
-import com.dmc.archiving.user.repository.UserRepository;
-import com.dmc.archiving.user.service.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,13 +21,13 @@ import java.util.stream.Collectors;
 @Service
 public class TenancyServiceImpl implements TenancyService {
     private final TenancyRepository tenancyRepository;
-    private final UserService userService;
+    private final UserApi userApi;
 
     @Override
     public Tenant createTenant(CreateTenantInput input) {
         // Validate that owner exists - convert String to Long for userApi call
         Long ownerIdLong = Long.valueOf(input.getOwnerId());
-        if (!userService.userExists(ownerIdLong)) {
+        if (!userApi.userExists(ownerIdLong)) {
             throw new IllegalArgumentException("Owner user with ID " + input.getOwnerId() + " does not exist");
         }
 
@@ -138,14 +135,14 @@ public class TenancyServiceImpl implements TenancyService {
 
     @Override
     public void addUserToTenant(Long userId, Long tenantId) {
-        if (!userService.userExists(userId)) {
+        if (!userApi.userExists(userId)) {
             throw new IllegalArgumentException("User with ID " + userId + " does not exist");
         }
 
         Tenant tenant = tenancyRepository.findById(tenantId)
             .orElseThrow(() -> new IllegalArgumentException("Tenant with ID " + tenantId + " does not exist"));
 
-        User user = userService.getUserById(userId)
+        User user = userApi.getUserById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User with ID " + userId + " does not exist"));
 
         tenant.getUsers().add(user);

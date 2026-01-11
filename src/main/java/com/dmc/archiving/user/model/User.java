@@ -1,14 +1,12 @@
 package com.dmc.archiving.user.model;
 
-import com.dmc.archiving.tenancy.model.Tenant;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.modulith.NamedInterface;
 
-import java.util.HashSet;
-import java.util.Set;
-
+@NamedInterface
 @Entity
 @Table(name = "users")
 @Data
@@ -28,6 +26,7 @@ public class User {
     @Column(name = "age")
     private Integer age;
 
-    @ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
-    private Set<Tenant> tenants = new HashSet<>();
+    // Note: Tenant relationship is managed from the Tenant side only
+    // to maintain Spring Modulith module boundaries.
+    // Use TenantService to query user's tenants if needed.
 }
