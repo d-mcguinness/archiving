@@ -1,8 +1,11 @@
 <script>
   import '../app.css';
+  import Toast from '$lib/components/Toast.svelte';
 </script>
 
 <div class="app">
+  <Toast />
+
   <header>
     <nav>
       <div class="nav-container">

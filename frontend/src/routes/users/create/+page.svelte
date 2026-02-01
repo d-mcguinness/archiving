@@ -2,6 +2,7 @@
   import { client } from '$lib/apollo';
   import { CREATE_USER } from '$lib/graphql/queries';
   import { goto } from '$app/navigation';
+  import { toasts } from '$lib/stores/toastStore';
 
   let newUser = { name: '', email: '', age: '' };
   let creating = false;
@@ -23,11 +24,13 @@
         }
       });
       if (result.data.createUser) {
+        toasts.add(`User "${newUser.name}" created successfully`, 'success');
         goto('/users');
         newUser = { name: '', email: '', age: '' };
       }
     } catch (e) {
       error = e instanceof Error ? e.message : 'An unknown error occurred';
+      toasts.add(`Failed to create user: ${error}`, 'error');
     } finally {
       creating = false;
     }

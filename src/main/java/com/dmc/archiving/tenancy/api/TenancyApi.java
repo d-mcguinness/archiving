@@ -31,4 +31,5 @@ public interface TenancyApi {
      */
     boolean isUserInTenant(Long userId, Long tenantId);
 
+
 }

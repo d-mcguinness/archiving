@@ -5,6 +5,7 @@ import { client } from '$lib/apollo';
 import { GET_ALL_USERS, GET_ALL_TENANTS, UPDATE_TENANT, CREATE_TENANT } from '$lib/graphql/queries';
 import { onMount } from 'svelte';
 import { get } from 'svelte/store';
+import { toasts } from '$lib/stores/toastStore';
 
 let tenantId = '';
 let tenant: any | null = null;
@@ -107,9 +108,11 @@ async function saveTenant() {
       });
     }
 
+    toasts.add(`Tenant "${form.displayName || form.name}" ${isCreateMode ? 'created' : 'updated'} successfully`, 'success');
     goto('/tenants');
   } catch (e) {
     error = e instanceof Error ? e.message : 'An unknown error occurred';
+    toasts.add(`Failed to ${isCreateMode ? 'create' : 'update'} tenant: ${error}`, 'error');
   } finally {
     updating = false;
   }

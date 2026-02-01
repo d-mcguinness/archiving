@@ -5,6 +5,7 @@
   import { onMount } from 'svelte';
   import { gql } from '@apollo/client/core';
   import ArchiveCanvas from '../ArchiveCanvas.svelte';
+  import { toasts } from '$lib/stores/toastStore';
 
   // Step tracking
   let currentStep = 1;
@@ -399,10 +400,12 @@
       }
 
       // Navigate to archives list - the cache is now updated with the new archive
+      toasts.add(`Archive "${newArchive.title}" created successfully`, 'success');
       goto('/archives');
     } catch (e) {
       error = e instanceof Error ? e.message : 'An unknown error occurred';
       console.error('Create archive error:', e);
+      toasts.add(`Failed to create archive: ${error}`, 'error');
     } finally {
       creating = false;
     }

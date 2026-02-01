@@ -69,7 +69,13 @@ const link = ApolloLink.from([errorLink, httpLink]);
 interface CacheTypePolicies {
   Query: {
     fields: {
+      getAllUsers: {
+        merge(existing?: any[], incoming?: any[]): any[];
+      };
       getAllTenants: {
+        merge(existing?: any[], incoming?: any[]): any[];
+      };
+      getAllArchives: {
         merge(existing?: any[], incoming?: any[]): any[];
       };
       getElementsByArchive: {
@@ -88,8 +94,22 @@ const cache = new InMemoryCache({
   typePolicies: {
     Query: {
       fields: {
+        getAllUsers: {
+          merge(existing: any[] = [], incoming: any[] = []): any[] {
+            // Always use the incoming data (fresh from server)
+            // This ensures the cache is updated correctly after mutations like delete
+            return incoming;
+          }
+        },
         getAllTenants: {
           merge(existing: any[] = [], incoming: any[] = []): any[] {
+            return incoming;
+          }
+        },
+        getAllArchives: {
+          merge(existing: any[] = [], incoming: any[] = []): any[] {
+            // Always use the incoming data (fresh from server)
+            // This ensures the cache is updated correctly after mutations like delete
             return incoming;
           }
         },

@@ -60,6 +60,7 @@ public class GraphqlTenancyController implements TenancyApi {
         return tenancyService.isUserInTenant(userId, tenantId);
     }
 
+
     // Mutation operations
     @MutationMapping
     public Tenant createTenant(@Argument CreateTenantInput input) {

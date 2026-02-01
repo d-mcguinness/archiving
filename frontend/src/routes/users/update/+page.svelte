@@ -5,6 +5,7 @@ import { client } from '$lib/apollo';
 import { GET_USER, UPDATE_USER } from '$lib/graphql/queries';
 import { onMount } from 'svelte';
 import { get } from 'svelte/store';
+import { toasts } from '$lib/stores/toastStore';
 
 let userId = '';
 let user = null;
@@ -33,6 +34,7 @@ onMount(async () => {
       error = null;
     } catch (e) {
       error = e instanceof Error ? e.message : 'An unknown error occurred';
+      toasts.add(`Failed to load user: ${error}`, 'error');
     } finally {
       loading = false;
     }
@@ -57,9 +59,11 @@ async function updateUser() {
         }
       }
     });
+    toasts.add(`User "${form.name}" updated successfully`, 'success');
     goto('/users');
   } catch (e) {
     error = e instanceof Error ? e.message : 'An unknown error occurred';
+    toasts.add(`Failed to update user: ${error}`, 'error');
   } finally {
     updating = false;
   }

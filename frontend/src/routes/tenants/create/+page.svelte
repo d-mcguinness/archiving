@@ -3,6 +3,7 @@ import { client } from '$lib/apollo';
 import { CREATE_TENANT, GET_ALL_USERS } from '$lib/graphql/queries';
 import { goto } from '$app/navigation';
 import { onMount } from 'svelte';
+import { toasts } from '$lib/stores/toastStore';
 
 let newTenant = {
   name: '',
@@ -24,6 +25,7 @@ onMount(async () => {
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to load users';
     console.error('Load users error:', e);
+    toasts.add(`Failed to load users: ${error}`, 'error');
   }
 });
 
@@ -45,11 +47,13 @@ async function createTenant() {
       }
     });
     if (result.data.createTenant) {
+      toasts.add(`Tenant "${newTenant.displayName || newTenant.name}" created successfully`, 'success');
       goto('/tenants');
       newTenant = { name: '', domain: '', displayName: '', description: '', ownerId: '', plan: 'FREE' };
     }
   } catch (e) {
     error = e instanceof Error ? e.message : 'An unknown error occurred';
+    toasts.add(`Failed to create tenant: ${error}`, 'error');
   } finally {
     creating = false;
   }

@@ -5,6 +5,7 @@ import { client } from '$lib/apollo';
 import { GET_ALL_TENANTS, DELETE_TENANT } from '$lib/graphql/queries';
 import { onMount } from 'svelte';
 import { get } from 'svelte/store';
+import { toasts } from '$lib/stores/toastStore';
 
 let tenantId = '';
 let tenant = null;
@@ -22,6 +23,7 @@ onMount(async () => {
     error = null;
   } catch (e) {
     error = e instanceof Error ? e.message : 'An unknown error occurred';
+    toasts.add(`Failed to load tenant: ${error}`, 'error');
   } finally {
     loading = false;
   }
@@ -37,12 +39,15 @@ async function handleDelete() {
     });
     if (result.data.deleteTenant) {
       success = true;
+      toasts.add(`Tenant "${tenant?.displayName || tenant?.name || 'tenant'}" deleted successfully`, 'success');
       setTimeout(() => goto('/tenants'), 1200);
     } else {
       error = 'Tenant could not be deleted.';
+      toasts.add(error, 'error');
     }
   } catch (e) {
     error = e instanceof Error ? e.message : 'An unknown error occurred';
+    toasts.add(`Failed to delete tenant: ${error}`, 'error');
   } finally {
     deleting = false;
   }

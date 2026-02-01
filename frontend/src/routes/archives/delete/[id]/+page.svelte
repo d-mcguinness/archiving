@@ -5,6 +5,7 @@
   import { client } from '$lib/apollo';
   import { gql } from '@apollo/client/core';
   import { GET_ALL_ARCHIVES } from '$lib/graphql/queries';
+  import { toasts } from '$lib/stores/toastStore';
 
   let archive: any = null;
   let loading = true;
@@ -46,6 +47,7 @@
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to load archive';
       console.error('Load archive error:', e);
+      toasts.add(`Failed to load archive: ${error}`, 'error');
     } finally {
       loading = false;
     }
@@ -70,10 +72,12 @@
       });
 
       // Navigate back to archives list
+      toasts.add(`Archive "${archive.title}" deleted successfully`, 'success');
       goto('/archives');
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to delete archive';
       console.error('Delete archive error:', e);
+      toasts.add(`Failed to delete archive: ${error}`, 'error');
     } finally {
       deleting = false;
     }

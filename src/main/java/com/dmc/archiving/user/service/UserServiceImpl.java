@@ -1,11 +1,12 @@
 package com.dmc.archiving.user.service;
 
 import com.dmc.archiving.user.api.CreateUserRequest;
+import com.dmc.archiving.user.api.UserDeletedEvent;
 import com.dmc.archiving.user.input.CreateUserInput;
 import com.dmc.archiving.user.model.User;
 import com.dmc.archiving.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public Optional<User> getUserById(Long id) {
@@ -53,6 +55,12 @@ public class UserServiceImpl implements UserService {
         if (!userRepository.existsById(id)) {
             return false;
         }
+
+        // Publish event to notify other modules that user is being deleted
+        // This allows other modules (like tenancy) to clean up associations
+        // before the actual deletion happens
+        eventPublisher.publishEvent(new UserDeletedEvent(this, id));
+
         userRepository.deleteById(id);
         return true;
     }

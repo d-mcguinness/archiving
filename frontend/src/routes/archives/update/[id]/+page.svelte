@@ -8,6 +8,7 @@
   import ElementNode from '../../ElementNode.svelte';
   import ElementFormModal from '../../ElementFormModal.svelte';
   import ArchiveCanvas from '../../ArchiveCanvas.svelte';
+  import { toasts } from '$lib/stores/toastStore';
 
   let archive: any = null;
   let users: any[] = [];
@@ -314,16 +315,19 @@
         // Update the archive with new data from server
         archive = { ...archive, ...result.data.updateArchive };
         console.log('Archive updated successfully:', archive);
+        toasts.add(`Archive "${archive.title}" updated successfully`, 'success');
         isEditMode = false;
         // Reload the archive to ensure we have the latest data
         await loadArchive();
       } else {
         console.error('No data returned from mutation');
         error = 'Failed to save: No data returned from server';
+        toasts.add(error, 'error');
       }
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to save archive';
       console.error('Save archive error:', e);
+      toasts.add(`Failed to save archive: ${error}`, 'error');
     } finally {
       saving = false;
     }

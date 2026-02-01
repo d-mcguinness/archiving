@@ -5,6 +5,7 @@ import { client } from '$lib/apollo';
 import { DELETE_USER } from '$lib/graphql/queries';
 import { onMount } from 'svelte';
 import { get } from 'svelte/store';
+import { toasts } from '$lib/stores/toastStore';
 
 let userId = '';
 let deleting = false;
@@ -23,9 +24,11 @@ async function handleDelete() {
       mutation: DELETE_USER,
       variables: { id: userId }
     });
+    toasts.add('User deleted successfully', 'success');
     goto('/users');
   } catch (e) {
     error = e instanceof Error ? e.message : 'An unknown error occurred';
+    toasts.add(`Failed to delete user: ${error}`, 'error');
   } finally {
     deleting = false;
   }

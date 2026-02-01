@@ -175,8 +175,10 @@ public class ArchiveController {
             // Export using standard-specific strategy
             Map<String, Object> exportData = strategy.export(archive);
 
-            // Convert to JSON
+            // Convert to JSON with Java 8 date/time support
             ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+            mapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
             String archiveJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportData);
 
             // Set headers for file download
