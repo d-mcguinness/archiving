@@ -1,0 +1,437 @@
+{
+  "standard": "METS",
+  "fullName": "Metadata Encoding and Transmission Standard",
+  "reference": "METS Version 1.12.1",
+  "description": "Standard for encoding descriptive, administrative, and structural metadata for objects within a digital library, expressed using XML",
+  "version": "1.12.1",
+  "xsdReference": "http://www.loc.gov/standards/mets/mets.xsd",
+  "url": "https://www.loc.gov/standards/mets/",
+  "entities": [
+    {
+      "name": "METS Document",
+      "type": "root_element",
+      "description": "Root element containing all metadata for a digital object",
+      "parent": null,
+      "children": ["METS Header", "Descriptive Metadata", "Administrative Metadata", "File Section", "Structural Map", "Structural Links", "Behavior"],
+      "note": "Top-level container for all METS sections",
+      "fields": [
+        { "name": "metsID", "type": "string", "label": "METS ID" },
+        { "name": "objID", "type": "string", "label": "Object ID" },
+        { "name": "label", "type": "string", "label": "Label" },
+        { "name": "type", "type": "string", "label": "Type" },
+        { "name": "profile", "type": "string", "label": "METS Profile" }
+      ]
+    },
+    {
+      "name": "METS Header",
+      "type": "section",
+      "description": "Contains metadata about the METS document itself",
+      "parent": "METS Document",
+      "children": ["Agent", "Alt Record ID"],
+      "fields": [
+        { "name": "createDate", "type": "date", "label": "Create Date" },
+        { "name": "lastModDate", "type": "date", "label": "Last Modified Date" },
+        { "name": "recordStatus", "type": "string", "label": "Record Status" }
+      ]
+    },
+    {
+      "name": "Agent",
+      "type": "metadata_element",
+      "description": "Individual or institution responsible for the METS document",
+      "parent": "METS Header",
+      "children": [],
+      "fields": [
+        { "name": "agentID", "type": "string", "label": "Agent ID" },
+        { "name": "agentRole", "type": "string", "label": "Role" },
+        { "name": "agentType", "type": "string", "label": "Type" },
+        { "name": "agentName", "type": "string", "label": "Name" },
+        { "name": "agentNote", "type": "string", "label": "Note" }
+      ]
+    },
+    {
+      "name": "Alt Record ID",
+      "type": "metadata_element",
+      "description": "Alternative record identifier for the METS document",
+      "parent": "METS Header",
+      "children": [],
+      "fields": [
+        { "name": "altRecordID", "type": "string", "label": "Alternative Record ID" },
+        { "name": "altRecordIDType", "type": "string", "label": "ID Type" }
+      ]
+    },
+    {
+      "name": "Descriptive Metadata",
+      "type": "section",
+      "description": "Descriptive metadata about the digital object",
+      "parent": "METS Document",
+      "children": ["Internal Descriptive Metadata", "External Descriptive Metadata"],
+      "note": "Can be internal (mdWrap) or external (mdRef)",
+      "fields": [
+        { "name": "dmdID", "type": "string", "label": "Descriptive Metadata ID" },
+        { "name": "groupID", "type": "string", "label": "Group ID" },
+        { "name": "status", "type": "string", "label": "Status" },
+        { "name": "created", "type": "date", "label": "Created Date" }
+      ]
+    },
+    {
+      "name": "Internal Descriptive Metadata",
+      "type": "metadata_wrapper",
+      "description": "Descriptive metadata embedded within the METS document",
+      "parent": "Descriptive Metadata",
+      "children": [],
+      "fields": [
+        { "name": "mdType", "type": "string", "label": "Metadata Type" },
+        { "name": "otherMdType", "type": "string", "label": "Other Metadata Type" },
+        { "name": "mdTypeVersion", "type": "string", "label": "Metadata Type Version" },
+        { "name": "xmlData", "type": "string", "label": "XML Data" }
+      ]
+    },
+    {
+      "name": "External Descriptive Metadata",
+      "type": "metadata_reference",
+      "description": "Reference to external descriptive metadata",
+      "parent": "Descriptive Metadata",
+      "children": [],
+      "fields": [
+        { "name": "mdType", "type": "string", "label": "Metadata Type" },
+        { "name": "otherMdType", "type": "string", "label": "Other Metadata Type" },
+        { "name": "mdTypeVersion", "type": "string", "label": "Metadata Type Version" },
+        { "name": "locType", "type": "string", "label": "Location Type" },
+        { "name": "href", "type": "string", "label": "Reference URL" },
+        { "name": "mimeType", "type": "string", "label": "MIME Type" }
+      ]
+    },
+    {
+      "name": "Administrative Metadata",
+      "type": "section",
+      "description": "Administrative metadata about files and their relationship to the original source",
+      "parent": "METS Document",
+      "children": ["Technical Metadata", "Rights Metadata", "Source Metadata", "Digital Provenance Metadata"],
+      "fields": [
+        { "name": "amdID", "type": "string", "label": "Administrative Metadata ID" },
+        { "name": "groupID", "type": "string", "label": "Group ID" },
+        { "name": "status", "type": "string", "label": "Status" }
+      ]
+    },
+    {
+      "name": "Technical Metadata",
+      "type": "admin_metadata_type",
+      "description": "Technical characteristics of files",
+      "parent": "Administrative Metadata",
+      "children": [],
+      "fields": [
+        { "name": "techMdID", "type": "string", "label": "Technical Metadata ID" },
+        { "name": "mdType", "type": "string", "label": "Metadata Type" },
+        { "name": "created", "type": "date", "label": "Created Date" },
+        { "name": "status", "type": "string", "label": "Status" }
+      ]
+    },
+    {
+      "name": "Rights Metadata",
+      "type": "admin_metadata_type",
+      "description": "Intellectual property rights information",
+      "parent": "Administrative Metadata",
+      "children": [],
+      "fields": [
+        { "name": "rightsMdID", "type": "string", "label": "Rights Metadata ID" },
+        { "name": "mdType", "type": "string", "label": "Metadata Type" },
+        { "name": "created", "type": "date", "label": "Created Date" },
+        { "name": "status", "type": "string", "label": "Status" }
+      ]
+    },
+    {
+      "name": "Source Metadata",
+      "type": "admin_metadata_type",
+      "description": "Metadata about the source format or media of the digital object",
+      "parent": "Administrative Metadata",
+      "children": [],
+      "fields": [
+        { "name": "sourceMdID", "type": "string", "label": "Source Metadata ID" },
+        { "name": "mdType", "type": "string", "label": "Metadata Type" },
+        { "name": "created", "type": "date", "label": "Created Date" },
+        { "name": "status", "type": "string", "label": "Status" }
+      ]
+    },
+    {
+      "name": "Digital Provenance Metadata",
+      "type": "admin_metadata_type",
+      "description": "Metadata about events in the lifecycle of the digital object",
+      "parent": "Administrative Metadata",
+      "children": [],
+      "fields": [
+        { "name": "digiprovMdID", "type": "string", "label": "Digital Provenance ID" },
+        { "name": "mdType", "type": "string", "label": "Metadata Type" },
+        { "name": "created", "type": "date", "label": "Created Date" },
+        { "name": "status", "type": "string", "label": "Status" }
+      ]
+    },
+    {
+      "name": "File Section",
+      "type": "section",
+      "description": "Lists all files comprising the digital object",
+      "parent": "METS Document",
+      "children": ["File Group"],
+      "fields": [
+        { "name": "fileSectionID", "type": "string", "label": "File Section ID" }
+      ]
+    },
+    {
+      "name": "File Group",
+      "type": "file_container",
+      "description": "Groups related files together",
+      "parent": "File Section",
+      "children": ["File"],
+      "fields": [
+        { "name": "fileGrpID", "type": "string", "label": "File Group ID" },
+        { "name": "use", "type": "string", "label": "Use" },
+        { "name": "versDate", "type": "date", "label": "Version Date" }
+      ]
+    },
+    {
+      "name": "File",
+      "type": "file_element",
+      "description": "Individual file within the digital object",
+      "parent": "File Group",
+      "children": ["File Location", "Stream", "Transforming File"],
+      "fields": [
+        { "name": "fileID", "type": "string", "label": "File ID" },
+        { "name": "mimeType", "type": "string", "label": "MIME Type" },
+        { "name": "size", "type": "number", "label": "Size (bytes)" },
+        { "name": "created", "type": "date", "label": "Created Date" },
+        { "name": "checksum", "type": "string", "label": "Checksum" },
+        { "name": "checksumType", "type": "string", "label": "Checksum Type" },
+        { "name": "ownerID", "type": "string", "label": "Owner ID" },
+        { "name": "use", "type": "string", "label": "Use" }
+      ]
+    },
+    {
+      "name": "File Location",
+      "type": "file_pointer",
+      "description": "Location of the file",
+      "parent": "File",
+      "children": [],
+      "fields": [
+        { "name": "locType", "type": "string", "label": "Location Type" },
+        { "name": "otherLocType", "type": "string", "label": "Other Location Type" },
+        { "name": "href", "type": "string", "label": "Reference URL" },
+        { "name": "use", "type": "string", "label": "Use" }
+      ]
+    },
+    {
+      "name": "Stream",
+      "type": "file_element",
+      "description": "Datastream within a file",
+      "parent": "File",
+      "children": [],
+      "fields": [
+        { "name": "streamID", "type": "string", "label": "Stream ID" },
+        { "name": "streamType", "type": "string", "label": "Stream Type" },
+        { "name": "ownerID", "type": "string", "label": "Owner ID" }
+      ]
+    },
+    {
+      "name": "Transforming File",
+      "type": "file_reference",
+      "description": "Reference to a file used in transforming the current file",
+      "parent": "File",
+      "children": [],
+      "fields": [
+        { "name": "transformFileID", "type": "string", "label": "Transform File ID" },
+        { "name": "transformType", "type": "string", "label": "Transform Type" },
+        { "name": "transformAlgorithm", "type": "string", "label": "Transform Algorithm" }
+      ]
+    },
+    {
+      "name": "Structural Map",
+      "type": "section",
+      "description": "Hierarchical structure of the digital object",
+      "parent": "METS Document",
+      "children": ["Division"],
+      "note": "Primary navigation structure",
+      "fields": [
+        { "name": "structMapID", "type": "string", "label": "Structural Map ID" },
+        { "name": "type", "type": "string", "label": "Type" },
+        { "name": "label", "type": "string", "label": "Label" }
+      ]
+    },
+    {
+      "name": "Division",
+      "type": "structural_element",
+      "description": "Hierarchical division within the structural map",
+      "parent": "Structural Map",
+      "children": ["Division", "File Pointer", "METS Pointer"],
+      "note": "Can nest to create hierarchy",
+      "fields": [
+        { "name": "divID", "type": "string", "label": "Division ID" },
+        { "name": "order", "type": "number", "label": "Order" },
+        { "name": "orderLabel", "type": "string", "label": "Order Label" },
+        { "name": "label", "type": "string", "label": "Label" },
+        { "name": "type", "type": "string", "label": "Type" },
+        { "name": "dmdID", "type": "string", "label": "Descriptive Metadata ID" },
+        { "name": "admID", "type": "string", "label": "Administrative Metadata ID" }
+      ]
+    },
+    {
+      "name": "File Pointer",
+      "type": "pointer_element",
+      "description": "Pointer to a file or file group",
+      "parent": "Division",
+      "children": ["Area"],
+      "fields": [
+        { "name": "fileID", "type": "string", "label": "File ID" },
+        { "name": "contentIDs", "type": "string", "label": "Content IDs" }
+      ]
+    },
+    {
+      "name": "METS Pointer",
+      "type": "pointer_element",
+      "description": "Pointer to an external METS document",
+      "parent": "Division",
+      "children": [],
+      "fields": [
+        { "name": "metsPointerID", "type": "string", "label": "METS Pointer ID" },
+        { "name": "locType", "type": "string", "label": "Location Type" },
+        { "name": "href", "type": "string", "label": "Reference URL" }
+      ]
+    },
+    {
+      "name": "Area",
+      "type": "pointer_element",
+      "description": "Portion of a file referenced by a file pointer",
+      "parent": "File Pointer",
+      "children": [],
+      "fields": [
+        { "name": "areaID", "type": "string", "label": "Area ID" },
+        { "name": "fileID", "type": "string", "label": "File ID" },
+        { "name": "shape", "type": "string", "label": "Shape" },
+        { "name": "coords", "type": "string", "label": "Coordinates" },
+        { "name": "begin", "type": "string", "label": "Begin" },
+        { "name": "end", "type": "string", "label": "End" },
+        { "name": "betype", "type": "string", "label": "Begin/End Type" }
+      ]
+    },
+    {
+      "name": "Structural Links",
+      "type": "section",
+      "description": "Hyperlinks between nodes in the structural map",
+      "parent": "METS Document",
+      "children": ["Smart Link"],
+      "fields": [
+        { "name": "structLinksID", "type": "string", "label": "Structural Links ID" }
+      ]
+    },
+    {
+      "name": "Smart Link",
+      "type": "link_element",
+      "description": "Hyperlink between structural map divisions",
+      "parent": "Structural Links",
+      "children": [],
+      "fields": [
+        { "name": "smLinkID", "type": "string", "label": "Smart Link ID" },
+        { "name": "from", "type": "string", "label": "From (Division ID)" },
+        { "name": "to", "type": "string", "label": "To (Division ID)" },
+        { "name": "title", "type": "string", "label": "Title" },
+        { "name": "show", "type": "string", "label": "Show" },
+        { "name": "actuate", "type": "string", "label": "Actuate" }
+      ]
+    },
+    {
+      "name": "Behavior",
+      "type": "section",
+      "description": "Executable behaviors that can be associated with content",
+      "parent": "METS Document",
+      "children": ["Interface Definition", "Mechanism"],
+      "fields": [
+        { "name": "behaviorID", "type": "string", "label": "Behavior ID" },
+        { "name": "structID", "type": "string", "label": "Structure ID" },
+        { "name": "label", "type": "string", "label": "Label" },
+        { "name": "groupID", "type": "string", "label": "Group ID" }
+      ]
+    },
+    {
+      "name": "Interface Definition",
+      "type": "behavior_element",
+      "description": "Abstract definition of a behavior",
+      "parent": "Behavior",
+      "children": [],
+      "fields": [
+        { "name": "interfaceDefID", "type": "string", "label": "Interface Definition ID" },
+        { "name": "label", "type": "string", "label": "Label" },
+        { "name": "locType", "type": "string", "label": "Location Type" },
+        { "name": "href", "type": "string", "label": "Reference URL" }
+      ]
+    },
+    {
+      "name": "Mechanism",
+      "type": "behavior_element",
+      "description": "Executable code that implements a behavior",
+      "parent": "Behavior",
+      "children": [],
+      "fields": [
+        { "name": "mechanismID", "type": "string", "label": "Mechanism ID" },
+        { "name": "label", "type": "string", "label": "Label" },
+        { "name": "locType", "type": "string", "label": "Location Type" },
+        { "name": "href", "type": "string", "label": "Reference URL" }
+      ]
+    }
+  ],
+  "agentRoles": {
+    "CREATOR": "Entity responsible for creating the METS document",
+    "EDITOR": "Entity responsible for editing the METS document",
+    "ARCHIVIST": "Entity responsible for archival decisions",
+    "PRESERVATION": "Entity responsible for preservation activities",
+    "DISSEMINATOR": "Entity responsible for disseminating the object",
+    "CUSTODIAN": "Entity responsible for custody of the object",
+    "IPOWNER": "Intellectual property owner"
+  },
+  "metadataTypes": {
+    "MARC": "MARC 21 bibliographic metadata",
+    "MODS": "Metadata Object Description Schema",
+    "EAD": "Encoded Archival Description",
+    "DC": "Dublin Core",
+    "NISOIMG": "NISO Technical Metadata for Digital Still Images",
+    "LC-AV": "Library of Congress Audio-Visual metadata",
+    "VRA": "VRA Core metadata",
+    "TEIHDR": "Text Encoding Initiative Header",
+    "DDI": "Data Documentation Initiative",
+    "FGDC": "Federal Geographic Data Committee metadata",
+    "PREMIS": "PREMIS preservation metadata",
+    "PREMIS:OBJECT": "PREMIS Object entity",
+    "PREMIS:AGENT": "PREMIS Agent entity",
+    "PREMIS:RIGHTS": "PREMIS Rights entity",
+    "PREMIS:EVENT": "PREMIS Event entity",
+    "TEXTMD": "Technical metadata for text",
+    "METSRIGHTS": "METS Rights Schema",
+    "OTHER": "Other metadata format"
+  },
+  "locatorTypes": {
+    "URN": "Uniform Resource Name",
+    "URL": "Uniform Resource Locator",
+    "PURL": "Persistent URL",
+    "HANDLE": "Handle System identifier",
+    "DOI": "Digital Object Identifier",
+    "ARK": "Archival Resource Key",
+    "OTHER": "Other locator type"
+  },
+  "checksumTypes": {
+    "MD5": "MD5 message digest",
+    "SHA-1": "SHA-1 secure hash",
+    "SHA-256": "SHA-256 secure hash",
+    "SHA-384": "SHA-384 secure hash",
+    "SHA-512": "SHA-512 secure hash",
+    "CRC32": "CRC32 checksum",
+    "Adler-32": "Adler-32 checksum",
+    "HAVAL": "HAVAL hash",
+    "TIGER": "Tiger hash",
+    "WHIRLPOOL": "Whirlpool hash"
+  },
+  "fileGroupUses": {
+    "MASTER": "Master or archival quality files",
+    "REFERENCE": "Reference quality files for general use",
+    "THUMBNAIL": "Thumbnail images",
+    "SERVICE": "Service copies for online delivery",
+    "TRANSCRIPT": "Text transcripts",
+    "TRANSLATION": "Translations",
+    "ARCHIVE": "Archive copies"
+  }
+}

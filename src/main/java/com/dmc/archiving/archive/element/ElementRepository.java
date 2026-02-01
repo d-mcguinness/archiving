@@ -19,6 +19,11 @@ public interface ElementRepository extends JpaRepository<Element, Long> {
     List<Element> findByArchiveId(Long archiveId);
 
     /**
+     * Find all elements for a specific archive ordered by creation date (ascending)
+     */
+    List<Element> findByArchiveIdOrderByCreatedAtAsc(Long archiveId);
+
+    /**
      * Find root elements for an archive
      */
     List<Element> findByArchiveIdAndIsRootTrue(Long archiveId);

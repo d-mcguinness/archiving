@@ -14,6 +14,10 @@ export default defineConfig(({ mode }) => ({
             '/graphql': {
                 target: 'http://localhost:2020',
                 changeOrigin: true
+            },
+            '/api': {
+                target: 'http://localhost:2020',
+                changeOrigin: true
             }
         }
     }

@@ -1,0 +1,276 @@
+{
+  "standard": "Dublin Core",
+  "fullName": "Dublin Core Metadata Element Set",
+  "reference": "ISO 15836-1:2017",
+  "description": "Simple and effective element set for describing a wide range of networked resources",
+  "version": "1.1",
+  "xsdReference": "http://dublincore.org/schemas/xmls/",
+  "url": "https://www.dublincore.org/specifications/dublin-core/",
+  "entities": [
+    {
+      "name": "Resource",
+      "type": "core_entity",
+      "description": "Any resource described using Dublin Core metadata",
+      "parent": null,
+      "children": ["Title", "Creator", "Subject", "Description", "Publisher", "Contributor", "Date", "Type", "Format", "Identifier", "Source", "Language", "Relation", "Coverage", "Rights"],
+      "note": "Dublin Core describes any resource using 15 core elements",
+      "fields": [
+        { "name": "resourceIdentifier", "type": "string", "label": "Resource Identifier" },
+        { "name": "resourceType", "type": "string", "label": "Resource Type" }
+      ]
+    },
+    {
+      "name": "Title",
+      "type": "element",
+      "description": "A name given to the resource",
+      "parent": "Resource",
+      "children": [],
+      "fields": [
+        { "name": "title", "type": "string", "label": "Title" },
+        { "name": "titleType", "type": "string", "label": "Title Type" },
+        { "name": "titleLanguage", "type": "string", "label": "Language" }
+      ]
+    },
+    {
+      "name": "Creator",
+      "type": "element",
+      "description": "An entity primarily responsible for making the resource",
+      "parent": "Resource",
+      "children": [],
+      "fields": [
+        { "name": "creator", "type": "string", "label": "Creator" },
+        { "name": "creatorType", "type": "string", "label": "Creator Type" },
+        { "name": "creatorIdentifier", "type": "string", "label": "Creator Identifier" }
+      ]
+    },
+    {
+      "name": "Subject",
+      "type": "element",
+      "description": "The topic of the resource",
+      "parent": "Resource",
+      "children": [],
+      "fields": [
+        { "name": "subject", "type": "string", "label": "Subject" },
+        { "name": "subjectScheme", "type": "string", "label": "Subject Scheme" },
+        { "name": "subjectSchemeURI", "type": "string", "label": "Scheme URI" }
+      ]
+    },
+    {
+      "name": "Description",
+      "type": "element",
+      "description": "An account of the resource",
+      "parent": "Resource",
+      "children": [],
+      "fields": [
+        { "name": "description", "type": "string", "label": "Description" },
+        { "name": "descriptionType", "type": "string", "label": "Description Type" },
+        { "name": "descriptionLanguage", "type": "string", "label": "Language" }
+      ]
+    },
+    {
+      "name": "Publisher",
+      "type": "element",
+      "description": "An entity responsible for making the resource available",
+      "parent": "Resource",
+      "children": [],
+      "fields": [
+        { "name": "publisher", "type": "string", "label": "Publisher" },
+        { "name": "publisherIdentifier", "type": "string", "label": "Publisher Identifier" },
+        { "name": "publisherType", "type": "string", "label": "Publisher Type" }
+      ]
+    },
+    {
+      "name": "Contributor",
+      "type": "element",
+      "description": "An entity responsible for making contributions to the resource",
+      "parent": "Resource",
+      "children": [],
+      "fields": [
+        { "name": "contributor", "type": "string", "label": "Contributor" },
+        { "name": "contributorType", "type": "string", "label": "Contributor Type" },
+        { "name": "contributorRole", "type": "string", "label": "Role" }
+      ]
+    },
+    {
+      "name": "Date",
+      "type": "element",
+      "description": "A point or period of time associated with an event in the lifecycle of the resource",
+      "parent": "Resource",
+      "children": [],
+      "fields": [
+        { "name": "date", "type": "date", "label": "Date" },
+        { "name": "dateType", "type": "string", "label": "Date Type" },
+        { "name": "dateFormat", "type": "string", "label": "Date Format" }
+      ]
+    },
+    {
+      "name": "Type",
+      "type": "element",
+      "description": "The nature or genre of the resource",
+      "parent": "Resource",
+      "children": [],
+      "fields": [
+        { "name": "type", "type": "string", "label": "Type" },
+        { "name": "typeVocabulary", "type": "string", "label": "Type Vocabulary" }
+      ]
+    },
+    {
+      "name": "Format",
+      "type": "element",
+      "description": "The file format, physical medium, or dimensions of the resource",
+      "parent": "Resource",
+      "children": [],
+      "fields": [
+        { "name": "format", "type": "string", "label": "Format" },
+        { "name": "formatMIMEType", "type": "string", "label": "MIME Type" },
+        { "name": "formatExtent", "type": "string", "label": "Extent/Size" }
+      ]
+    },
+    {
+      "name": "Identifier",
+      "type": "element",
+      "description": "An unambiguous reference to the resource within a given context",
+      "parent": "Resource",
+      "children": [],
+      "fields": [
+        { "name": "identifier", "type": "string", "label": "Identifier" },
+        { "name": "identifierType", "type": "string", "label": "Identifier Type" },
+        { "name": "identifierScheme", "type": "string", "label": "Identifier Scheme" }
+      ]
+    },
+    {
+      "name": "Source",
+      "type": "element",
+      "description": "A related resource from which the described resource is derived",
+      "parent": "Resource",
+      "children": [],
+      "fields": [
+        { "name": "source", "type": "string", "label": "Source" },
+        { "name": "sourceIdentifier", "type": "string", "label": "Source Identifier" },
+        { "name": "sourceType", "type": "string", "label": "Source Type" }
+      ]
+    },
+    {
+      "name": "Language",
+      "type": "element",
+      "description": "A language of the resource",
+      "parent": "Resource",
+      "children": [],
+      "fields": [
+        { "name": "language", "type": "string", "label": "Language" },
+        { "name": "languageCode", "type": "string", "label": "Language Code (ISO 639)" }
+      ]
+    },
+    {
+      "name": "Relation",
+      "type": "element",
+      "description": "A related resource",
+      "parent": "Resource",
+      "children": [],
+      "fields": [
+        { "name": "relation", "type": "string", "label": "Relation" },
+        { "name": "relationType", "type": "string", "label": "Relation Type" },
+        { "name": "relatedResourceIdentifier", "type": "string", "label": "Related Resource ID" }
+      ]
+    },
+    {
+      "name": "Coverage",
+      "type": "element",
+      "description": "The spatial or temporal topic of the resource, spatial applicability, or jurisdiction",
+      "parent": "Resource",
+      "children": ["Spatial Coverage", "Temporal Coverage"],
+      "fields": [
+        { "name": "coverage", "type": "string", "label": "Coverage" },
+        { "name": "coverageType", "type": "string", "label": "Coverage Type" }
+      ]
+    },
+    {
+      "name": "Spatial Coverage",
+      "type": "coverage_type",
+      "description": "Spatial characteristics of the resource",
+      "parent": "Coverage",
+      "children": [],
+      "fields": [
+        { "name": "spatialCoverage", "type": "string", "label": "Spatial Coverage" },
+        { "name": "place", "type": "string", "label": "Place" },
+        { "name": "coordinates", "type": "string", "label": "Coordinates" }
+      ]
+    },
+    {
+      "name": "Temporal Coverage",
+      "type": "coverage_type",
+      "description": "Temporal characteristics of the resource",
+      "parent": "Coverage",
+      "children": [],
+      "fields": [
+        { "name": "temporalCoverage", "type": "string", "label": "Temporal Coverage" },
+        { "name": "periodName", "type": "string", "label": "Period Name" },
+        { "name": "startDate", "type": "date", "label": "Start Date" },
+        { "name": "endDate", "type": "date", "label": "End Date" }
+      ]
+    },
+    {
+      "name": "Rights",
+      "type": "element",
+      "description": "Information about rights held in and over the resource",
+      "parent": "Resource",
+      "children": [],
+      "fields": [
+        { "name": "rights", "type": "string", "label": "Rights Statement" },
+        { "name": "rightsHolder", "type": "string", "label": "Rights Holder" },
+        { "name": "rightsURI", "type": "string", "label": "Rights URI" },
+        { "name": "licenseURI", "type": "string", "label": "License URI" }
+      ]
+    }
+  ],
+  "dcmiTypeVocabulary": {
+    "Collection": "An aggregation of resources",
+    "Dataset": "Data encoded in a defined structure",
+    "Event": "A non-persistent, time-based occurrence",
+    "Image": "A visual representation other than text",
+    "InteractiveResource": "A resource requiring interaction from the user",
+    "MovingImage": "A series of visual representations imparting an impression of motion",
+    "PhysicalObject": "An inanimate, three-dimensional object or substance",
+    "Service": "A system that provides one or more functions",
+    "Software": "A computer program in source or compiled form",
+    "Sound": "A resource primarily intended to be heard",
+    "StillImage": "A static visual representation",
+    "Text": "A resource consisting primarily of words for reading"
+  },
+  "relationTypes": {
+    "isVersionOf": "The described resource is a version of the referenced resource",
+    "hasVersion": "The described resource has the referenced resource as a version",
+    "isReplacedBy": "The described resource is supplanted by the referenced resource",
+    "replaces": "The described resource supplants the referenced resource",
+    "isRequiredBy": "The described resource is required by the referenced resource",
+    "requires": "The described resource requires the referenced resource",
+    "isPartOf": "The described resource is a part of the referenced resource",
+    "hasPart": "The described resource includes the referenced resource",
+    "isReferencedBy": "The described resource is referenced by the referenced resource",
+    "references": "The described resource references the referenced resource",
+    "isFormatOf": "The described resource is a format of the referenced resource",
+    "hasFormat": "The described resource has the referenced resource as a format",
+    "conformsTo": "The described resource conforms to the referenced resource"
+  },
+  "dateTypes": {
+    "created": "Date of creation of the resource",
+    "valid": "Date of validity of the resource",
+    "available": "Date that the resource became or will become available",
+    "issued": "Date of formal issuance of the resource",
+    "modified": "Date on which the resource was changed",
+    "dateAccepted": "Date of acceptance of the resource",
+    "dateCopyrighted": "Date of copyright",
+    "dateSubmitted": "Date of submission of the resource"
+  },
+  "identifierTypes": {
+    "DOI": "Digital Object Identifier",
+    "ISBN": "International Standard Book Number",
+    "ISSN": "International Standard Serial Number",
+    "URI": "Uniform Resource Identifier",
+    "URL": "Uniform Resource Locator",
+    "URN": "Uniform Resource Name",
+    "Handle": "Handle System identifier",
+    "ARK": "Archival Resource Key",
+    "PURL": "Persistent Uniform Resource Locator"
+  }
+}

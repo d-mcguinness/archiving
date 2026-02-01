@@ -11,10 +11,16 @@ import com.dmc.archiving.archive.model.ArchiveStatus;
 import com.dmc.archiving.archive.model.UserRole;
 import com.dmc.archiving.archive.repository.ArchiveRepository;
 import com.dmc.archiving.user.api.UserApi;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ArchiveService {
@@ -179,5 +185,102 @@ public class ArchiveService {
 
     public List<Archive> getArchivesByOwnerAndStatus(Long ownerId, ArchiveStatus status) {
         return archiveRepository.findByOwnerIdAndStatus(ownerId, status);
+    }
+
+    /**
+     * Export archive as JSON for download
+     * This method creates a comprehensive JSON export of the archive including all elements
+     */
+    public String exportArchiveAsJson(Archive archive) {
+        try {
+            // Create object mapper with pretty printing
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
+            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+            // Build export data structure
+            Map<String, Object> exportData = new HashMap<>();
+
+            // Archive metadata
+            exportData.put("archiveId", archive.getId());
+            exportData.put("title", archive.getTitle());
+            exportData.put("description", archive.getDescription());
+            exportData.put("content", archive.getContent());
+            exportData.put("standard", archive.getStandard());
+            exportData.put("status", archive.getStatus());
+            exportData.put("ownerId", archive.getOwnerId());
+            exportData.put("createdAt", archive.getCreatedAt());
+            exportData.put("updatedAt", archive.getUpdatedAt());
+
+            // User assignments
+            if (archive.getAssignedUsers() != null && !archive.getAssignedUsers().isEmpty()) {
+                List<Map<String, Object>> assignments = archive.getAssignedUsers().stream()
+                    .map(assignment -> {
+                        Map<String, Object> assignmentData = new HashMap<>();
+                        assignmentData.put("userId", assignment.getUserId());
+                        assignmentData.put("role", assignment.getRole());
+                        assignmentData.put("assignedAt", assignment.getAssignedAt());
+                        return assignmentData;
+                    })
+                    .collect(Collectors.toList());
+                exportData.put("assignedUsers", assignments);
+            }
+
+            // Elements (if any)
+            List<Element> elements = elementRepository.findByArchiveIdOrderByCreatedAtAsc(archive.getId());
+            if (!elements.isEmpty()) {
+                List<Map<String, Object>> elementsData = elements.stream()
+                    .map(element -> {
+                        Map<String, Object> elementData = new HashMap<>();
+                        elementData.put("id", element.getId());
+                        elementData.put("elementIdentifier", element.getElementIdentifier());
+                        elementData.put("title", element.getTitle());
+                        elementData.put("description", element.getDescription());
+                        elementData.put("entityName", element.getEntityName());
+                        elementData.put("entityType", element.getEntityType());
+                        elementData.put("norwegianName", element.getNorwegianName());
+                        elementData.put("englishName", element.getEnglishName());
+                        elementData.put("parentId", element.getParent() != null ? element.getParent().getId() : null);
+                        elementData.put("status", element.getStatus());
+                        elementData.put("createdBy", element.getCreatedBy());
+                        elementData.put("createdAt", element.getCreatedAt());
+                        elementData.put("updatedAt", element.getUpdatedAt());
+
+                        // Include field values if present - serialize manually to avoid lazy loading issues
+                        if (element.getFields() != null && !element.getFields().isEmpty()) {
+                            List<Map<String, Object>> fieldsData = element.getFields().stream()
+                                .map(field -> {
+                                    Map<String, Object> fieldMap = new HashMap<>();
+                                    fieldMap.put("id", field.getId());
+                                    fieldMap.put("name", field.getName());
+                                    fieldMap.put("label", field.getLabel());
+                                    fieldMap.put("type", field.getType());
+                                    fieldMap.put("value", field.getValue());
+                                    return fieldMap;
+                                })
+                                .collect(Collectors.toList());
+                            elementData.put("fields", fieldsData);
+                        }
+
+                        return elementData;
+                    })
+                    .collect(Collectors.toList());
+                exportData.put("elements", elementsData);
+                exportData.put("elementsCount", elements.size());
+            } else {
+                exportData.put("elementsCount", 0);
+            }
+
+            // Add export metadata
+            exportData.put("exportedAt", LocalDateTime.now());
+            exportData.put("exportVersion", "1.0");
+
+            // Convert to JSON string
+            return mapper.writeValueAsString(exportData);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to export archive as JSON: " + e.getMessage(), e);
+        }
     }
 }

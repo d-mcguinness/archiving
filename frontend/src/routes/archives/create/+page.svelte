@@ -91,7 +91,18 @@
       loadingSchemes = true;
 
       // Fetch the JSON file based on standard
-      const fileName = standard === 'NOARK5' ? 'noark5.json' : 'oais.json';
+      const fileNameMap: Record<string, string> = {
+        'NOARK5': 'noark5.json',
+        'OAIS': 'oais.json',
+        'PREMIS': 'premis.json',
+        'Dublin Core': 'dublincore.json',
+        'METS': 'mets.json',
+        'EAD': 'ead.json',
+        'BagIt': 'bagit.json',
+        'ISAD(G)': 'isadg.json',
+        'MODS': 'mods.json'
+      };
+      const fileName = fileNameMap[standard] || 'noark5.json';
       const response = await fetch(`/schemeDefintions/${fileName}`);
 
       if (!response.ok) {
@@ -310,6 +321,21 @@
       creating = true;
       error = null;
 
+      // Map display standard names to GraphQL enum values
+      const standardMap: Record<string, string> = {
+        'NOARK5': 'NOARK5',
+        'OAIS': 'OAIS',
+        'PREMIS': 'PREMIS',
+        'Dublin Core': 'DUBLIN_CORE',
+        'METS': 'METS',
+        'EAD': 'EAD',
+        'BagIt': 'BAGIT',
+        'ISAD(G)': 'ISADG',
+        'MODS': 'MODS'
+      };
+
+      const graphqlStandard = standardMap[newArchive.standard] || newArchive.standard;
+
       // Step 1: Create the archive
       const CREATE_ARCHIVE_MUTATION = gql`
         mutation CreateArchive($input: CreateArchiveInput!) {
@@ -330,7 +356,7 @@
             title: newArchive.title,
             description: newArchive.description || null,
             content: newArchive.content,
-            standard: newArchive.standard
+            standard: graphqlStandard  // Use mapped enum value
           }
         },
         // Refetch archives list to update the cache
@@ -513,6 +539,13 @@
         >
           <option value="NOARK5">NOARK5</option>
           <option value="OAIS">OAIS</option>
+          <option value="PREMIS">PREMIS</option>
+          <option value="Dublin Core">Dublin Core</option>
+          <option value="METS">METS</option>
+          <option value="EAD">EAD</option>
+          <option value="BagIt">BagIt</option>
+          <option value="ISAD(G)">ISAD(G)</option>
+          <option value="MODS">MODS</option>
         </select>
       </div>
       </div>

@@ -153,6 +153,13 @@ enum ArchiveStatus {
 enum ArchiveStandard {
     NOARK5
     OAIS
+    PREMIS
+    DUBLIN_CORE
+    METS
+    EAD
+    BAGIT
+    ISADG
+    MODS
 }
 
 input CreateArchiveInput {

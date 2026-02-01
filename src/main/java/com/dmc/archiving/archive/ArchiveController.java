@@ -7,21 +7,39 @@ import com.dmc.archiving.archive.input.UnassignUserInput;
 import com.dmc.archiving.archive.model.Archive;
 import com.dmc.archiving.archive.model.ArchiveStatus;
 import com.dmc.archiving.archive.model.UserRole;
+import com.dmc.archiving.archive.strategy.ArchiveStrategy;
+import com.dmc.archiving.archive.strategy.ArchiveStrategyFactory;
+import com.dmc.archiving.archive.strategy.ValidationResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class ArchiveController {
 
+    private static final Logger log = LoggerFactory.getLogger(ArchiveController.class);
+
     @Autowired
     private ArchiveService archiveService;
+
+    @Autowired
+    private ArchiveStrategyFactory strategyFactory;
 
     // Existing query methods
     @QueryMapping
@@ -105,5 +123,134 @@ public class ArchiveController {
     public String assignedAt(com.dmc.archiving.archive.model.UserAssignment userAssignment) {
         return userAssignment.getAssignedAt() != null ?
             userAssignment.getAssignedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
+    }
+
+    // REST Endpoint for Archive Extraction/Download
+    @PostMapping("/api/archives/{archiveId}/extract")
+    @ResponseBody
+    public ResponseEntity<?> extractArchive(
+            @PathVariable Long archiveId,
+            @RequestBody Map<String, String> request) {
+
+        try {
+            String password = request.get("password");
+
+            // Validate password is provided
+            if (password == null || password.trim().isEmpty()) {
+                return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                        "success", false,
+                        "error", "Password is required"
+                    ));
+            }
+
+            // Get the archive
+            Archive archive = archiveService.getArchiveById(archiveId);
+            if (archive == null) {
+                return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                        "success", false,
+                        "error", "Archive not found"
+                    ));
+            }
+
+            // TODO: Implement actual password validation
+            // For now, accept any password except "wrong"
+            if ("wrong".equals(password)) {
+                return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                        "success", false,
+                        "error", "Invalid password"
+                    ));
+            }
+
+            // Use strategy pattern to export based on standard
+            ArchiveStrategy strategy = strategyFactory.getStrategy(archive.getStandard());
+
+            log.info("Extracting archive {} using {} strategy", archiveId, strategy.getStandardName());
+
+            // Export using standard-specific strategy
+            Map<String, Object> exportData = strategy.export(archive);
+
+            // Convert to JSON
+            ObjectMapper mapper = new ObjectMapper();
+            String archiveJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportData);
+
+            // Set headers for file download
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setContentDispositionFormData("attachment",
+                "archive_" + archiveId + "_" + archive.getStandard().name() + "_export.json");
+
+            return ResponseEntity
+                .ok()
+                .headers(headers)
+                .body(archiveJson);
+
+        } catch (Exception e) {
+            // Log the full exception for debugging
+            log.error("Failed to extract archive {}: {}", archiveId, e.getMessage(), e);
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "success", false,
+                    "error", "Failed to extract archive: " + e.getMessage()
+                ));
+        }
+    }
+
+    // REST Endpoint for Archive Validation
+    @PostMapping("/api/archives/{archiveId}/validate")
+    @ResponseBody
+    public ResponseEntity<?> validateArchive(@PathVariable Long archiveId) {
+        try {
+            Archive archive = archiveService.getArchiveById(archiveId);
+            if (archive == null) {
+                return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("success", false, "error", "Archive not found"));
+            }
+
+            // Use strategy pattern for validation
+            ArchiveStrategy strategy = strategyFactory.getStrategy(archive.getStandard());
+            ValidationResult result = strategy.validate(archive);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("valid", result.isValid());
+            response.put("errors", result.getErrors());
+            response.put("warnings", result.getWarnings());
+            response.put("standard", strategy.getStandardName());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Failed to validate archive {}: {}", archiveId, e.getMessage(), e);
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("success", false, "error", "Validation failed: " + e.getMessage()));
+        }
+    }
+
+    // REST Endpoint for Getting Metadata Requirements
+    @GetMapping("/api/standards/{standardName}/requirements")
+    @ResponseBody
+    public ResponseEntity<?> getMetadataRequirements(@PathVariable String standardName) {
+        try {
+            ArchiveStrategy strategy = strategyFactory.getStrategy(standardName);
+            Map<String, String> requirements = strategy.getMetadataRequirements();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("standard", strategy.getStandardName());
+            response.put("requirements", requirements);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Failed to get requirements for {}: {}", standardName, e.getMessage(), e);
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("success", false, "error", "Failed to get requirements"));
+        }
     }
 }

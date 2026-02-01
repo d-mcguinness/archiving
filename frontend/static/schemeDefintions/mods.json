@@ -1,0 +1,895 @@
+{
+  "standard": "MODS",
+  "fullName": "Metadata Object Description Schema",
+  "reference": "MODS Version 3.8",
+  "description": "Bibliographic element set for description of digital library objects, richer and more specific than Dublin Core",
+  "version": "3.8",
+  "xsdReference": "http://www.loc.gov/standards/mods/v3/mods-3-8.xsd",
+  "url": "https://www.loc.gov/standards/mods/",
+  "entities": [
+    {
+      "name": "MODS",
+      "type": "root_element",
+      "description": "Root element for MODS metadata record",
+      "parent": null,
+      "children": ["Title Info", "Name", "Type of Resource", "Genre", "Origin Info", "Language", "Physical Description", "Abstract", "Table of Contents", "Target Audience", "Note", "Subject", "Classification", "Related Item", "Identifier", "Location", "Access Condition", "Part", "Extension", "Record Info"],
+      "note": "Top-level container for bibliographic description",
+      "fields": [
+        { "name": "modsID", "type": "string", "label": "MODS ID" },
+        { "name": "version", "type": "string", "label": "MODS Version" }
+      ]
+    },
+    {
+      "name": "Title Info",
+      "type": "element",
+      "description": "Title and subtitle information",
+      "parent": "MODS",
+      "children": ["Title", "Subtitle", "Part Number", "Part Name"],
+      "fields": [
+        { "name": "titleInfoID", "type": "string", "label": "Title Info ID" },
+        { "name": "titleType", "type": "string", "label": "Title Type" },
+        { "name": "usage", "type": "string", "label": "Usage" },
+        { "name": "authority", "type": "string", "label": "Authority" }
+      ]
+    },
+    {
+      "name": "Title",
+      "type": "title_element",
+      "description": "Main title of the resource",
+      "parent": "Title Info",
+      "children": [],
+      "fields": [
+        { "name": "title", "type": "string", "label": "Title" }
+      ]
+    },
+    {
+      "name": "Subtitle",
+      "type": "title_element",
+      "description": "Subtitle of the resource",
+      "parent": "Title Info",
+      "children": [],
+      "fields": [
+        { "name": "subTitle", "type": "string", "label": "Subtitle" }
+      ]
+    },
+    {
+      "name": "Part Number",
+      "type": "title_element",
+      "description": "Number designation for a part",
+      "parent": "Title Info",
+      "children": [],
+      "fields": [
+        { "name": "partNumber", "type": "string", "label": "Part Number" }
+      ]
+    },
+    {
+      "name": "Part Name",
+      "type": "title_element",
+      "description": "Name designation for a part",
+      "parent": "Title Info",
+      "children": [],
+      "fields": [
+        { "name": "partName", "type": "string", "label": "Part Name" }
+      ]
+    },
+    {
+      "name": "Name",
+      "type": "element",
+      "description": "Name of person, organization, or event associated with the resource",
+      "parent": "MODS",
+      "children": ["Name Part", "Display Form", "Affiliation", "Role", "Description"],
+      "fields": [
+        { "name": "nameID", "type": "string", "label": "Name ID" },
+        { "name": "nameType", "type": "string", "label": "Name Type" },
+        { "name": "authority", "type": "string", "label": "Authority" },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI" },
+        { "name": "valueURI", "type": "string", "label": "Value URI" }
+      ]
+    },
+    {
+      "name": "Name Part",
+      "type": "name_element",
+      "description": "Part of a name",
+      "parent": "Name",
+      "children": [],
+      "fields": [
+        { "name": "namePart", "type": "string", "label": "Name Part" },
+        { "name": "namePartType", "type": "string", "label": "Name Part Type" }
+      ]
+    },
+    {
+      "name": "Display Form",
+      "type": "name_element",
+      "description": "Display form of the name",
+      "parent": "Name",
+      "children": [],
+      "fields": [
+        { "name": "displayForm", "type": "string", "label": "Display Form" }
+      ]
+    },
+    {
+      "name": "Affiliation",
+      "type": "name_element",
+      "description": "Affiliation of the named entity",
+      "parent": "Name",
+      "children": [],
+      "fields": [
+        { "name": "affiliation", "type": "string", "label": "Affiliation" }
+      ]
+    },
+    {
+      "name": "Role",
+      "type": "name_element",
+      "description": "Role of the named entity",
+      "parent": "Name",
+      "children": ["Role Term"],
+      "fields": [
+        { "name": "roleID", "type": "string", "label": "Role ID" }
+      ]
+    },
+    {
+      "name": "Role Term",
+      "type": "role_element",
+      "description": "Specific role designation",
+      "parent": "Role",
+      "children": [],
+      "fields": [
+        { "name": "roleTerm", "type": "string", "label": "Role Term" },
+        { "name": "roleType", "type": "string", "label": "Role Type" },
+        { "name": "authority", "type": "string", "label": "Authority" }
+      ]
+    },
+    {
+      "name": "Description",
+      "type": "name_element",
+      "description": "Description of the named entity",
+      "parent": "Name",
+      "children": [],
+      "fields": [
+        { "name": "description", "type": "string", "label": "Description" }
+      ]
+    },
+    {
+      "name": "Type of Resource",
+      "type": "element",
+      "description": "General type of content of the resource",
+      "parent": "MODS",
+      "children": [],
+      "fields": [
+        { "name": "typeOfResource", "type": "string", "label": "Type of Resource" },
+        { "name": "collection", "type": "string", "label": "Collection" },
+        { "name": "manuscript", "type": "string", "label": "Manuscript" }
+      ]
+    },
+    {
+      "name": "Genre",
+      "type": "element",
+      "description": "More specific type designation than Type of Resource",
+      "parent": "MODS",
+      "children": [],
+      "fields": [
+        { "name": "genre", "type": "string", "label": "Genre" },
+        { "name": "authority", "type": "string", "label": "Authority" },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI" },
+        { "name": "valueURI", "type": "string", "label": "Value URI" }
+      ]
+    },
+    {
+      "name": "Origin Info",
+      "type": "element",
+      "description": "Information about the origin of the resource",
+      "parent": "MODS",
+      "children": ["Place", "Publisher", "Date Issued", "Date Created", "Date Captured", "Date Modified", "Edition", "Issuance", "Frequency"],
+      "fields": [
+        { "name": "originInfoID", "type": "string", "label": "Origin Info ID" },
+        { "name": "eventType", "type": "string", "label": "Event Type" }
+      ]
+    },
+    {
+      "name": "Place",
+      "type": "origin_element",
+      "description": "Place associated with the origin of the resource",
+      "parent": "Origin Info",
+      "children": ["Place Term"],
+      "fields": [
+        { "name": "placeID", "type": "string", "label": "Place ID" }
+      ]
+    },
+    {
+      "name": "Place Term",
+      "type": "place_element",
+      "description": "Specific place designation",
+      "parent": "Place",
+      "children": [],
+      "fields": [
+        { "name": "placeTerm", "type": "string", "label": "Place Term" },
+        { "name": "placeTermType", "type": "string", "label": "Place Term Type" },
+        { "name": "authority", "type": "string", "label": "Authority" }
+      ]
+    },
+    {
+      "name": "Publisher",
+      "type": "origin_element",
+      "description": "Name of the publisher",
+      "parent": "Origin Info",
+      "children": [],
+      "fields": [
+        { "name": "publisher", "type": "string", "label": "Publisher" }
+      ]
+    },
+    {
+      "name": "Date Issued",
+      "type": "origin_element",
+      "description": "Date of publication or issuance",
+      "parent": "Origin Info",
+      "children": [],
+      "fields": [
+        { "name": "dateIssued", "type": "date", "label": "Date Issued" },
+        { "name": "point", "type": "string", "label": "Point" },
+        { "name": "encoding", "type": "string", "label": "Encoding" },
+        { "name": "qualifier", "type": "string", "label": "Qualifier" }
+      ]
+    },
+    {
+      "name": "Date Created",
+      "type": "origin_element",
+      "description": "Date of creation",
+      "parent": "Origin Info",
+      "children": [],
+      "fields": [
+        { "name": "dateCreated", "type": "date", "label": "Date Created" },
+        { "name": "point", "type": "string", "label": "Point" },
+        { "name": "encoding", "type": "string", "label": "Encoding" },
+        { "name": "qualifier", "type": "string", "label": "Qualifier" }
+      ]
+    },
+    {
+      "name": "Date Captured",
+      "type": "origin_element",
+      "description": "Date of digitization or other capture",
+      "parent": "Origin Info",
+      "children": [],
+      "fields": [
+        { "name": "dateCaptured", "type": "date", "label": "Date Captured" },
+        { "name": "point", "type": "string", "label": "Point" },
+        { "name": "encoding", "type": "string", "label": "Encoding" }
+      ]
+    },
+    {
+      "name": "Date Modified",
+      "type": "origin_element",
+      "description": "Date of modification",
+      "parent": "Origin Info",
+      "children": [],
+      "fields": [
+        { "name": "dateModified", "type": "date", "label": "Date Modified" },
+        { "name": "encoding", "type": "string", "label": "Encoding" }
+      ]
+    },
+    {
+      "name": "Edition",
+      "type": "origin_element",
+      "description": "Edition statement",
+      "parent": "Origin Info",
+      "children": [],
+      "fields": [
+        { "name": "edition", "type": "string", "label": "Edition" }
+      ]
+    },
+    {
+      "name": "Issuance",
+      "type": "origin_element",
+      "description": "Mode of issuance",
+      "parent": "Origin Info",
+      "children": [],
+      "fields": [
+        { "name": "issuance", "type": "string", "label": "Issuance" }
+      ]
+    },
+    {
+      "name": "Frequency",
+      "type": "origin_element",
+      "description": "Frequency of publication",
+      "parent": "Origin Info",
+      "children": [],
+      "fields": [
+        { "name": "frequency", "type": "string", "label": "Frequency" },
+        { "name": "authority", "type": "string", "label": "Authority" }
+      ]
+    },
+    {
+      "name": "Language",
+      "type": "element",
+      "description": "Language of the content",
+      "parent": "MODS",
+      "children": ["Language Term", "Script Term"],
+      "fields": [
+        { "name": "languageID", "type": "string", "label": "Language ID" }
+      ]
+    },
+    {
+      "name": "Language Term",
+      "type": "language_element",
+      "description": "Specific language designation",
+      "parent": "Language",
+      "children": [],
+      "fields": [
+        { "name": "languageTerm", "type": "string", "label": "Language Term" },
+        { "name": "languageTermType", "type": "string", "label": "Language Term Type" },
+        { "name": "authority", "type": "string", "label": "Authority" }
+      ]
+    },
+    {
+      "name": "Script Term",
+      "type": "language_element",
+      "description": "Script designation",
+      "parent": "Language",
+      "children": [],
+      "fields": [
+        { "name": "scriptTerm", "type": "string", "label": "Script Term" },
+        { "name": "authority", "type": "string", "label": "Authority" }
+      ]
+    },
+    {
+      "name": "Physical Description",
+      "type": "element",
+      "description": "Physical characteristics of the resource",
+      "parent": "MODS",
+      "children": ["Form", "Extent", "Digital Origin", "Internet Media Type", "Note"],
+      "fields": [
+        { "name": "physicalDescriptionID", "type": "string", "label": "Physical Description ID" }
+      ]
+    },
+    {
+      "name": "Form",
+      "type": "physical_element",
+      "description": "Physical or digital form of the resource",
+      "parent": "Physical Description",
+      "children": [],
+      "fields": [
+        { "name": "form", "type": "string", "label": "Form" },
+        { "name": "authority", "type": "string", "label": "Authority" }
+      ]
+    },
+    {
+      "name": "Extent",
+      "type": "physical_element",
+      "description": "Statement of size or duration",
+      "parent": "Physical Description",
+      "children": [],
+      "fields": [
+        { "name": "extent", "type": "string", "label": "Extent" },
+        { "name": "unit", "type": "string", "label": "Unit" }
+      ]
+    },
+    {
+      "name": "Digital Origin",
+      "type": "physical_element",
+      "description": "Method by which resource was digitized or created",
+      "parent": "Physical Description",
+      "children": [],
+      "fields": [
+        { "name": "digitalOrigin", "type": "string", "label": "Digital Origin" }
+      ]
+    },
+    {
+      "name": "Internet Media Type",
+      "type": "physical_element",
+      "description": "MIME type",
+      "parent": "Physical Description",
+      "children": [],
+      "fields": [
+        { "name": "internetMediaType", "type": "string", "label": "Internet Media Type" }
+      ]
+    },
+    {
+      "name": "Abstract",
+      "type": "element",
+      "description": "Summary of the content",
+      "parent": "MODS",
+      "children": [],
+      "fields": [
+        { "name": "abstract", "type": "string", "label": "Abstract" },
+        { "name": "abstractType", "type": "string", "label": "Abstract Type" }
+      ]
+    },
+    {
+      "name": "Table of Contents",
+      "type": "element",
+      "description": "Table of contents or list of sections",
+      "parent": "MODS",
+      "children": [],
+      "fields": [
+        { "name": "tableOfContents", "type": "string", "label": "Table of Contents" },
+        { "name": "displayLabel", "type": "string", "label": "Display Label" }
+      ]
+    },
+    {
+      "name": "Target Audience",
+      "type": "element",
+      "description": "Intended audience",
+      "parent": "MODS",
+      "children": [],
+      "fields": [
+        { "name": "targetAudience", "type": "string", "label": "Target Audience" },
+        { "name": "authority", "type": "string", "label": "Authority" }
+      ]
+    },
+    {
+      "name": "Note",
+      "type": "element",
+      "description": "General note",
+      "parent": "MODS",
+      "children": [],
+      "fields": [
+        { "name": "note", "type": "string", "label": "Note" },
+        { "name": "noteType", "type": "string", "label": "Note Type" },
+        { "name": "displayLabel", "type": "string", "label": "Display Label" }
+      ]
+    },
+    {
+      "name": "Subject",
+      "type": "element",
+      "description": "Subject term or phrase",
+      "parent": "MODS",
+      "children": ["Topic", "Geographic", "Temporal", "Title Info", "Name", "Genre", "Hierarchical Geographic", "Cartographics", "Occupation"],
+      "fields": [
+        { "name": "subjectID", "type": "string", "label": "Subject ID" },
+        { "name": "authority", "type": "string", "label": "Authority" },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI" }
+      ]
+    },
+    {
+      "name": "Topic",
+      "type": "subject_element",
+      "description": "Topical subject term",
+      "parent": "Subject",
+      "children": [],
+      "fields": [
+        { "name": "topic", "type": "string", "label": "Topic" },
+        { "name": "authority", "type": "string", "label": "Authority" }
+      ]
+    },
+    {
+      "name": "Geographic",
+      "type": "subject_element",
+      "description": "Geographic subject term",
+      "parent": "Subject",
+      "children": [],
+      "fields": [
+        { "name": "geographic", "type": "string", "label": "Geographic" },
+        { "name": "authority", "type": "string", "label": "Authority" }
+      ]
+    },
+    {
+      "name": "Temporal",
+      "type": "subject_element",
+      "description": "Temporal subject term",
+      "parent": "Subject",
+      "children": [],
+      "fields": [
+        { "name": "temporal", "type": "string", "label": "Temporal" },
+        { "name": "encoding", "type": "string", "label": "Encoding" }
+      ]
+    },
+    {
+      "name": "Hierarchical Geographic",
+      "type": "subject_element",
+      "description": "Hierarchical geographic subject",
+      "parent": "Subject",
+      "children": ["Continent", "Country", "Region", "State", "County", "City", "City Section", "Area"],
+      "fields": [
+        { "name": "hierarchicalGeographicID", "type": "string", "label": "Hierarchical Geographic ID" }
+      ]
+    },
+    {
+      "name": "Continent",
+      "type": "geographic_element",
+      "description": "Continent name",
+      "parent": "Hierarchical Geographic",
+      "children": [],
+      "fields": [
+        { "name": "continent", "type": "string", "label": "Continent" }
+      ]
+    },
+    {
+      "name": "Country",
+      "type": "geographic_element",
+      "description": "Country name",
+      "parent": "Hierarchical Geographic",
+      "children": [],
+      "fields": [
+        { "name": "country", "type": "string", "label": "Country" }
+      ]
+    },
+    {
+      "name": "Region",
+      "type": "geographic_element",
+      "description": "Region name",
+      "parent": "Hierarchical Geographic",
+      "children": [],
+      "fields": [
+        { "name": "region", "type": "string", "label": "Region" }
+      ]
+    },
+    {
+      "name": "State",
+      "type": "geographic_element",
+      "description": "State or province name",
+      "parent": "Hierarchical Geographic",
+      "children": [],
+      "fields": [
+        { "name": "state", "type": "string", "label": "State" }
+      ]
+    },
+    {
+      "name": "County",
+      "type": "geographic_element",
+      "description": "County name",
+      "parent": "Hierarchical Geographic",
+      "children": [],
+      "fields": [
+        { "name": "county", "type": "string", "label": "County" }
+      ]
+    },
+    {
+      "name": "City",
+      "type": "geographic_element",
+      "description": "City name",
+      "parent": "Hierarchical Geographic",
+      "children": [],
+      "fields": [
+        { "name": "city", "type": "string", "label": "City" }
+      ]
+    },
+    {
+      "name": "City Section",
+      "type": "geographic_element",
+      "description": "Section of city",
+      "parent": "Hierarchical Geographic",
+      "children": [],
+      "fields": [
+        { "name": "citySection", "type": "string", "label": "City Section" }
+      ]
+    },
+    {
+      "name": "Area",
+      "type": "geographic_element",
+      "description": "General area designation",
+      "parent": "Hierarchical Geographic",
+      "children": [],
+      "fields": [
+        { "name": "area", "type": "string", "label": "Area" }
+      ]
+    },
+    {
+      "name": "Cartographics",
+      "type": "subject_element",
+      "description": "Cartographic data",
+      "parent": "Subject",
+      "children": ["Scale", "Projection", "Coordinates"],
+      "fields": [
+        { "name": "cartographicsID", "type": "string", "label": "Cartographics ID" }
+      ]
+    },
+    {
+      "name": "Scale",
+      "type": "cartographic_element",
+      "description": "Map scale",
+      "parent": "Cartographics",
+      "children": [],
+      "fields": [
+        { "name": "scale", "type": "string", "label": "Scale" }
+      ]
+    },
+    {
+      "name": "Projection",
+      "type": "cartographic_element",
+      "description": "Map projection",
+      "parent": "Cartographics",
+      "children": [],
+      "fields": [
+        { "name": "projection", "type": "string", "label": "Projection" }
+      ]
+    },
+    {
+      "name": "Coordinates",
+      "type": "cartographic_element",
+      "description": "Cartographic coordinates",
+      "parent": "Cartographics",
+      "children": [],
+      "fields": [
+        { "name": "coordinates", "type": "string", "label": "Coordinates" }
+      ]
+    },
+    {
+      "name": "Occupation",
+      "type": "subject_element",
+      "description": "Occupation subject term",
+      "parent": "Subject",
+      "children": [],
+      "fields": [
+        { "name": "occupation", "type": "string", "label": "Occupation" },
+        { "name": "authority", "type": "string", "label": "Authority" }
+      ]
+    },
+    {
+      "name": "Classification",
+      "type": "element",
+      "description": "Classification code",
+      "parent": "MODS",
+      "children": [],
+      "fields": [
+        { "name": "classification", "type": "string", "label": "Classification" },
+        { "name": "authority", "type": "string", "label": "Authority" },
+        { "name": "edition", "type": "string", "label": "Edition" }
+      ]
+    },
+    {
+      "name": "Related Item",
+      "type": "element",
+      "description": "Information about related resources",
+      "parent": "MODS",
+      "children": ["MODS"],
+      "note": "Can contain full MODS record",
+      "fields": [
+        { "name": "relatedItemID", "type": "string", "label": "Related Item ID" },
+        { "name": "relationType", "type": "string", "label": "Relation Type" },
+        { "name": "displayLabel", "type": "string", "label": "Display Label" }
+      ]
+    },
+    {
+      "name": "Identifier",
+      "type": "element",
+      "description": "Standard identifier for the resource",
+      "parent": "MODS",
+      "children": [],
+      "fields": [
+        { "name": "identifier", "type": "string", "label": "Identifier" },
+        { "name": "identifierType", "type": "string", "label": "Identifier Type" },
+        { "name": "displayLabel", "type": "string", "label": "Display Label" }
+      ]
+    },
+    {
+      "name": "Location",
+      "type": "element",
+      "description": "Location information",
+      "parent": "MODS",
+      "children": ["Physical Location", "URL", "Holding Simple"],
+      "fields": [
+        { "name": "locationID", "type": "string", "label": "Location ID" }
+      ]
+    },
+    {
+      "name": "Physical Location",
+      "type": "location_element",
+      "description": "Physical location of the resource",
+      "parent": "Location",
+      "children": [],
+      "fields": [
+        { "name": "physicalLocation", "type": "string", "label": "Physical Location" },
+        { "name": "authority", "type": "string", "label": "Authority" }
+      ]
+    },
+    {
+      "name": "URL",
+      "type": "location_element",
+      "description": "URL for electronic access",
+      "parent": "Location",
+      "children": [],
+      "fields": [
+        { "name": "url", "type": "string", "label": "URL" },
+        { "name": "usage", "type": "string", "label": "Usage" },
+        { "name": "access", "type": "string", "label": "Access" }
+      ]
+    },
+    {
+      "name": "Holding Simple",
+      "type": "location_element",
+      "description": "Simple holdings information",
+      "parent": "Location",
+      "children": ["Copy Information"],
+      "fields": [
+        { "name": "holdingSimpleID", "type": "string", "label": "Holding Simple ID" }
+      ]
+    },
+    {
+      "name": "Copy Information",
+      "type": "holdings_element",
+      "description": "Information about specific copy",
+      "parent": "Holding Simple",
+      "children": [],
+      "fields": [
+        { "name": "form", "type": "string", "label": "Form" },
+        { "name": "subLocation", "type": "string", "label": "Sub-Location" },
+        { "name": "shelfLocator", "type": "string", "label": "Shelf Locator" },
+        { "name": "electronicLocator", "type": "string", "label": "Electronic Locator" }
+      ]
+    },
+    {
+      "name": "Access Condition",
+      "type": "element",
+      "description": "Information about access or use restrictions",
+      "parent": "MODS",
+      "children": [],
+      "fields": [
+        { "name": "accessCondition", "type": "string", "label": "Access Condition" },
+        { "name": "accessConditionType", "type": "string", "label": "Access Condition Type" }
+      ]
+    },
+    {
+      "name": "Part",
+      "type": "element",
+      "description": "Information about a part of the resource",
+      "parent": "MODS",
+      "children": ["Detail", "Extent", "Date", "Text"],
+      "fields": [
+        { "name": "partID", "type": "string", "label": "Part ID" },
+        { "name": "partType", "type": "string", "label": "Part Type" },
+        { "name": "order", "type": "number", "label": "Order" }
+      ]
+    },
+    {
+      "name": "Detail",
+      "type": "part_element",
+      "description": "Detailed part information",
+      "parent": "Part",
+      "children": [],
+      "fields": [
+        { "name": "detailType", "type": "string", "label": "Detail Type" },
+        { "name": "number", "type": "string", "label": "Number" },
+        { "name": "caption", "type": "string", "label": "Caption" },
+        { "name": "title", "type": "string", "label": "Title" }
+      ]
+    },
+    {
+      "name": "Text",
+      "type": "part_element",
+      "description": "Textual designation of part",
+      "parent": "Part",
+      "children": [],
+      "fields": [
+        { "name": "text", "type": "string", "label": "Text" },
+        { "name": "displayLabel", "type": "string", "label": "Display Label" }
+      ]
+    },
+    {
+      "name": "Extension",
+      "type": "element",
+      "description": "Extension wrapper for additional metadata",
+      "parent": "MODS",
+      "children": [],
+      "note": "Container for non-MODS metadata",
+      "fields": [
+        { "name": "extensionID", "type": "string", "label": "Extension ID" },
+        { "name": "displayLabel", "type": "string", "label": "Display Label" }
+      ]
+    },
+    {
+      "name": "Record Info",
+      "type": "element",
+      "description": "Information about the metadata record",
+      "parent": "MODS",
+      "children": ["Record Content Source", "Record Creation Date", "Record Change Date", "Record Identifier", "Language of Cataloging", "Description Standard"],
+      "fields": [
+        { "name": "recordInfoID", "type": "string", "label": "Record Info ID" }
+      ]
+    },
+    {
+      "name": "Record Content Source",
+      "type": "record_element",
+      "description": "Source of the metadata",
+      "parent": "Record Info",
+      "children": [],
+      "fields": [
+        { "name": "recordContentSource", "type": "string", "label": "Record Content Source" },
+        { "name": "authority", "type": "string", "label": "Authority" }
+      ]
+    },
+    {
+      "name": "Record Creation Date",
+      "type": "record_element",
+      "description": "Date the record was created",
+      "parent": "Record Info",
+      "children": [],
+      "fields": [
+        { "name": "recordCreationDate", "type": "date", "label": "Record Creation Date" },
+        { "name": "encoding", "type": "string", "label": "Encoding" }
+      ]
+    },
+    {
+      "name": "Record Change Date",
+      "type": "record_element",
+      "description": "Date the record was changed",
+      "parent": "Record Info",
+      "children": [],
+      "fields": [
+        { "name": "recordChangeDate", "type": "date", "label": "Record Change Date" },
+        { "name": "encoding", "type": "string", "label": "Encoding" }
+      ]
+    },
+    {
+      "name": "Record Identifier",
+      "type": "record_element",
+      "description": "Identifier for the metadata record",
+      "parent": "Record Info",
+      "children": [],
+      "fields": [
+        { "name": "recordIdentifier", "type": "string", "label": "Record Identifier" },
+        { "name": "source", "type": "string", "label": "Source" }
+      ]
+    },
+    {
+      "name": "Language of Cataloging",
+      "type": "record_element",
+      "description": "Language used in creating metadata",
+      "parent": "Record Info",
+      "children": [],
+      "fields": [
+        { "name": "languageTerm", "type": "string", "label": "Language Term" },
+        { "name": "authority", "type": "string", "label": "Authority" }
+      ]
+    },
+    {
+      "name": "Description Standard",
+      "type": "record_element",
+      "description": "Standard used for description",
+      "parent": "Record Info",
+      "children": [],
+      "fields": [
+        { "name": "descriptionStandard", "type": "string", "label": "Description Standard" }
+      ]
+    }
+  ],
+  "typeOfResourceValues": {
+    "text": "Text resources",
+    "cartographic": "Maps and atlases",
+    "notated music": "Musical notation",
+    "sound recording": "Audio recordings",
+    "sound recording-musical": "Musical recordings",
+    "sound recording-nonmusical": "Non-musical audio",
+    "still image": "Photographs, drawings, graphics",
+    "moving image": "Video, film",
+    "three dimensional object": "Physical objects",
+    "software, multimedia": "Software and multimedia",
+    "mixed material": "Mixed materials"
+  },
+  "issuanceValues": {
+    "monographic": "Single unit resource",
+    "continuing": "Ongoing resource",
+    "serial": "Serial publication",
+    "integrating resource": "Integrating resource"
+  },
+  "relatedItemTypes": {
+    "preceding": "Preceding resource",
+    "succeeding": "Succeeding resource",
+    "original": "Original version",
+    "host": "Host resource",
+    "constituent": "Constituent part",
+    "series": "Series",
+    "otherVersion": "Other version",
+    "otherFormat": "Other format",
+    "isReferencedBy": "Referenced by",
+    "references": "References",
+    "reviewOf": "Review of"
+  },
+  "identifierTypes": {
+    "doi": "Digital Object Identifier",
+    "isbn": "International Standard Book Number",
+    "issn": "International Standard Serial Number",
+    "uri": "Uniform Resource Identifier",
+    "local": "Local identifier",
+    "stock number": "Stock number",
+    "issue number": "Issue number",
+    "matrix number": "Matrix number",
+    "music publisher": "Music publisher number",
+    "music plate": "Music plate number",
+    "videorecording identifier": "Videorecording identifier"
+  },
+  "digitalOriginValues": {
+    "born digital": "Created in digital form",
+    "reformatted digital": "Digitized from analog",
+    "digitized microfilm": "Digitized from microfilm",
+    "digitized other analog": "Digitized from other analog source"
+  }
+}
