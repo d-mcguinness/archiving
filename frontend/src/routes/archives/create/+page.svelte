@@ -4,7 +4,6 @@
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
   import { gql } from '@apollo/client/core';
-  import ElementNode from '../ElementNode.svelte';
   import ArchiveCanvas from '../ArchiveCanvas.svelte';
 
   // Step tracking
