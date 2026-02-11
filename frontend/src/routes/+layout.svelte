@@ -13,7 +13,6 @@
         <ul class="nav-links">
           <li><a href="/">Dashboard</a></li>
           <li><a href="/tenants">Tenants</a></li>
-          <li><a href="/archives">Archives</a></li>
           <li><a href="/users">Users</a></li>
         </ul>
       </div>

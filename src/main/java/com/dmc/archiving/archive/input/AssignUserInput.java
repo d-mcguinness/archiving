@@ -1,6 +1,7 @@
 package com.dmc.archiving.archive.input;
 
 import com.dmc.archiving.archive.model.UserRole;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AssignUserInput {
+
+    @NotNull(message = "Archive ID is required")
     private Long archiveId;
+
+    @NotNull(message = "User ID is required")
     private Long userId;
+
+    @NotNull(message = "Role is required")
     private UserRole role;
 }

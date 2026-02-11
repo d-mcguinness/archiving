@@ -14,7 +14,10 @@ import com.dmc.archiving.user.api.UserApi;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -23,6 +26,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 public class ArchiveService {
 
     private final ArchiveRepository archiveRepository;
@@ -35,6 +39,7 @@ public class ArchiveService {
         this.elementRepository = elementRepository;
     }
 
+    @Transactional
     public Archive createArchive(CreateArchiveInput input) {
         // Validate that user exists using the public API
         if (!userApi.userExists(input.getUserId())) {
@@ -61,6 +66,7 @@ public class ArchiveService {
         return archiveRepository.save(archive);
     }
 
+    @Transactional
     public Archive assignUserToArchive(AssignUserInput input) {
         // Validate that user exists using the public API
         if (!userApi.userExists(input.getUserId())) {
@@ -77,6 +83,7 @@ public class ArchiveService {
         return archiveRepository.save(archive);
     }
 
+    @Transactional
     public Archive unassignUserFromArchive(UnassignUserInput input) {
         Archive archive = archiveRepository.findById(input.getArchiveId())
                 .orElseThrow(() -> new IllegalArgumentException("Archive with ID " + input.getArchiveId() + " does not exist"));
@@ -112,6 +119,43 @@ public class ArchiveService {
         return archiveRepository.findById(id).orElse(null);
     }
 
+    public Archive getArchiveByIdWithRelations(Long id) {
+        return archiveRepository.findByIdWithRelations(id);
+    }
+
+    // ========== Paginated Query Methods (Recommended for scalability) ==========
+
+    public Page<Archive> getAllArchivesPaginated(Pageable pageable) {
+        return archiveRepository.findAll(pageable);
+    }
+
+    public Page<Archive> getArchivesByUserIdPaginated(Long userId, Pageable pageable) {
+        return archiveRepository.findByOwnerId(userId, pageable);
+    }
+
+    public Page<Archive> getArchivesByUserAssignmentPaginated(Long userId, Pageable pageable) {
+        return archiveRepository.findArchivesByUserIdOwnerOrAssigned(userId, pageable);
+    }
+
+    public Page<Archive> getArchivesByUserRolePaginated(Long userId, UserRole role, Pageable pageable) {
+        return archiveRepository.findArchivesByUserIdAndRole(userId, role, pageable);
+    }
+
+    public Page<Archive> getArchivesByStatusPaginated(ArchiveStatus status, Pageable pageable) {
+        return archiveRepository.findByStatus(status, pageable);
+    }
+
+    public Page<Archive> searchArchivesByTitlePaginated(String title, Pageable pageable) {
+        return archiveRepository.findByTitleContainingIgnoreCase(title, pageable);
+    }
+
+    public Page<Archive> getArchivesByOwnerAndStatusPaginated(Long ownerId, ArchiveStatus status, Pageable pageable) {
+        return archiveRepository.findByOwnerIdAndStatus(ownerId, status, pageable);
+    }
+
+    // ========== Legacy Non-Paginated Methods (For backward compatibility) ==========
+    // NOTE: These should be deprecated in favor of paginated versions for production use
+
     public List<Archive> getAllArchives() {
         return archiveRepository.findAll();
     }
@@ -121,6 +165,7 @@ public class ArchiveService {
         return archiveRepository.findByOwnerId(userId);
     }
 
+    @Transactional
     public Archive updateArchiveStatus(Long archiveId, ArchiveStatus status) {
         Archive archive = archiveRepository.findById(archiveId).orElse(null);
         if (archive != null) {
@@ -131,6 +176,7 @@ public class ArchiveService {
         return null;
     }
 
+    @Transactional
     public Archive updateArchive(Long id, UpdateArchiveInput input) {
         Archive archive = archiveRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Archive with ID " + id + " does not exist"));
@@ -144,6 +190,7 @@ public class ArchiveService {
         return archiveRepository.save(archive);
     }
 
+    @Transactional
     public Archive setArchiveRootElement(Long archiveId, Long rootElementId) {
         Archive archive = archiveRepository.findById(archiveId)
                 .orElseThrow(() -> new IllegalArgumentException("Archive with ID " + archiveId + " does not exist"));
@@ -163,6 +210,7 @@ public class ArchiveService {
         return archiveRepository.save(archive);
     }
 
+    @Transactional
     public Boolean deleteArchive(Long id) {
         Archive archive = archiveRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Archive with ID " + id + " does not exist"));

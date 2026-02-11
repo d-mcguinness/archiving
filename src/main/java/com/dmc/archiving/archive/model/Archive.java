@@ -14,7 +14,14 @@ import java.util.HashSet;
 import java.util.Objects;
 
 @Entity
-@Table(name = "archives")
+@Table(name = "archives", indexes = {
+    @Index(name = "idx_archive_owner_id", columnList = "owner_id"),
+    @Index(name = "idx_archive_status", columnList = "status"),
+    @Index(name = "idx_archive_standard", columnList = "standard"),
+    @Index(name = "idx_archive_created_at", columnList = "created_at"),
+    @Index(name = "idx_archive_updated_at", columnList = "updated_at"),
+    @Index(name = "idx_archive_owner_status", columnList = "owner_id, status")
+})
 @Getter
 @Setter
 @NoArgsConstructor

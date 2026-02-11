@@ -11,7 +11,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 @Entity
-@Table(name = "user_assignments")
+@Table(name = "user_assignments", indexes = {
+    @Index(name = "idx_ua_user_id", columnList = "user_id"),
+    @Index(name = "idx_ua_archive_id", columnList = "archive_id"),
+    @Index(name = "idx_ua_user_archive", columnList = "user_id, archive_id", unique = true),
+    @Index(name = "idx_ua_role", columnList = "role"),
+    @Index(name = "idx_ua_assigned_at", columnList = "assigned_at")
+})
 @Getter
 @Setter
 @NoArgsConstructor

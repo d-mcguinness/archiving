@@ -13,6 +13,10 @@ import com.dmc.archiving.archive.strategy.ValidationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -41,7 +45,8 @@ public class ArchiveController {
     @Autowired
     private ArchiveStrategyFactory strategyFactory;
 
-    // Existing query methods
+    // ========== Legacy Query Methods (Non-paginated - use paginated versions for production) ==========
+
     @QueryMapping
     public List<Archive> getAllArchives() {
         return archiveService.getAllArchives();
@@ -66,6 +71,93 @@ public class ArchiveController {
     @QueryMapping
     public List<Archive> getArchivesByUserRole(@Argument Long userId, @Argument UserRole role) {
         return archiveService.getArchivesByUserRole(userId, role);
+    }
+
+    // ========== Paginated Query Methods (Recommended for scalability) ==========
+
+    @QueryMapping
+    public Page<Archive> getAllArchivesPaginated(
+            @Argument Integer page,
+            @Argument Integer size,
+            @Argument String sortBy,
+            @Argument String sortDirection) {
+
+        // Default values
+        int pageNum = page != null ? page : 0;
+        int pageSize = size != null ? size : 20;
+        String sortField = sortBy != null ? sortBy : "createdAt";
+        Sort.Direction direction = "ASC".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, sortField));
+        return archiveService.getAllArchivesPaginated(pageable);
+    }
+
+    @QueryMapping
+    public Page<Archive> getArchivesByUserPaginated(
+            @Argument Long userId,
+            @Argument Integer page,
+            @Argument Integer size,
+            @Argument String sortBy,
+            @Argument String sortDirection) {
+
+        int pageNum = page != null ? page : 0;
+        int pageSize = size != null ? size : 20;
+        String sortField = sortBy != null ? sortBy : "createdAt";
+        Sort.Direction direction = "ASC".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, sortField));
+        return archiveService.getArchivesByUserIdPaginated(userId, pageable);
+    }
+
+    @QueryMapping
+    public Page<Archive> getArchivesByUserAssignmentPaginated(
+            @Argument Long userId,
+            @Argument Integer page,
+            @Argument Integer size,
+            @Argument String sortBy,
+            @Argument String sortDirection) {
+
+        int pageNum = page != null ? page : 0;
+        int pageSize = size != null ? size : 20;
+        String sortField = sortBy != null ? sortBy : "createdAt";
+        Sort.Direction direction = "ASC".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, sortField));
+        return archiveService.getArchivesByUserAssignmentPaginated(userId, pageable);
+    }
+
+    @QueryMapping
+    public Page<Archive> getArchivesByStatusPaginated(
+            @Argument ArchiveStatus status,
+            @Argument Integer page,
+            @Argument Integer size,
+            @Argument String sortBy,
+            @Argument String sortDirection) {
+
+        int pageNum = page != null ? page : 0;
+        int pageSize = size != null ? size : 20;
+        String sortField = sortBy != null ? sortBy : "createdAt";
+        Sort.Direction direction = "ASC".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, sortField));
+        return archiveService.getArchivesByStatusPaginated(status, pageable);
+    }
+
+    @QueryMapping
+    public Page<Archive> searchArchivesByTitlePaginated(
+            @Argument String title,
+            @Argument Integer page,
+            @Argument Integer size,
+            @Argument String sortBy,
+            @Argument String sortDirection) {
+
+        int pageNum = page != null ? page : 0;
+        int pageSize = size != null ? size : 20;
+        String sortField = sortBy != null ? sortBy : "createdAt";
+        Sort.Direction direction = "ASC".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, sortField));
+        return archiveService.searchArchivesByTitlePaginated(title, pageable);
     }
 
     // Existing mutation methods

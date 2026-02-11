@@ -2,10 +2,12 @@
   import { onMount } from 'svelte';
   import { client } from '$lib/apollo';
   import { GET_ALL_USERS } from '$lib/graphql/queries';
+  import { toasts } from '$lib/stores/toastStore';
 
   let users: any[] = [];
   let loading = true;
   let error: string | null = null;
+  let fileInputs: { [key: number]: HTMLInputElement } = {};
 
   onMount(async () => {
     await loadUsers();
@@ -25,6 +27,53 @@
       console.error('Load users error:', e);
     } finally {
       loading = false;
+    }
+  }
+
+  function triggerFileUpload(userId: number) {
+    const input = fileInputs[userId];
+    if (input) {
+      input.click();
+    }
+  }
+
+  async function handleFileSelect(event: Event, userId: number, userName: string) {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+
+    if (!file) return;
+
+    try {
+      // Create FormData to send file
+      const formData = new FormData();
+      formData.append('file', file);
+
+      console.log('Uploading file for user:', userId, userName);
+      console.log('File:', file.name, 'Size:', file.size, 'Type:', file.type);
+
+      // Upload file to backend
+      const response = await fetch(`http://localhost:2020/api/users/${userId}/upload`, {
+        method: 'POST',
+        body: formData,
+        // Don't set Content-Type header - browser will set it with boundary for multipart
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        console.log('Upload successful, showing toast...');
+        toasts.success('Document archived');
+        console.log('Toast called successfully');
+      } else {
+        throw new Error(result.error || 'Upload failed');
+      }
+
+      // Reset the input so the same file can be selected again if needed
+      target.value = '';
+    } catch (error) {
+      console.error('File upload error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload file';
+      toasts.error(`Upload failed: ${errorMessage}`);
     }
   }
 </script>
@@ -76,6 +125,21 @@
               </td>
               <td class="age-cell">{user.age || '-'}</td>
               <td class="actions-cell">
+                <!-- Hidden file input -->
+                <input
+                  type="file"
+                  bind:this={fileInputs[user.id]}
+                  on:change={(e) => handleFileSelect(e, user.id, user.name)}
+                  style="display: none;"
+                  accept="*/*"
+                />
+                <button
+                  class="btn-action btn-upload"
+                  on:click={() => triggerFileUpload(user.id)}
+                  title="Upload file"
+                >
+                  📁 Upload
+                </button>
                 <a href="/users/update?userId={user.id}" class="btn-action btn-edit">
                   ✏️ Edit
                 </a>
@@ -252,7 +316,7 @@
   .actions-cell {
     text-align: right;
     white-space: nowrap;
-    width: 250px;
+    width: 350px;
   }
 
   .btn-action {
@@ -266,6 +330,15 @@
     border: none;
     cursor: pointer;
     text-decoration: none;
+  }
+
+  .btn-upload {
+    background: #10b981;
+    color: white;
+  }
+
+  .btn-upload:hover {
+    background: #059669;
   }
 
   .btn-edit {
