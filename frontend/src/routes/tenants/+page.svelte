@@ -116,10 +116,7 @@
               <td class="date-cell">{tenant.updatedAt ? new Date(tenant.updatedAt).toLocaleDateString() : '-'}</td>
               <td class="actions-cell">
                 <a href="/archives?tenantId={tenant.id}" class="btn-action btn-archives">
-                  📁 Archives
-                </a>
-                <a href="/tenants/update?tenantId={tenant.id}" class="btn-action btn-edit">
-                  ✏️ Edit
+                  📁 View Archives
                 </a>
                 <a href="/tenants/delete?tenantId={tenant.id}" class="btn-action btn-delete">
                   🗑️ Delete
@@ -376,7 +373,7 @@
   .actions-cell {
     text-align: right;
     white-space: nowrap;
-    width: 350px;
+    width: 280px;
   }
 
   .btn-action {
@@ -401,14 +398,6 @@
     background: #7c3aed;
   }
 
-  .btn-edit {
-    background: #3b82f6;
-    color: white;
-  }
-
-  .btn-edit:hover {
-    background: #2563eb;
-  }
 
   .btn-delete {
     background: #dc2626;

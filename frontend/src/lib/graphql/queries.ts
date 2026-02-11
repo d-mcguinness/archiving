@@ -280,6 +280,28 @@ export const GET_ARCHIVES_BY_USER: DocumentNode = gql`
   }
 `;
 
+export const GET_ARCHIVES_BY_OWNER: DocumentNode = gql`
+  query GetArchivesByOwner($ownerId: ID!) {
+    getArchivesByOwner(ownerId: $ownerId) {
+      id
+      ownerId
+      title
+      description
+      content
+      createdAt
+      updatedAt
+      status
+      standard
+      assignedUsers {
+        id
+        userId
+        role
+        assignedAt
+      }
+    }
+  }
+`;
+
 export const GET_ARCHIVES_BY_USER_ASSIGNMENT: DocumentNode = gql`
   query GetArchivesByUserAssignment($userId: ID!) {
     getArchivesByUserAssignment(userId: $userId) {

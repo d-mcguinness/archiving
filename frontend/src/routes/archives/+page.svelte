@@ -1,12 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { page } from '$app/stores';
   import { client } from '$lib/apollo';
-  import { GET_ALL_ARCHIVES, GET_ALL_USERS } from '$lib/graphql/queries';
+  import { GET_ALL_ARCHIVES, GET_ARCHIVES_BY_OWNER, GET_ALL_USERS } from '$lib/graphql/queries';
 
   let archives: any[] = [];
   let users: any[] = [];
   let loading = true;
   let error: string | null = null;
+  let tenantId: string | null = null;
+  let filteredByTenant = false;
 
   // Extract dialog state
   let showExtractDialog = false;
@@ -15,6 +18,15 @@
   let extracting = false;
   let extractError: string | null = null;
 
+  // Subscribe to URL params
+  $: {
+    const newTenantId = $page.url.searchParams.get('tenantId');
+    if (newTenantId !== tenantId) {
+      tenantId = newTenantId;
+      loadArchives();
+    }
+  }
+
   onMount(async () => {
     await Promise.all([loadArchives(), loadUsers()]);
   });
@@ -22,11 +34,27 @@
   async function loadArchives() {
     try {
       loading = true;
-      const result = await client.query({
-        query: GET_ALL_ARCHIVES,
-        fetchPolicy: 'network-only' // Always fetch fresh data
-      });
-      archives = result?.data?.getAllArchives || [];
+
+      let result;
+      if (tenantId) {
+        // Fetch archives filtered by owner (tenant)
+        result = await client.query({
+          query: GET_ARCHIVES_BY_OWNER,
+          variables: { ownerId: tenantId },
+          fetchPolicy: 'network-only'
+        });
+        archives = result?.data?.getArchivesByOwner || [];
+        filteredByTenant = true;
+      } else {
+        // Fetch all archives
+        result = await client.query({
+          query: GET_ALL_ARCHIVES,
+          fetchPolicy: 'network-only'
+        });
+        archives = result?.data?.getAllArchives || [];
+        filteredByTenant = false;
+      }
+
       error = null;
     } catch (e) {
       error = e instanceof Error ? e.message : 'An unknown error occurred';
@@ -35,6 +63,7 @@
       loading = false;
     }
   }
+
 
   async function loadUsers() {
     try {
@@ -85,7 +114,7 @@
 
     try {
       // Call the Spring Boot REST endpoint
-      const response = await fetch(`/api/archives/${selectedArchiveForExtract.id}/extract`, {
+      const response = await fetch(`http://localhost:2020/api/archives/${selectedArchiveForExtract.id}/extract`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: extractPassword })
@@ -128,8 +157,25 @@
 </svelte:head>
 
 <div class="archives-page">
+  {#if filteredByTenant}
+    <div class="breadcrumb">
+      <a href="/tenants">Tenants</a>
+      <span class="separator">›</span>
+      <span class="current">Archives for Tenant #{tenantId}</span>
+    </div>
+  {/if}
+
   <div class="page-header">
-    <h1>Archives</h1>
+    <div class="header-left">
+      <h1>Archives</h1>
+      {#if filteredByTenant}
+        <div class="filter-badge">
+          <span class="filter-icon">🔍</span>
+          <span>Filtered by Tenant #{tenantId}</span>
+          <a href="/archives" class="clear-filter">✕ Clear</a>
+        </div>
+      {/if}
+    </div>
     <a href="/archives/create" class="add-archive-btn">Add Archive</a>
   </div>
 
@@ -211,12 +257,6 @@
                 >
                   📥 Extract
                 </button>
-                <a href="/archives/document?archiveId={archive.id}&standard={archive.standard}" class="btn-action btn-upload">
-                  📄 Upload
-                </a>
-                <a href="/archives/update/{archive.id}" class="btn-action btn-edit">
-                  ✏️ Edit
-                </a>
                 <a href="/archives/delete/{archive.id}" class="btn-action btn-delete">
                   🗑️ Delete
                 </a>
@@ -298,17 +338,82 @@
     padding: 2rem;
   }
 
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    color: #64748b;
+  }
+
+  .breadcrumb a {
+    color: #3b82f6;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .breadcrumb a:hover {
+    color: #2563eb;
+    text-decoration: underline;
+  }
+
+  .breadcrumb .separator {
+    color: #94a3b8;
+  }
+
+  .breadcrumb .current {
+    color: #1e293b;
+    font-weight: 500;
+  }
+
   .page-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 2rem;
+  }
+
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
   }
 
   .page-header h1 {
     margin: 0;
     color: #1e293b;
     font-size: 2rem;
+  }
+
+  .filter-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    color: #1e40af;
+    width: fit-content;
+  }
+
+  .filter-icon {
+    font-size: 1rem;
+  }
+
+  .clear-filter {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    transition: background 0.2s;
+  }
+
+  .clear-filter:hover {
+    background: #dbeafe;
   }
 
   .add-archive-btn {
@@ -543,7 +648,7 @@
   .actions-cell {
     text-align: right;
     white-space: nowrap;
-    width: 420px;
+    width: 250px;
   }
 
   .btn-action {
@@ -568,23 +673,6 @@
     background: #7c3aed;
   }
 
-  .btn-upload {
-    background: #10b981;
-    color: white;
-  }
-
-  .btn-upload:hover {
-    background: #059669;
-  }
-
-  .btn-edit {
-    background: #3b82f6;
-    color: white;
-  }
-
-  .btn-edit:hover {
-    background: #2563eb;
-  }
 
   .btn-delete {
     background: #dc2626;

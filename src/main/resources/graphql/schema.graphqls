@@ -231,6 +231,7 @@ type Query {
     getAllArchives: [Archive!]!
     getArchive(id: ID!): Archive
     getArchivesByUser(userId: ID!): [Archive!]!
+    getArchivesByOwner(ownerId: ID!): [Archive!]!
     getArchivesByUserAssignment(userId: ID!): [Archive!]!
     getArchivesByUserRole(userId: ID!, role: UserRole!): [Archive!]!
 

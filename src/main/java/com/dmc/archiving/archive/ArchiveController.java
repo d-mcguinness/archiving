@@ -62,6 +62,11 @@ public class ArchiveController {
         return archiveService.getArchivesByUserId(userId);
     }
 
+    @QueryMapping
+    public List<Archive> getArchivesByOwner(@Argument Long ownerId) {
+        return archiveService.getArchivesByOwner(ownerId);
+    }
+
     // New query methods for user assignments
     @QueryMapping
     public List<Archive> getArchivesByUserAssignment(@Argument Long userId) {

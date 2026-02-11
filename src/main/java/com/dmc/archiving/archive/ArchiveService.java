@@ -103,6 +103,10 @@ public class ArchiveService {
         return archiveRepository.findArchivesByUserIdOwnerOrAssigned(userId);
     }
 
+    public List<Archive> getArchivesByOwner(Long ownerId) {
+        return archiveRepository.findByOwnerId(ownerId);
+    }
+
     public List<Archive> getArchivesByUserRole(Long userId, UserRole role) {
         if (role.equals(UserRole.OWNER)) {
             // For owner role, check both actual owner and assigned owner role
