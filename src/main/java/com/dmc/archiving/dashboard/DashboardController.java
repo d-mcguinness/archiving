@@ -4,6 +4,8 @@ import com.dmc.archiving.archive.ArchiveService;
 import com.dmc.archiving.archive.model.ArchiveStatus;
 import com.dmc.archiving.tenancy.service.TenancyService;
 import com.dmc.archiving.user.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,8 @@ import java.util.Map;
 @Controller
 public class DashboardController {
 
+    private static final Logger log = LoggerFactory.getLogger(DashboardController.class);
+
     @Autowired
     private UserService userService;
 
@@ -29,29 +33,60 @@ public class DashboardController {
     // GraphQL Query for Dashboard Statistics
     @QueryMapping
     public DashboardStats getDashboardStats() {
-        DashboardStats stats = new DashboardStats();
+        try {
+            log.info("Fetching dashboard stats via GraphQL");
 
-        // Get counts
-        stats.setTotalUsers(userService.getAllUsers().size());
-        stats.setTotalTenants(tenancyService.getAllTenants().size());
-        stats.setTotalArchives(archiveService.getAllArchives().size());
+            DashboardStats stats = new DashboardStats();
 
-        // Get archive breakdown by status
-        long activeArchives = archiveService.getAllArchives().stream()
-            .filter(a -> a.getStatus() == ArchiveStatus.PUBLISHED)
-            .count();
-        long draftArchives = archiveService.getAllArchives().stream()
-            .filter(a -> a.getStatus() == ArchiveStatus.DRAFT)
-            .count();
-        long archivedArchives = archiveService.getAllArchives().stream()
-            .filter(a -> a.getStatus() == ArchiveStatus.ARCHIVED)
-            .count();
+            // Get counts with error handling
+            try {
+                stats.setTotalUsers(userService.getAllUsers().size());
+            } catch (Exception e) {
+                log.error("Error fetching users count: {}", e.getMessage());
+                stats.setTotalUsers(0);
+            }
 
-        stats.setActiveArchives((int) activeArchives);
-        stats.setDraftArchives((int) draftArchives);
-        stats.setArchivedArchives((int) archivedArchives);
+            try {
+                stats.setTotalTenants(tenancyService.getAllTenants().size());
+            } catch (Exception e) {
+                log.error("Error fetching tenants count: {}", e.getMessage());
+                stats.setTotalTenants(0);
+            }
 
-        return stats;
+            try {
+                stats.setTotalArchives(archiveService.getAllArchives().size());
+
+                // Get archive breakdown by status
+                long activeArchives = archiveService.getAllArchives().stream()
+                    .filter(a -> a.getStatus() == ArchiveStatus.PUBLISHED)
+                    .count();
+                long draftArchives = archiveService.getAllArchives().stream()
+                    .filter(a -> a.getStatus() == ArchiveStatus.DRAFT)
+                    .count();
+                long archivedArchives = archiveService.getAllArchives().stream()
+                    .filter(a -> a.getStatus() == ArchiveStatus.ARCHIVED)
+                    .count();
+
+                stats.setActiveArchives((int) activeArchives);
+                stats.setDraftArchives((int) draftArchives);
+                stats.setArchivedArchives((int) archivedArchives);
+            } catch (Exception e) {
+                log.error("Error fetching archives: {}", e.getMessage());
+                stats.setTotalArchives(0);
+                stats.setActiveArchives(0);
+                stats.setDraftArchives(0);
+                stats.setArchivedArchives(0);
+            }
+
+            log.info("Dashboard stats fetched successfully: users={}, tenants={}, archives={}",
+                stats.getTotalUsers(), stats.getTotalTenants(), stats.getTotalArchives());
+
+            return stats;
+        } catch (Exception e) {
+            log.error("Error in getDashboardStats: {}", e.getMessage(), e);
+            // Return empty stats instead of throwing
+            return new DashboardStats();
+        }
     }
 
     // REST Endpoint for Dashboard Statistics
@@ -98,6 +133,24 @@ public class DashboardController {
     }
 
     // REST Endpoint for Quick Stats (lightweight)
+    @GetMapping("/api/dashboard/health")
+    @ResponseBody
+    public ResponseEntity<?> healthCheck() {
+        Map<String, Object> health = new HashMap<>();
+        health.put("status", "UP");
+        health.put("timestamp", System.currentTimeMillis());
+
+        try {
+            health.put("usersAvailable", userService != null);
+            health.put("tenantsAvailable", tenancyService != null);
+            health.put("archivesAvailable", archiveService != null);
+        } catch (Exception e) {
+            health.put("error", e.getMessage());
+        }
+
+        return ResponseEntity.ok(health);
+    }
+
     @GetMapping("/api/dashboard/quick-stats")
     @ResponseBody
     public ResponseEntity<?> getQuickStats() {

@@ -14,11 +14,60 @@
   let loading = true;
   let error: string | null = null;
 
+  // Get current user role
+  let currentRole = '';
+  let currentUser: any = null;
+
   // File upload state
   let selectedFile: File | null = null;
   let uploading = false;
   let uploadMessage = '';
   let uploadError = '';
+
+  onMount(() => {
+    // Check user role
+    const role = localStorage.getItem('auth_role');
+    const user = localStorage.getItem('auth_user');
+    currentRole = role || '';
+    if (user) {
+      currentUser = JSON.parse(user);
+    }
+
+    // Load stats only for ADMIN and TENANT
+    if (currentRole === 'ADMIN' || currentRole === 'TENANT') {
+      loadDashboardStats();
+    } else {
+      loading = false;
+    }
+  });
+
+  async function loadDashboardStats() {
+    try {
+      loading = true;
+      // Fetch dashboard stats using single optimized query
+      const result = await client.query({
+        query: GET_DASHBOARD_STATS,
+        fetchPolicy: 'network-only'
+      });
+
+      const data = result?.data?.getDashboardStats;
+      if (data) {
+        stats = {
+          users: data.totalUsers || 0,
+          tenants: data.totalTenants || 0,
+          archives: data.totalArchives || 0,
+          activeArchives: data.activeArchives || 0,
+          draftArchives: data.draftArchives || 0,
+          archivedArchives: data.archivedArchives || 0
+        };
+      }
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'An unknown error occurred';
+      console.error('Dashboard error:', e);
+    } finally {
+      loading = false;
+    }
+  }
 
   function handleFileSelect(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -67,33 +116,6 @@
       uploading = false;
     }
   }
-
-  onMount(async () => {
-    try {
-      // Fetch dashboard stats using single optimized query
-      const result = await client.query({
-        query: GET_DASHBOARD_STATS,
-        fetchPolicy: 'network-only'
-      });
-
-      const data = result?.data?.getDashboardStats;
-      if (data) {
-        stats = {
-          users: data.totalUsers || 0,
-          tenants: data.totalTenants || 0,
-          archives: data.totalArchives || 0,
-          activeArchives: data.activeArchives || 0,
-          draftArchives: data.draftArchives || 0,
-          archivedArchives: data.archivedArchives || 0
-        };
-      }
-    } catch (e) {
-      error = e instanceof Error ? e.message : 'An unknown error occurred';
-      console.error('Dashboard error:', e);
-    } finally {
-      loading = false;
-    }
-  });
 </script>
 
 <svelte:head>
@@ -103,77 +125,145 @@
 <div class="dashboard">
   <h1>Dashboard</h1>
 
-  {#if loading}
-    <div class="loading">
-      <div class="spinner"></div>
-    </div>
-  {:else if error}
-    <div class="error">
-      Error loading dashboard: {error}
-    </div>
-  {:else}
-    <div class="stats-grid">
-      <div class="stat-card">
-        <h3>Users</h3>
-        <div class="stat-number">{stats.users}</div>
-        <a href="/users" class="stat-link">Manage Users</a>
+  {#if currentRole === 'USER'}
+    <!-- USER ROLE - Document Submission Only -->
+    <div class="user-dashboard">
+      <div class="welcome-message">
+        <h2>👤 Welcome, {currentUser?.name || 'User'}!</h2>
+        <p>Submit your documents for archiving</p>
       </div>
 
-      <div class="stat-card">
-        <h3>Tenants</h3>
-        <div class="stat-number">{stats.tenants}</div>
-        <a href="/tenants" class="stat-link">Manage Tenants</a>
-      </div>
-
-      <div class="stat-card">
-        <h3>Archives</h3>
-        <div class="stat-number">{stats.archives}</div>
-        <a href="/archives" class="stat-link">Manage Archives</a>
-      </div>
-    </div>
-
-    <div class="archive-breakdown">
-      <h2>Archive Status Breakdown</h2>
-      <div class="breakdown-grid">
-        <div class="breakdown-card active">
-          <div class="breakdown-icon">✅</div>
-          <div class="breakdown-content">
-            <div class="breakdown-label">Active</div>
-            <div class="breakdown-number">{stats.activeArchives}</div>
+      <div class="file-upload-section">
+        <h2>📄 Submit Document</h2>
+        <div class="upload-card">
+          <div class="upload-area">
+            <input
+              type="file"
+              id="file-upload"
+              on:change={handleFileSelect}
+              disabled={uploading}
+              class="file-input"
+            />
+            <label for="file-upload" class="file-label">
+              <span class="upload-icon">📁</span>
+              <span class="upload-text">
+                {selectedFile ? selectedFile.name : 'Choose a file to upload'}
+              </span>
+            </label>
           </div>
-        </div>
 
-        <div class="breakdown-card draft">
-          <div class="breakdown-icon">📝</div>
-          <div class="breakdown-content">
-            <div class="breakdown-label">Draft</div>
-            <div class="breakdown-number">{stats.draftArchives}</div>
-          </div>
-        </div>
+          {#if uploadMessage}
+            <div class="upload-success">
+              <span class="success-icon">✅</span>
+              <span>{uploadMessage}</span>
+            </div>
+          {/if}
 
-        <div class="breakdown-card archived">
-          <div class="breakdown-icon">📦</div>
-          <div class="breakdown-content">
-            <div class="breakdown-label">Archived</div>
-            <div class="breakdown-number">{stats.archivedArchives}</div>
-          </div>
+          {#if uploadError}
+            <div class="upload-error">
+              <span class="error-icon">❌</span>
+              <span>{uploadError}</span>
+            </div>
+          {/if}
+
+          <button
+            class="upload-button"
+            on:click={handleUpload}
+            disabled={!selectedFile || uploading}
+          >
+            {uploading ? '⏳ Uploading...' : '📤 Upload Document'}
+          </button>
         </div>
       </div>
-    </div>
 
-    <div class="file-upload-section">
-      <h2>Upload File</h2>
-      <div class="upload-card">
-        <div class="upload-area">
-          <input
-            type="file"
-            id="file-upload"
-            on:change={handleFileSelect}
-            disabled={uploading}
-            class="file-input"
-          />
-          <label for="file-upload" class="file-label">
-            <span class="upload-icon">📁</span>
+      <div class="user-info-card">
+        <h3>ℹ️ Information</h3>
+        <p>Your submitted documents will be reviewed and archived by the system administrators.</p>
+        <p>You will receive a notification once your document is processed.</p>
+      </div>
+    </div>
+  {:else if currentRole === 'ADMIN' || currentRole === 'TENANT'}
+    <!-- ADMIN & TENANT ROLES - Full Dashboard -->
+    {#if loading}
+      <div class="loading">
+        <div class="spinner"></div>
+      </div>
+    {:else if error}
+      <div class="error">
+        Error loading dashboard: {error}
+      </div>
+    {:else}
+      <div class="stats-grid">
+        <!-- Show Users stat for ADMIN and TENANT -->
+        {#if currentRole === 'ADMIN' || currentRole === 'TENANT'}
+          <div class="stat-card">
+            <h3>Users</h3>
+            <div class="stat-number">{stats.users}</div>
+            <a href="/users" class="stat-link">Manage Users</a>
+          </div>
+        {/if}
+
+        <!-- Show Tenants stat for ADMIN only -->
+        {#if currentRole === 'ADMIN'}
+          <div class="stat-card">
+            <h3>Tenants</h3>
+            <div class="stat-number">{stats.tenants}</div>
+            <a href="/tenants" class="stat-link">Manage Tenants</a>
+          </div>
+        {/if}
+
+        <!-- Show Archives for ADMIN and TENANT -->
+        {#if currentRole === 'ADMIN' || currentRole === 'TENANT'}
+          <div class="stat-card">
+            <h3>Archives</h3>
+            <div class="stat-number">{stats.archives}</div>
+            <a href="/archives" class="stat-link">Manage Archives</a>
+          </div>
+        {/if}
+      </div>
+
+      <div class="archive-breakdown">
+        <h2>Archive Status Breakdown</h2>
+        <div class="breakdown-grid">
+          <div class="breakdown-card active">
+            <div class="breakdown-icon">✅</div>
+            <div class="breakdown-content">
+              <div class="breakdown-label">Active</div>
+              <div class="breakdown-number">{stats.activeArchives}</div>
+            </div>
+          </div>
+
+          <div class="breakdown-card draft">
+            <div class="breakdown-icon">📝</div>
+            <div class="breakdown-content">
+              <div class="breakdown-label">Draft</div>
+              <div class="breakdown-number">{stats.draftArchives}</div>
+            </div>
+          </div>
+
+          <div class="breakdown-card archived">
+            <div class="breakdown-icon">📦</div>
+            <div class="breakdown-content">
+              <div class="breakdown-label">Archived</div>
+              <div class="breakdown-number">{stats.archivedArchives}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="file-upload-section">
+        <h2>Upload File</h2>
+        <div class="upload-card">
+          <div class="upload-area">
+            <input
+              type="file"
+              id="file-upload"
+              on:change={handleFileSelect}
+              disabled={uploading}
+              class="file-input"
+            />
+            <label for="file-upload" class="file-label">
+              <span class="upload-icon">📁</span>
             <span class="upload-text">
               {selectedFile ? selectedFile.name : 'Choose a file to upload'}
             </span>
@@ -222,6 +312,13 @@
           <p>Start a new archive document</p>
         </a>
       </div>
+    </div>
+    {/if}
+  {:else}
+    <!-- Not logged in or role not set -->
+    <div class="welcome-guest">
+      <h2>Welcome to Archiving System</h2>
+      <p>Please <a href="/login">login</a> to access the dashboard.</p>
     </div>
   {/if}
 </div>
@@ -476,5 +573,82 @@
     margin: 0;
     color: #64748b;
     font-size: 0.875rem;
+  }
+
+  /* USER Role Specific Styles */
+  .user-dashboard {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .welcome-message {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 0.75rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .welcome-message h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.75rem;
+  }
+
+  .welcome-message p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1.125rem;
+  }
+
+  .user-info-card {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .user-info-card h3 {
+    margin: 0 0 1rem 0;
+    color: #1e40af;
+  }
+
+  .user-info-card p {
+    margin: 0 0 0.75rem 0;
+    color: #475569;
+    line-height: 1.6;
+  }
+
+  .user-info-card p:last-child {
+    margin-bottom: 0;
+  }
+
+  .welcome-guest {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .welcome-guest h2 {
+    margin: 0 0 1rem 0;
+    color: #1e293b;
+  }
+
+  .welcome-guest p {
+    margin: 0;
+    color: #64748b;
+  }
+
+  .welcome-guest a {
+    color: #3b82f6;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .welcome-guest a:hover {
+    text-decoration: underline;
   }
 </style>

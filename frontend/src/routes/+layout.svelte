@@ -2,6 +2,8 @@
   import '../app.css';
   import Toast from '$lib/components/Toast.svelte';
   import { page } from '$app/stores';
+  import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
 
   // Reactive declaration ensures this updates whenever the route changes
   $: currentPath = $page.url.pathname;
@@ -13,6 +15,91 @@
     }
     return currentPath === path || currentPath.startsWith(path + '/');
   };
+
+  // Auth state
+  let isLoggedIn = false;
+  let currentUser: any = null;
+  let currentRole = '';
+  let isBrowser = false;
+
+  // Check if we're in browser (not SSR)
+  $: isBrowser = typeof window !== 'undefined';
+
+  // Reactive statement to check auth on route changes (only in browser)
+  $: if (isBrowser) {
+    // Re-check auth status whenever the page changes
+    $page;
+    checkAuthStatus();
+  }
+
+  onMount(() => {
+    checkAuthStatus();
+
+    // Listen for storage changes (e.g., login in another tab)
+    window.addEventListener('storage', checkAuthStatus);
+
+    return () => {
+      window.removeEventListener('storage', checkAuthStatus);
+    };
+  });
+
+  function checkAuthStatus() {
+    // Only run in browser
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      const user = localStorage.getItem('auth_user');
+      const role = localStorage.getItem('auth_role');
+
+      if (token && user) {
+        isLoggedIn = true;
+        try {
+          currentUser = JSON.parse(user);
+        } catch (e) {
+          console.error('Error parsing user data:', e);
+          currentUser = null;
+          isLoggedIn = false;
+        }
+        currentRole = role || '';
+      } else {
+        isLoggedIn = false;
+        currentUser = null;
+        currentRole = '';
+      }
+    } catch (e) {
+      console.error('Error checking auth status:', e);
+      isLoggedIn = false;
+      currentUser = null;
+      currentRole = '';
+    }
+  }
+
+  function handleLogout() {
+    // Only run in browser
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return;
+    }
+
+    try {
+      // Clear auth data
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_role');
+
+      // Update state immediately
+      isLoggedIn = false;
+      currentUser = null;
+      currentRole = '';
+
+      // Redirect to login
+      goto('/login');
+    } catch (e) {
+      console.error('Error during logout:', e);
+    }
+  }
 </script>
 
 <div class="app">
@@ -21,54 +108,63 @@
   <header>
     <nav>
       <div class="nav-container">
-        <h1><a href="/">Archiving System</a></h1>
+        <div class="brand-section">
+          <h1><a href="/">🏛️ Archiving System</a></h1>
+        </div>
+
         <ul class="nav-links">
-          <li>
-            <a
-              href="/"
-              class="dashboard-link"
-              class:active={isActive('/')}
-            >
-              📊 Dashboard
-            </a>
-          </li>
-          <li>
-            <a
-              href="/archives"
-              class="archives-link"
-              class:active={isActive('/archives')}
-            >
-              📁 Archives
-            </a>
-          </li>
-          <li>
-            <a
-              href="/tenants"
-              class="tenants-link"
-              class:active={isActive('/tenants')}
-            >
-              🏢 Tenants
-            </a>
-          </li>
-          <li>
-            <a
-              href="/users"
-              class="users-link"
-              class:active={isActive('/users')}
-            >
-              👥 Users
-            </a>
-          </li>
-          <li>
-            <a
-              href="/admin"
-              class="admin-link"
-              class:active={isActive('/admin')}
-            >
-              🛡️ Admin
-            </a>
-          </li>
+
+          <!-- Tenants - shown to ADMIN only -->
+          {#if currentRole === 'ADMIN'}
+            <li>
+              <a
+                href="/tenants"
+                class="tenants-link"
+                class:active={isActive('/tenants')}
+              >
+                🏢 Tenants
+              </a>
+            </li>
+          {/if}
+
+          <!-- Users - shown to ADMIN and TENANT -->
+          {#if currentRole === 'ADMIN' || currentRole === 'TENANT'}
+            <li>
+              <a
+                href="/users"
+                class="users-link"
+                class:active={isActive('/users')}
+              >
+                👥 Users
+              </a>
+            </li>
+          {/if}
+
+          <!-- Archives - shown to ADMIN and TENANT -->
+          {#if currentRole === 'ADMIN' || currentRole === 'TENANT'}
+            <li>
+              <a
+                href="/archives"
+                class="archives-link"
+                class:active={isActive('/archives')}
+              >
+                📁 Archives
+              </a>
+            </li>
+          {/if}
         </ul>
+        <div class="auth-section">
+          {#if isLoggedIn && currentUser}
+            <span class="user-name-display">👤 {currentUser.name}</span>
+            <button class="logout-button" on:click={handleLogout}>
+              🚪 Logout
+            </button>
+          {:else}
+            <a href="/login" class="login-button">
+              🔐 Login
+            </a>
+          {/if}
+        </div>
       </div>
     </nav>
   </header>
@@ -102,64 +198,65 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 2rem;
+  }
+
+  .brand-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  h1 {
+    margin: 0;
   }
 
   h1 a {
     color: white;
     text-decoration: none;
     font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
+
 
   .nav-links {
     display: flex;
     list-style: none;
-    gap: 2rem;
+    gap: 0.75rem;
     margin: 0;
     padding: 0;
+    align-items: center;
+  }
+
+  .nav-links li {
+    display: flex;
   }
 
   .nav-links a {
     color: white;
     text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    transition: all 0.2s;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
     font-weight: 600;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    border: 2px solid transparent;
   }
 
   .nav-links a:hover:not(.active) {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   }
 
   .nav-links a.active {
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6) !important;
-    transform: scale(1.12) !important;
-    border: 3px solid rgba(255, 255, 255, 0.8) !important;
-    animation: pulse 2s ease-in-out infinite;
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    transform: none;
   }
 
-  @keyframes pulse {
-    0%, 100% {
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
-    }
-    50% {
-      box-shadow: 0 8px 20px rgba(255, 255, 255, 0.4);
-    }
-  }
-
-  .nav-links a.dashboard-link {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-  }
-
-  .nav-links a.dashboard-link:hover:not(.active) {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  }
-
-  .nav-links a.dashboard-link.active {
-    background: linear-gradient(135deg, #93c5fd, #60a5fa) !important;
-  }
 
   .nav-links a.archives-link {
     background: linear-gradient(135deg, #06b6d4, #0891b2);
@@ -170,7 +267,7 @@
   }
 
   .nav-links a.archives-link.active {
-    background: linear-gradient(135deg, #67e8f9, #22d3ee) !important;
+    background: linear-gradient(135deg, #22d3ee, #06b6d4);
   }
 
   .nav-links a.tenants-link {
@@ -182,7 +279,7 @@
   }
 
   .nav-links a.tenants-link.active {
-    background: linear-gradient(135deg, #6ee7b7, #34d399) !important;
+    background: linear-gradient(135deg, #34d399, #10b981);
   }
 
   .nav-links a.users-link {
@@ -194,19 +291,56 @@
   }
 
   .nav-links a.users-link.active {
-    background: linear-gradient(135deg, #fde68a, #fbbf24) !important;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
   }
 
-  .nav-links a.admin-link {
-    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+
+  .auth-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: auto;
   }
 
-  .nav-links a.admin-link:hover:not(.active) {
-    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  .user-name-display {
+    color: white;
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
   }
 
-  .nav-links a.admin-link.active {
-    background: linear-gradient(135deg, #c4b5fd, #a78bfa) !important;
+  .login-button,
+  .logout-button {
+    padding: 0.625rem 1.25rem;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .login-button:hover,
+  .logout-button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .logout-button {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.5);
+  }
+
+  .logout-button:hover {
+    background: rgba(239, 68, 68, 0.35);
+    border-color: rgba(239, 68, 68, 0.7);
   }
 
   main {

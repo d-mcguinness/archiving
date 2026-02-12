@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
   import { GET_ALL_ARCHIVES, GET_ALL_USERS, GET_ALL_TENANTS } from '$lib/graphql/queries';
 
@@ -8,6 +9,8 @@
   let tenants: any[] = [];
   let loading = true;
   let error: string | null = null;
+  let currentRole = '';
+  let hasAccess = false;
 
   // Statistics
   let stats = {
@@ -20,6 +23,22 @@
   };
 
   onMount(async () => {
+    // Check role first
+    const role = localStorage.getItem('auth_role');
+    currentRole = role || '';
+
+    // Only ADMIN can access this page
+    if (currentRole !== 'ADMIN') {
+      hasAccess = false;
+      loading = false;
+      // Redirect after a brief delay to show access denied message
+      setTimeout(() => {
+        goto('/');
+      }, 2000);
+      return;
+    }
+
+    hasAccess = true;
     await loadAdminData();
   });
 
@@ -73,6 +92,31 @@
 </svelte:head>
 
 <div class="admin-page">
+  {#if !hasAccess && !loading}
+    <!-- Access Denied -->
+    <div class="access-denied">
+      <div class="access-denied-icon">🚫</div>
+      <h1>Access Denied</h1>
+      <p>You don't have permission to access the admin panel.</p>
+      <p class="redirect-message">Redirecting to dashboard...</p>
+      <a href="/" class="btn-home">Go to Dashboard</a>
+    </div>
+  {:else if loading}
+    <!-- Loading State -->
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Loading admin panel...</p>
+    </div>
+  {:else if error}
+    <!-- Error State -->
+    <div class="error-state">
+      <div class="error-icon">❌</div>
+      <h2>Error Loading Data</h2>
+      <p>{error}</p>
+      <button on:click={loadAdminData} class="btn-retry">Try Again</button>
+    </div>
+  {:else}
+    <!-- Admin Dashboard -->
   <div class="page-header">
     <div class="header-content">
       <h1>🛡️ Admin Dashboard</h1>
@@ -80,10 +124,7 @@
     </div>
   </div>
 
-  {#if error}
-    <div class="error">
-      Error: {error}
-    </div>
+  <!-- Stats Grid -->
   {/if}
 
   {#if loading}
@@ -93,11 +134,11 @@
   {:else}
     <!-- Quick Actions & Statistics -->
     <div class="combined-grid">
-      <a href="/archives" class="combined-card">
-        <div class="card-icon">📁</div>
+      <a href="/tenants" class="combined-card">
+        <div class="card-icon">🏢</div>
         <div class="card-content">
-          <div class="card-title">Manage Archives</div>
-          <div class="card-value">{stats.totalArchives}</div>
+          <div class="card-title">Manage Tenants</div>
+          <div class="card-value">{stats.totalTenants}</div>
         </div>
       </a>
 
@@ -109,11 +150,11 @@
         </div>
       </a>
 
-      <a href="/tenants" class="combined-card">
-        <div class="card-icon">🏢</div>
+      <a href="/archives" class="combined-card">
+        <div class="card-icon">📁</div>
         <div class="card-content">
-          <div class="card-title">Manage Tenants</div>
-          <div class="card-value">{stats.totalTenants}</div>
+          <div class="card-title">Manage Archives</div>
+          <div class="card-value">{stats.totalArchives}</div>
         </div>
       </a>
 
@@ -485,6 +526,119 @@
 
   .view-link:hover {
     color: #2563eb;
+  }
+
+  /* Access Denied Styles */
+  .access-denied {
+    text-align: center;
+    padding: 4rem 2rem;
+    max-width: 600px;
+    margin: 4rem auto;
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .access-denied-icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+  }
+
+  .access-denied h1 {
+    color: #ef4444;
+    margin-bottom: 1rem;
+    font-size: 2rem;
+  }
+
+  .access-denied p {
+    color: #64748b;
+    margin-bottom: 1rem;
+    font-size: 1.125rem;
+  }
+
+  .redirect-message {
+    color: #3b82f6;
+    font-weight: 500;
+  }
+
+  .btn-home {
+    display: inline-block;
+    margin-top: 1.5rem;
+    padding: 0.75rem 2rem;
+    background: #3b82f6;
+    color: white;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+
+  .btn-home:hover {
+    background: #2563eb;
+  }
+
+  /* Loading Styles */
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 1rem;
+  }
+
+  .spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid #f3f4f6;
+    border-top-color: #ef4444;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Error State Styles */
+  .error-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    max-width: 600px;
+    margin: 4rem auto;
+    background: #fee2e2;
+    border-radius: 0.75rem;
+    border: 1px solid #fca5a5;
+  }
+
+  .error-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  .error-state h2 {
+    color: #991b1b;
+    margin-bottom: 1rem;
+  }
+
+  .error-state p {
+    color: #7f1d1d;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-retry {
+    padding: 0.75rem 2rem;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-retry:hover {
+    background: #dc2626;
   }
 
   @media (max-width: 768px) {

@@ -184,7 +184,8 @@ public class FileUploadController {
      */
     private String sanitizeFilename(String filename) {
         // Remove path separators and null bytes
-        String sanitized = filename.replaceAll("[/\\\\\\0]", "_");
+        // Use \\x00 instead of \\0 to avoid illegal octal escape sequence
+        String sanitized = filename.replaceAll("[/\\\\\\x00]", "_");
 
         // Remove leading dots to prevent hidden files
         sanitized = sanitized.replaceAll("^\\.+", "");
