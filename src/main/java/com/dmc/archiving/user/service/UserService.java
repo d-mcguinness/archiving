@@ -3,6 +3,7 @@ package com.dmc.archiving.user.service;
 import com.dmc.archiving.user.api.UserApi;
 import com.dmc.archiving.user.input.CreateUserInput;
 import com.dmc.archiving.user.model.User;
+import org.springframework.modulith.NamedInterface;
 
 import javax.swing.text.html.Option;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Optional;
  * UserService extends UserApi to provide both internal service methods
  * and expose public API methods to other modules.
  */
+@NamedInterface
 public interface UserService extends UserApi {
 
     /**

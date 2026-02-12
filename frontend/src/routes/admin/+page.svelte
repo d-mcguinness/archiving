@@ -40,7 +40,7 @@
       stats.totalArchives = archives.length;
       stats.totalUsers = users.length;
       stats.totalTenants = tenants.length;
-      stats.activeArchives = archives.filter(a => a.status === 'ACTIVE').length;
+      stats.activeArchives = archives.filter(a => a.status === 'PUBLISHED').length;
       stats.draftArchives = archives.filter(a => a.status === 'DRAFT').length;
       stats.archivedArchives = archives.filter(a => a.status === 'ARCHIVED').length;
 

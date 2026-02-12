@@ -8,6 +8,7 @@
   let loading = true;
   let error: string | null = null;
   let fileInputs: { [key: number]: HTMLInputElement } = {};
+  let uploadingUsers: Set<number> = new Set();
 
   onMount(async () => {
     await loadUsers();
@@ -41,39 +42,168 @@
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
 
-    if (!file) return;
+    if (!file) {
+      console.log('No file selected');
+      return;
+    }
+
+    // Add user to uploading set
+    uploadingUsers.add(userId);
+    uploadingUsers = uploadingUsers; // Trigger reactivity
+
+    const startTime = performance.now();
 
     try {
+      // Log upload start
+      console.group('📤 File Upload Round Trip Test');
+      console.log('User ID:', userId);
+      console.log('User Name:', userName);
+      console.log('File Name:', file.name);
+      console.log('File Size:', (file.size / 1024).toFixed(2), 'KB');
+      console.log('File Type:', file.type);
+      console.log('Upload Started:', new Date().toLocaleTimeString());
+
       // Create FormData to send file
       const formData = new FormData();
       formData.append('file', file);
 
-      console.log('Uploading file for user:', userId, userName);
-      console.log('File:', file.name, 'Size:', file.size, 'Type:', file.type);
+      console.log('FormData created with file:', file.name);
 
       // Upload file to backend
+      const uploadStartTime = performance.now();
       const response = await fetch(`http://localhost:2020/api/users/${userId}/upload`, {
         method: 'POST',
         body: formData,
-        // Don't set Content-Type header - browser will set it with boundary for multipart
       });
+      const uploadDuration = performance.now() - uploadStartTime;
 
-      const result = await response.json();
+      console.log('Response Status:', response.status, response.statusText);
+      console.log('Upload Duration:', uploadDuration.toFixed(2), 'ms');
 
+      // Parse response
+      let result;
+      try {
+        result = await response.json();
+        console.log('Response Body:', result);
+      } catch (parseError) {
+        console.error('Failed to parse JSON response:', parseError);
+        throw new Error('Invalid response from server');
+      }
+
+      // Check response
       if (response.ok && result.success) {
-        console.log('Upload successful, showing toast...');
-        toasts.success('Document archived');
-        console.log('Toast called successfully');
+        const totalDuration = performance.now() - startTime;
+
+        console.log('✅ Upload Successful!');
+        console.log('Uploaded File Name:', result.filename);
+        console.log('Original File Name:', result.originalFilename);
+        console.log('File Path:', result.filePath);
+        console.log('Upload Time:', result.uploadTime);
+        console.log('Total Round Trip Duration:', totalDuration.toFixed(2), 'ms');
+        console.groupEnd();
+
+        // Show success toast
+        toasts.success(`Document archived: ${file.name}`);
+
+        // Verify file was saved
+        console.log('✅ Backend confirmed file saved to:', result.filePath);
       } else {
-        throw new Error(result.error || 'Upload failed');
+        console.error('❌ Upload Failed!');
+        console.error('Error:', result.error || result.message || 'Unknown error');
+        console.groupEnd();
+        throw new Error(result.error || result.message || 'Upload failed');
       }
 
       // Reset the input so the same file can be selected again if needed
       target.value = '';
     } catch (error) {
-      console.error('File upload error:', error);
+      const totalDuration = performance.now() - startTime;
+
+      console.error('❌ Upload Error!');
+      console.error('Error Type:', error instanceof Error ? error.constructor.name : typeof error);
+      console.error('Error Message:', error instanceof Error ? error.message : String(error));
+      console.error('Total Duration:', totalDuration.toFixed(2), 'ms');
+      console.groupEnd();
+
       const errorMessage = error instanceof Error ? error.message : 'Failed to upload file';
       toasts.error(`Upload failed: ${errorMessage}`);
+    } finally {
+      // Remove user from uploading set
+      uploadingUsers.delete(userId);
+      uploadingUsers = uploadingUsers; // Trigger reactivity
+    }
+  }
+
+  async function handleDownload(userId: number, userName: string) {
+    try {
+      console.group('⬇️ File Download Round Trip Test');
+      console.log('User ID:', userId);
+      console.log('User Name:', userName);
+      console.log('Download Started:', new Date().toLocaleTimeString());
+
+      const startTime = performance.now();
+
+      // Fetch file from backend
+      const response = await fetch(`http://localhost:2020/api/users/${userId}/download/latest`, {
+        method: 'GET',
+      });
+
+      console.log('Response Status:', response.status, response.statusText);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || errorData.message || 'Download failed');
+      }
+
+      // Get filename from Content-Disposition header
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = `user_${userId}_file.bin`;
+
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      }
+
+      console.log('Filename from header:', filename);
+      console.log('Content-Type:', response.headers.get('Content-Type'));
+
+      // Convert response to blob
+      const blob = await response.blob();
+      const downloadDuration = performance.now() - startTime;
+
+      console.log('File Size:', (blob.size / 1024).toFixed(2), 'KB');
+      console.log('Download Duration:', downloadDuration.toFixed(2), 'ms');
+
+      // Create download link and trigger download (shows in browser download bar)
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      const totalDuration = performance.now() - startTime;
+
+      console.log('✅ Download Successful!');
+      console.log('File shown in browser download bar');
+      console.log('Total Round Trip Duration:', totalDuration.toFixed(2), 'ms');
+      console.groupEnd();
+
+      toasts.success(`File downloaded: ${filename}`);
+
+    } catch (error) {
+      console.error('❌ Download Error!');
+      console.error('Error Message:', error instanceof Error ? error.message : String(error));
+      console.groupEnd();
+
+      const errorMessage = error instanceof Error ? error.message : 'Failed to download file';
+      toasts.error(`Download failed: ${errorMessage}`);
     }
   }
 </script>
@@ -135,10 +265,19 @@
                 />
                 <button
                   class="btn-action btn-upload"
+                  class:uploading={uploadingUsers.has(user.id)}
                   on:click={() => triggerFileUpload(user.id)}
-                  title="Upload file"
+                  disabled={uploadingUsers.has(user.id)}
+                  title={uploadingUsers.has(user.id) ? 'Uploading...' : 'Upload file'}
                 >
-                  📁 Upload
+                  {uploadingUsers.has(user.id) ? '⏳ Uploading...' : '📁 Upload'}
+                </button>
+                <button
+                  class="btn-action btn-download"
+                  on:click={() => handleDownload(user.id, user.name)}
+                  title="Download latest file"
+                >
+                  ⬇️ Download
                 </button>
                 <a href="/users/update?userId={user.id}" class="btn-action btn-edit">
                   ✏️ Edit
@@ -337,8 +476,37 @@
     color: white;
   }
 
-  .btn-upload:hover {
+  .btn-upload:hover:not(:disabled) {
     background: #059669;
+  }
+
+  .btn-upload.uploading {
+    background: #6b7280;
+    cursor: wait;
+    animation: pulse-upload 1.5s ease-in-out infinite;
+  }
+
+  .btn-upload:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  @keyframes pulse-upload {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  .btn-download {
+    background: #0891b2;
+    color: white;
+  }
+
+  .btn-download:hover {
+    background: #0e7490;
   }
 
   .btn-edit {

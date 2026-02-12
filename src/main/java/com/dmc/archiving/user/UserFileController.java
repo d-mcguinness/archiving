@@ -5,7 +5,11 @@ import com.dmc.archiving.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Comparator;
+import java.util.stream.Stream;
 
 /**
  * REST Controller for user file upload operations
@@ -196,7 +202,122 @@ public class UserFileController {
     }
 
     /**
-     * Delete a specific uploaded file
+     * Download the latest uploaded file for a specific user
+     * This triggers the browser's download bar
+     *
+     * @param userId The user ID
+     * @return File resource with proper headers for download
+     */
+    @GetMapping("/{userId}/download/latest")
+    public ResponseEntity<?> downloadLatestFile(@PathVariable Long userId) {
+        try {
+            log.info("Download request for latest file of user {}", userId);
+
+            // Validate user exists
+            Optional<User> userOptional = userService.getUserById(userId);
+            if (userOptional.isEmpty()) {
+                return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                        "success", false,
+                        "error", "User not found with ID: " + userId
+                    ));
+            }
+
+            // Get user's upload directory
+            Path userUploadPath = Paths.get(UPLOAD_DIR, String.valueOf(userId));
+
+            if (!Files.exists(userUploadPath) || !Files.isDirectory(userUploadPath)) {
+                return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                        "success", false,
+                        "error", "No files found for user " + userId
+                    ));
+            }
+
+            // Find the latest file (most recently modified)
+            Path latestFile;
+            try (Stream<Path> files = Files.list(userUploadPath)) {
+                latestFile = files
+                    .filter(Files::isRegularFile)
+                    .max(Comparator.comparingLong(path -> {
+                        try {
+                            return Files.getLastModifiedTime(path).toMillis();
+                        } catch (IOException e) {
+                            return 0L;
+                        }
+                    }))
+                    .orElse(null);
+            }
+
+            if (latestFile == null) {
+                return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                        "success", false,
+                        "error", "No files found for user " + userId
+                    ));
+            }
+
+            // Load file as Resource
+            Resource resource = new UrlResource(latestFile.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                        "success", false,
+                        "error", "File not readable: " + latestFile.getFileName()
+                    ));
+            }
+
+            // Get file name
+            String filename = latestFile.getFileName().toString();
+
+            // Determine content type
+            String contentType;
+            try {
+                contentType = Files.probeContentType(latestFile);
+            } catch (IOException e) {
+                contentType = "application/octet-stream";
+            }
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+
+            log.info("Sending file for download: {} (type: {}, size: {} bytes)",
+                    filename, contentType, resource.contentLength());
+
+            // Return file with headers that trigger browser download bar
+            return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment; filename=\"" + filename + "\"")
+                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(resource.contentLength()))
+                .body(resource);
+
+        } catch (IOException e) {
+            log.error("Failed to download file for user {}: {}", userId, e.getMessage(), e);
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "success", false,
+                    "error", "Failed to download file: " + e.getMessage()
+                ));
+        } catch (Exception e) {
+            log.error("Unexpected error downloading file for user {}: {}", userId, e.getMessage(), e);
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "success", false,
+                    "error", "An unexpected error occurred"
+                ));
+        }
+    }
+
+    /**
+     * Delete a specific uploaded file for a user
      *
      * @param userId The user ID
      * @param filename The filename to delete

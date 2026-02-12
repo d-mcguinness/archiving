@@ -215,8 +215,21 @@ input UnassignUserInput {
     userId: ID!
 }
 
+# Dashboard Types
+type DashboardStats {
+    totalUsers: Int!
+    totalTenants: Int!
+    totalArchives: Int!
+    activeArchives: Int!
+    draftArchives: Int!
+    archivedArchives: Int!
+}
+
 # Root Query Type
 type Query {
+    # Dashboard Queries
+    getDashboardStats: DashboardStats!
+
     # User Queries
     getAllUsers: [User!]!
     getUser(id: ID!): User

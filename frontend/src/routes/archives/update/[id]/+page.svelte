@@ -673,7 +673,6 @@
               <label for="edit-status">Status *</label>
               <select id="edit-status" bind:value={editableArchive.status}>
                 <option value="DRAFT">Draft</option>
-                <option value="ACTIVE">Active</option>
                 <option value="PUBLISHED">Published</option>
                 <option value="ARCHIVED">Archived</option>
                 <option value="DELETED">Deleted</option>

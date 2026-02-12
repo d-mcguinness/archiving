@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import { page } from '$app/stores';
 import { goto } from '$app/navigation';
 import { client } from '$lib/apollo';
@@ -8,12 +8,75 @@ import { get } from 'svelte/store';
 import { toasts } from '$lib/stores/toastStore';
 
 let userId = '';
-let user = null;
+let user: any = null;
 let loading = true;
-let error = null;
+let error: string | null = null;
 let updating = false;
 
 let form = { name: '', email: '', age: '' };
+
+// File upload state
+let selectedFile: File | null = null;
+let uploading = false;
+let uploadMessage = '';
+let uploadError = '';
+
+function handleFileSelect(event: Event) {
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files.length > 0) {
+    selectedFile = input.files[0];
+    uploadMessage = '';
+    uploadError = '';
+  }
+}
+
+async function handleUpload() {
+  if (!selectedFile) {
+    uploadError = 'Please select a file first';
+    return;
+  }
+
+  if (!userId) {
+    uploadError = 'No user ID available';
+    return;
+  }
+
+  uploading = true;
+  uploadMessage = '';
+  uploadError = '';
+
+  try {
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    formData.append('userId', userId);
+
+    const response = await fetch('http://localhost:2020/api/upload/user', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Upload failed: ${response.status}`);
+    }
+
+    const result = await response.json();
+    uploadMessage = result.message || 'File uploaded successfully!';
+    selectedFile = null;
+
+    // Reset file input
+    const fileInput = document.getElementById('user-file-upload') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+
+    toasts.add(`File uploaded for user "${user?.name}"`, 'success');
+  } catch (e) {
+    uploadError = e instanceof Error ? e.message : 'Failed to upload file';
+    console.error('Upload error:', e);
+    toasts.add(`File upload failed: ${uploadError}`, 'error');
+  } finally {
+    uploading = false;
+  }
+}
 
 onMount(async () => {
   const url = new URL(get(page).url);
@@ -93,6 +156,51 @@ async function updateUser() {
       {updating ? 'Updating...' : 'Update User'}
     </button>
   </form>
+
+  <!-- File Upload Section -->
+  <div class="upload-section">
+    <h3>Upload File for User</h3>
+    <div class="upload-card">
+      <div class="upload-area">
+        <input
+          type="file"
+          id="user-file-upload"
+          on:change={handleFileSelect}
+          disabled={uploading}
+          class="file-input"
+        />
+        <label for="user-file-upload" class="file-label">
+          <span class="upload-icon">📁</span>
+          <span class="upload-text">
+            {selectedFile ? selectedFile.name : 'Choose a file to upload'}
+          </span>
+        </label>
+      </div>
+
+      {#if uploadMessage}
+        <div class="upload-success">
+          <span class="success-icon">✅</span>
+          <span>{uploadMessage}</span>
+        </div>
+      {/if}
+
+      {#if uploadError}
+        <div class="upload-error">
+          <span class="error-icon">❌</span>
+          <span>{uploadError}</span>
+        </div>
+      {/if}
+
+      <button
+        type="button"
+        class="upload-button"
+        on:click={handleUpload}
+        disabled={!selectedFile || uploading}
+      >
+        {uploading ? '⏳ Uploading...' : '📤 Upload File'}
+      </button>
+    </div>
+  </div>
 {/if}
 
 <style>
@@ -144,5 +252,118 @@ async function updateUser() {
     color: #f44336;
     margin: 2rem 0;
     text-align: center;
+  }
+
+  .upload-section {
+    max-width: 400px;
+    margin: 2rem auto;
+  }
+
+  .upload-section h3 {
+    margin-bottom: 1rem;
+    color: #1e293b;
+    font-size: 1.25rem;
+  }
+
+  .upload-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+  }
+
+  .upload-area {
+    margin-bottom: 1rem;
+  }
+
+  .file-input {
+    display: none;
+  }
+
+  .file-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border: 2px dashed #cbd5e1;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f8fafc;
+  }
+
+  .file-label:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+  }
+
+  .upload-icon {
+    font-size: 1.5rem;
+  }
+
+  .upload-text {
+    color: #475569;
+    font-weight: 500;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .upload-success {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #dcfce7;
+    border: 1px solid #86efac;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    color: #166534;
+    font-size: 0.875rem;
+  }
+
+  .success-icon {
+    font-size: 1.125rem;
+  }
+
+  .upload-error {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    color: #991b1b;
+    font-size: 0.875rem;
+  }
+
+  .error-icon {
+    font-size: 1.125rem;
+  }
+
+  .upload-button {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .upload-button:hover:not(:disabled) {
+    background: #2563eb;
+  }
+
+  .upload-button:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
   }
 </style>

@@ -1,6 +1,20 @@
 import { gql } from '@apollo/client/core';
 import type { DocumentNode } from '@apollo/client/core';
 
+// Dashboard Queries
+export const GET_DASHBOARD_STATS: DocumentNode = gql`
+  query GetDashboardStats {
+    getDashboardStats {
+      totalUsers
+      totalTenants
+      totalArchives
+      activeArchives
+      draftArchives
+      archivedArchives
+    }
+  }
+`;
+
 // User Queries
 export const GET_ALL_USERS: DocumentNode = gql`
   query GetAllUsers {
