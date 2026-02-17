@@ -1,0 +1,499 @@
+{
+  "standard": "EAD",
+  "fullName": "Encoded Archival Description",
+  "reference": "EAD3 Version 1.1.1",
+  "description": "Standard for encoding archival finding aids using XML, enabling detailed hierarchical description of archival collections",
+  "version": "3.1.1",
+  "xsdReference": "https://www.loc.gov/ead/ead3.xsd",
+  "url": "https://www.loc.gov/ead/",
+  "entities": [
+    {
+      "name": "EAD",
+      "type": "root_element",
+      "description": "Root element of an EAD document",
+      "parent": null,
+      "children": ["Control", "Archival Description"],
+      "note": "Top-level container for finding aid",
+      "fields": [
+        { "name": "eadID", "type": "string", "label": "EAD ID" },
+        { "name": "audience", "type": "string", "label": "Audience" },
+        { "name": "relatedEncoding", "type": "string", "label": "Related Encoding" }
+      ]
+    },
+    {
+      "name": "Control",
+      "type": "section",
+      "description": "Administrative metadata about the finding aid itself",
+      "parent": "EAD",
+      "children": ["Record ID", "File Description", "Maintenance History"],
+      "fields": [
+        { "name": "controlID", "type": "string", "label": "Control ID" },
+        { "name": "maintenanceStatus", "type": "string", "label": "Maintenance Status" },
+        { "name": "publicationStatus", "type": "string", "label": "Publication Status" }
+      ]
+    },
+    {
+      "name": "Record ID",
+      "type": "control_element",
+      "description": "Unique identifier for the finding aid",
+      "parent": "Control",
+      "children": [],
+      "fields": [
+        { "name": "recordID", "type": "string", "label": "Record ID" },
+        { "name": "instanceURL", "type": "string", "label": "Instance URL" }
+      ]
+    },
+    {
+      "name": "File Description",
+      "type": "control_element",
+      "description": "Description of the electronic finding aid file",
+      "parent": "Control",
+      "children": ["Title Statement", "Publication Statement"],
+      "fields": [
+        { "name": "titleProper", "type": "string", "label": "Title Proper" },
+        { "name": "subtitle", "type": "string", "label": "Subtitle" },
+        { "name": "author", "type": "string", "label": "Author" }
+      ]
+    },
+    {
+      "name": "Title Statement",
+      "type": "descriptive_element",
+      "description": "Title information for the finding aid",
+      "parent": "File Description",
+      "children": [],
+      "fields": [
+        { "name": "titleProper", "type": "string", "label": "Title Proper" },
+        { "name": "subtitle", "type": "string", "label": "Subtitle" },
+        { "name": "author", "type": "string", "label": "Author" }
+      ]
+    },
+    {
+      "name": "Publication Statement",
+      "type": "descriptive_element",
+      "description": "Publication information for the finding aid",
+      "parent": "File Description",
+      "children": [],
+      "fields": [
+        { "name": "publisher", "type": "string", "label": "Publisher" },
+        { "name": "date", "type": "date", "label": "Publication Date" },
+        { "name": "address", "type": "string", "label": "Address" }
+      ]
+    },
+    {
+      "name": "Maintenance History",
+      "type": "control_element",
+      "description": "History of changes to the finding aid",
+      "parent": "Control",
+      "children": ["Maintenance Event"],
+      "fields": [
+        { "name": "maintenanceHistoryID", "type": "string", "label": "Maintenance History ID" }
+      ]
+    },
+    {
+      "name": "Maintenance Event",
+      "type": "event_element",
+      "description": "Individual maintenance event",
+      "parent": "Maintenance History",
+      "children": [],
+      "fields": [
+        { "name": "eventType", "type": "string", "label": "Event Type" },
+        { "name": "eventDateTime", "type": "date", "label": "Event Date/Time" },
+        { "name": "agentType", "type": "string", "label": "Agent Type" },
+        { "name": "agent", "type": "string", "label": "Agent" },
+        { "name": "eventDescription", "type": "string", "label": "Event Description" }
+      ]
+    },
+    {
+      "name": "Archival Description",
+      "type": "section",
+      "description": "Description of the archival materials",
+      "parent": "EAD",
+      "children": ["Description Identification", "Components"],
+      "note": "Main descriptive content",
+      "fields": [
+        { "name": "archdescID", "type": "string", "label": "Archival Description ID" },
+        { "name": "level", "type": "string", "label": "Level of Description" },
+        { "name": "relatedEncoding", "type": "string", "label": "Related Encoding" }
+      ]
+    },
+    {
+      "name": "Description Identification",
+      "type": "did_section",
+      "description": "Core identifying information about the materials",
+      "parent": "Archival Description",
+      "children": ["Unit Title", "Unit ID", "Unit Date", "Physical Description", "Repository", "Origination", "Language of Material"],
+      "note": "Required descriptive elements",
+      "fields": [
+        { "name": "didID", "type": "string", "label": "DID ID" },
+        { "name": "audience", "type": "string", "label": "Audience" }
+      ]
+    },
+    {
+      "name": "Unit Title",
+      "type": "did_element",
+      "description": "Title of the archival unit",
+      "parent": "Description Identification",
+      "children": [],
+      "fields": [
+        { "name": "unitTitle", "type": "string", "label": "Unit Title" },
+        { "name": "titleType", "type": "string", "label": "Title Type" }
+      ]
+    },
+    {
+      "name": "Unit ID",
+      "type": "did_element",
+      "description": "Unique identifier for the archival unit",
+      "parent": "Description Identification",
+      "children": [],
+      "fields": [
+        { "name": "unitID", "type": "string", "label": "Unit ID" },
+        { "name": "identifier", "type": "string", "label": "Identifier" },
+        { "name": "repositoryCode", "type": "string", "label": "Repository Code" }
+      ]
+    },
+    {
+      "name": "Unit Date",
+      "type": "did_element",
+      "description": "Date(s) of the archival materials",
+      "parent": "Description Identification",
+      "children": [],
+      "fields": [
+        { "name": "unitDate", "type": "string", "label": "Unit Date" },
+        { "name": "dateType", "type": "string", "label": "Date Type" },
+        { "name": "normal", "type": "string", "label": "Normalized Date" },
+        { "name": "calendar", "type": "string", "label": "Calendar" },
+        { "name": "era", "type": "string", "label": "Era" }
+      ]
+    },
+    {
+      "name": "Physical Description",
+      "type": "did_element",
+      "description": "Physical characteristics and extent",
+      "parent": "Description Identification",
+      "children": ["Extent", "Dimensions"],
+      "fields": [
+        { "name": "physdescID", "type": "string", "label": "Physical Description ID" }
+      ]
+    },
+    {
+      "name": "Extent",
+      "type": "physdesc_element",
+      "description": "Quantity of materials",
+      "parent": "Physical Description",
+      "children": [],
+      "fields": [
+        { "name": "extent", "type": "string", "label": "Extent" },
+        { "name": "unit", "type": "string", "label": "Unit" },
+        { "name": "quantity", "type": "number", "label": "Quantity" }
+      ]
+    },
+    {
+      "name": "Dimensions",
+      "type": "physdesc_element",
+      "description": "Physical dimensions of materials",
+      "parent": "Physical Description",
+      "children": [],
+      "fields": [
+        { "name": "dimensions", "type": "string", "label": "Dimensions" },
+        { "name": "unit", "type": "string", "label": "Unit" }
+      ]
+    },
+    {
+      "name": "Repository",
+      "type": "did_element",
+      "description": "Institution holding the materials",
+      "parent": "Description Identification",
+      "children": [],
+      "fields": [
+        { "name": "repositoryName", "type": "string", "label": "Repository Name" },
+        { "name": "repositoryCode", "type": "string", "label": "Repository Code" },
+        { "name": "address", "type": "string", "label": "Address" }
+      ]
+    },
+    {
+      "name": "Origination",
+      "type": "did_element",
+      "description": "Creator(s) of the materials",
+      "parent": "Description Identification",
+      "children": ["Person Name", "Corporate Name", "Family Name"],
+      "fields": [
+        { "name": "originationID", "type": "string", "label": "Origination ID" },
+        { "name": "label", "type": "string", "label": "Label" }
+      ]
+    },
+    {
+      "name": "Person Name",
+      "type": "name_element",
+      "description": "Personal name",
+      "parent": "Origination",
+      "children": [],
+      "fields": [
+        { "name": "persName", "type": "string", "label": "Person Name" },
+        { "name": "source", "type": "string", "label": "Authority Source" },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier" },
+        { "name": "role", "type": "string", "label": "Role" }
+      ]
+    },
+    {
+      "name": "Corporate Name",
+      "type": "name_element",
+      "description": "Corporate body name",
+      "parent": "Origination",
+      "children": [],
+      "fields": [
+        { "name": "corpName", "type": "string", "label": "Corporate Name" },
+        { "name": "source", "type": "string", "label": "Authority Source" },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier" },
+        { "name": "role", "type": "string", "label": "Role" }
+      ]
+    },
+    {
+      "name": "Family Name",
+      "type": "name_element",
+      "description": "Family name",
+      "parent": "Origination",
+      "children": [],
+      "fields": [
+        { "name": "famName", "type": "string", "label": "Family Name" },
+        { "name": "source", "type": "string", "label": "Authority Source" },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier" },
+        { "name": "role", "type": "string", "label": "Role" }
+      ]
+    },
+    {
+      "name": "Language of Material",
+      "type": "did_element",
+      "description": "Language(s) of the archival materials",
+      "parent": "Description Identification",
+      "children": [],
+      "fields": [
+        { "name": "languageCode", "type": "string", "label": "Language Code (ISO 639-2)" },
+        { "name": "scriptCode", "type": "string", "label": "Script Code (ISO 15924)" },
+        { "name": "languageText", "type": "string", "label": "Language Text" }
+      ]
+    },
+    {
+      "name": "Components",
+      "type": "hierarchical_section",
+      "description": "Hierarchical components of the collection",
+      "parent": "Archival Description",
+      "children": ["Component", "Series", "Subseries", "File", "Item"],
+      "note": "Nested structure for multi-level description",
+      "fields": [
+        { "name": "componentID", "type": "string", "label": "Component ID" },
+        { "name": "level", "type": "string", "label": "Level" }
+      ]
+    },
+    {
+      "name": "Component",
+      "type": "component_element",
+      "description": "Generic component in the hierarchy",
+      "parent": "Components",
+      "children": ["Description Identification", "Component"],
+      "note": "Can nest recursively",
+      "fields": [
+        { "name": "componentID", "type": "string", "label": "Component ID" },
+        { "name": "level", "type": "string", "label": "Level of Description" },
+        { "name": "otherlevel", "type": "string", "label": "Other Level" },
+        { "name": "audience", "type": "string", "label": "Audience" }
+      ]
+    },
+    {
+      "name": "Series",
+      "type": "component_element",
+      "description": "Series-level component",
+      "parent": "Components",
+      "children": ["Description Identification", "Subseries", "File", "Item"],
+      "fields": [
+        { "name": "seriesID", "type": "string", "label": "Series ID" },
+        { "name": "level", "type": "string", "label": "Level" }
+      ]
+    },
+    {
+      "name": "Subseries",
+      "type": "component_element",
+      "description": "Subseries-level component",
+      "parent": "Series",
+      "children": ["Description Identification", "File", "Item"],
+      "fields": [
+        { "name": "subseriesID", "type": "string", "label": "Subseries ID" },
+        { "name": "level", "type": "string", "label": "Level" }
+      ]
+    },
+    {
+      "name": "File",
+      "type": "component_element",
+      "description": "File-level component",
+      "parent": "Subseries",
+      "children": ["Description Identification", "Item"],
+      "fields": [
+        { "name": "fileID", "type": "string", "label": "File ID" },
+        { "name": "level", "type": "string", "label": "Level" }
+      ]
+    },
+    {
+      "name": "Item",
+      "type": "component_element",
+      "description": "Item-level component",
+      "parent": "File",
+      "children": ["Description Identification"],
+      "fields": [
+        { "name": "itemID", "type": "string", "label": "Item ID" },
+        { "name": "level", "type": "string", "label": "Level" }
+      ]
+    },
+    {
+      "name": "Scope and Content",
+      "type": "descriptive_note",
+      "description": "Summary of the scope and content of the materials",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "scopeContent", "type": "string", "label": "Scope and Content" },
+        { "name": "audience", "type": "string", "label": "Audience" }
+      ]
+    },
+    {
+      "name": "Arrangement",
+      "type": "descriptive_note",
+      "description": "Information about the arrangement of materials",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "arrangement", "type": "string", "label": "Arrangement" },
+        { "name": "audience", "type": "string", "label": "Audience" }
+      ]
+    },
+    {
+      "name": "Access Restrictions",
+      "type": "access_element",
+      "description": "Conditions affecting access to materials",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "accessRestrict", "type": "string", "label": "Access Restrictions" },
+        { "name": "restrictionType", "type": "string", "label": "Restriction Type" },
+        { "name": "audience", "type": "string", "label": "Audience" }
+      ]
+    },
+    {
+      "name": "Use Restrictions",
+      "type": "access_element",
+      "description": "Conditions affecting use of materials",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "useRestrict", "type": "string", "label": "Use Restrictions" },
+        { "name": "restrictionType", "type": "string", "label": "Restriction Type" },
+        { "name": "audience", "type": "string", "label": "Audience" }
+      ]
+    },
+    {
+      "name": "Biographical/Historical Note",
+      "type": "descriptive_note",
+      "description": "Biographical or historical information about the creator",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "bioghist", "type": "string", "label": "Biographical/Historical Note" },
+        { "name": "audience", "type": "string", "label": "Audience" }
+      ]
+    },
+    {
+      "name": "Related Materials",
+      "type": "descriptive_note",
+      "description": "Information about related archival materials",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "relatedMaterial", "type": "string", "label": "Related Materials" },
+        { "name": "audience", "type": "string", "label": "Audience" }
+      ]
+    },
+    {
+      "name": "Controlled Access Headings",
+      "type": "index_section",
+      "description": "Controlled vocabulary terms for indexing",
+      "parent": "Archival Description",
+      "children": ["Subject", "Geographic Name", "Genre/Form", "Occupation"],
+      "fields": [
+        { "name": "controlAccessID", "type": "string", "label": "Control Access ID" }
+      ]
+    },
+    {
+      "name": "Subject",
+      "type": "index_term",
+      "description": "Subject heading",
+      "parent": "Controlled Access Headings",
+      "children": [],
+      "fields": [
+        { "name": "subject", "type": "string", "label": "Subject" },
+        { "name": "source", "type": "string", "label": "Authority Source" },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier" }
+      ]
+    },
+    {
+      "name": "Geographic Name",
+      "type": "index_term",
+      "description": "Geographic subject heading",
+      "parent": "Controlled Access Headings",
+      "children": [],
+      "fields": [
+        { "name": "geogName", "type": "string", "label": "Geographic Name" },
+        { "name": "source", "type": "string", "label": "Authority Source" },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier" }
+      ]
+    },
+    {
+      "name": "Genre/Form",
+      "type": "index_term",
+      "description": "Genre or form term",
+      "parent": "Controlled Access Headings",
+      "children": [],
+      "fields": [
+        { "name": "genreForm", "type": "string", "label": "Genre/Form" },
+        { "name": "source", "type": "string", "label": "Authority Source" },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier" }
+      ]
+    },
+    {
+      "name": "Occupation",
+      "type": "index_term",
+      "description": "Occupation term",
+      "parent": "Controlled Access Headings",
+      "children": [],
+      "fields": [
+        { "name": "occupation", "type": "string", "label": "Occupation" },
+        { "name": "source", "type": "string", "label": "Authority Source" },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier" }
+      ]
+    }
+  ],
+  "levelsOfDescription": {
+    "fonds": "Whole of the records of an organization, family, or individual",
+    "subfonds": "Subdivision of a fonds",
+    "collection": "Artificial accumulation of materials",
+    "recordgrp": "Record group",
+    "subgrp": "Subgroup",
+    "series": "Documents arranged in accordance with a filing system",
+    "subseries": "Subdivision of a series",
+    "file": "Organized unit of documents grouped together",
+    "item": "Smallest intellectually indivisible archival unit",
+    "otherlevel": "Other level not specified"
+  },
+  "maintenanceStatuses": {
+    "new": "New finding aid",
+    "revised": "Revised finding aid",
+    "deleted": "Deleted finding aid",
+    "cancelled": "Cancelled finding aid",
+    "derived": "Derived from another finding aid"
+  },
+  "eventTypes": {
+    "created": "Finding aid created",
+    "revised": "Finding aid revised",
+    "updated": "Finding aid updated",
+    "deleted": "Finding aid deleted",
+    "cancelled": "Finding aid cancelled",
+    "derived": "Finding aid derived from another source"
+  }
+}

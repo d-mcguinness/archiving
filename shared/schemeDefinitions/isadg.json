@@ -1,0 +1,432 @@
+{
+  "standard": "ISAD(G)",
+  "fullName": "General International Standard Archival Description",
+  "reference": "ISAD(G) Second Edition",
+  "description": "International standard for archival description developed by the International Council on Archives, providing general guidance for the preparation of archival descriptions",
+  "version": "2.0",
+  "xsdReference": "https://www.ica.org/en/isadg-general-international-standard-archival-description-second-edition",
+  "url": "https://www.ica.org/standards/isad-g/",
+  "entities": [
+    {
+      "name": "Archival Description",
+      "type": "root_element",
+      "description": "Complete archival description following ISAD(G) standard",
+      "parent": null,
+      "children": ["Identity Statement", "Context", "Content and Structure", "Conditions of Access and Use", "Allied Materials", "Notes", "Description Control"],
+      "note": "Seven areas of description",
+      "fields": [
+        { "name": "descriptionID", "type": "string", "label": "Description ID" },
+        { "name": "levelOfDescription", "type": "string", "label": "Level of Description" }
+      ]
+    },
+    {
+      "name": "Identity Statement",
+      "type": "area",
+      "description": "Area 1: Information essential for identifying the unit of description",
+      "parent": "Archival Description",
+      "children": ["Reference Code", "Title", "Date", "Level of Description", "Extent and Medium"],
+      "note": "Essential identifying information",
+      "fields": [
+        { "name": "identityStatementID", "type": "string", "label": "Identity Statement ID" }
+      ]
+    },
+    {
+      "name": "Reference Code",
+      "type": "identity_element",
+      "description": "3.1.1 - Unique identifier for the unit of description",
+      "parent": "Identity Statement",
+      "children": [],
+      "note": "Combination of country code, repository code, and local reference",
+      "fields": [
+        { "name": "countryCode", "type": "string", "label": "Country Code (ISO 3166)" },
+        { "name": "repositoryCode", "type": "string", "label": "Repository Code" },
+        { "name": "localReference", "type": "string", "label": "Local Reference" },
+        { "name": "referenceCode", "type": "string", "label": "Complete Reference Code" }
+      ]
+    },
+    {
+      "name": "Title",
+      "type": "identity_element",
+      "description": "3.1.2 - Name of the unit of description",
+      "parent": "Identity Statement",
+      "children": [],
+      "fields": [
+        { "name": "title", "type": "string", "label": "Title" },
+        { "name": "titleType", "type": "string", "label": "Title Type" }
+      ]
+    },
+    {
+      "name": "Date",
+      "type": "identity_element",
+      "description": "3.1.3 - Date(s) of creation of the unit of description",
+      "parent": "Identity Statement",
+      "children": [],
+      "fields": [
+        { "name": "dateExpression", "type": "string", "label": "Date Expression" },
+        { "name": "dateType", "type": "string", "label": "Date Type" },
+        { "name": "startDate", "type": "date", "label": "Start Date" },
+        { "name": "endDate", "type": "date", "label": "End Date" },
+        { "name": "certainty", "type": "string", "label": "Certainty" }
+      ]
+    },
+    {
+      "name": "Level of Description",
+      "type": "identity_element",
+      "description": "3.1.4 - Level of arrangement of the unit of description",
+      "parent": "Identity Statement",
+      "children": [],
+      "fields": [
+        { "name": "level", "type": "string", "label": "Level" }
+      ]
+    },
+    {
+      "name": "Extent and Medium",
+      "type": "identity_element",
+      "description": "3.1.5 - Physical or logical extent and medium of the unit of description",
+      "parent": "Identity Statement",
+      "children": [],
+      "fields": [
+        { "name": "extent", "type": "string", "label": "Extent" },
+        { "name": "medium", "type": "string", "label": "Medium of the Unit" },
+        { "name": "quantity", "type": "number", "label": "Quantity" },
+        { "name": "unit", "type": "string", "label": "Unit of Measurement" }
+      ]
+    },
+    {
+      "name": "Context",
+      "type": "area",
+      "description": "Area 2: Information about the origin and custody of the unit of description",
+      "parent": "Archival Description",
+      "children": ["Name of Creator", "Administrative/Biographical History", "Archival History", "Immediate Source of Acquisition"],
+      "fields": [
+        { "name": "contextID", "type": "string", "label": "Context ID" }
+      ]
+    },
+    {
+      "name": "Name of Creator",
+      "type": "context_element",
+      "description": "3.2.1 - Entity(ies) responsible for creating the unit of description",
+      "parent": "Context",
+      "children": [],
+      "fields": [
+        { "name": "creatorName", "type": "string", "label": "Creator Name" },
+        { "name": "creatorType", "type": "string", "label": "Creator Type" },
+        { "name": "authorityIdentifier", "type": "string", "label": "Authority Identifier" }
+      ]
+    },
+    {
+      "name": "Administrative/Biographical History",
+      "type": "context_element",
+      "description": "3.2.2 - History of the creator(s) of the unit of description",
+      "parent": "Context",
+      "children": [],
+      "fields": [
+        { "name": "history", "type": "string", "label": "Administrative/Biographical History" },
+        { "name": "historyType", "type": "string", "label": "History Type" }
+      ]
+    },
+    {
+      "name": "Archival History",
+      "type": "context_element",
+      "description": "3.2.3 - History of the custody of the unit of description",
+      "parent": "Context",
+      "children": [],
+      "fields": [
+        { "name": "archivalHistory", "type": "string", "label": "Archival History" },
+        { "name": "custodialHistory", "type": "string", "label": "Custodial History" }
+      ]
+    },
+    {
+      "name": "Immediate Source of Acquisition",
+      "type": "context_element",
+      "description": "3.2.4 - Source and date of acquisition or transfer",
+      "parent": "Context",
+      "children": [],
+      "fields": [
+        { "name": "acquisitionSource", "type": "string", "label": "Source of Acquisition" },
+        { "name": "acquisitionDate", "type": "date", "label": "Date of Acquisition" },
+        { "name": "acquisitionMethod", "type": "string", "label": "Method of Acquisition" }
+      ]
+    },
+    {
+      "name": "Content and Structure",
+      "type": "area",
+      "description": "Area 3: Information about the subject matter and arrangement of the unit of description",
+      "parent": "Archival Description",
+      "children": ["Scope and Content", "Appraisal and Destruction", "Accruals", "System of Arrangement"],
+      "fields": [
+        { "name": "contentStructureID", "type": "string", "label": "Content and Structure ID" }
+      ]
+    },
+    {
+      "name": "Scope and Content",
+      "type": "content_element",
+      "description": "3.3.1 - Summary of scope and content of the unit of description",
+      "parent": "Content and Structure",
+      "children": [],
+      "fields": [
+        { "name": "scopeContent", "type": "string", "label": "Scope and Content" }
+      ]
+    },
+    {
+      "name": "Appraisal and Destruction",
+      "type": "content_element",
+      "description": "3.3.2 - Information about appraisal, scheduling, and destruction actions",
+      "parent": "Content and Structure",
+      "children": [],
+      "fields": [
+        { "name": "appraisalInfo", "type": "string", "label": "Appraisal Information" },
+        { "name": "destructionInfo", "type": "string", "label": "Destruction Information" },
+        { "name": "retentionPeriod", "type": "string", "label": "Retention Period" }
+      ]
+    },
+    {
+      "name": "Accruals",
+      "type": "content_element",
+      "description": "3.3.3 - Information about anticipated additions to the unit of description",
+      "parent": "Content and Structure",
+      "children": [],
+      "fields": [
+        { "name": "accruals", "type": "string", "label": "Accruals" },
+        { "name": "accrualPolicy", "type": "string", "label": "Accrual Policy" }
+      ]
+    },
+    {
+      "name": "System of Arrangement",
+      "type": "content_element",
+      "description": "3.3.4 - Information about the internal structure and organization",
+      "parent": "Content and Structure",
+      "children": [],
+      "fields": [
+        { "name": "arrangement", "type": "string", "label": "System of Arrangement" },
+        { "name": "arrangementNote", "type": "string", "label": "Arrangement Note" }
+      ]
+    },
+    {
+      "name": "Conditions of Access and Use",
+      "type": "area",
+      "description": "Area 4: Information about availability and use of the unit of description",
+      "parent": "Archival Description",
+      "children": ["Conditions Governing Access", "Conditions Governing Reproduction", "Language/Scripts", "Physical Characteristics", "Finding Aids"],
+      "fields": [
+        { "name": "accessUseID", "type": "string", "label": "Access and Use ID" }
+      ]
+    },
+    {
+      "name": "Conditions Governing Access",
+      "type": "access_element",
+      "description": "3.4.1 - Information about conditions affecting access",
+      "parent": "Conditions of Access and Use",
+      "children": [],
+      "fields": [
+        { "name": "accessConditions", "type": "string", "label": "Access Conditions" },
+        { "name": "restrictionType", "type": "string", "label": "Restriction Type" },
+        { "name": "restrictionEndDate", "type": "date", "label": "Restriction End Date" }
+      ]
+    },
+    {
+      "name": "Conditions Governing Reproduction",
+      "type": "access_element",
+      "description": "3.4.2 - Information about conditions affecting reproduction",
+      "parent": "Conditions of Access and Use",
+      "children": [],
+      "fields": [
+        { "name": "reproductionConditions", "type": "string", "label": "Reproduction Conditions" },
+        { "name": "copyrightStatus", "type": "string", "label": "Copyright Status" }
+      ]
+    },
+    {
+      "name": "Language/Scripts",
+      "type": "access_element",
+      "description": "3.4.3 - Information about languages and scripts of materials",
+      "parent": "Conditions of Access and Use",
+      "children": [],
+      "fields": [
+        { "name": "languageCode", "type": "string", "label": "Language Code (ISO 639-2)" },
+        { "name": "scriptCode", "type": "string", "label": "Script Code (ISO 15924)" },
+        { "name": "languageNote", "type": "string", "label": "Language Note" }
+      ]
+    },
+    {
+      "name": "Physical Characteristics",
+      "type": "access_element",
+      "description": "3.4.4 - Information about physical characteristics affecting use",
+      "parent": "Conditions of Access and Use",
+      "children": [],
+      "fields": [
+        { "name": "physicalCharacteristics", "type": "string", "label": "Physical Characteristics" },
+        { "name": "technicalRequirements", "type": "string", "label": "Technical Requirements" }
+      ]
+    },
+    {
+      "name": "Finding Aids",
+      "type": "access_element",
+      "description": "3.4.5 - Information about finding aids",
+      "parent": "Conditions of Access and Use",
+      "children": [],
+      "fields": [
+        { "name": "findingAids", "type": "string", "label": "Finding Aids" },
+        { "name": "findingAidURL", "type": "string", "label": "Finding Aid URL" }
+      ]
+    },
+    {
+      "name": "Allied Materials",
+      "type": "area",
+      "description": "Area 5: Information about related materials",
+      "parent": "Archival Description",
+      "children": ["Existence of Originals", "Existence of Copies", "Related Units of Description", "Publication Note"],
+      "fields": [
+        { "name": "alliedMaterialsID", "type": "string", "label": "Allied Materials ID" }
+      ]
+    },
+    {
+      "name": "Existence of Originals",
+      "type": "related_element",
+      "description": "3.5.1 - Information about location of originals if the unit consists of copies",
+      "parent": "Allied Materials",
+      "children": [],
+      "fields": [
+        { "name": "originalsLocation", "type": "string", "label": "Location of Originals" },
+        { "name": "originalsNote", "type": "string", "label": "Originals Note" }
+      ]
+    },
+    {
+      "name": "Existence of Copies",
+      "type": "related_element",
+      "description": "3.5.2 - Information about copies of the unit of description",
+      "parent": "Allied Materials",
+      "children": [],
+      "fields": [
+        { "name": "copiesLocation", "type": "string", "label": "Location of Copies" },
+        { "name": "copiesNote", "type": "string", "label": "Copies Note" }
+      ]
+    },
+    {
+      "name": "Related Units of Description",
+      "type": "related_element",
+      "description": "3.5.3 - Information about related materials in other locations",
+      "parent": "Allied Materials",
+      "children": [],
+      "fields": [
+        { "name": "relatedUnits", "type": "string", "label": "Related Units" },
+        { "name": "relationshipType", "type": "string", "label": "Relationship Type" }
+      ]
+    },
+    {
+      "name": "Publication Note",
+      "type": "related_element",
+      "description": "3.5.4 - Information about published materials based on the unit of description",
+      "parent": "Allied Materials",
+      "children": [],
+      "fields": [
+        { "name": "publicationNote", "type": "string", "label": "Publication Note" },
+        { "name": "citation", "type": "string", "label": "Citation" }
+      ]
+    },
+    {
+      "name": "Notes",
+      "type": "area",
+      "description": "Area 6: Information that cannot be accommodated in other areas",
+      "parent": "Archival Description",
+      "children": ["General Note"],
+      "fields": [
+        { "name": "notesID", "type": "string", "label": "Notes ID" }
+      ]
+    },
+    {
+      "name": "General Note",
+      "type": "note_element",
+      "description": "3.6.1 - Special information not fitting elsewhere",
+      "parent": "Notes",
+      "children": [],
+      "fields": [
+        { "name": "note", "type": "string", "label": "Note" },
+        { "name": "noteType", "type": "string", "label": "Note Type" }
+      ]
+    },
+    {
+      "name": "Description Control",
+      "type": "area",
+      "description": "Area 7: Information about how, when, and by whom the description was created",
+      "parent": "Archival Description",
+      "children": ["Archivist Note", "Rules or Conventions", "Date of Description"],
+      "fields": [
+        { "name": "descriptionControlID", "type": "string", "label": "Description Control ID" }
+      ]
+    },
+    {
+      "name": "Archivist Note",
+      "type": "control_element",
+      "description": "3.7.1 - Information about who prepared the description",
+      "parent": "Description Control",
+      "children": [],
+      "fields": [
+        { "name": "archivistName", "type": "string", "label": "Archivist Name" },
+        { "name": "archivistNote", "type": "string", "label": "Archivist Note" }
+      ]
+    },
+    {
+      "name": "Rules or Conventions",
+      "type": "control_element",
+      "description": "3.7.2 - Standards or conventions used in preparing the description",
+      "parent": "Description Control",
+      "children": [],
+      "fields": [
+        { "name": "rulesConventions", "type": "string", "label": "Rules or Conventions" },
+        { "name": "conventionCitation", "type": "string", "label": "Convention Citation" }
+      ]
+    },
+    {
+      "name": "Date of Description",
+      "type": "control_element",
+      "description": "3.7.3 - Date(s) when the description was prepared and/or revised",
+      "parent": "Description Control",
+      "children": [],
+      "fields": [
+        { "name": "descriptionDate", "type": "date", "label": "Date of Description" },
+        { "name": "revisionDate", "type": "date", "label": "Revision Date" }
+      ]
+    }
+  ],
+  "levelsOfDescription": {
+    "fonds": "Whole of the records of an organization, family, or individual",
+    "sub-fonds": "Subdivision of a fonds",
+    "series": "Documents arranged in accordance with a filing system or maintained as a unit",
+    "sub-series": "Subdivision of a series",
+    "file": "Organized unit of documents grouped together for current use or preservation",
+    "item": "Smallest intellectually indivisible unit"
+  },
+  "dateTypes": {
+    "creation": "Date(s) of creation of the records",
+    "accumulation": "Date(s) records were accumulated",
+    "broadcast": "Date of broadcast",
+    "publication": "Date of publication"
+  },
+  "extentUnits": {
+    "linear_meters": "Linear meters",
+    "cubic_meters": "Cubic meters",
+    "items": "Number of items",
+    "boxes": "Number of boxes",
+    "volumes": "Number of volumes",
+    "files": "Number of files",
+    "pages": "Number of pages",
+    "megabytes": "Megabytes",
+    "gigabytes": "Gigabytes"
+  },
+  "descriptionAreas": {
+    "area1": "Identity Statement Area (3.1)",
+    "area2": "Context Area (3.2)",
+    "area3": "Content and Structure Area (3.3)",
+    "area4": "Conditions of Access and Use Area (3.4)",
+    "area5": "Allied Materials Area (3.5)",
+    "area6": "Notes Area (3.6)",
+    "area7": "Description Control Area (3.7)"
+  },
+  "requiredElements": {
+    "3.1.1": "Reference code",
+    "3.1.2": "Title",
+    "3.1.3": "Date(s)",
+    "3.1.4": "Level of description",
+    "3.1.5": "Extent and medium of the unit of description"
+  }
+}

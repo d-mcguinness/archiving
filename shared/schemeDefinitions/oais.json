@@ -1,0 +1,282 @@
+{
+  "standard": "OAIS",
+  "fullName": "Open Archival Information System",
+  "reference": "ISO 14721:2012",
+  "description": "Reference model for an archive, consisting of an organization of people and systems that has accepted the responsibility to preserve information and make it available",
+  "version": "2.0",
+  "xsdReference": "https://www.iso.org/standard/57284.html",
+  "url": "https://public.ccsds.org/pubs/650x0m2.pdf",
+  "entities": [
+    {
+      "name": "Submission Information Package",
+      "type": "information_package",
+      "description": "Information package delivered by the Producer to the OAIS for use in the construction of one or more AIPs",
+      "parent": null,
+      "children": ["Content Information", "Preservation Description Information"],
+      "note": "SIP is transformed into AIP during ingest process",
+      "fields": [
+        { "name": "packageID", "type": "string", "label": "Package ID" },
+        { "name": "submissionDate", "type": "date", "label": "Submission Date" },
+        { "name": "producer", "type": "string", "label": "Producer" },
+        { "name": "submissionAgreement", "type": "string", "label": "Submission Agreement" }
+      ]
+    },
+    {
+      "name": "Archival Information Package",
+      "type": "information_package",
+      "description": "Information package preserved within an OAIS, consisting of Content Information and associated PDI",
+      "parent": null,
+      "children": ["Content Information", "Preservation Description Information", "Packaging Information"],
+      "note": "Core preservation unit in OAIS",
+      "fields": [
+        { "name": "aipID", "type": "string", "label": "AIP ID" },
+        { "name": "creationDate", "type": "date", "label": "Creation Date" },
+        { "name": "accessRights", "type": "string", "label": "Access Rights" },
+        { "name": "retentionPeriod", "type": "string", "label": "Retention Period" }
+      ]
+    },
+    {
+      "name": "Dissemination Information Package",
+      "type": "information_package",
+      "description": "Information package delivered to the Consumer in response to a request",
+      "parent": null,
+      "children": ["Content Information", "Packaging Information"],
+      "note": "Derived from one or more AIPs",
+      "fields": [
+        { "name": "dipID", "type": "string", "label": "DIP ID" },
+        { "name": "deliveryDate", "type": "date", "label": "Delivery Date" },
+        { "name": "consumer", "type": "string", "label": "Consumer" },
+        { "name": "accessMethod", "type": "string", "label": "Access Method" }
+      ]
+    },
+    {
+      "name": "Content Information",
+      "type": "core_component",
+      "description": "The original target of preservation, consisting of Content Data Object and Representation Information",
+      "parent": "Archival Information Package",
+      "children": ["Content Data Object", "Representation Information"],
+      "fields": [
+        { "name": "contentID", "type": "string", "label": "Content ID" },
+        { "name": "contentType", "type": "string", "label": "Content Type" }
+      ]
+    },
+    {
+      "name": "Content Data Object",
+      "type": "data_object",
+      "description": "The Data Object that together with its Representation Information constitutes the original target of preservation",
+      "parent": "Content Information",
+      "children": ["Physical Object", "Digital Object"],
+      "fields": [
+        { "name": "objectID", "type": "string", "label": "Object ID" },
+        { "name": "objectType", "type": "string", "label": "Object Type" },
+        { "name": "format", "type": "string", "label": "Format" },
+        { "name": "size", "type": "number", "label": "Size" },
+        { "name": "checksum", "type": "string", "label": "Checksum" },
+        { "name": "checksumAlgorithm", "type": "string", "label": "Checksum Algorithm" }
+      ]
+    },
+    {
+      "name": "Representation Information",
+      "type": "metadata",
+      "description": "Information that maps a Data Object into more meaningful concepts",
+      "parent": "Content Information",
+      "children": ["Structure Information", "Semantic Information"],
+      "fields": [
+        { "name": "representationID", "type": "string", "label": "Representation ID" },
+        { "name": "formatName", "type": "string", "label": "Format Name" },
+        { "name": "formatVersion", "type": "string", "label": "Format Version" },
+        { "name": "formatRegistry", "type": "string", "label": "Format Registry" }
+      ]
+    },
+    {
+      "name": "Preservation Description Information",
+      "type": "metadata",
+      "description": "Information necessary for adequate preservation of the Content Information",
+      "parent": "Archival Information Package",
+      "children": ["Provenance Information", "Context Information", "Reference Information", "Fixity Information", "Access Rights Information"],
+      "fields": [
+        { "name": "pdiID", "type": "string", "label": "PDI ID" },
+        { "name": "createdDate", "type": "date", "label": "Created Date" },
+        { "name": "lastModified", "type": "date", "label": "Last Modified" }
+      ]
+    },
+    {
+      "name": "Provenance Information",
+      "type": "metadata",
+      "description": "Information documenting the history of the Content Information",
+      "parent": "Preservation Description Information",
+      "children": [],
+      "fields": [
+        { "name": "originalProducer", "type": "string", "label": "Original Producer" },
+        { "name": "creationDate", "type": "date", "label": "Creation Date" },
+        { "name": "custodialHistory", "type": "string", "label": "Custodial History" },
+        { "name": "processingHistory", "type": "string", "label": "Processing History" }
+      ]
+    },
+    {
+      "name": "Context Information",
+      "type": "metadata",
+      "description": "Information that documents the relationships of the Content Information to its environment",
+      "parent": "Preservation Description Information",
+      "children": [],
+      "fields": [
+        { "name": "purposeOfCreation", "type": "string", "label": "Purpose of Creation" },
+        { "name": "relatedEntities", "type": "string", "label": "Related Entities" },
+        { "name": "legalContext", "type": "string", "label": "Legal Context" }
+      ]
+    },
+    {
+      "name": "Reference Information",
+      "type": "metadata",
+      "description": "Information used as an identifier for the Content Information",
+      "parent": "Preservation Description Information",
+      "children": [],
+      "fields": [
+        { "name": "identifier", "type": "string", "label": "Identifier" },
+        { "name": "identifierType", "type": "string", "label": "Identifier Type" },
+        { "name": "title", "type": "string", "label": "Title" },
+        { "name": "alternativeTitles", "type": "string", "label": "Alternative Titles" }
+      ]
+    },
+    {
+      "name": "Fixity Information",
+      "type": "metadata",
+      "description": "Information describing mechanisms ensuring that the Content Information has not been altered",
+      "parent": "Preservation Description Information",
+      "children": [],
+      "fields": [
+        { "name": "checksumValue", "type": "string", "label": "Checksum Value" },
+        { "name": "checksumAlgorithm", "type": "string", "label": "Checksum Algorithm" },
+        { "name": "checksumDate", "type": "date", "label": "Checksum Date" },
+        { "name": "digitalSignature", "type": "string", "label": "Digital Signature" }
+      ]
+    },
+    {
+      "name": "Access Rights Information",
+      "type": "metadata",
+      "description": "Information identifying the access restrictions pertaining to the Content Information",
+      "parent": "Preservation Description Information",
+      "children": [],
+      "fields": [
+        { "name": "accessLevel", "type": "string", "label": "Access Level" },
+        { "name": "accessConditions", "type": "string", "label": "Access Conditions" },
+        { "name": "embargoDate", "type": "date", "label": "Embargo Date" },
+        { "name": "rightsHolder", "type": "string", "label": "Rights Holder" }
+      ]
+    },
+    {
+      "name": "Packaging Information",
+      "type": "metadata",
+      "description": "Information used to bind the components of an Information Package together",
+      "parent": "Archival Information Package",
+      "children": [],
+      "fields": [
+        { "name": "packageFormat", "type": "string", "label": "Package Format" },
+        { "name": "packageStructure", "type": "string", "label": "Package Structure" },
+        { "name": "manifestFile", "type": "string", "label": "Manifest File" }
+      ]
+    },
+    {
+      "name": "Descriptive Information",
+      "type": "metadata",
+      "description": "Information that facilitates finding, ordering, or understanding the archived information",
+      "parent": null,
+      "children": [],
+      "fields": [
+        { "name": "creator", "type": "string", "label": "Creator" },
+        { "name": "subject", "type": "string", "label": "Subject" },
+        { "name": "description", "type": "string", "label": "Description" },
+        { "name": "dateRange", "type": "string", "label": "Date Range" },
+        { "name": "keywords", "type": "string", "label": "Keywords" },
+        { "name": "language", "type": "string", "label": "Language" }
+      ]
+    },
+    {
+      "name": "Physical Object",
+      "type": "information_object",
+      "description": "An object that has physical presence",
+      "parent": "Content Data Object",
+      "children": [],
+      "fields": [
+        { "name": "physicalID", "type": "string", "label": "Physical ID" },
+        { "name": "location", "type": "string", "label": "Location" },
+        { "name": "condition", "type": "string", "label": "Condition" },
+        { "name": "dimensions", "type": "string", "label": "Dimensions" }
+      ]
+    },
+    {
+      "name": "Digital Object",
+      "type": "information_object",
+      "description": "An object composed of a set of bit sequences",
+      "parent": "Content Data Object",
+      "children": [],
+      "fields": [
+        { "name": "digitalID", "type": "string", "label": "Digital ID" },
+        { "name": "bitSequence", "type": "string", "label": "Bit Sequence" },
+        { "name": "encoding", "type": "string", "label": "Encoding" },
+        { "name": "fileSize", "type": "number", "label": "File Size (bytes)" }
+      ]
+    },
+    {
+      "name": "Structure Information",
+      "type": "representation_info",
+      "description": "Information that describes the data structure of the Data Object",
+      "parent": "Representation Information",
+      "children": [],
+      "fields": [
+        { "name": "structureID", "type": "string", "label": "Structure ID" },
+        { "name": "structureType", "type": "string", "label": "Structure Type" },
+        { "name": "schema", "type": "string", "label": "Schema" }
+      ]
+    },
+    {
+      "name": "Semantic Information",
+      "type": "representation_info",
+      "description": "Information that provides further meaning beyond structural information",
+      "parent": "Representation Information",
+      "children": [],
+      "fields": [
+        { "name": "semanticID", "type": "string", "label": "Semantic ID" },
+        { "name": "ontology", "type": "string", "label": "Ontology" },
+        { "name": "vocabulary", "type": "string", "label": "Vocabulary" }
+      ]
+    }
+  ],
+  "functionalEntities": [
+    {
+      "name": "Ingest",
+      "description": "Services and functions that accept SIPs and prepare contents for storage and management"
+    },
+    {
+      "name": "Archival Storage",
+      "description": "Services and functions for storage, maintenance and retrieval of AIPs"
+    },
+    {
+      "name": "Data Management",
+      "description": "Services and functions for populating, maintaining and accessing Descriptive Information and administrative data"
+    },
+    {
+      "name": "Administration",
+      "description": "Services and functions for overall operation of the archive system"
+    },
+    {
+      "name": "Preservation Planning",
+      "description": "Services and functions for monitoring the environment and providing recommendations for preservation strategies"
+    },
+    {
+      "name": "Access",
+      "description": "Services and functions that support Consumers in determining the existence, description, location and availability of information and allowing Consumers to request and receive information products"
+    }
+  ],
+  "packageTypes": {
+    "SIP": "Submission Information Package - from Producer to Archive",
+    "AIP": "Archival Information Package - preserved within Archive",
+    "DIP": "Dissemination Information Package - from Archive to Consumer"
+  },
+  "accessLevels": {
+    "Open": "Freely accessible to all designated communities",
+    "Restricted": "Access limited to specific users or groups",
+    "Embargoed": "Access restricted until specific date",
+    "Closed": "No access permitted"
+  }
+}

@@ -1,0 +1,210 @@
+{
+  "standard": "NOARK5",
+  "fullName": "Norsk Arkivstandard 5",
+  "reference": "NOARK 5 v5.0 / ISO 16175",
+  "description": "Norwegian standard for electronic archive systems",
+  "version": "5.0",
+  "xsdReference": "https://github.com/arkivverket/schemas/blob/master/N5/v5.0/arkivstruktur.xsd",
+  "url": "https://www.arkivverket.no/forvaltning-og-utvikling/noark-standarden",
+  "entities": [
+    {
+      "name": "Archive",
+      "type": "root",
+      "description": "The root archive element",
+      "parent": null,
+      "children": ["Archive", "Series"],
+      "note": "Can contain sub-archives (Archive) or archive parts (Series)",
+      "fields": [
+        { "name": "systemID", "type": "string", "label": "System ID" },
+        { "name": "title", "type": "string", "label": "Title" },
+        { "name": "createdDate", "type": "date", "label": "Created Date" },
+        { "name": "createdBy", "type": "string", "label": "Created By" },
+        { "name": "closedDate", "type": "date", "label": "Closed Date" },
+        { "name": "closedBy", "type": "string", "label": "Closed By" },
+        { "name": "archiveCreator", "type": "string", "label": "Archive Creator" }
+      ]
+    },
+    {
+      "name": "Archive Creator",
+      "type": "metadata",
+      "description": "Information about the archive creator organization",
+      "parent": "Archive",
+      "children": []
+    },
+    {
+      "name": "Series",
+      "type": "structural_unit",
+      "description": "Archive part/series - a logical subdivision of the archive",
+      "parent": "Archive",
+      "children": ["Classification System", "File", "Registration"],
+      "note": "Can contain classification system, files, or registrations directly",
+      "fields": [
+        { "name": "systemID", "type": "string", "label": "System ID" },
+        { "name": "title", "type": "string", "label": "Title" },
+        { "name": "seriesStatus", "type": "string", "label": "Series Status" },
+        { "name": "createdDate", "type": "date", "label": "Created Date" },
+        { "name": "createdBy", "type": "string", "label": "Created By" },
+        { "name": "closedDate", "type": "date", "label": "Closed Date" },
+        { "name": "closedBy", "type": "string", "label": "Closed By" }
+      ]
+    },
+    {
+      "name": "Classification System",
+      "type": "structural_unit",
+      "description": "Classification system for organizing records",
+      "parent": "Series",
+      "children": ["Class"],
+      "fields": [
+        { "name": "systemID", "type": "string", "label": "System ID" },
+        { "name": "title", "type": "string", "label": "Title" },
+        { "name": "createdDate", "type": "date", "label": "Created Date" },
+        { "name": "createdBy", "type": "string", "label": "Created By" }
+      ]
+    },
+    {
+      "name": "Class",
+      "type": "structural_unit",
+      "description": "Classification class - a category in the classification system",
+      "parent": "Classification System",
+      "children": ["Class", "File", "Registration"],
+      "note": "Can contain sub-classes, files, or registrations",
+      "fields": [
+        { "name": "systemID", "type": "string", "label": "System ID" },
+        { "name": "classID", "type": "string", "label": "Class ID" },
+        { "name": "title", "type": "string", "label": "Title" },
+        { "name": "createdDate", "type": "date", "label": "Created Date" },
+        { "name": "createdBy", "type": "string", "label": "Created By" }
+      ]
+    },
+    {
+      "name": "File",
+      "type": "structural_unit",
+      "description": "File - a collection of records related to a case or subject",
+      "parent": "Series",
+      "children": ["Registration", "File"],
+      "note": "Can contain registrations and sub-files. Base type for Case File and Meeting File",
+      "fields": [
+        { "name": "systemID", "type": "string", "label": "System ID" },
+        { "name": "fileID", "type": "string", "label": "File ID" },
+        { "name": "title", "type": "string", "label": "Title" },
+        { "name": "createdDate", "type": "date", "label": "Created Date" },
+        { "name": "createdBy", "type": "string", "label": "Created By" },
+        { "name": "closedDate", "type": "date", "label": "Closed Date" },
+        { "name": "closedBy", "type": "string", "label": "Closed By" }
+      ]
+    },
+    {
+      "name": "Registration",
+      "type": "record_unit",
+      "description": "Registration entry - basic record unit",
+      "parent": "File",
+      "children": ["Document Description"],
+      "note": "Base type for Journal Entry, Meeting Registration, and Archive Note",
+      "fields": [
+        { "name": "systemID", "type": "string", "label": "System ID" },
+        { "name": "createdDate", "type": "date", "label": "Created Date" },
+        { "name": "createdBy", "type": "string", "label": "Created By" },
+        { "name": "archivedDate", "type": "date", "label": "Archived Date" },
+        { "name": "archivedBy", "type": "string", "label": "Archived By" }
+      ]
+    },
+    {
+      "name": "Document Description",
+      "type": "document_unit",
+      "description": "Document description - metadata about a document",
+      "parent": "Registration",
+      "children": ["Document Object"],
+      "fields": [
+        { "name": "systemID", "type": "string", "label": "System ID" },
+        { "name": "documentType", "type": "string", "label": "Document Type" },
+        { "name": "documentStatus", "type": "string", "label": "Document Status" },
+        { "name": "title", "type": "string", "label": "Title" },
+        { "name": "createdDate", "type": "date", "label": "Created Date" },
+        { "name": "createdBy", "type": "string", "label": "Created By" },
+        { "name": "associatedAs", "type": "string", "label": "Associated As" },
+        { "name": "documentNumber", "type": "number", "label": "Document Number" },
+        { "name": "associatedDate", "type": "date", "label": "Associated Date" },
+        { "name": "associatedBy", "type": "string", "label": "Associated By" }
+      ]
+    },
+    {
+      "name": "Document Object",
+      "type": "document_unit",
+      "description": "Document object - the actual digital file",
+      "parent": "Document Description",
+      "children": [],
+      "fields": [
+        { "name": "systemID", "type": "string", "label": "System ID" },
+        { "name": "versionNumber", "type": "number", "label": "Version Number" },
+        { "name": "variantFormat", "type": "string", "label": "Variant Format" },
+        { "name": "format", "type": "string", "label": "Format" },
+        { "name": "createdDate", "type": "date", "label": "Created Date" },
+        { "name": "createdBy", "type": "string", "label": "Created By" },
+        { "name": "fileReference", "type": "string", "label": "File Reference" },
+        { "name": "checksum", "type": "string", "label": "Checksum" },
+        { "name": "checksumAlgorithm", "type": "string", "label": "Checksum Algorithm" },
+        { "name": "fileSize", "type": "number", "label": "File Size" }
+      ]
+    }
+  ],
+  "specializedMappeTypes": [
+    {
+      "name": "Case File",
+      "description": "Specialized file type for case management",
+      "baseType": "File",
+      "additionalElements": ["saksaar", "sakssekvensnummer", "saksdato", "administrativEnhet", "saksansvarlig", "saksstatus"]
+    },
+    {
+      "name": "Meeting File",
+      "description": "Specialized file type for meeting records",
+      "baseType": "File",
+      "additionalElements": ["moetenummer", "utvalg", "moetested", "moetedato", "referanseForrigeMoete", "referanseNesteMoete"]
+    }
+  ],
+  "specializedRegistrationTypes": [
+    {
+      "name": "Journal Entry",
+      "description": "Journal entry for official correspondence",
+      "baseType": "Registration",
+      "additionalElements": ["journalaar", "journalsekvensnummer", "journalpostnummer", "journalposttype", "journalstatus", "journaldato", "dokumentetsDato", "mottattDato", "sendtDato", "forfallsdato", "offentlighetsvurdertDato", "antallVedlegg", "korrespondansepart"]
+    },
+    {
+      "name": "Meeting Registration",
+      "description": "Registration for meeting records",
+      "baseType": "Registration",
+      "additionalElements": ["moetesakstype", "moeteregistreringstype", "moetedeltaker"]
+    },
+    {
+      "name": "Archive Note",
+      "description": "Internal archive note",
+      "baseType": "Registration",
+      "additionalElements": ["dokumentetsDato", "mottattDato", "sendtDato", "forfallsdato", "offentlighetsvurdertDato", "antallVedlegg", "korrespondansepart"]
+    }
+  ],
+  "statusValues": {
+    "arkivstatus": ["Opprettet", "Avsluttet", "Avlevert", "Periodisert", "Slettet"],
+    "arkivdelstatus": ["Aktiv periode", "Overlappingsperiode", "Avsluttet periode", "Uaktuelle mapper"],
+    "mappestatus": ["Opprettet", "Under behandling", "Avsluttet", "Utgår"],
+    "saksstatus": ["Under behandling", "Avsluttet", "Utgår"],
+    "journalstatus": ["Journalført", "Ferdigstilt fra saksbehandler", "Godkjent av leder", "Ekspedert", "Arkivert", "Utgår"],
+    "dokumentstatus": ["Dokumentet er ferdigstilt", "Dokumentet er under redigering"],
+    "moeteregistreringsstatus": ["Ferdigstilt fra saksbehandler", "Godkjent av leder", "Publisert"]
+  },
+  "variantFormats": {
+    "Produksjonsformat": "Production format - the working format",
+    "Arkivformat": "Archive format - the preservation format",
+    "Dokument hvor deler av innholdet er skjermet": "Screened document - parts of content are hidden"
+  },
+  "dokumenttyper": {
+    "Hoveddokument": "Main document",
+    "Vedlegg": "Attachment"
+  },
+  "journalposttyper": {
+    "Inngående dokument": "Incoming document",
+    "Utgående dokument": "Outgoing document",
+    "Organinternt dokument for oppfølging": "Internal document for follow-up",
+    "Organinternt dokument uten oppfølging": "Internal document without follow-up",
+    "Saksframlegg": "Case proposal"
+  }
+}
+

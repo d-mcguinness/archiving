@@ -1,0 +1,365 @@
+{
+  "standard": "PREMIS",
+  "fullName": "Preservation Metadata: Implementation Strategies",
+  "reference": "PREMIS Data Dictionary 3.0",
+  "description": "International standard for metadata to support the preservation of digital objects and ensure their long-term usability",
+  "version": "3.0",
+  "xsdReference": "https://www.loc.gov/standards/premis/premis.xsd",
+  "url": "https://www.loc.gov/standards/premis/",
+  "entities": [
+    {
+      "name": "Object",
+      "type": "core_entity",
+      "description": "Discrete unit of information in digital form subject to digital preservation",
+      "parent": null,
+      "children": ["Intellectual Entity", "Representation", "File", "Bitstream"],
+      "note": "Root entity in PREMIS data model",
+      "fields": [
+        { "name": "objectIdentifier", "type": "string", "label": "Object Identifier" },
+        { "name": "objectIdentifierType", "type": "string", "label": "Identifier Type" },
+        { "name": "objectCategory", "type": "string", "label": "Object Category" },
+        { "name": "preservationLevel", "type": "string", "label": "Preservation Level" }
+      ]
+    },
+    {
+      "name": "Intellectual Entity",
+      "type": "object_type",
+      "description": "Coherent set of content that is described as a unit (e.g., book, photograph, database)",
+      "parent": "Object",
+      "children": [],
+      "fields": [
+        { "name": "intellectualEntityIdentifier", "type": "string", "label": "IE Identifier" },
+        { "name": "intellectualEntityType", "type": "string", "label": "IE Type" },
+        { "name": "title", "type": "string", "label": "Title" },
+        { "name": "creator", "type": "string", "label": "Creator" },
+        { "name": "dateCreated", "type": "date", "label": "Date Created" }
+      ]
+    },
+    {
+      "name": "Representation",
+      "type": "object_type",
+      "description": "Set of files needed to render an Intellectual Entity",
+      "parent": "Object",
+      "children": ["File"],
+      "fields": [
+        { "name": "representationIdentifier", "type": "string", "label": "Representation ID" },
+        { "name": "representationType", "type": "string", "label": "Representation Type" },
+        { "name": "dateCreated", "type": "date", "label": "Date Created" },
+        { "name": "creatingApplication", "type": "string", "label": "Creating Application" }
+      ]
+    },
+    {
+      "name": "File",
+      "type": "object_type",
+      "description": "Named and ordered sequence of bytes known to an operating system",
+      "parent": "Representation",
+      "children": ["Bitstream"],
+      "fields": [
+        { "name": "fileIdentifier", "type": "string", "label": "File Identifier" },
+        { "name": "fileName", "type": "string", "label": "File Name" },
+        { "name": "fileSize", "type": "number", "label": "File Size (bytes)" },
+        { "name": "formatName", "type": "string", "label": "Format Name" },
+        { "name": "formatVersion", "type": "string", "label": "Format Version" },
+        { "name": "formatRegistryKey", "type": "string", "label": "PRONOM ID" },
+        { "name": "dateCreated", "type": "date", "label": "Date Created" },
+        { "name": "creatingApplication", "type": "string", "label": "Creating Application" }
+      ]
+    },
+    {
+      "name": "Bitstream",
+      "type": "object_type",
+      "description": "Contiguous or non-contiguous data within a file that has meaningful properties",
+      "parent": "File",
+      "children": [],
+      "fields": [
+        { "name": "bitstreamIdentifier", "type": "string", "label": "Bitstream ID" },
+        { "name": "bitstreamSize", "type": "number", "label": "Size (bytes)" },
+        { "name": "formatName", "type": "string", "label": "Format Name" },
+        { "name": "formatVersion", "type": "string", "label": "Format Version" }
+      ]
+    },
+    {
+      "name": "Event",
+      "type": "core_entity",
+      "description": "Action that involves one or more Object entities and/or Agent entities",
+      "parent": null,
+      "children": [],
+      "note": "Records preservation actions and changes",
+      "fields": [
+        { "name": "eventIdentifier", "type": "string", "label": "Event Identifier" },
+        { "name": "eventType", "type": "string", "label": "Event Type" },
+        { "name": "eventDateTime", "type": "date", "label": "Event Date/Time" },
+        { "name": "eventDetail", "type": "string", "label": "Event Detail" },
+        { "name": "eventOutcome", "type": "string", "label": "Event Outcome" },
+        { "name": "eventOutcomeDetail", "type": "string", "label": "Outcome Detail" }
+      ]
+    },
+    {
+      "name": "Agent",
+      "type": "core_entity",
+      "description": "Person, organization, or software associated with preservation events in the life of an object",
+      "parent": null,
+      "children": ["Person", "Organization", "Software"],
+      "fields": [
+        { "name": "agentIdentifier", "type": "string", "label": "Agent Identifier" },
+        { "name": "agentIdentifierType", "type": "string", "label": "Identifier Type" },
+        { "name": "agentName", "type": "string", "label": "Agent Name" },
+        { "name": "agentType", "type": "string", "label": "Agent Type" }
+      ]
+    },
+    {
+      "name": "Person",
+      "type": "agent_type",
+      "description": "Individual human being",
+      "parent": "Agent",
+      "children": [],
+      "fields": [
+        { "name": "personName", "type": "string", "label": "Person Name" },
+        { "name": "personIdentifier", "type": "string", "label": "Person ID" },
+        { "name": "personRole", "type": "string", "label": "Role" },
+        { "name": "organization", "type": "string", "label": "Organization" }
+      ]
+    },
+    {
+      "name": "Organization",
+      "type": "agent_type",
+      "description": "Corporate body or institution",
+      "parent": "Agent",
+      "children": [],
+      "fields": [
+        { "name": "organizationName", "type": "string", "label": "Organization Name" },
+        { "name": "organizationIdentifier", "type": "string", "label": "Organization ID" },
+        { "name": "organizationType", "type": "string", "label": "Type" },
+        { "name": "address", "type": "string", "label": "Address" }
+      ]
+    },
+    {
+      "name": "Software",
+      "type": "agent_type",
+      "description": "Software application or system",
+      "parent": "Agent",
+      "children": [],
+      "fields": [
+        { "name": "softwareName", "type": "string", "label": "Software Name" },
+        { "name": "softwareVersion", "type": "string", "label": "Version" },
+        { "name": "softwareType", "type": "string", "label": "Type" },
+        { "name": "vendor", "type": "string", "label": "Vendor" }
+      ]
+    },
+    {
+      "name": "Rights",
+      "type": "core_entity",
+      "description": "Assertion of rights or permissions pertaining to Objects or Agents",
+      "parent": null,
+      "children": ["Copyright", "License", "Statute", "Access Rights"],
+      "fields": [
+        { "name": "rightsIdentifier", "type": "string", "label": "Rights Identifier" },
+        { "name": "rightsStatement", "type": "string", "label": "Rights Statement" },
+        { "name": "rightsBasis", "type": "string", "label": "Rights Basis" },
+        { "name": "rightsGranted", "type": "string", "label": "Rights Granted" }
+      ]
+    },
+    {
+      "name": "Copyright",
+      "type": "rights_type",
+      "description": "Copyright information for the object",
+      "parent": "Rights",
+      "children": [],
+      "fields": [
+        { "name": "copyrightStatus", "type": "string", "label": "Copyright Status" },
+        { "name": "copyrightJurisdiction", "type": "string", "label": "Jurisdiction" },
+        { "name": "copyrightNote", "type": "string", "label": "Copyright Note" },
+        { "name": "copyrightStartDate", "type": "date", "label": "Start Date" },
+        { "name": "copyrightEndDate", "type": "date", "label": "End Date" }
+      ]
+    },
+    {
+      "name": "License",
+      "type": "rights_type",
+      "description": "License terms for the object",
+      "parent": "Rights",
+      "children": [],
+      "fields": [
+        { "name": "licenseIdentifier", "type": "string", "label": "License ID" },
+        { "name": "licenseTerms", "type": "string", "label": "License Terms" },
+        { "name": "licenseNote", "type": "string", "label": "License Note" },
+        { "name": "licenseStartDate", "type": "date", "label": "Start Date" },
+        { "name": "licenseEndDate", "type": "date", "label": "End Date" }
+      ]
+    },
+    {
+      "name": "Statute",
+      "type": "rights_type",
+      "description": "Legal statute affecting the object",
+      "parent": "Rights",
+      "children": [],
+      "fields": [
+        { "name": "statuteJurisdiction", "type": "string", "label": "Jurisdiction" },
+        { "name": "statuteCitation", "type": "string", "label": "Citation" },
+        { "name": "statuteNote", "type": "string", "label": "Statute Note" },
+        { "name": "statuteStartDate", "type": "date", "label": "Start Date" },
+        { "name": "statuteEndDate", "type": "date", "label": "End Date" }
+      ]
+    },
+    {
+      "name": "Access Rights",
+      "type": "rights_type",
+      "description": "Access permissions for the object",
+      "parent": "Rights",
+      "children": [],
+      "fields": [
+        { "name": "accessLevel", "type": "string", "label": "Access Level" },
+        { "name": "accessConditions", "type": "string", "label": "Access Conditions" },
+        { "name": "embargoEndDate", "type": "date", "label": "Embargo End Date" },
+        { "name": "accessNote", "type": "string", "label": "Access Note" }
+      ]
+    },
+    {
+      "name": "Fixity",
+      "type": "technical_metadata",
+      "description": "Information used to verify that an object has not been altered",
+      "parent": "File",
+      "children": [],
+      "fields": [
+        { "name": "messageDigest", "type": "string", "label": "Message Digest" },
+        { "name": "messageDigestAlgorithm", "type": "string", "label": "Algorithm" },
+        { "name": "messageDigestOriginator", "type": "string", "label": "Originator" },
+        { "name": "messageDigestDateTime", "type": "date", "label": "Date/Time Created" }
+      ]
+    },
+    {
+      "name": "Format",
+      "type": "technical_metadata",
+      "description": "File format information",
+      "parent": "File",
+      "children": [],
+      "fields": [
+        { "name": "formatDesignation", "type": "string", "label": "Format Designation" },
+        { "name": "formatName", "type": "string", "label": "Format Name" },
+        { "name": "formatVersion", "type": "string", "label": "Format Version" },
+        { "name": "formatRegistryName", "type": "string", "label": "Registry Name" },
+        { "name": "formatRegistryKey", "type": "string", "label": "Registry Key (PRONOM)" },
+        { "name": "formatNote", "type": "string", "label": "Format Note" }
+      ]
+    },
+    {
+      "name": "Storage",
+      "type": "technical_metadata",
+      "description": "Information about storage location and medium",
+      "parent": "File",
+      "children": [],
+      "fields": [
+        { "name": "storageMedium", "type": "string", "label": "Storage Medium" },
+        { "name": "storageLocation", "type": "string", "label": "Storage Location" },
+        { "name": "storagePath", "type": "string", "label": "Storage Path" },
+        { "name": "storageDate", "type": "date", "label": "Storage Date" }
+      ]
+    },
+    {
+      "name": "Relationship",
+      "type": "structural_metadata",
+      "description": "Links between PREMIS entities",
+      "parent": null,
+      "children": [],
+      "fields": [
+        { "name": "relationshipType", "type": "string", "label": "Relationship Type" },
+        { "name": "relationshipSubType", "type": "string", "label": "Sub-Type" },
+        { "name": "relatedObjectIdentifier", "type": "string", "label": "Related Object ID" },
+        { "name": "relatedEventIdentifier", "type": "string", "label": "Related Event ID" }
+      ]
+    },
+    {
+      "name": "Environment",
+      "type": "technical_metadata",
+      "description": "Technical environment required to render or use the object",
+      "parent": "Representation",
+      "children": ["Hardware", "Software Environment", "Environment Extension"],
+      "fields": [
+        { "name": "environmentIdentifier", "type": "string", "label": "Environment ID" },
+        { "name": "environmentPurpose", "type": "string", "label": "Purpose" },
+        { "name": "environmentNote", "type": "string", "label": "Environment Note" }
+      ]
+    },
+    {
+      "name": "Hardware",
+      "type": "environment_type",
+      "description": "Hardware specifications required",
+      "parent": "Environment",
+      "children": [],
+      "fields": [
+        { "name": "hardwareName", "type": "string", "label": "Hardware Name" },
+        { "name": "hardwareType", "type": "string", "label": "Hardware Type" },
+        { "name": "hardwareVersion", "type": "string", "label": "Version" },
+        { "name": "hardwareNote", "type": "string", "label": "Hardware Note" }
+      ]
+    },
+    {
+      "name": "Software Environment",
+      "type": "environment_type",
+      "description": "Software specifications required",
+      "parent": "Environment",
+      "children": [],
+      "fields": [
+        { "name": "softwareName", "type": "string", "label": "Software Name" },
+        { "name": "softwareVersion", "type": "string", "label": "Version" },
+        { "name": "softwareType", "type": "string", "label": "Software Type" },
+        { "name": "softwareDependency", "type": "string", "label": "Dependencies" }
+      ]
+    },
+    {
+      "name": "Environment Extension",
+      "type": "environment_type",
+      "description": "Additional environment requirements",
+      "parent": "Environment",
+      "children": [],
+      "fields": [
+        { "name": "extensionName", "type": "string", "label": "Extension Name" },
+        { "name": "extensionValue", "type": "string", "label": "Extension Value" },
+        { "name": "extensionNote", "type": "string", "label": "Extension Note" }
+      ]
+    },
+    {
+      "name": "Signature Information",
+      "type": "technical_metadata",
+      "description": "Digital signature information for authentication",
+      "parent": "File",
+      "children": [],
+      "fields": [
+        { "name": "signatureValue", "type": "string", "label": "Signature Value" },
+        { "name": "signatureMethod", "type": "string", "label": "Signature Method" },
+        { "name": "signatureValidationRules", "type": "string", "label": "Validation Rules" },
+        { "name": "signer", "type": "string", "label": "Signer" },
+        { "name": "signatureDateTime", "type": "date", "label": "Signature Date/Time" }
+      ]
+    }
+  ],
+  "eventTypes": {
+    "capture": "The process whereby a repository actively obtains an object",
+    "compression": "The process of coding data to save storage space or transmission time",
+    "creation": "The act of creating a new object",
+    "deaccession": "The process of removing an object from the inventory of a repository",
+    "decompression": "The process of reversing the effects of compression",
+    "decryption": "The process of converting encrypted data to plaintext",
+    "deletion": "The process of removing an object from repository storage",
+    "digital_signature_validation": "The process of determining that a decrypted digital signature matches an expected value",
+    "fixity_check": "The process of verifying that an object has not been changed",
+    "ingestion": "The process of adding objects to a preservation repository",
+    "message_digest_calculation": "The process by which a message digest is created",
+    "migration": "A transformation of an object creating a version in a more contemporary format",
+    "normalization": "A transformation of an object creating a version more conducive to preservation",
+    "replication": "The process of creating a copy of an object that is, bitwise, identical to the original",
+    "validation": "The process of comparing an object with a standard and noting compliance or exceptions",
+    "virus_check": "The process of scanning a file for malicious programs"
+  },
+  "objectCategories": {
+    "intellectual_entity": "A coherent set of content described as a unit",
+    "representation": "The set of files needed to render an intellectual entity",
+    "file": "A named and ordered sequence of bytes",
+    "bitstream": "Data within a file that has meaningful properties"
+  },
+  "preservationLevels": {
+    "bit-level": "Preservation at the bit level only",
+    "full": "Full preservation including format migration",
+    "logical": "Preservation of logical structure and content"
+  }
+}
