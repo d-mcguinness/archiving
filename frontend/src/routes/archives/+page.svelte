@@ -250,6 +250,9 @@
                 {/if}
               </td>
               <td class="actions-cell">
+                <a href="/archives/update/{archive.id}" class="btn-action btn-edit">
+                  ✏️ Edit
+                </a>
                 <button
                   class="btn-action btn-extract"
                   on:click={() => openExtractDialog(archive)}
@@ -648,7 +651,7 @@
   .actions-cell {
     text-align: right;
     white-space: nowrap;
-    width: 250px;
+    width: 320px;
   }
 
   .btn-action {
@@ -662,6 +665,15 @@
     border: none;
     cursor: pointer;
     text-decoration: none;
+  }
+
+  .btn-edit {
+    background: #f59e0b;
+    color: white;
+  }
+
+  .btn-edit:hover {
+    background: #d97706;
   }
 
   .btn-extract {

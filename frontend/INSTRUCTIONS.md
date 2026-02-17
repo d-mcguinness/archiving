@@ -12,6 +12,7 @@ This is a **SvelteKit** application that provides a modern web interface for man
 - **Styling**: Custom CSS
 - **Build Tool**: Vite
 - **Package Manager**: npm/pnpm
+- **Backend**: Spring Boot with EAV architecture (see [../ELEMENT_FIELD_ARCHITECTURE_ANALYSIS.md](../ELEMENT_FIELD_ARCHITECTURE_ANALYSIS.md))
 
 ## Prerequisites
 

@@ -19,6 +19,7 @@ The application implements a **role-based access control (RBAC)** system with th
 - **ORM**: JPA/Hibernate
 - **Build Tool**: Maven
 - **Frontend**: SvelteKit (separate application)
+- **Data Model**: Entity-Attribute-Value (EAV) pattern - see [ELEMENT_FIELD_ARCHITECTURE_ANALYSIS.md](ELEMENT_FIELD_ARCHITECTURE_ANALYSIS.md)
 
 ## Prerequisites
 
@@ -331,6 +332,125 @@ public void handleUserDeleted(UserDeletedEvent event) {
     tenancyService.removeUserFromTenant(event.getUserId());
 }
 ```
+
+## Element & Field Architecture (EAV Pattern)
+
+### Overview
+
+The system uses an **Entity-Attribute-Value (EAV)** pattern to support all 9 archiving standards without database schema changes. This flexible approach is essential for handling diverse hierarchical structures across standards.
+
+### Core Entities
+
+```java
+Archive (1) ─────→ (n) Element ─────→ (n) Field
+                      └── (n) Element (recursive hierarchy)
+```
+
+**Why EAV?**
+- ✅ Supports 9+ standards (NOARK5, OAIS, PREMIS, Dublin Core, METS, EAD, BagIt, ISAD(G), MODS)
+- ✅ Add new standards without database migrations
+- ✅ Handle arbitrary hierarchy depths
+- ✅ Flexible metadata per standard
+- ✅ Future-proof for standard evolution
+
+### Element Entity
+
+Represents structural units in an archive (e.g., NOARK5 "Series", Dublin Core "Resource", OAIS "SIP"):
+
+```java
+@Entity
+public class Element {
+    private Long id;
+    private Archive archive;
+    private Element parent;              // Recursive hierarchy
+    private List<Element> children;      // Child elements
+    private List<Field> fields;          // Metadata fields
+    private String entityType;           // e.g., "Series", "Resource"
+    private String title;
+    private Boolean isRoot;
+    // ... lifecycle fields
+}
+```
+
+**Key Methods:**
+- `getPath()` - Full hierarchical path (e.g., "/arkiv/arkivdel/mappe")
+- `getDepth()` - Depth in hierarchy (root = 0)
+- `isLeaf()` - Check if element has children
+- `countDescendants()` - Total descendants
+
+### Field Entity
+
+Represents metadata values for Elements:
+
+```java
+@Entity
+public class Field {
+    private Long id;
+    private Element element;
+    private String name;      // e.g., "systemID", "dc:title"
+    private String label;     // Human-readable label
+    private String type;      // "string", "date", "integer"
+    private String value;     // TEXT storage
+}
+```
+
+### Example: NOARK5 Structure
+
+```java
+// Create NOARK5 archive hierarchy
+Archive archive = new Archive(standard = ArchiveStandard.NOARK5);
+
+Element arkiv = new Element(entityType = "Archive", isRoot = true);
+arkiv.addField(new Field(name = "systemID", value = "ARK-001"));
+arkiv.addField(new Field(name = "title", value = "Corporate Archive"));
+
+Element arkivdel = new Element(entityType = "Series", parent = arkiv);
+arkivdel.addField(new Field(name = "systemID", value = "2024"));
+arkivdel.addField(new Field(name = "title", value = "Financial Records"));
+
+Element mappe = new Element(entityType = "File", parent = arkivdel);
+mappe.addField(new Field(name = "fileID", value = "2024/001"));
+```
+
+### Performance Optimization
+
+**Use @EntityGraph for loading:**
+```java
+@EntityGraph(attributePaths = {"elements", "elements.fields"})
+Archive findByIdWithElements(Long id);
+```
+
+**Cache archives:**
+```java
+@Cacheable(value = "archives", key = "#id")
+public Archive findByIdWithElements(Long id);
+```
+
+**Add indexes:**
+```sql
+CREATE INDEX idx_element_archive_id ON elements(archive_id);
+CREATE INDEX idx_field_element_id ON fields(element_id);
+CREATE INDEX idx_element_entity_type ON elements(entity_type);
+```
+
+### Best Practices
+
+✅ **DO:**
+- Validate Element hierarchy using Strategy pattern
+- Use `@EntityGraph` when loading archives
+- Cache frequently accessed archives
+- Validate Field types before saving
+
+❌ **DON'T:**
+- Load lazy Fields without JOIN FETCH
+- Skip validation - EAV is too flexible
+- Query Fields directly - go through Elements
+- Mix standards in one Archive
+
+### Detailed Analysis
+
+For comprehensive analysis, performance benchmarks, and alternative approaches, see:
+**[ELEMENT_FIELD_ARCHITECTURE_ANALYSIS.md](ELEMENT_FIELD_ARCHITECTURE_ANALYSIS.md)**
 
 ## Archiving Standards (Strategy Pattern)
 
