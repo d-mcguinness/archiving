@@ -4,15 +4,21 @@
 
 This is a **Spring Modulith** application for managing digital archives with support for multiple international archiving standards (NOARK5, OAIS, PREMIS, Dublin Core, METS, EAD, BagIt, ISAD(G), MODS).
 
+The application implements a **role-based access control (RBAC)** system with three distinct roles:
+- **ADMIN**: Full system access - manage tenants, users, and archives
+- **TENANT**: Organization management - manage users and archives within their tenant
+- **USER**: Document submission - submit and view their own documents
+
 ## Tech Stack
 
 - **Framework**: Spring Boot 3.5.4
 - **Java**: 21
 - **Architecture**: Spring Modulith (modular monolith)
-- **API**: GraphQL
+- **API**: GraphQL + REST
 - **Database**: PostgreSQL (production), H2 (development)
 - **ORM**: JPA/Hibernate
 - **Build Tool**: Maven
+- **Frontend**: SvelteKit (separate application)
 
 ## Prerequisites
 
@@ -55,6 +61,197 @@ archiving/
 ├── compose.yaml
 └── Dockerfile
 ```
+
+## Role-Based Access Control (RBAC)
+
+### User Roles
+
+The system implements three distinct user roles with different access levels:
+
+#### ADMIN Role
+**Full system access** - Complete control over all resources
+
+**Permissions**:
+- ✅ Manage all tenants (create, read, update, delete)
+- ✅ Manage all users across all tenants
+- ✅ Manage all archives across all tenants
+- ✅ Access admin panel
+- ✅ View system-wide statistics and analytics
+- ✅ Configure system settings
+
+**Use Cases**:
+- System administrators
+- IT staff
+- Super users
+
+#### TENANT Role
+**Organization management** - Manage resources within their tenant
+
+**Permissions**:
+- ✅ Manage users within their tenant
+- ✅ Manage archives within their tenant
+- ✅ View tenant-specific statistics
+- ❌ Cannot manage other tenants
+- ❌ Cannot access admin panel
+- ❌ Cannot view system-wide data
+
+**Use Cases**:
+- Organization managers
+- Department heads
+- Team leaders
+
+#### USER Role
+**Document submission** - Basic access for document submission
+
+**Permissions**:
+- ✅ Submit documents for archiving
+- ✅ View their own submitted documents
+- ❌ Cannot manage other users
+- ❌ Cannot manage archives
+- ❌ Cannot access admin features
+
+**Use Cases**:
+- Regular employees
+- Document submitters
+- End users
+
+### Role-Based Navigation
+
+The frontend adjusts navigation based on user role:
+
+**ADMIN Navigation**:
+```
+🏛️ Archiving System | [Tenants] [Users] [Archives] | 👤 Admin | [Logout]
+```
+
+**TENANT Navigation**:
+```
+🏛️ Archiving System | [Users] [Archives] | 👤 Manager | [Logout]
+```
+
+**USER Navigation**:
+```
+🏛️ Archiving System | 👤 User | [Logout]
+```
+
+### Role-Based Dashboard Views
+
+#### ADMIN Dashboard
+Shows comprehensive system statistics:
+- Total users across all tenants
+- Total tenants in the system
+- Total archives (all statuses)
+- Archive status breakdown (Published, Draft, Archived)
+- Archive distribution by standard
+- Quick action cards for all management tasks
+- Recent archives from all tenants
+
+#### TENANT Dashboard
+Shows organization-specific data:
+- Users in their tenant
+- Archives in their tenant
+- Archive status breakdown for their archives
+- Quick action cards for user and archive management
+- Recent archives from their tenant
+
+#### USER Dashboard
+Shows document submission interface:
+- Welcome message with user name
+- Simple document upload form
+- Information about the archiving process
+- No statistics or management features
+- Focused on document submission workflow
+
+### Authentication Flow
+
+```
+1. User navigates to /login
+2. Selects role (Admin, Tenant, or User)
+3. Clicks "Sign In" (demo credentials auto-filled)
+4. System stores:
+   - auth_token (JWT token)
+   - auth_user (user object)
+   - auth_role (ADMIN/TENANT/USER)
+5. Redirects to role-appropriate dashboard
+6. Navigation and features adjust based on role
+```
+
+### Demo Credentials
+
+For testing purposes, the application provides demo login cards:
+
+```
+👑 Admin
+Username: admin
+Password: admin123
+Role: ADMIN
+
+🏢 Tenant
+Username: tenant
+Password: tenant123
+Role: TENANT
+
+👤 User
+Username: user
+Password: user123
+Role: USER
+```
+
+### Implementing Role Checks
+
+#### Backend (Spring Security - Future Implementation)
+
+```java
+@PreAuthorize("hasRole('ADMIN')")
+@QueryMapping
+public List<Tenant> getAllTenants() {
+    return tenancyService.getAllTenants();
+}
+
+@PreAuthorize("hasAnyRole('ADMIN', 'TENANT')")
+@QueryMapping
+public List<User> getUsers() {
+    return userService.getAllUsers();
+}
+
+@PreAuthorize("hasAnyRole('ADMIN', 'TENANT', 'USER')")
+@PostMapping("/api/upload")
+public ResponseEntity<?> uploadDocument(@RequestParam MultipartFile file) {
+    return fileUploadService.upload(file);
+}
+```
+
+#### Frontend (Current Implementation)
+
+```typescript
+// Check role from localStorage
+const role = localStorage.getItem('auth_role');
+
+// Conditionally render navigation
+{#if role === 'ADMIN' || role === 'TENANT'}
+  <a href="/archives">Archives</a>
+{/if}
+
+{#if role === 'ADMIN'}
+  <a href="/tenants">Tenants</a>
+{/if}
+```
+
+### Security Considerations
+
+**⚠️ Current State**: Client-side role checking only (development mode)
+
+**For Production**:
+1. Implement Spring Security with JWT authentication
+2. Add `@PreAuthorize` annotations to all endpoints
+3. Validate roles on the backend for every request
+4. Use secure session management
+5. Implement password encryption (BCrypt)
+6. Add HTTPS/TLS encryption
+7. Implement rate limiting
+8. Add audit logging for sensitive operations
+
+**Important**: Never rely solely on client-side role checks for security!
 
 ## Quick Start
 
@@ -547,18 +744,295 @@ Then access: http://localhost:2020/swagger-ui.html
 
 ## Security Considerations
 
-**⚠️ Current State: Development Mode**
+**⚠️ Current State: Development Mode with Client-Side RBAC**
 
-For production, implement:
+The application currently implements **client-side role-based access control** for development and demonstration purposes. The frontend checks user roles from `localStorage` to show/hide features.
 
-1. **Authentication**: Spring Security with JWT
-2. **Authorization**: Role-based access control
-3. **Password encryption**: Use BCrypt
-4. **HTTPS**: Enable SSL/TLS
-5. **CORS**: Configure allowed origins
-6. **Rate limiting**: Prevent abuse
-7. **Input validation**: Validate all inputs
-8. **SQL injection**: Already prevented by JPA
+### Current Implementation
+
+**Frontend Role Checking**:
+```typescript
+// Stored in localStorage after login
+const role = localStorage.getItem('auth_role'); // 'ADMIN' | 'TENANT' | 'USER'
+const user = localStorage.getItem('auth_user');
+const token = localStorage.getItem('auth_token');
+
+// Conditional rendering based on role
+{#if role === 'ADMIN'}
+  <a href="/tenants">Manage Tenants</a>
+{/if}
+```
+
+**Access Control by Route**:
+- `/admin` - Redirects non-ADMIN users
+- `/tenants` - Only visible to ADMIN
+- `/users` - Visible to ADMIN and TENANT
+- `/archives` - Visible to ADMIN and TENANT
+- Dashboard (/) - Customized view for each role
+
+### Production Requirements
+
+For production deployment, implement the following security measures:
+
+#### 1. **Backend Authentication & Authorization**
+
+```java
+// Spring Security Configuration
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+public class SecurityConfig {
+    
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) {
+        return http
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/tenants/**").hasAnyRole("ADMIN", "TENANT")
+                .requestMatchers("/api/archives/**").hasAnyRole("ADMIN", "TENANT")
+                .requestMatchers("/api/upload/**").authenticated()
+                .anyRequest().permitAll()
+            )
+            .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
+            .build();
+    }
+}
+
+// Method-level security
+@PreAuthorize("hasRole('ADMIN')")
+@QueryMapping
+public List<Tenant> getAllTenants() {
+    return tenancyService.getAllTenants();
+}
+
+@PreAuthorize("hasAnyRole('ADMIN', 'TENANT')")
+@MutationMapping
+public User createUser(CreateUserInput input) {
+    return userService.createUser(input);
+}
+```
+
+#### 2. **JWT Token-Based Authentication**
+
+```java
+// Token generation on login
+public String generateToken(User user) {
+    return Jwts.builder()
+        .setSubject(user.getEmail())
+        .claim("role", user.getRole())
+        .claim("tenantId", user.getTenantId())
+        .setIssuedAt(new Date())
+        .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 24 hours
+        .signWith(SignatureAlgorithm.HS512, secretKey)
+        .compact();
+}
+
+// Token validation
+public Claims validateToken(String token) {
+    return Jwts.parser()
+        .setSigningKey(secretKey)
+        .parseClaimsJws(token)
+        .getBody();
+}
+```
+
+#### 3. **Password Encryption**
+
+```java
+@Configuration
+public class PasswordConfig {
+    
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);
+    }
+}
+
+// Usage
+String hashedPassword = passwordEncoder.encode(plainPassword);
+boolean matches = passwordEncoder.matches(plainPassword, hashedPassword);
+```
+
+#### 4. **HTTPS/TLS**
+
+```properties
+# application.properties
+server.ssl.enabled=true
+server.ssl.key-store=classpath:keystore.p12
+server.ssl.key-store-password=${SSL_PASSWORD}
+server.ssl.key-store-type=PKCS12
+```
+
+#### 5. **CORS Configuration**
+
+```java
+@Configuration
+public class CorsConfig {
+    
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(Arrays.asList("https://yourdomain.com"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        config.setAllowCredentials(true);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+}
+```
+
+#### 6. **Rate Limiting**
+
+```java
+@Configuration
+public class RateLimitConfig {
+    
+    @Bean
+    public RateLimiter rateLimiter() {
+        return RateLimiter.create(100.0); // 100 requests per second
+    }
+}
+```
+
+#### 7. **Input Validation**
+
+```java
+@Data
+@Validated
+public class CreateUserInput {
+    
+    @NotBlank(message = "Name is required")
+    @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
+    private String name;
+    
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    private String email;
+    
+    @Min(value = 18, message = "User must be at least 18 years old")
+    private Integer age;
+}
+```
+
+#### 8. **Audit Logging**
+
+```java
+@Aspect
+@Component
+public class AuditAspect {
+    
+    @Around("@annotation(PreAuthorize)")
+    public Object logSecureAccess(ProceedingJoinPoint joinPoint) throws Throwable {
+        String user = SecurityContextHolder.getContext().getAuthentication().getName();
+        String method = joinPoint.getSignature().getName();
+        
+        log.info("User {} accessed secure method: {}", user, method);
+        
+        Object result = joinPoint.proceed();
+        
+        log.info("User {} completed method: {}", user, method);
+        return result;
+    }
+}
+```
+
+### Session Management
+
+```java
+@Configuration
+public class SessionConfig {
+    
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+    
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+}
+```
+
+### Security Headers
+
+```java
+http.headers(headers -> headers
+    .contentSecurityPolicy("default-src 'self'")
+    .frameOptions().deny()
+    .xssProtection().block(true)
+    .contentTypeOptions()
+);
+```
+
+### Additional Security Measures
+
+1. **SQL Injection**: ✅ Already prevented by JPA/Hibernate parameterized queries
+2. **XSS Protection**: Add input sanitization and CSP headers
+3. **CSRF Protection**: Enable Spring Security CSRF tokens
+4. **Clickjacking**: Use `X-Frame-Options: DENY` header
+5. **Secrets Management**: Use environment variables or secrets manager
+6. **Dependency Scanning**: Regularly update dependencies and scan for CVEs
+7. **Security Testing**: Implement penetration testing and security audits
+
+### Role-Based Access Matrix
+
+| Feature | ADMIN | TENANT | USER |
+|---------|-------|--------|------|
+| View Dashboard | ✅ | ✅ | ✅ |
+| Manage Tenants | ✅ | ❌ | ❌ |
+| Manage Users | ✅ | ✅ (own tenant) | ❌ |
+| Manage Archives | ✅ | ✅ (own tenant) | ❌ |
+| Submit Documents | ✅ | ✅ | ✅ |
+| View All Statistics | ✅ | ❌ | ❌ |
+| Access Admin Panel | ✅ | ❌ | ❌ |
+| Export Archives | ✅ | ✅ (own tenant) | ❌ |
+| Delete Resources | ✅ | ✅ (own tenant) | ❌ |
+
+### Testing Security
+
+```bash
+# Test ADMIN access
+curl -X POST http://localhost:2020/graphql \
+  -H "Authorization: Bearer ${ADMIN_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ getAllTenants { id name } }"}'
+
+# Test TENANT access (should fail for tenants)
+curl -X POST http://localhost:2020/graphql \
+  -H "Authorization: Bearer ${TENANT_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ getAllTenants { id name } }"}'
+
+# Test unauthorized access (should fail)
+curl -X POST http://localhost:2020/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ getAllUsers { id name } }"}'
+```
+
+### Migration Checklist
+
+When moving from development to production:
+
+- [ ] Implement Spring Security
+- [ ] Add JWT authentication
+- [ ] Enable password encryption
+- [ ] Configure HTTPS/TLS
+- [ ] Set up proper CORS
+- [ ] Add rate limiting
+- [ ] Implement audit logging
+- [ ] Add input validation
+- [ ] Enable security headers
+- [ ] Set up secrets management
+- [ ] Configure session management
+- [ ] Add security testing
+- [ ] Review and update all endpoints
+- [ ] Remove demo credentials
+- [ ] Add proper user registration
+- [ ] Implement password reset flow
 
 ## Useful Commands
 
@@ -607,7 +1081,8 @@ For issues or questions:
 
 ---
 
-**Last Updated**: February 1, 2026  
+**Last Updated**: February 12, 2026  
 **Version**: 0.0.1-SNAPSHOT  
 **Java Version**: 21  
-**Spring Boot Version**: 3.5.4
+**Spring Boot Version**: 3.5.4  
+**Security**: Client-side RBAC (Development) - Backend authentication required for production
