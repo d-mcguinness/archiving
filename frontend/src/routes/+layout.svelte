@@ -152,6 +152,19 @@
               </a>
             </li>
           {/if}
+
+          <!-- Documents - shown to ALL roles -->
+          {#if isLoggedIn}
+            <li>
+              <a
+                href="/documents"
+                class="documents-link"
+                class:active={isActive('/documents')}
+              >
+                📄 Documents
+              </a>
+            </li>
+          {/if}
         </ul>
         <div class="auth-section">
           {#if isLoggedIn && currentUser}
@@ -292,6 +305,18 @@
 
   .nav-links a.users-link.active {
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  }
+
+  .nav-links a.documents-link {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  }
+
+  .nav-links a.documents-link:hover:not(.active) {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  }
+
+  .nav-links a.documents-link.active {
+    background: linear-gradient(135deg, #a78bfa, #8b5cf6);
   }
 
 

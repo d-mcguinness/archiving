@@ -1,35 +1,24 @@
 package com.dmc.archiving.user;
 
+import com.dmc.archiving.storage.CloudStorageService;
+import com.dmc.archiving.storage.StorageException;
+import com.dmc.archiving.storage.UploadResult;
 import com.dmc.archiving.user.model.User;
 import com.dmc.archiving.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.Comparator;
-import java.util.stream.Stream;
 
 /**
- * REST Controller for user file upload operations
+ * REST Controller for user file upload operations (Cloud Storage)
  */
 @RestController
 @RequestMapping("/api/users")
@@ -38,15 +27,16 @@ public class UserFileController {
 
     private static final Logger log = LoggerFactory.getLogger(UserFileController.class);
 
-    // Configure upload directory (can be moved to application.properties)
-    private static final String UPLOAD_DIR = "uploads/users";
-    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    private final UserService userService;
+    private final CloudStorageService cloudStorageService;
 
-    @Autowired
-    private UserService userService;
+    public UserFileController(UserService userService, CloudStorageService cloudStorageService) {
+        this.userService = userService;
+        this.cloudStorageService = cloudStorageService;
+    }
 
     /**
-     * Upload a file for a specific user
+     * Upload a file for a specific user to cloud storage
      *
      * @param userId The user ID
      * @param file The file to upload
@@ -58,7 +48,7 @@ public class UserFileController {
             @RequestParam("file") MultipartFile file) {
 
         try {
-            log.info("Received file upload request for user {}: {}", userId, file.getOriginalFilename());
+            log.info("Received cloud file upload request for user {}: {}", userId, file.getOriginalFilename());
 
             // Validate user exists
             Optional<User> userOptional = userService.getUserById(userId);
@@ -83,54 +73,32 @@ public class UserFileController {
                     ));
             }
 
-            // Check file size
-            if (file.getSize() > MAX_FILE_SIZE) {
-                return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of(
-                        "success", false,
-                        "error", "File size exceeds maximum limit of 10MB"
-                    ));
-            }
+            // Upload to cloud storage
+            UploadResult result = cloudStorageService.uploadFile(file, userId);
 
-            // Create upload directory if it doesn't exist
-            Path uploadPath = Paths.get(UPLOAD_DIR, String.valueOf(userId));
-            Files.createDirectories(uploadPath);
-
-            // Generate unique filename
-            String originalFilename = file.getOriginalFilename();
-            String fileExtension = originalFilename != null && originalFilename.contains(".")
-                ? originalFilename.substring(originalFilename.lastIndexOf("."))
-                : "";
-            String uniqueFilename = UUID.randomUUID() + fileExtension;
-            Path filePath = uploadPath.resolve(uniqueFilename);
-
-            // Save file
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            log.info("File uploaded successfully for user {}: {}", userId, uniqueFilename);
+            log.info("File uploaded successfully to cloud for user {}: {}", userId, result.getFileKey());
 
             // Prepare response
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "File uploaded successfully");
+            response.put("message", "File uploaded successfully to cloud storage");
 
             Map<String, Object> fileInfo = new HashMap<>();
-            fileInfo.put("originalName", originalFilename);
-            fileInfo.put("storedName", uniqueFilename);
-            fileInfo.put("filePath", filePath.toString());
-            fileInfo.put("fileSize", file.getSize());
-            fileInfo.put("contentType", file.getContentType());
+            fileInfo.put("originalName", result.getOriginalFilename());
+            fileInfo.put("fileKey", result.getFileKey());
+            fileInfo.put("fileUrl", result.getFileUrl());
+            fileInfo.put("fileSize", result.getFileSize());
+            fileInfo.put("contentType", result.getContentType());
             fileInfo.put("userId", userId);
             fileInfo.put("userName", user.getName());
-            fileInfo.put("uploadedAt", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            fileInfo.put("uploadedAt", result.getUploadTime());
 
             response.put("file", fileInfo);
 
             return ResponseEntity.ok(response);
 
-        } catch (IOException e) {
-            log.error("Failed to upload file for user {}: {}", userId, e.getMessage(), e);
+        } catch (StorageException e) {
+            log.error("Failed to upload file to cloud for user {}: {}", userId, e.getMessage(), e);
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of(
@@ -149,69 +117,18 @@ public class UserFileController {
     }
 
     /**
-     * Get upload information/stats for a user
+     * Get presigned download URL for a user's file
      *
      * @param userId The user ID
-     * @return Upload statistics
+     * @param fileKey The file key in cloud storage (URL encoded)
+     * @return Presigned download URL
      */
-    @GetMapping("/{userId}/uploads")
-    public ResponseEntity<?> getUserUploads(@PathVariable Long userId) {
+    @GetMapping("/{userId}/download/{fileKey:.+}")
+    public ResponseEntity<?> getDownloadUrl(
+            @PathVariable Long userId,
+            @PathVariable String fileKey) {
         try {
-            // Validate user exists
-            Optional<User> userOptional = userService.getUserById(userId);
-            if (userOptional.isEmpty()) {
-                return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(Map.of(
-                        "success", false,
-                        "error", "User not found with ID: " + userId
-                    ));
-            }
-
-            User user = userOptional.get();
-
-            Path uploadPath = Paths.get(UPLOAD_DIR, String.valueOf(userId));
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("userId", userId);
-            response.put("userName", user.getName());
-            response.put("uploadPath", uploadPath.toString());
-            response.put("pathExists", Files.exists(uploadPath));
-
-            if (Files.exists(uploadPath)) {
-                try (var stream = Files.list(uploadPath)) {
-                    long fileCount = stream.count();
-                    response.put("fileCount", fileCount);
-                }
-            } else {
-                response.put("fileCount", 0);
-            }
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("Failed to get upload info for user {}: {}", userId, e.getMessage(), e);
-            return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of(
-                    "success", false,
-                    "error", "Failed to retrieve upload information: " + e.getMessage()
-                ));
-        }
-    }
-
-    /**
-     * Download the latest uploaded file for a specific user
-     * This triggers the browser's download bar
-     *
-     * @param userId The user ID
-     * @return File resource with proper headers for download
-     */
-    @GetMapping("/{userId}/download/latest")
-    public ResponseEntity<?> downloadLatestFile(@PathVariable Long userId) {
-        try {
-            log.info("Download request for latest file of user {}", userId);
+            log.info("Download URL request for user {}, file: {}", userId, fileKey);
 
             // Validate user exists
             Optional<User> userOptional = userService.getUserById(userId);
@@ -224,89 +141,28 @@ public class UserFileController {
                     ));
             }
 
-            // Get user's upload directory
-            Path userUploadPath = Paths.get(UPLOAD_DIR, String.valueOf(userId));
+            // Generate presigned URL (valid for 1 hour)
+            String downloadUrl = cloudStorageService.getPresignedUrl(fileKey, 60);
 
-            if (!Files.exists(userUploadPath) || !Files.isDirectory(userUploadPath)) {
-                return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(Map.of(
-                        "success", false,
-                        "error", "No files found for user " + userId
-                    ));
-            }
+            log.info("Presigned URL generated for user {}", userId);
 
-            // Find the latest file (most recently modified)
-            Path latestFile;
-            try (Stream<Path> files = Files.list(userUploadPath)) {
-                latestFile = files
-                    .filter(Files::isRegularFile)
-                    .max(Comparator.comparingLong(path -> {
-                        try {
-                            return Files.getLastModifiedTime(path).toMillis();
-                        } catch (IOException e) {
-                            return 0L;
-                        }
-                    }))
-                    .orElse(null);
-            }
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "downloadUrl", downloadUrl,
+                "message", "Download URL generated successfully",
+                "expiresIn", "1 hour"
+            ));
 
-            if (latestFile == null) {
-                return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(Map.of(
-                        "success", false,
-                        "error", "No files found for user " + userId
-                    ));
-            }
-
-            // Load file as Resource
-            Resource resource = new UrlResource(latestFile.toUri());
-
-            if (!resource.exists() || !resource.isReadable()) {
-                return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(Map.of(
-                        "success", false,
-                        "error", "File not readable: " + latestFile.getFileName()
-                    ));
-            }
-
-            // Get file name
-            String filename = latestFile.getFileName().toString();
-
-            // Determine content type
-            String contentType;
-            try {
-                contentType = Files.probeContentType(latestFile);
-            } catch (IOException e) {
-                contentType = "application/octet-stream";
-            }
-            if (contentType == null) {
-                contentType = "application/octet-stream";
-            }
-
-            log.info("Sending file for download: {} (type: {}, size: {} bytes)",
-                    filename, contentType, resource.contentLength());
-
-            // Return file with headers that trigger browser download bar
-            return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                    "attachment; filename=\"" + filename + "\"")
-                .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(resource.contentLength()))
-                .body(resource);
-
-        } catch (IOException e) {
-            log.error("Failed to download file for user {}: {}", userId, e.getMessage(), e);
+        } catch (StorageException e) {
+            log.error("Failed to generate download URL for user {}: {}", userId, e.getMessage(), e);
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of(
                     "success", false,
-                    "error", "Failed to download file: " + e.getMessage()
+                    "error", "Failed to generate download URL: " + e.getMessage()
                 ));
         } catch (Exception e) {
-            log.error("Unexpected error downloading file for user {}: {}", userId, e.getMessage(), e);
+            log.error("Unexpected error generating download URL for user {}: {}", userId, e.getMessage(), e);
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of(
@@ -317,16 +173,16 @@ public class UserFileController {
     }
 
     /**
-     * Delete a specific uploaded file for a user
+     * Delete a file from cloud storage
      *
      * @param userId The user ID
-     * @param filename The filename to delete
+     * @param fileKey The file key to delete (URL encoded)
      * @return Response with deletion status
      */
-    @DeleteMapping("/{userId}/uploads/{filename}")
+    @DeleteMapping("/{userId}/uploads/{fileKey:.+}")
     public ResponseEntity<?> deleteUpload(
             @PathVariable Long userId,
-            @PathVariable String filename) {
+            @PathVariable String fileKey) {
 
         try {
             // Validate user exists
@@ -340,28 +196,28 @@ public class UserFileController {
                     ));
             }
 
-            Path filePath = Paths.get(UPLOAD_DIR, String.valueOf(userId), filename);
-
-            if (!Files.exists(filePath)) {
+            // Check if file exists
+            if (!cloudStorageService.fileExists(fileKey)) {
                 return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(Map.of(
                         "success", false,
-                        "error", "File not found: " + filename
+                        "error", "File not found: " + fileKey
                     ));
             }
 
-            Files.delete(filePath);
+            // Delete file from cloud
+            cloudStorageService.deleteFile(fileKey);
 
-            log.info("File deleted successfully for user {}: {}", userId, filename);
+            log.info("File deleted successfully from cloud for user {}: {}", userId, fileKey);
 
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "File deleted successfully",
-                "filename", filename
+                "fileKey", fileKey
             ));
 
-        } catch (Exception e) {
+        } catch (StorageException e) {
             log.error("Failed to delete file for user {}: {}", userId, e.getMessage(), e);
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -369,6 +225,15 @@ public class UserFileController {
                     "success", false,
                     "error", "Failed to delete file: " + e.getMessage()
                 ));
+        } catch (Exception e) {
+            log.error("Unexpected error deleting file for user {}: {}", userId, e.getMessage(), e);
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "success", false,
+                    "error", "An unexpected error occurred"
+                ));
         }
     }
 }
+

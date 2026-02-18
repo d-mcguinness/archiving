@@ -162,3 +162,33 @@ SELECT setval('tenants_id_seq', (SELECT COALESCE(MAX(id), 1) FROM tenants), true
 SELECT setval('archives_id_seq', (SELECT COALESCE(MAX(id), 1) FROM archives), true);
 SELECT setval('user_assignments_id_seq', (SELECT COALESCE(MAX(id), 1) FROM user_assignments), true);
 SELECT setval('elements_id_seq', (SELECT COALESCE(MAX(id), 1) FROM elements), true);
+
+-- Insert sample documents
+-- Document 1 - User 1 (Admin), Tenant 1
+INSERT INTO documents (id, title, description, file_name, file_key, file_url, file_size, content_type, user_id, tenant_id, archive_id, status, created_at, uploaded_at)
+SELECT 1, 'Q1 Financial Summary', 'Summary of Q1 2026 financial results', 'q1-financial-summary.pdf', 'users/1/20260217_120000_q1-financial-summary.pdf', 'https://example.com/sample.pdf', 2048576, 'application/pdf', 1, 1, 1, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+WHERE NOT EXISTS (SELECT 1 FROM documents WHERE id = 1);
+
+-- Document 2 - User 2 (Tenant), Tenant 1
+INSERT INTO documents (id, title, description, file_name, file_key, file_url, file_size, content_type, user_id, tenant_id, archive_id, status, created_at, uploaded_at)
+SELECT 2, 'Annual Report Draft', 'Draft version of 2026 annual report', 'annual-report-draft.docx', 'users/2/20260217_130000_annual-report-draft.docx', 'https://example.com/sample.docx', 1536000, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 2, 1, NULL, 'PENDING_REVIEW', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+WHERE NOT EXISTS (SELECT 1 FROM documents WHERE id = 2);
+
+-- Document 3 - User 3, Tenant 2
+INSERT INTO documents (id, title, description, file_name, file_key, file_url, file_size, content_type, user_id, tenant_id, archive_id, status, created_at, uploaded_at)
+SELECT 3, 'Research Data Analysis', 'Statistical analysis of research data', 'research-analysis.xlsx', 'users/3/20260217_140000_research-analysis.xlsx', 'https://example.com/sample.xlsx', 3145728, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 3, 2, 3, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+WHERE NOT EXISTS (SELECT 1 FROM documents WHERE id = 3);
+
+-- Document 4 - User 4, Tenant 3
+INSERT INTO documents (id, title, description, file_name, file_key, file_url, file_size, content_type, user_id, tenant_id, archive_id, status, created_at, uploaded_at)
+SELECT 4, 'Project Presentation', 'Quarterly project status presentation', 'project-presentation.pptx', 'users/4/20260217_150000_project-presentation.pptx', 'https://example.com/sample.pptx', 5242880, 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 4, 3, NULL, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+WHERE NOT EXISTS (SELECT 1 FROM documents WHERE id = 4);
+
+-- Document 5 - User 5, Tenant 4
+INSERT INTO documents (id, title, description, file_name, file_key, file_url, file_size, content_type, user_id, tenant_id, archive_id, status, created_at, uploaded_at)
+SELECT 5, 'Meeting Notes', 'Weekly team meeting notes and action items', 'meeting-notes.txt', 'users/5/20260217_160000_meeting-notes.txt', 'https://example.com/sample.txt', 51200, 'text/plain', 5, 4, NULL, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+WHERE NOT EXISTS (SELECT 1 FROM documents WHERE id = 5);
+
+-- Reset documents sequence
+SELECT setval('documents_id_seq', (SELECT COALESCE(MAX(id), 1) FROM documents), true);
+

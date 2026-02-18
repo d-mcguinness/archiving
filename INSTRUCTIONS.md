@@ -27,6 +27,58 @@ The application implements a **role-based access control (RBAC)** system with th
 - **Maven 3.8+**
 - **PostgreSQL** (for production)
 - **Docker & Docker Compose** (optional, for containerized database)
+- **LocalStack** (optional, for local S3 development) - see [QUICKSTART_LOCALSTACK.md](QUICKSTART_LOCALSTACK.md)
+
+## Cloud Storage & Profiles
+
+The application supports **profile-based configuration** for different environments:
+
+### Profiles
+
+| Profile | Environment | Storage | AWS Required |
+|---------|------------|---------|--------------|
+| **local** | Local development | LocalStack (S3 emulator) | ❌ No |
+| **dev** | Development/Staging | Real AWS S3 | ✅ Yes |
+| **prod** | Production | Real AWS S3 | ✅ Yes |
+
+### Quick Start with LocalStack (Local Development)
+
+```bash
+# 1. Start LocalStack
+docker-compose -f docker-compose.localstack.yml up -d
+
+# 2. Run application with local profile
+./run-local.sh
+
+# Or using Maven:
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+**Benefits**:
+- ✅ No AWS account needed
+- ✅ Free local S3 emulation
+- ✅ Fast development
+- ✅ No internet required
+
+See [QUICKSTART_LOCALSTACK.md](QUICKSTART_LOCALSTACK.md) for detailed setup.
+
+### Running with Real AWS
+
+```bash
+# Set AWS credentials
+export AWS_ACCESS_KEY_ID=your-access-key
+export AWS_SECRET_ACCESS_KEY=your-secret-key
+export AWS_S3_BUCKET_NAME=your-bucket-name
+
+# Run with dev profile
+./run-dev.sh
+
+# Or using Maven:
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+See [CLOUD_STORAGE_MIGRATION.md](CLOUD_STORAGE_MIGRATION.md) for AWS S3 setup details.
+
 
 ## Project Structure
 

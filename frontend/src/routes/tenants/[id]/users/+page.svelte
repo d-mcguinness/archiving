@@ -192,15 +192,15 @@
               <td>{user.email}</td>
               <td>{user.age || 'N/A'}</td>
               <td class="actions-cell">
-                <a href="/users/update?userId={user.id}" class="btn-action btn-edit">
-                  ✏️ Edit
-                </a>
                 <button
                   class="btn-action btn-remove"
                   on:click={() => removeUserFromTenant(user.id, user.name)}
                 >
                   ✖️ Remove
                 </button>
+                <a href="/users/update?userId={user.id}" class="btn-action btn-edit">
+                  ✏️ Edit
+                </a>
               </td>
             </tr>
           {/each}

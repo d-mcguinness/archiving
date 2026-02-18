@@ -1,14 +1,22 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { client } from '$lib/apollo';
-  import { GET_ALL_USERS } from '$lib/graphql/queries';
+  import { GET_ALL_USERS, UPDATE_USER } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
 
   let users: any[] = [];
   let loading = true;
   let error: string | null = null;
-  let fileInputs: { [key: number]: HTMLInputElement } = {};
-  let uploadingUsers: Set<number> = new Set();
+
+  // Edit modal state
+  let showEditModal = false;
+  let editingUser: any = null;
+  let editForm = {
+    name: '',
+    email: '',
+    age: null as number | null
+  };
+  let saving = false;
 
   onMount(async () => {
     await loadUsers();
@@ -31,179 +39,63 @@
     }
   }
 
-  function triggerFileUpload(userId: number) {
-    const input = fileInputs[userId];
-    if (input) {
-      input.click();
-    }
+  function openEditModal(user: any) {
+    editingUser = user;
+    editForm = {
+      name: user.name,
+      email: user.email,
+      age: user.age
+    };
+    showEditModal = true;
   }
 
-  async function handleFileSelect(event: Event, userId: number, userName: string) {
-    const target = event.target as HTMLInputElement;
-    const file = target.files?.[0];
+  function closeEditModal() {
+    showEditModal = false;
+    editingUser = null;
+    editForm = {
+      name: '',
+      email: '',
+      age: null
+    };
+  }
 
-    if (!file) {
-      console.log('No file selected');
+  async function handleSaveEdit() {
+    if (!editingUser) return;
+
+    // Validate
+    if (!editForm.name.trim()) {
+      toasts.error('Name is required');
+      return;
+    }
+    if (!editForm.email.trim()) {
+      toasts.error('Email is required');
       return;
     }
 
-    // Add user to uploading set
-    uploadingUsers.add(userId);
-    uploadingUsers = uploadingUsers; // Trigger reactivity
-
-    const startTime = performance.now();
-
+    saving = true;
     try {
-      // Log upload start
-      console.group('📤 File Upload Round Trip Test');
-      console.log('User ID:', userId);
-      console.log('User Name:', userName);
-      console.log('File Name:', file.name);
-      console.log('File Size:', (file.size / 1024).toFixed(2), 'KB');
-      console.log('File Type:', file.type);
-      console.log('Upload Started:', new Date().toLocaleTimeString());
-
-      // Create FormData to send file
-      const formData = new FormData();
-      formData.append('file', file);
-
-      console.log('FormData created with file:', file.name);
-
-      // Upload file to backend
-      const uploadStartTime = performance.now();
-      const response = await fetch(`http://localhost:2020/api/users/${userId}/upload`, {
-        method: 'POST',
-        body: formData,
-      });
-      const uploadDuration = performance.now() - uploadStartTime;
-
-      console.log('Response Status:', response.status, response.statusText);
-      console.log('Upload Duration:', uploadDuration.toFixed(2), 'ms');
-
-      // Parse response
-      let result;
-      try {
-        result = await response.json();
-        console.log('Response Body:', result);
-      } catch (parseError) {
-        console.error('Failed to parse JSON response:', parseError);
-        throw new Error('Invalid response from server');
-      }
-
-      // Check response
-      if (response.ok && result.success) {
-        const totalDuration = performance.now() - startTime;
-
-        console.log('✅ Upload Successful!');
-        console.log('Uploaded File Name:', result.filename);
-        console.log('Original File Name:', result.originalFilename);
-        console.log('File Path:', result.filePath);
-        console.log('Upload Time:', result.uploadTime);
-        console.log('Total Round Trip Duration:', totalDuration.toFixed(2), 'ms');
-        console.groupEnd();
-
-        // Show success toast
-        toasts.success(`Document archived: ${file.name}`);
-
-        // Verify file was saved
-        console.log('✅ Backend confirmed file saved to:', result.filePath);
-      } else {
-        console.error('❌ Upload Failed!');
-        console.error('Error:', result.error || result.message || 'Unknown error');
-        console.groupEnd();
-        throw new Error(result.error || result.message || 'Upload failed');
-      }
-
-      // Reset the input so the same file can be selected again if needed
-      target.value = '';
-    } catch (error) {
-      const totalDuration = performance.now() - startTime;
-
-      console.error('❌ Upload Error!');
-      console.error('Error Type:', error instanceof Error ? error.constructor.name : typeof error);
-      console.error('Error Message:', error instanceof Error ? error.message : String(error));
-      console.error('Total Duration:', totalDuration.toFixed(2), 'ms');
-      console.groupEnd();
-
-      const errorMessage = error instanceof Error ? error.message : 'Failed to upload file';
-      toasts.error(`Upload failed: ${errorMessage}`);
-    } finally {
-      // Remove user from uploading set
-      uploadingUsers.delete(userId);
-      uploadingUsers = uploadingUsers; // Trigger reactivity
-    }
-  }
-
-  async function handleDownload(userId: number, userName: string) {
-    try {
-      console.group('⬇️ File Download Round Trip Test');
-      console.log('User ID:', userId);
-      console.log('User Name:', userName);
-      console.log('Download Started:', new Date().toLocaleTimeString());
-
-      const startTime = performance.now();
-
-      // Fetch file from backend
-      const response = await fetch(`http://localhost:2020/api/users/${userId}/download/latest`, {
-        method: 'GET',
-      });
-
-      console.log('Response Status:', response.status, response.statusText);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || errorData.message || 'Download failed');
-      }
-
-      // Get filename from Content-Disposition header
-      const contentDisposition = response.headers.get('Content-Disposition');
-      let filename = `user_${userId}_file.bin`;
-
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-        if (filenameMatch && filenameMatch[1]) {
-          filename = filenameMatch[1].replace(/['"]/g, '');
+      const result = await client.mutate({
+        mutation: UPDATE_USER,
+        variables: {
+          id: editingUser.id,
+          input: {
+            name: editForm.name.trim(),
+            email: editForm.email.trim(),
+            age: editForm.age
+          }
         }
+      });
+
+      if (result.data?.updateUser) {
+        toasts.success('User updated successfully');
+        closeEditModal();
+        await loadUsers(); // Reload the list
       }
-
-      console.log('Filename from header:', filename);
-      console.log('Content-Type:', response.headers.get('Content-Type'));
-
-      // Convert response to blob
-      const blob = await response.blob();
-      const downloadDuration = performance.now() - startTime;
-
-      console.log('File Size:', (blob.size / 1024).toFixed(2), 'KB');
-      console.log('Download Duration:', downloadDuration.toFixed(2), 'ms');
-
-      // Create download link and trigger download (shows in browser download bar)
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-
-      // Cleanup
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
-      const totalDuration = performance.now() - startTime;
-
-      console.log('✅ Download Successful!');
-      console.log('File shown in browser download bar');
-      console.log('Total Round Trip Duration:', totalDuration.toFixed(2), 'ms');
-      console.groupEnd();
-
-      toasts.success(`File downloaded: ${filename}`);
-
-    } catch (error) {
-      console.error('❌ Download Error!');
-      console.error('Error Message:', error instanceof Error ? error.message : String(error));
-      console.groupEnd();
-
-      const errorMessage = error instanceof Error ? error.message : 'Failed to download file';
-      toasts.error(`Download failed: ${errorMessage}`);
+    } catch (e) {
+      console.error('Update user error:', e);
+      toasts.error(e instanceof Error ? e.message : 'Failed to update user');
+    } finally {
+      saving = false;
     }
   }
 </script>
@@ -255,36 +147,16 @@
               </td>
               <td class="age-cell">{user.age || '-'}</td>
               <td class="actions-cell">
-                <!-- Hidden file input -->
-                <input
-                  type="file"
-                  bind:this={fileInputs[user.id]}
-                  on:change={(e) => handleFileSelect(e, user.id, user.name)}
-                  style="display: none;"
-                  accept="*/*"
-                />
-                <button
-                  class="btn-action btn-upload"
-                  class:uploading={uploadingUsers.has(user.id)}
-                  on:click={() => triggerFileUpload(user.id)}
-                  disabled={uploadingUsers.has(user.id)}
-                  title={uploadingUsers.has(user.id) ? 'Uploading...' : 'Upload file'}
-                >
-                  {uploadingUsers.has(user.id) ? '⏳ Uploading...' : '📁 Upload'}
-                </button>
-                <button
-                  class="btn-action btn-download"
-                  on:click={() => handleDownload(user.id, user.name)}
-                  title="Download latest file"
-                >
-                  ⬇️ Download
-                </button>
-                <a href="/users/update?userId={user.id}" class="btn-action btn-edit">
-                  ✏️ Edit
-                </a>
                 <a href="/users/delete?userId={user.id}" class="btn-action btn-delete">
                   🗑️ Delete
                 </a>
+                <button
+                  class="btn-action btn-edit"
+                  on:click={() => openEditModal(user)}
+                  title="Edit user"
+                >
+                  ✏️ Edit
+                </button>
               </td>
             </tr>
           {/each}
@@ -293,6 +165,75 @@
     </div>
   {/if}
 </div>
+
+<!-- Edit Modal -->
+{#if showEditModal && editingUser}
+  <div class="modal-overlay" on:click={closeEditModal}>
+    <div class="modal-content" on:click|stopPropagation>
+      <div class="modal-header">
+        <h2>Edit User</h2>
+        <button class="modal-close" on:click={closeEditModal}>✕</button>
+      </div>
+
+      <form on:submit|preventDefault={handleSaveEdit}>
+        <div class="form-group">
+          <label for="edit-name">Name *</label>
+          <input
+            id="edit-name"
+            type="text"
+            bind:value={editForm.name}
+            placeholder="Enter name"
+            required
+            disabled={saving}
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="edit-email">Email *</label>
+          <input
+            id="edit-email"
+            type="email"
+            bind:value={editForm.email}
+            placeholder="Enter email"
+            required
+            disabled={saving}
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="edit-age">Age</label>
+          <input
+            id="edit-age"
+            type="number"
+            bind:value={editForm.age}
+            placeholder="Enter age"
+            min="0"
+            max="150"
+            disabled={saving}
+          />
+        </div>
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn-secondary"
+            on:click={closeEditModal}
+            disabled={saving}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn-primary"
+            disabled={saving}
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{/if}
 
 <style>
   .users-page {
@@ -455,7 +396,7 @@
   .actions-cell {
     text-align: right;
     white-space: nowrap;
-    width: 350px;
+    width: 200px;
   }
 
   .btn-action {
@@ -471,43 +412,6 @@
     text-decoration: none;
   }
 
-  .btn-upload {
-    background: #10b981;
-    color: white;
-  }
-
-  .btn-upload:hover:not(:disabled) {
-    background: #059669;
-  }
-
-  .btn-upload.uploading {
-    background: #6b7280;
-    cursor: wait;
-    animation: pulse-upload 1.5s ease-in-out infinite;
-  }
-
-  .btn-upload:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
-
-  @keyframes pulse-upload {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.6;
-    }
-  }
-
-  .btn-download {
-    background: #0891b2;
-    color: white;
-  }
-
-  .btn-download:hover {
-    background: #0e7490;
-  }
 
   .btn-edit {
     background: #3b82f6;
@@ -525,6 +429,143 @@
 
   .btn-delete:hover {
     background: #b91c1c;
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #1e293b;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+
+  .modal-close:hover {
+    color: #1e293b;
+  }
+
+  .modal-content form {
+    padding: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.875rem;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .form-group input:disabled {
+    background: #f1f5f9;
+    cursor: not-allowed;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+
+  .btn-primary {
+    background: #3b82f6;
+    color: white;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: #2563eb;
+  }
+
+  .btn-primary:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    background: #e2e8f0;
+    color: #475569;
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: #cbd5e1;
+  }
+
+  .btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 </style>
 

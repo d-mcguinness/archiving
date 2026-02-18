@@ -6,7 +6,6 @@ import com.dmc.archiving.tenancy.service.TenancyService;
 import com.dmc.archiving.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -21,14 +20,17 @@ public class DashboardController {
 
     private static final Logger log = LoggerFactory.getLogger(DashboardController.class);
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    private final TenancyService tenancyService;
+    private final ArchiveService archiveService;
 
-    @Autowired
-    private TenancyService tenancyService;
-
-    @Autowired
-    private ArchiveService archiveService;
+    public DashboardController(UserService userService,
+                               TenancyService tenancyService,
+                               ArchiveService archiveService) {
+        this.userService = userService;
+        this.tenancyService = tenancyService;
+        this.archiveService = archiveService;
+    }
 
     // GraphQL Query for Dashboard Statistics
     @QueryMapping
@@ -56,20 +58,10 @@ public class DashboardController {
             try {
                 stats.setTotalArchives(archiveService.getAllArchives().size());
 
-                // Get archive breakdown by status
-                long activeArchives = archiveService.getAllArchives().stream()
-                    .filter(a -> a.getStatus() == ArchiveStatus.PUBLISHED)
-                    .count();
-                long draftArchives = archiveService.getAllArchives().stream()
-                    .filter(a -> a.getStatus() == ArchiveStatus.DRAFT)
-                    .count();
-                long archivedArchives = archiveService.getAllArchives().stream()
-                    .filter(a -> a.getStatus() == ArchiveStatus.ARCHIVED)
-                    .count();
-
-                stats.setActiveArchives((int) activeArchives);
-                stats.setDraftArchives((int) draftArchives);
-                stats.setArchivedArchives((int) archivedArchives);
+                // Get archive breakdown by status - use service methods
+                stats.setActiveArchives(archiveService.countByStatus(ArchiveStatus.PUBLISHED));
+                stats.setDraftArchives(archiveService.countByStatus(ArchiveStatus.DRAFT));
+                stats.setArchivedArchives(archiveService.countByStatus(ArchiveStatus.ARCHIVED));
             } catch (Exception e) {
                 log.error("Error fetching archives: {}", e.getMessage());
                 stats.setTotalArchives(0);
@@ -101,28 +93,13 @@ public class DashboardController {
             stats.put("totalTenants", tenancyService.getAllTenants().size());
             stats.put("totalArchives", archiveService.getAllArchives().size());
 
-            // Get archive breakdown by status
-            long activeArchives = archiveService.getAllArchives().stream()
-                .filter(a -> a.getStatus() == ArchiveStatus.PUBLISHED)
-                .count();
-            long draftArchives = archiveService.getAllArchives().stream()
-                .filter(a -> a.getStatus() == ArchiveStatus.DRAFT)
-                .count();
-            long archivedArchives = archiveService.getAllArchives().stream()
-                .filter(a -> a.getStatus() == ArchiveStatus.ARCHIVED)
-                .count();
+            // Get archive breakdown by status - use service methods
+            stats.put("activeArchives", archiveService.countByStatus(ArchiveStatus.PUBLISHED));
+            stats.put("draftArchives", archiveService.countByStatus(ArchiveStatus.DRAFT));
+            stats.put("archivedArchives", archiveService.countByStatus(ArchiveStatus.ARCHIVED));
 
-            stats.put("activeArchives", activeArchives);
-            stats.put("draftArchives", draftArchives);
-            stats.put("archivedArchives", archivedArchives);
-
-            // Archive breakdown by standard
-            Map<String, Long> standardBreakdown = new HashMap<>();
-            archiveService.getAllArchives().forEach(archive -> {
-                String standard = archive.getStandard().name();
-                standardBreakdown.put(standard, standardBreakdown.getOrDefault(standard, 0L) + 1);
-            });
-            stats.put("standardBreakdown", standardBreakdown);
+            // Archive breakdown by standard - use service method
+            stats.put("standardBreakdown", archiveService.getArchiveCountByStandard());
 
             return ResponseEntity.ok(stats);
         } catch (Exception e) {

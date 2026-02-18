@@ -250,6 +250,9 @@
                 {/if}
               </td>
               <td class="actions-cell">
+                <a href="/archives/delete/{archive.id}" class="btn-action btn-delete">
+                  🗑️ Delete
+                </a>
                 <a href="/archives/update/{archive.id}" class="btn-action btn-edit">
                   ✏️ Edit
                 </a>
@@ -260,9 +263,6 @@
                 >
                   📥 Extract
                 </button>
-                <a href="/archives/delete/{archive.id}" class="btn-action btn-delete">
-                  🗑️ Delete
-                </a>
               </td>
             </tr>
           {/each}

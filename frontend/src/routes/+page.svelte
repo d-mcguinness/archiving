@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { client } from '$lib/apollo';
-  import { GET_DASHBOARD_STATS } from '$lib/graphql/queries';
+  import { GET_DASHBOARD_STATS, GET_ALL_USERS } from '$lib/graphql/queries';
+  import { toasts } from '$lib/stores/toastStore';
 
   let stats = {
     users: 0,
@@ -18,11 +19,19 @@
   let currentRole = '';
   let currentUser: any = null;
 
-  // File upload state
+  // Users list for USER role
+  let allUsers: any[] = [];
+  let loadingUsers = false;
+
+  // File upload state for ADMIN/TENANT
   let selectedFile: File | null = null;
   let uploading = false;
   let uploadMessage = '';
   let uploadError = '';
+
+  // User documents state for USER role
+  let userDocuments: any[] = [];
+  let loadingDocuments = false;
 
   onMount(() => {
     // Check user role
@@ -36,6 +45,9 @@
     // Load stats only for ADMIN and TENANT
     if (currentRole === 'ADMIN' || currentRole === 'TENANT') {
       loadDashboardStats();
+    } else if (currentRole === 'USER') {
+      // Load user's documents for USER role
+      loadUserDocuments();
     } else {
       loading = false;
     }
@@ -65,6 +77,25 @@
       error = e instanceof Error ? e.message : 'An unknown error occurred';
       console.error('Dashboard error:', e);
     } finally {
+      loading = false;
+    }
+  }
+
+  async function loadUsers() {
+    loadingUsers = true;
+    try {
+      const result = await client.query({
+        query: GET_ALL_USERS,
+        fetchPolicy: 'network-only'
+      });
+      allUsers = result?.data?.getAllUsers || [];
+      error = null;
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'An unknown error occurred';
+      console.error('Load users error:', e);
+      toasts.error('Failed to load users');
+    } finally {
+      loadingUsers = false;
       loading = false;
     }
   }
@@ -116,6 +147,50 @@
       uploading = false;
     }
   }
+
+  async function loadUserDocuments() {
+    if (!currentUser?.id) return;
+
+    loadingDocuments = true;
+    try {
+      const params = new URLSearchParams();
+      params.append('role', 'USER');
+      params.append('userId', currentUser.id.toString());
+
+      const response = await fetch(`http://localhost:2020/api/documents?${params.toString()}`);
+
+      if (!response.ok) {
+        throw new Error('Failed to load documents');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        userDocuments = data.documents || [];
+      }
+    } catch (e) {
+      console.error('Error loading documents:', e);
+      toasts.error('Failed to load your documents');
+    } finally {
+      loadingDocuments = false;
+      loading = false;
+    }
+  }
+
+
+  function formatFileSize(bytes: number): string {
+    if (!bytes) return 'Unknown';
+    const mb = bytes / (1024 * 1024);
+    if (mb > 1) {
+      return `${mb.toFixed(2)} MB`;
+    }
+    const kb = bytes / 1024;
+    return `${kb.toFixed(2)} KB`;
+  }
+
+  function formatDate(dateString: string): string {
+    if (!dateString) return 'Unknown';
+    return new Date(dateString).toLocaleString();
+  }
 </script>
 
 <svelte:head>
@@ -126,61 +201,70 @@
   <h1>Dashboard</h1>
 
   {#if currentRole === 'USER'}
-    <!-- USER ROLE - Document Submission Only -->
+    <!-- USER ROLE - My Documents (View Only) -->
     <div class="user-dashboard">
       <div class="welcome-message">
         <h2>👤 Welcome, {currentUser?.name || 'User'}!</h2>
-        <p>Submit your documents for archiving</p>
+        <p>View your submitted documents</p>
       </div>
 
-      <div class="file-upload-section">
-        <h2>📄 Submit Document</h2>
-        <div class="upload-card">
-          <div class="upload-area">
-            <input
-              type="file"
-              id="file-upload"
-              on:change={handleFileSelect}
-              disabled={uploading}
-              class="file-input"
-            />
-            <label for="file-upload" class="file-label">
-              <span class="upload-icon">📁</span>
-              <span class="upload-text">
-                {selectedFile ? selectedFile.name : 'Choose a file to upload'}
-              </span>
-            </label>
+      {#if loading || loadingDocuments}
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Loading your documents...</p>
+        </div>
+      {:else}
+        <!-- My Documents List -->
+        <div class="my-documents-section">
+          <div class="section-header">
+            <h2>📄 My Documents</h2>
+            <span class="document-count">{userDocuments.length} document{userDocuments.length !== 1 ? 's' : ''}</span>
           </div>
 
-          {#if uploadMessage}
-            <div class="upload-success">
-              <span class="success-icon">✅</span>
-              <span>{uploadMessage}</span>
+          {#if userDocuments.length === 0}
+            <div class="empty-state">
+              <span class="empty-icon">📭</span>
+              <h3>No documents yet</h3>
+              <p>You haven't uploaded any documents</p>
+            </div>
+          {:else}
+            <div class="documents-grid">
+              {#each userDocuments as document}
+                <div class="document-card">
+                  <div class="document-icon">
+                    {#if document.contentType?.includes('pdf')}
+                      📄
+                    {:else if document.contentType?.includes('image')}
+                      🖼️
+                    {:else if document.contentType?.includes('video')}
+                      🎥
+                    {:else if document.contentType?.includes('word') || document.contentType?.includes('document')}
+                      📝
+                    {:else if document.contentType?.includes('spreadsheet') || document.contentType?.includes('excel')}
+                      📊
+                    {:else}
+                      📎
+                    {/if}
+                  </div>
+                  <div class="document-info">
+                    <h3 class="document-title">{document.title}</h3>
+                    {#if document.description}
+                      <p class="document-description">{document.description}</p>
+                    {/if}
+                    <div class="document-meta">
+                      <p><strong>File:</strong> {document.fileName}</p>
+                      <p><strong>Size:</strong> {formatFileSize(document.fileSize)}</p>
+                      <p><strong>Type:</strong> {document.contentType || 'Unknown'}</p>
+                      <p><strong>Uploaded:</strong> {formatDate(document.uploadedAt)}</p>
+                      <p><strong>Status:</strong> <span class="status status-{document.status.toLowerCase()}">{document.status}</span></p>
+                    </div>
+                  </div>
+                </div>
+              {/each}
             </div>
           {/if}
-
-          {#if uploadError}
-            <div class="upload-error">
-              <span class="error-icon">❌</span>
-              <span>{uploadError}</span>
-            </div>
-          {/if}
-
-          <button
-            class="upload-button"
-            on:click={handleUpload}
-            disabled={!selectedFile || uploading}
-          >
-            {uploading ? '⏳ Uploading...' : '📤 Upload Document'}
-          </button>
         </div>
-      </div>
-
-      <div class="user-info-card">
-        <h3>ℹ️ Information</h3>
-        <p>Your submitted documents will be reviewed and archived by the system administrators.</p>
-        <p>You will receive a notification once your document is processed.</p>
-      </div>
+      {/if}
     </div>
   {:else if currentRole === 'ADMIN' || currentRole === 'TENANT'}
     <!-- ADMIN & TENANT ROLES - Full Dashboard -->
@@ -650,5 +734,141 @@
 
   .welcome-guest a:hover {
     text-decoration: underline;
+  }
+
+  /* User Documents Section */
+  .my-documents-section {
+    margin-top: 3rem;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-header h2 {
+    margin: 0;
+    color: #1e293b;
+  }
+
+  .document-count {
+    background: #eff6ff;
+    color: #1e40af;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 0.75rem;
+    border: 2px dashed #cbd5e1;
+  }
+
+  .empty-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  .empty-state h3 {
+    margin: 0 0 0.5rem 0;
+    color: #1e293b;
+  }
+
+  .empty-state p {
+    margin: 0;
+    color: #64748b;
+  }
+
+  .documents-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .document-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    transition: all 0.2s;
+  }
+
+  .document-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .document-icon {
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  .document-info {
+    margin-bottom: 1rem;
+  }
+
+  .document-title {
+    margin: 0 0 0.5rem 0;
+    color: #1e293b;
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .document-description {
+    color: #64748b;
+    margin: 0 0 1rem 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .document-meta {
+    font-size: 0.875rem;
+    color: #64748b;
+  }
+
+  .document-meta p {
+    margin: 0.25rem 0;
+  }
+
+  .status {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .status-active {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+
+  .status-archived {
+    background-color: #f3f4f6;
+    color: #4b5563;
+  }
+
+  .status-pending_review {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+
+  .status-approved {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+
+  .status-rejected {
+    background-color: #fee2e2;
+    color: #991b1b;
   }
 </style>

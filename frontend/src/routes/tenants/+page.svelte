@@ -1,13 +1,34 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { client } from '$lib/apollo';
-  import { GET_ALL_TENANTS } from '$lib/graphql/queries';
+  import { GET_ALL_TENANTS, UPDATE_TENANT } from '$lib/graphql/queries';
+  import { toasts } from '$lib/stores/toastStore';
 
   let tenants: any[] = [];
   let loading: boolean = true;
   let error: string | null = null;
 
+  // Edit modal state
+  let showEditModal = false;
+  let editingTenant: any = null;
+  let editForm = {
+    name: '',
+    domain: '',
+    displayName: '',
+    description: '',
+    status: '',
+    plan: ''
+  };
+  let saving = false;
+
+  // Current user role for permissions
+  let currentRole = '';
+
   onMount(async () => {
+    // Get user role from localStorage
+    const role = localStorage.getItem('auth_role');
+    currentRole = role || '';
+
     await loadTenants();
   });
 
@@ -27,6 +48,74 @@
     }
   }
 
+  function openEditModal(tenant: any) {
+    editingTenant = tenant;
+    editForm = {
+      name: tenant.name,
+      domain: tenant.domain,
+      displayName: tenant.displayName || '',
+      description: tenant.description || '',
+      status: tenant.status,
+      plan: tenant.plan
+    };
+    showEditModal = true;
+  }
+
+  function closeEditModal() {
+    showEditModal = false;
+    editingTenant = null;
+    editForm = {
+      name: '',
+      domain: '',
+      displayName: '',
+      description: '',
+      status: '',
+      plan: ''
+    };
+  }
+
+  async function handleSaveEdit() {
+    if (!editingTenant) return;
+
+    // Validate
+    if (!editForm.name.trim()) {
+      toasts.error('Name is required');
+      return;
+    }
+    if (!editForm.domain.trim()) {
+      toasts.error('Domain is required');
+      return;
+    }
+
+    saving = true;
+    try {
+      const result = await client.mutate({
+        mutation: UPDATE_TENANT,
+        variables: {
+          input: {
+            id: editingTenant.id,
+            name: editForm.name.trim(),
+            domain: editForm.domain.trim(),
+            displayName: editForm.displayName.trim() || null,
+            description: editForm.description.trim() || null,
+            status: editForm.status,
+            plan: editForm.plan
+          }
+        }
+      });
+
+      if (result.data?.updateTenant) {
+        toasts.success('Tenant updated successfully');
+        closeEditModal();
+        await loadTenants(); // Reload the list
+      }
+    } catch (e) {
+      console.error('Update tenant error:', e);
+      toasts.error(e instanceof Error ? e.message : 'Failed to update tenant');
+    } finally {
+      saving = false;
+    }
+  }
 
   function getStatusBadgeClass(status: string): string {
     const classes: Record<string, string> = {
@@ -115,14 +204,25 @@
               <td class="date-cell">{new Date(tenant.createdAt).toLocaleDateString()}</td>
               <td class="date-cell">{tenant.updatedAt ? new Date(tenant.updatedAt).toLocaleDateString() : '-'}</td>
               <td class="actions-cell">
+                {#if currentRole === 'ADMIN'}
+                  <a href="/tenants/delete?tenantId={tenant.id}" class="btn-action btn-delete">
+                    🗑️ Delete
+                  </a>
+                {/if}
+                {#if currentRole === 'ADMIN' || currentRole === 'TENANT'}
+                  <button
+                    class="btn-action btn-edit"
+                    on:click={() => openEditModal(tenant)}
+                    title="Edit tenant"
+                  >
+                    ✏️ Edit
+                  </button>
+                {/if}
                 <a href="/tenants/{tenant.id}/users" class="btn-action btn-users">
                   👥 View Users
                 </a>
                 <a href="/archives?tenantId={tenant.id}" class="btn-action btn-archives">
                   📁 View Archives
-                </a>
-                <a href="/tenants/delete?tenantId={tenant.id}" class="btn-action btn-delete">
-                  🗑️ Delete
                 </a>
               </td>
             </tr>
@@ -132,6 +232,117 @@
     </div>
   {/if}
 </div>
+
+<!-- Edit Modal -->
+{#if showEditModal && editingTenant}
+  <div class="modal-overlay" on:click={closeEditModal}>
+    <div class="modal-content" on:click|stopPropagation>
+      <div class="modal-header">
+        <h2>Edit Tenant</h2>
+        <button class="modal-close" on:click={closeEditModal}>✕</button>
+      </div>
+
+      <form on:submit|preventDefault={handleSaveEdit}>
+        <div class="form-group">
+          <label for="edit-name">Name *</label>
+          <input
+            id="edit-name"
+            type="text"
+            bind:value={editForm.name}
+            placeholder="Enter tenant name"
+            required
+            disabled={saving}
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="edit-domain">Domain *</label>
+          <input
+            id="edit-domain"
+            type="text"
+            bind:value={editForm.domain}
+            placeholder="Enter domain (e.g., acme.example.com)"
+            required
+            disabled={saving}
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="edit-displayName">Display Name</label>
+          <input
+            id="edit-displayName"
+            type="text"
+            bind:value={editForm.displayName}
+            placeholder="Enter display name"
+            disabled={saving}
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="edit-description">Description</label>
+          <textarea
+            id="edit-description"
+            bind:value={editForm.description}
+            placeholder="Enter description"
+            rows="3"
+            disabled={saving}
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-status">Status *</label>
+          <select
+            id="edit-status"
+            bind:value={editForm.status}
+            required
+            disabled={saving}
+          >
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+            <option value="SUSPENDED">Suspended</option>
+            <option value="TRIAL">Trial</option>
+            <option value="PENDING_ACTIVATION">Pending Activation</option>
+            <option value="EXPIRED">Expired</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-plan">Plan *</label>
+          <select
+            id="edit-plan"
+            bind:value={editForm.plan}
+            required
+            disabled={saving}
+          >
+            <option value="FREE">Free</option>
+            <option value="BASIC">Basic</option>
+            <option value="PROFESSIONAL">Professional</option>
+            <option value="ENTERPRISE">Enterprise</option>
+            <option value="CUSTOM">Custom</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn-secondary"
+            on:click={closeEditModal}
+            disabled={saving}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn-primary"
+            disabled={saving}
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+{/if}
 
 <style>
   .tenants-page {
@@ -392,6 +603,15 @@
     text-decoration: none;
   }
 
+  .btn-edit {
+    background: #3b82f6;
+    color: white;
+  }
+
+  .btn-edit:hover {
+    background: #2563eb;
+  }
+
   .btn-users {
     background: #f59e0b;
     color: white;
@@ -410,7 +630,6 @@
     background: #7c3aed;
   }
 
-
   .btn-delete {
     background: #dc2626;
     color: white;
@@ -418,6 +637,155 @@
 
   .btn-delete:hover {
     background: #b91c1c;
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #1e293b;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0.25rem;
+    line-height: 1;
+    transition: color 0.2s;
+  }
+
+  .modal-close:hover {
+    color: #1e293b;
+  }
+
+  .modal-content form {
+    padding: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.875rem;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    font-family: inherit;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .form-group input:disabled,
+  .form-group textarea:disabled,
+  .form-group select:disabled {
+    background: #f1f5f9;
+    cursor: not-allowed;
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+
+  .btn-primary {
+    background: #3b82f6;
+    color: white;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: #2563eb;
+  }
+
+  .btn-primary:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    background: #e2e8f0;
+    color: #475569;
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: #cbd5e1;
+  }
+
+  .btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 </style>
 

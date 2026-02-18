@@ -58,6 +58,10 @@
         // Redirect based on role
         if (result.role === 'ADMIN') {
           goto('/admin');
+        } else if (result.role === 'TENANT') {
+          goto('/tenants');
+        } else if (result.role === 'USER') {
+          goto('/users');
         } else {
           goto('/');
         }

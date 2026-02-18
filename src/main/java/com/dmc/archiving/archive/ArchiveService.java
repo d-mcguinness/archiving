@@ -240,6 +240,24 @@ public class ArchiveService {
     }
 
     /**
+     * Count archives by status
+     */
+    public int countByStatus(ArchiveStatus status) {
+        return archiveRepository.findByStatus(status).size();
+    }
+
+    /**
+     * Get archive count grouped by standard
+     */
+    public Map<String, Long> getArchiveCountByStandard() {
+        return archiveRepository.findAll().stream()
+            .collect(Collectors.groupingBy(
+                archive -> archive.getStandard().name(),
+                Collectors.counting()
+            ));
+    }
+
+    /**
      * Export archive as JSON for download
      * This method creates a comprehensive JSON export of the archive including all elements
      */

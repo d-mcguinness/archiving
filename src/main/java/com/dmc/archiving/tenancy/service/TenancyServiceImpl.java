@@ -134,6 +134,18 @@ public class TenancyServiceImpl implements TenancyService {
     }
 
     @Override
+    public List<Tenant> getTenantsByUserId(Long userId) {
+        return tenancyRepository.findTenantsByUserId(userId);
+    }
+
+    @Override
+    public List<Long> getTenantIdsByUserId(Long userId) {
+        return tenancyRepository.findTenantsByUserId(userId).stream()
+                .map(Tenant::getId)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void addUserToTenant(Long userId, Long tenantId) {
         if (!userApi.userExists(userId)) {
             throw new IllegalArgumentException("User with ID " + userId + " does not exist");
