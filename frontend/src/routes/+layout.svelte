@@ -20,6 +20,7 @@
   let isLoggedIn = false;
   let currentUser: any = null;
   let currentRole = '';
+  let currentTenantId: number | null = null;
   let isBrowser = false;
 
   // Check if we're in browser (not SSR)
@@ -53,6 +54,7 @@
       const token = localStorage.getItem('auth_token');
       const user = localStorage.getItem('auth_user');
       const role = localStorage.getItem('auth_role');
+      const tenantId = localStorage.getItem('auth_tenantId');
 
       if (token && user) {
         isLoggedIn = true;
@@ -64,16 +66,19 @@
           isLoggedIn = false;
         }
         currentRole = role || '';
+        currentTenantId = tenantId ? parseInt(tenantId, 10) : null;
       } else {
         isLoggedIn = false;
         currentUser = null;
         currentRole = '';
+        currentTenantId = null;
       }
     } catch (e) {
       console.error('Error checking auth status:', e);
       isLoggedIn = false;
       currentUser = null;
       currentRole = '';
+      currentTenantId = null;
     }
   }
 
@@ -88,11 +93,13 @@
       localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_user');
       localStorage.removeItem('auth_role');
+      localStorage.removeItem('auth_tenantId');
 
       // Update state immediately
       isLoggedIn = false;
       currentUser = null;
       currentRole = '';
+      currentTenantId = null;
 
       // Redirect to login
       goto('/login');
@@ -114,55 +121,111 @@
 
         <ul class="nav-links">
 
-          <!-- Tenants - shown to ADMIN only -->
+          <!-- Tenants - ADMIN shows all tenants list, TENANT shows their tenant page -->
           {#if currentRole === 'ADMIN'}
             <li>
               <a
-                href="/tenants"
+                href="/admin/tenants"
                 class="tenants-link"
-                class:active={isActive('/tenants')}
+                class:active={isActive('/admin/tenants')}
               >
                 🏢 Tenants
               </a>
             </li>
-          {/if}
-
-          <!-- Users - shown to ADMIN and TENANT -->
-          {#if currentRole === 'ADMIN' || currentRole === 'TENANT'}
+          {:else if currentRole === 'TENANT' && currentTenantId}
             <li>
               <a
-                href="/users"
+                href="/tenants/{currentTenantId}"
+                class="tenants-link"
+                class:active={isActive('/tenants/' + currentTenantId)}
+              >
+                🏢 My Tenant
+              </a>
+            </li>
+          {/if}
+
+          <!-- Users - ADMIN shows all users, TENANT shows their tenant's users -->
+          {#if currentRole === 'ADMIN'}
+            <li>
+              <a
+                href="/admin/users"
                 class="users-link"
-                class:active={isActive('/users')}
+                class:active={isActive('/admin/users')}
+              >
+                👥 Users
+              </a>
+            </li>
+          {:else if currentRole === 'TENANT' && currentTenantId}
+            <li>
+              <a
+                href="/tenants/{currentTenantId}/users"
+                class="users-link"
+                class:active={isActive('/tenants/' + currentTenantId + '/users')}
               >
                 👥 Users
               </a>
             </li>
           {/if}
 
-          <!-- Archives - shown to ADMIN and TENANT -->
-          {#if currentRole === 'ADMIN' || currentRole === 'TENANT'}
+          <!-- Archives - ADMIN shows all archives, TENANT shows their tenant's archives -->
+          {#if currentRole === 'ADMIN'}
             <li>
               <a
-                href="/archives"
+                href="/admin/archives"
                 class="archives-link"
-                class:active={isActive('/archives')}
+                class:active={isActive('/admin/archives')}
+              >
+                📁 Archives
+              </a>
+            </li>
+          {:else if currentRole === 'TENANT' && currentTenantId}
+            <li>
+              <a
+                href="/tenants/{currentTenantId}/archives"
+                class="archives-link"
+                class:active={isActive('/tenants/' + currentTenantId + '/archives')}
               >
                 📁 Archives
               </a>
             </li>
           {/if}
 
-          <!-- Documents - shown to ALL roles -->
+          <!-- Documents - role-based navigation -->
           {#if isLoggedIn}
             <li>
-              <a
-                href="/documents"
-                class="documents-link"
-                class:active={isActive('/documents')}
-              >
-                📄 Documents
-              </a>
+              {#if currentRole === 'ADMIN'}
+                <a
+                  href="/admin/documents"
+                  class="documents-link"
+                  class:active={isActive('/admin/documents')}
+                >
+                  📄 Documents
+                </a>
+              {:else if currentRole === 'USER' && currentTenantId && currentUser?.id}
+                <a
+                  href="/tenants/{currentTenantId}/users/{currentUser.id}/documents"
+                  class="documents-link"
+                  class:active={isActive('/tenants/' + currentTenantId + '/users/' + currentUser.id + '/documents')}
+                >
+                  📄 Documents
+                </a>
+              {:else if currentRole === 'TENANT' && currentTenantId}
+                <a
+                  href="/tenants/{currentTenantId}/documents"
+                  class="documents-link"
+                  class:active={isActive('/tenants/' + currentTenantId + '/documents')}
+                >
+                  📄 Documents
+                </a>
+              {:else}
+                <a
+                  href="/documents"
+                  class="documents-link"
+                  class:active={isActive('/documents')}
+                >
+                  📄 Documents
+                </a>
+              {/if}
             </li>
           {/if}
         </ul>

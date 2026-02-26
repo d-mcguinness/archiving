@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { client } from '$lib/apollo';
-  import { GET_DASHBOARD_STATS, GET_ALL_USERS } from '$lib/graphql/queries';
+  import { GET_DASHBOARD_STATS, GET_TENANT_DASHBOARD_STATS, GET_ALL_USERS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
 
   let stats = {
@@ -12,12 +12,19 @@
     draftArchives: 0,
     archivedArchives: 0
   };
+  let tenantInfo = {
+    tenantId: null as number | null,
+    tenantName: '',
+    tenantStatus: '',
+    tenantPlan: ''
+  };
   let loading = true;
   let error: string | null = null;
 
   // Get current user role
   let currentRole = '';
   let currentUser: any = null;
+  let currentTenantId: number | null = null;
 
   // Users list for USER role
   let allUsers: any[] = [];
@@ -32,14 +39,21 @@
     // Check user role
     const role = localStorage.getItem('auth_role');
     const user = localStorage.getItem('auth_user');
+    const tenantId = localStorage.getItem('auth_tenantId');
+
     currentRole = role || '';
     if (user) {
       currentUser = JSON.parse(user);
     }
+    if (tenantId) {
+      currentTenantId = parseInt(tenantId, 10);
+    }
 
-    // Load stats only for ADMIN and TENANT
-    if (currentRole === 'ADMIN' || currentRole === 'TENANT') {
-      loadDashboardStats();
+    // Load stats based on role
+    if (currentRole === 'ADMIN') {
+      loadAdminDashboardStats();
+    } else if (currentRole === 'TENANT' && currentTenantId) {
+      loadTenantDashboardStats(currentTenantId);
     } else if (currentRole === 'USER') {
       // Load user's documents for USER role
       loadUserDocuments();
@@ -48,10 +62,10 @@
     }
   });
 
-  async function loadDashboardStats() {
+  async function loadAdminDashboardStats() {
     try {
       loading = true;
-      // Fetch dashboard stats using single optimized query
+      // Fetch combined dashboard stats for ADMIN
       const result = await client.query({
         query: GET_DASHBOARD_STATS,
         fetchPolicy: 'network-only'
@@ -70,7 +84,45 @@
       }
     } catch (e) {
       error = e instanceof Error ? e.message : 'An unknown error occurred';
-      console.error('Dashboard error:', e);
+      console.error('Admin dashboard error:', e);
+    } finally {
+      loading = false;
+    }
+  }
+
+  async function loadTenantDashboardStats(tenantId: number) {
+    try {
+      loading = true;
+      // Fetch tenant-specific dashboard stats
+      const result = await client.query({
+        query: GET_TENANT_DASHBOARD_STATS,
+        variables: { tenantId: tenantId.toString() },
+        fetchPolicy: 'network-only'
+      });
+
+      const data = result?.data?.getTenantDashboardStats;
+      if (data) {
+        // Store tenant info
+        tenantInfo = {
+          tenantId: data.tenantId ? parseInt(data.tenantId, 10) : null,
+          tenantName: data.tenantName || '',
+          tenantStatus: data.tenantStatus || '',
+          tenantPlan: data.tenantPlan || ''
+        };
+
+        // Store stats (no tenants count for TENANT role)
+        stats = {
+          users: data.totalUsers || 0,
+          tenants: 0, // Not relevant for tenant role
+          archives: data.totalArchives || 0,
+          activeArchives: data.activeArchives || 0,
+          draftArchives: data.draftArchives || 0,
+          archivedArchives: data.archivedArchives || 0
+        };
+      }
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'An unknown error occurred';
+      console.error('Tenant dashboard error:', e);
     } finally {
       loading = false;
     }
@@ -196,6 +248,18 @@
     </div>
   {:else if currentRole === 'ADMIN' || currentRole === 'TENANT'}
     <!-- ADMIN & TENANT ROLES - Full Dashboard -->
+    {#if currentRole === 'TENANT' && tenantInfo.tenantName}
+      <div class="tenant-info-banner">
+        <div class="tenant-banner-content">
+          <h2>🏢 {tenantInfo.tenantName}</h2>
+          <div class="tenant-badges">
+            <span class="badge-status badge-{tenantInfo.tenantStatus.toLowerCase()}">{tenantInfo.tenantStatus}</span>
+            <span class="badge-plan badge-{tenantInfo.tenantPlan.toLowerCase()}">{tenantInfo.tenantPlan}</span>
+          </div>
+        </div>
+      </div>
+    {/if}
+
     {#if loading}
       <div class="loading">
         <div class="spinner"></div>
@@ -211,7 +275,7 @@
           <div class="stat-card">
             <h3>Users</h3>
             <div class="stat-number">{stats.users}</div>
-            <a href="/users" class="stat-link">Manage Users</a>
+            <a href="/admin/users" class="stat-link">Manage Users</a>
           </div>
         {/if}
 
@@ -220,16 +284,28 @@
           <div class="stat-card">
             <h3>Tenants</h3>
             <div class="stat-number">{stats.tenants}</div>
-            <a href="/tenants" class="stat-link">Manage Tenants</a>
+            <a href="/admin/tenants" class="stat-link">Manage Tenants</a>
           </div>
         {/if}
 
         <!-- Show Archives for ADMIN and TENANT -->
-        {#if currentRole === 'ADMIN' || currentRole === 'TENANT'}
+        {#if currentRole === 'ADMIN'}
           <div class="stat-card">
             <h3>Archives</h3>
             <div class="stat-number">{stats.archives}</div>
             <a href="/archives" class="stat-link">Manage Archives</a>
+          </div>
+        {:else if currentRole === 'TENANT' && currentTenantId}
+          <div class="stat-card">
+            <h3>Archives</h3>
+            <div class="stat-number">{stats.archives}</div>
+            <a href="/tenants/{currentTenantId}/archives" class="stat-link">Manage Archives</a>
+          </div>
+        {:else if currentRole === 'ADMIN'}
+          <div class="stat-card">
+            <h3>Archives</h3>
+            <div class="stat-number">{stats.archives}</div>
+            <a href="/admin/archives" class="stat-link">Manage Archives</a>
           </div>
         {/if}
       </div>
@@ -272,7 +348,7 @@
           <p>Add a new user to the system</p>
         </a>
 
-        <a href="/tenants/create" class="action-card">
+        <a href="/admin/tenants/create" class="action-card">
           <h4>Create Tenant</h4>
           <p>Set up a new tenant organization</p>
         </a>
@@ -342,6 +418,79 @@
 
   .stat-link:hover {
     text-decoration: underline;
+  }
+
+  /* Tenant Info Banner */
+  .tenant-info-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 0.75rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .tenant-banner-content h2 {
+    margin: 0 0 1rem 0;
+    font-size: 1.75rem;
+  }
+
+  .tenant-badges {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .badge-status,
+  .badge-plan {
+    padding: 0.375rem 0.875rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+
+  .badge-status {
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+  }
+
+  .badge-status.badge-active {
+    background: #10b981;
+  }
+
+  .badge-status.badge-inactive {
+    background: #6b7280;
+  }
+
+  .badge-status.badge-suspended {
+    background: #ef4444;
+  }
+
+  .badge-status.badge-trial {
+    background: #3b82f6;
+  }
+
+  .badge-plan {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+
+  .badge-plan.badge-enterprise {
+    background: #8b5cf6;
+  }
+
+  .badge-plan.badge-professional {
+    background: #6366f1;
+  }
+
+  .badge-plan.badge-basic {
+    background: #3b82f6;
+  }
+
+  .badge-plan.badge-free {
+    background: #9ca3af;
   }
 
   .archive-breakdown {

@@ -76,7 +76,9 @@ input UpdateTenantInput {
 # Archive Module Types
 type Archive {
     id: ID!
+    tenantId: ID!
     ownerId: ID!
+    tenant: Tenant
     title: String!
     description: String
     content: String!
@@ -225,6 +227,18 @@ type DashboardStats {
     archivedArchives: Int!
 }
 
+type TenantDashboardStats {
+    tenantId: ID
+    tenantName: String
+    tenantStatus: String
+    tenantPlan: String
+    totalUsers: Int!
+    totalArchives: Int!
+    activeArchives: Int!
+    draftArchives: Int!
+    archivedArchives: Int!
+}
+
 # Pagination Types
 type PageInfo {
     number: Int!
@@ -247,6 +261,7 @@ type ArchivePage {
 type Query {
     # Dashboard Queries
     getDashboardStats: DashboardStats!
+    getTenantDashboardStats(tenantId: ID!): TenantDashboardStats!
 
     # User Queries
     getAllUsers: [User!]!

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.modulith.NamedInterface;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
  * Document entity - represents uploaded documents in the system
  * Documents can be associated with archives and users
  */
+@NamedInterface
 @Entity
 @Table(name = "documents", indexes = {
     @Index(name = "idx_document_user_id", columnList = "user_id"),

@@ -50,7 +50,8 @@ public class ArchiveService {
 
         Archive archive = new Archive(
             null, // Let JPA generate the ID
-            input.getUserId(),  // Set as ownerId
+            input.getTenantId(),  // Set tenantId (organization)
+            input.getOwnerId(),   // Set ownerId (user who owns it)
             input.getTitle(),
             input.getDescription(),
             input.getContent(),

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
   import { GET_ALL_TENANTS, UPDATE_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
@@ -23,12 +24,31 @@
 
   // Current user role for permissions
   let currentRole = '';
+  let hasAccess = false;
 
   onMount(async () => {
-    // Get user role from localStorage
+    // Get user role and tenantId from localStorage
     const role = localStorage.getItem('auth_role');
+    const tenantId = localStorage.getItem('auth_tenantId');
     currentRole = role || '';
 
+    // Only ADMIN can access the tenants list page
+    if (currentRole !== 'ADMIN') {
+      hasAccess = false;
+      loading = false;
+
+      // Redirect TENANT users to their tenant page
+      if (currentRole === 'TENANT' && tenantId) {
+        goto(`/tenants/${tenantId}`);
+      } else if (currentRole === 'USER' && tenantId) {
+        goto(`/tenants/${tenantId}/users`);
+      } else {
+        goto('/');
+      }
+      return;
+    }
+
+    hasAccess = true;
     await loadTenants();
   });
 
@@ -146,27 +166,36 @@
 </svelte:head>
 
 <div class="tenants-page">
-  <div class="page-header">
-    <h1>Tenants</h1>
-    <a href="/tenants/create" class="add-tenant-btn">Add Tenant</a>
-  </div>
-
-  {#if error}
-    <div class="error">
-      Error: {error}
-    </div>
-  {/if}
-
-  {#if loading}
-    <div class="loading">
-      <div class="spinner"></div>
-    </div>
-  {:else if tenants.length === 0}
-    <div class="empty-state">
-      <p>No tenants found. Create your first tenant to get started!</p>
+  {#if !hasAccess && !loading}
+    <!-- Access Denied -->
+    <div class="access-denied">
+      <div class="access-denied-icon">🚫</div>
+      <h1>Access Denied</h1>
+      <p>You don't have permission to access the tenants list.</p>
+      <p class="redirect-message">Redirecting...</p>
     </div>
   {:else}
-    <div class="table-container">
+    <div class="page-header">
+      <h1>Tenants</h1>
+      <a href="/tenants/create" class="add-tenant-btn">Add Tenant</a>
+    </div>
+
+    {#if error}
+      <div class="error">
+        Error: {error}
+      </div>
+    {/if}
+
+    {#if loading}
+      <div class="loading">
+        <div class="spinner"></div>
+      </div>
+    {:else if tenants.length === 0}
+      <div class="empty-state">
+        <p>No tenants found. Create your first tenant to get started!</p>
+      </div>
+    {:else}
+      <div class="table-container">
       <table class="data-table">
         <thead>
           <tr>
@@ -230,6 +259,7 @@
         </tbody>
       </table>
     </div>
+    {/if}
   {/if}
 </div>
 
@@ -416,6 +446,45 @@
     background: #f9fafb;
     border-radius: 0.5rem;
     color: #64748b;
+  }
+
+  /* Access Denied */
+  .access-denied {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    text-align: center;
+    padding: 3rem;
+  }
+
+  .access-denied-icon {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .access-denied h1 {
+    margin: 0 0 1rem 0;
+    color: #1e293b;
+    font-size: 2rem;
+  }
+
+  .access-denied p {
+    margin: 0.5rem 0;
+    color: #64748b;
+    font-size: 1.125rem;
+  }
+
+  .redirect-message {
+    color: #3b82f6;
+    font-weight: 500;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
   }
 
   /* Table Styles */

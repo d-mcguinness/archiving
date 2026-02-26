@@ -1,5 +1,6 @@
 package com.dmc.archiving.auth;
 
+import com.dmc.archiving.tenancy.service.TenancyService;
 import com.dmc.archiving.user.model.User;
 import com.dmc.archiving.user.service.UserService;
 import org.slf4j.Logger;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,9 +27,11 @@ public class AuthController {
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final UserService userService;
+    private final TenancyService tenancyService;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, TenancyService tenancyService) {
         this.userService = userService;
+        this.tenancyService = tenancyService;
     }
 
     // Default credentials with roles
@@ -82,9 +86,12 @@ public class AuthController {
 
                 log.info("Login successful for user: {} with role: {}", username, credentials.getRole());
 
+                // Get user ID
+                Long userId = getDefaultUserId(username);
+
                 // Create user response
                 Map<String, Object> user = new HashMap<>();
-                user.put("id", getDefaultUserId(username));
+                user.put("id", userId);
                 user.put("username", username);
                 user.put("name", credentials.getName());
                 user.put("email", username + "@archiving.com");
@@ -98,6 +105,23 @@ public class AuthController {
                 response.put("role", credentials.getRole());
                 response.put("token", token);
                 response.put("expiresIn", 3600); // 1 hour
+
+                // Add tenantId for TENANT and USER roles
+                if ("TENANT".equals(credentials.getRole()) || "USER".equals(credentials.getRole())) {
+                    try {
+                        List<Long> tenantIds = tenancyService.getTenantIdsByUserId(userId);
+                        if (!tenantIds.isEmpty()) {
+                            Long tenantId = tenantIds.get(0); // Use first tenant
+                            response.put("tenantId", tenantId);
+                            user.put("tenantId", tenantId);
+                            log.info("Added tenantId {} for user {} with role {}", tenantId, username, credentials.getRole());
+                        } else {
+                            log.warn("No tenants found for user {} with role {}", username, credentials.getRole());
+                        }
+                    } catch (Exception e) {
+                        log.error("Error getting tenant IDs for user {}: {}", username, e.getMessage());
+                    }
+                }
 
                 return ResponseEntity.ok(response);
             } else {

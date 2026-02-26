@@ -1,11 +1,14 @@
 package com.dmc.archiving.dashboard;
 
 import com.dmc.archiving.archive.ArchiveService;
+import com.dmc.archiving.archive.model.Archive;
 import com.dmc.archiving.archive.model.ArchiveStatus;
+import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.tenancy.service.TenancyService;
 import com.dmc.archiving.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -78,6 +82,73 @@ public class DashboardController {
             log.error("Error in getDashboardStats: {}", e.getMessage(), e);
             // Return empty stats instead of throwing
             return new DashboardStats();
+        }
+    }
+
+    // GraphQL Query for Tenant-Specific Dashboard Statistics
+    @QueryMapping
+    public TenantDashboardStats getTenantDashboardStats(@Argument Long tenantId) {
+        try {
+            log.info("Fetching tenant dashboard stats for tenant: {}", tenantId);
+
+            TenantDashboardStats stats = new TenantDashboardStats();
+            Tenant tenant = null;
+
+            // Get tenant info
+            try {
+                tenant = tenancyService.getTenantById(tenantId);
+                if (tenant != null) {
+                    stats.setTenantId(tenantId);
+                    stats.setTenantName(tenant.getDisplayName() != null ? tenant.getDisplayName() : tenant.getName());
+                    stats.setTenantStatus(tenant.getStatus().toString());
+                    stats.setTenantPlan(tenant.getPlan().toString());
+                } else {
+                    log.warn("Tenant not found: {}", tenantId);
+                    return stats;
+                }
+            } catch (Exception e) {
+                log.error("Error fetching tenant info: {}", e.getMessage());
+                return stats;
+            }
+
+            // Get users count for this tenant
+            try {
+                stats.setTotalUsers(tenant.getUsers().size());
+            } catch (Exception e) {
+                log.error("Error fetching tenant users count: {}", e.getMessage());
+                stats.setTotalUsers(0);
+            }
+
+            // Get archives for this tenant (by ownerId)
+            try {
+                List<Archive> tenantArchives = archiveService.getArchivesByOwner(tenantId);
+                stats.setTotalArchives(tenantArchives.size());
+
+                // Count by status
+                stats.setActiveArchives((int) tenantArchives.stream()
+                    .filter(a -> a.getStatus() == ArchiveStatus.PUBLISHED)
+                    .count());
+                stats.setDraftArchives((int) tenantArchives.stream()
+                    .filter(a -> a.getStatus() == ArchiveStatus.DRAFT)
+                    .count());
+                stats.setArchivedArchives((int) tenantArchives.stream()
+                    .filter(a -> a.getStatus() == ArchiveStatus.ARCHIVED)
+                    .count());
+            } catch (Exception e) {
+                log.error("Error fetching tenant archives: {}", e.getMessage());
+                stats.setTotalArchives(0);
+                stats.setActiveArchives(0);
+                stats.setDraftArchives(0);
+                stats.setArchivedArchives(0);
+            }
+
+            log.info("Tenant dashboard stats fetched successfully for tenant {}: users={}, archives={}",
+                tenantId, stats.getTotalUsers(), stats.getTotalArchives());
+
+            return stats;
+        } catch (Exception e) {
+            log.error("Error in getTenantDashboardStats: {}", e.getMessage(), e);
+            return new TenantDashboardStats();
         }
     }
 

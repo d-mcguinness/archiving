@@ -13,8 +13,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CreateArchiveInput {
 
+    @NotNull(message = "Tenant ID is required")
+    private Long tenantId;  // Tenant (organization) ID
+
+    @NotNull(message = "Owner ID (User ID) is required")
+    private Long ownerId;  // User ID - owner/creator of the archive
+
     @NotNull(message = "User ID is required")
-    private Long userId;
+    private Long userId;  // User ID for backward compatibility
 
     @NotBlank(message = "Title is required")
     @Size(max = 255, message = "Title must not exceed 255 characters")

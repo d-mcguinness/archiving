@@ -15,6 +15,22 @@ export const GET_DASHBOARD_STATS: DocumentNode = gql`
   }
 `;
 
+export const GET_TENANT_DASHBOARD_STATS: DocumentNode = gql`
+  query GetTenantDashboardStats($tenantId: ID!) {
+    getTenantDashboardStats(tenantId: $tenantId) {
+      tenantId
+      tenantName
+      tenantStatus
+      tenantPlan
+      totalUsers
+      totalArchives
+      activeArchives
+      draftArchives
+      archivedArchives
+    }
+  }
+`;
+
 // User Queries
 export const GET_ALL_USERS: DocumentNode = gql`
   query GetAllUsers {
@@ -232,7 +248,14 @@ export const GET_ALL_ARCHIVES: DocumentNode = gql`
   query GetAllArchives {
     getAllArchives {
       id
+      tenantId
       ownerId
+      tenant {
+        id
+        name
+        displayName
+        domain
+      }
       title
       description
       content
@@ -254,7 +277,14 @@ export const GET_ARCHIVE: DocumentNode = gql`
   query GetArchive($id: ID!) {
     getArchive(id: $id) {
       id
+      tenantId
       ownerId
+      tenant {
+        id
+        name
+        displayName
+        domain
+      }
       title
       description
       content

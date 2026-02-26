@@ -46,6 +46,7 @@
         console.log('User:', result.user);
         console.log('Role:', result.role);
         console.log('Token:', result.token ? '(token received)' : '(no token)');
+        console.log('TenantId:', result.tenantId || '(none)');
         console.groupEnd();
 
         // Store auth data in localStorage
@@ -53,15 +54,30 @@
         localStorage.setItem('auth_user', JSON.stringify(result.user));
         localStorage.setItem('auth_role', result.role);
 
+        // Store tenantId if present (for TENANT and USER roles)
+        if (result.tenantId) {
+          localStorage.setItem('auth_tenantId', result.tenantId.toString());
+        }
+
         toasts.success(`Welcome back, ${result.user.name}!`);
 
         // Redirect based on role
         if (result.role === 'ADMIN') {
           goto('/admin');
         } else if (result.role === 'TENANT') {
-          goto('/tenants');
+          // Redirect TENANT to their tenant detail page
+          if (result.tenantId) {
+            goto(`/tenants/${result.tenantId}`);
+          } else {
+            goto('/tenants');
+          }
         } else if (result.role === 'USER') {
-          goto('/users');
+          // Redirect USER to their tenant's users page
+          if (result.tenantId) {
+            goto(`/tenants/${result.tenantId}/users`);
+          } else {
+            goto('/users');
+          }
         } else {
           goto('/');
         }

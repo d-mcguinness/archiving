@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
   import { GET_TENANT, GET_ALL_USERS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
@@ -20,7 +21,37 @@
   let selectedUserId = '';
   let addingUser = false;
 
+  // Security
+  let currentRole = '';
+  let hasAccess = false;
+
   onMount(async () => {
+    // Check role first
+    const role = localStorage.getItem('auth_role');
+    const tenantId = localStorage.getItem('auth_tenantId');
+    const user = localStorage.getItem('auth_user');
+    currentRole = role || '';
+
+    // Only ADMIN and TENANT can access tenant users page
+    if (currentRole !== 'ADMIN' && currentRole !== 'TENANT') {
+      hasAccess = false;
+      loading = false;
+
+      // Redirect USER to their documents page
+      if (currentRole === 'USER' && tenantId && user) {
+        try {
+          const userData = JSON.parse(user);
+          goto(`/tenants/${tenantId}/users/${userData.id}/documents`);
+        } catch (e) {
+          goto('/');
+        }
+      } else {
+        goto('/');
+      }
+      return;
+    }
+
+    hasAccess = true;
     await loadTenantAndUsers();
   });
 
@@ -120,7 +151,16 @@
 </script>
 
 <div class="tenant-users-page">
-  <div class="header">
+  {#if !hasAccess && !loading}
+    <!-- Access Denied -->
+    <div class="access-denied">
+      <div class="access-denied-icon">🚫</div>
+      <h1>Access Denied</h1>
+      <p>You don't have permission to access this page.</p>
+      <p class="redirect-message">Redirecting...</p>
+    </div>
+  {:else}
+    <div class="header">
     <div>
       <h1>Tenant Users</h1>
       {#if tenant}
@@ -134,7 +174,11 @@
       {/if}
     </div>
     <div class="header-actions">
-      <a href="/tenants" class="btn-back">← Back to Tenants</a>
+      {#if currentRole === 'ADMIN'}
+        <a href="/admin/tenants" class="btn-back">← Back to Tenants</a>
+      {:else if currentRole === 'TENANT'}
+        <a href="/tenants/{data.tenantId}" class="btn-back">← Back to Tenant</a>
+      {/if}
       <button class="btn-primary" on:click={openAddUserDialog}>
         ➕ Add User to Tenant
       </button>
@@ -207,6 +251,7 @@
         </tbody>
       </table>
     {/if}
+  {/if}
   {/if}
 </div>
 
@@ -310,7 +355,46 @@
     background: #2563eb;
   }
 
-  .btn-primary:disabled {
+  /* Access Denied */
+  .access-denied {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    text-align: center;
+    padding: 3rem;
+  }
+
+  .access-denied-icon {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .access-denied h1 {
+    margin: 0 0 1rem 0;
+    color: #1e293b;
+    font-size: 2rem;
+  }
+
+  .access-denied p {
+    margin: 0.5rem 0;
+    color: #64748b;
+    font-size: 1.125rem;
+  }
+
+  .redirect-message {
+    color: #3b82f6;
+    font-weight: 500;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .loading {
     background: #cbd5e1;
     cursor: not-allowed;
   }

@@ -159,7 +159,7 @@
 <div class="archives-page">
   {#if filteredByTenant}
     <div class="breadcrumb">
-      <a href="/tenants">Tenants</a>
+      <a href="/admin/tenants">Tenants</a>
       <span class="separator">›</span>
       <span class="current">Archives for Tenant #{tenantId}</span>
     </div>

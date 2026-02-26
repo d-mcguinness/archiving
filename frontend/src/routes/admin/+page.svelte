@@ -25,16 +25,25 @@
   onMount(async () => {
     // Check role first
     const role = localStorage.getItem('auth_role');
+    const tenantId = localStorage.getItem('auth_tenantId');
     currentRole = role || '';
 
     // Only ADMIN can access this page
     if (currentRole !== 'ADMIN') {
       hasAccess = false;
       loading = false;
-      // Redirect after a brief delay to show access denied message
-      setTimeout(() => {
+
+      // Redirect non-admin users to appropriate page
+      if (currentRole === 'TENANT' && tenantId) {
+        // Redirect TENANT to their tenant page
+        goto(`/tenants/${tenantId}`);
+      } else if (currentRole === 'USER' && tenantId) {
+        // Redirect USER to their tenant users page
+        goto(`/tenants/${tenantId}/users`);
+      } else {
+        // Redirect others to home
         goto('/');
-      }, 2000);
+      }
       return;
     }
 
@@ -134,7 +143,7 @@
   {:else}
     <!-- Quick Actions & Statistics -->
     <div class="combined-grid">
-      <a href="/tenants" class="combined-card">
+      <a href="/admin/tenants" class="combined-card">
         <div class="card-icon">🏢</div>
         <div class="card-content">
           <div class="card-title">Manage Tenants</div>
@@ -142,7 +151,7 @@
         </div>
       </a>
 
-      <a href="/users" class="combined-card">
+      <a href="/admin/users" class="combined-card">
         <div class="card-icon">👥</div>
         <div class="card-content">
           <div class="card-title">Manage Users</div>
@@ -150,7 +159,7 @@
         </div>
       </a>
 
-      <a href="/archives" class="combined-card">
+      <a href="/admin/archives" class="combined-card">
         <div class="card-icon">📁</div>
         <div class="card-content">
           <div class="card-title">Manage Archives</div>
@@ -228,7 +237,7 @@
                 <span class="archive-date">{new Date(archive.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
-            <a href="/archives" class="view-link">View →</a>
+            <a href="/admin/archives" class="view-link">View →</a>
           </div>
         {/each}
       </div>

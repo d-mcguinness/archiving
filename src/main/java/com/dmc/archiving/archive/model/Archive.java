@@ -15,11 +15,13 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "archives", indexes = {
+    @Index(name = "idx_archive_tenant_id", columnList = "tenant_id"),
     @Index(name = "idx_archive_owner_id", columnList = "owner_id"),
     @Index(name = "idx_archive_status", columnList = "status"),
     @Index(name = "idx_archive_standard", columnList = "standard"),
     @Index(name = "idx_archive_created_at", columnList = "created_at"),
     @Index(name = "idx_archive_updated_at", columnList = "updated_at"),
+    @Index(name = "idx_archive_tenant_status", columnList = "tenant_id, status"),
     @Index(name = "idx_archive_owner_status", columnList = "owner_id, status")
 })
 @Getter
@@ -31,8 +33,11 @@ public class Archive {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "tenant_id", nullable = false)
+    private Long tenantId;  // Tenant (organization) that owns this archive
+
     @Column(name = "owner_id", nullable = false)
-    private Long ownerId;  // Primary owner of the archive
+    private Long ownerId;  // User who owns/created the archive
 
     @Column(name = "title", nullable = false, length = 255)
     private String title;
@@ -68,10 +73,11 @@ public class Archive {
     private Set<UserAssignment> assignedUsers = new HashSet<>();
 
     // Constructor for backward compatibility (without assignments)
-    public Archive(Long id, Long ownerId, String title, String description,
+    public Archive(Long id, Long tenantId, Long ownerId, String title, String description,
                    String content, LocalDateTime createdAt, LocalDateTime updatedAt,
                    ArchiveStatus status, ArchiveStandard standard) {
         this.id = id;
+        this.tenantId = tenantId;
         this.ownerId = ownerId;
         this.title = title;
         this.description = description;

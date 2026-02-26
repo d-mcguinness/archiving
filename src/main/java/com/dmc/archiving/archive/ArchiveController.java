@@ -10,6 +10,8 @@ import com.dmc.archiving.archive.model.UserRole;
 import com.dmc.archiving.archive.strategy.ArchiveStrategy;
 import com.dmc.archiving.archive.strategy.ArchiveStrategyFactory;
 import com.dmc.archiving.archive.strategy.ValidationResult;
+import com.dmc.archiving.tenancy.model.Tenant;
+import com.dmc.archiving.tenancy.service.TenancyService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +29,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -44,6 +45,9 @@ public class ArchiveController {
 
     @Autowired
     private ArchiveStrategyFactory strategyFactory;
+
+    @Autowired
+    private TenancyService tenancyService;
 
     // ========== Legacy Query Methods (Non-paginated - use paginated versions for production) ==========
 
@@ -220,6 +224,22 @@ public class ArchiveController {
     public String assignedAt(com.dmc.archiving.archive.model.UserAssignment userAssignment) {
         return userAssignment.getAssignedAt() != null ?
             userAssignment.getAssignedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
+    }
+
+    // Field resolver for tenant
+    @SchemaMapping(typeName = "Archive", field = "tenant")
+    @SuppressWarnings("ModuleDependency") // Tenant is in same Maven module, IntelliJ false positive
+    public Tenant tenant(Archive archive) {
+        if (archive.getTenantId() == null) {
+            return null;
+        }
+        try {
+            return tenancyService.getTenantById(archive.getTenantId());
+        } catch (Exception e) {
+            log.warn("Could not fetch tenant {} for archive {}: {}",
+                archive.getTenantId(), archive.getId(), e.getMessage());
+            return null;
+        }
     }
 
     // REST Endpoint for Archive Extraction/Download
