@@ -225,6 +225,24 @@ type DashboardStats {
     archivedArchives: Int!
 }
 
+# Pagination Types
+type PageInfo {
+    number: Int!
+    size: Int!
+    totalElements: Int!
+    totalPages: Int!
+    hasNext: Boolean!
+    hasPrevious: Boolean!
+    isFirst: Boolean!
+    isLast: Boolean!
+}
+
+type ArchivePage {
+    content: [Archive!]!
+    pageInfo: PageInfo!
+    empty: Boolean!
+}
+
 # Root Query Type
 type Query {
     # Dashboard Queries
@@ -247,6 +265,13 @@ type Query {
     getArchivesByOwner(ownerId: ID!): [Archive!]!
     getArchivesByUserAssignment(userId: ID!): [Archive!]!
     getArchivesByUserRole(userId: ID!, role: UserRole!): [Archive!]!
+
+    # Archive Paginated Queries (Recommended for scalability)
+    getAllArchivesPaginated(page: Int, size: Int, sortBy: String, sortDirection: String): ArchivePage!
+    getArchivesByUserPaginated(userId: ID!, page: Int, size: Int, sortBy: String, sortDirection: String): ArchivePage!
+    getArchivesByUserAssignmentPaginated(userId: ID!, page: Int, size: Int, sortBy: String, sortDirection: String): ArchivePage!
+    getArchivesByStatusPaginated(status: ArchiveStatus!, page: Int, size: Int, sortBy: String, sortDirection: String): ArchivePage!
+    searchArchivesByTitlePaginated(title: String!, page: Int, size: Int, sortBy: String, sortDirection: String): ArchivePage!
 
 
     # Element Queries

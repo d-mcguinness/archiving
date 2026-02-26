@@ -10,10 +10,10 @@ import com.dmc.archiving.archive.model.UserRole;
 import com.dmc.archiving.archive.strategy.ArchiveStrategy;
 import com.dmc.archiving.archive.strategy.ArchiveStrategyFactory;
 import com.dmc.archiving.archive.strategy.ValidationResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -81,7 +81,7 @@ public class ArchiveController {
     // ========== Paginated Query Methods (Recommended for scalability) ==========
 
     @QueryMapping
-    public Page<Archive> getAllArchivesPaginated(
+    public com.dmc.archiving.archive.dto.ArchivePage getAllArchivesPaginated(
             @Argument Integer page,
             @Argument Integer size,
             @Argument String sortBy,
@@ -94,11 +94,11 @@ public class ArchiveController {
         Sort.Direction direction = "ASC".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
 
         Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, sortField));
-        return archiveService.getAllArchivesPaginated(pageable);
+        return com.dmc.archiving.archive.dto.ArchivePage.from(archiveService.getAllArchivesPaginated(pageable));
     }
 
     @QueryMapping
-    public Page<Archive> getArchivesByUserPaginated(
+    public com.dmc.archiving.archive.dto.ArchivePage getArchivesByUserPaginated(
             @Argument Long userId,
             @Argument Integer page,
             @Argument Integer size,
@@ -111,11 +111,11 @@ public class ArchiveController {
         Sort.Direction direction = "ASC".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
 
         Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, sortField));
-        return archiveService.getArchivesByUserIdPaginated(userId, pageable);
+        return com.dmc.archiving.archive.dto.ArchivePage.from(archiveService.getArchivesByUserIdPaginated(userId, pageable));
     }
 
     @QueryMapping
-    public Page<Archive> getArchivesByUserAssignmentPaginated(
+    public com.dmc.archiving.archive.dto.ArchivePage getArchivesByUserAssignmentPaginated(
             @Argument Long userId,
             @Argument Integer page,
             @Argument Integer size,
@@ -128,11 +128,11 @@ public class ArchiveController {
         Sort.Direction direction = "ASC".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
 
         Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, sortField));
-        return archiveService.getArchivesByUserAssignmentPaginated(userId, pageable);
+        return com.dmc.archiving.archive.dto.ArchivePage.from(archiveService.getArchivesByUserAssignmentPaginated(userId, pageable));
     }
 
     @QueryMapping
-    public Page<Archive> getArchivesByStatusPaginated(
+    public com.dmc.archiving.archive.dto.ArchivePage getArchivesByStatusPaginated(
             @Argument ArchiveStatus status,
             @Argument Integer page,
             @Argument Integer size,
@@ -145,11 +145,11 @@ public class ArchiveController {
         Sort.Direction direction = "ASC".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
 
         Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, sortField));
-        return archiveService.getArchivesByStatusPaginated(status, pageable);
+        return com.dmc.archiving.archive.dto.ArchivePage.from(archiveService.getArchivesByStatusPaginated(status, pageable));
     }
 
     @QueryMapping
-    public Page<Archive> searchArchivesByTitlePaginated(
+    public com.dmc.archiving.archive.dto.ArchivePage searchArchivesByTitlePaginated(
             @Argument String title,
             @Argument Integer page,
             @Argument Integer size,
@@ -162,7 +162,7 @@ public class ArchiveController {
         Sort.Direction direction = "ASC".equalsIgnoreCase(sortDirection) ? Sort.Direction.ASC : Sort.Direction.DESC;
 
         Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(direction, sortField));
-        return archiveService.searchArchivesByTitlePaginated(title, pageable);
+        return com.dmc.archiving.archive.dto.ArchivePage.from(archiveService.searchArchivesByTitlePaginated(title, pageable));
     }
 
     // Existing mutation methods

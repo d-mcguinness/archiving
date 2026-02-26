@@ -23,6 +23,8 @@ A full-stack application for managing digital archives with support for multiple
 - 📦 **Modular Architecture** - Spring Modulith for maintainable backend
 - 🔐 **Event-Driven** - Loose coupling via application events
 - 📝 **Standard Compliance** - Export formats match archiving standard specifications
+- ☁️ **Cloud Storage** - AWS S3 integration with LocalStack for development
+- 🤖 **MCP Servers** - AI assistant integration for LocalStack and database (local profile)
 
 ## 🚀 Quick Start
 
@@ -424,6 +426,69 @@ This has been fixed using event-driven architecture. If you encounter it:
 - [Circular Dependency Fix](./CIRCULAR_DEPENDENCY_FIX.md) - Event-driven architecture
 - [Jackson DateTime Fix](./JACKSON_DATETIME_FIX.md) - Date serialization
 - [Apollo Cache Fix](./APOLLO_CACHE_MERGE_FIX.md) - GraphQL cache management
+
+## 🤖 MCP Servers (Local Development)
+
+The application includes **Model Context Protocol (MCP)** servers for AI assistant integration. These are only active in the `local` profile and provide tools for AI to interact with LocalStack S3 and PostgreSQL database.
+
+### Available MCP Servers
+
+1. **LocalStack MCP Server** (`/mcp/localstack`) - Interact with LocalStack S3
+   - List buckets and objects
+   - Get object metadata
+   - Check bucket existence
+   
+2. **DataSource MCP Server** (`/mcp/datasource`) - Query PostgreSQL database
+   - List tables and describe schema
+   - Execute SELECT queries (read-only)
+   - Get database metadata
+
+### Quick Start
+
+```bash
+# 1. Start with local profile
+export SPRING_PROFILES_ACTIVE=local
+
+# 2. Start LocalStack and PostgreSQL
+docker run -d -p 4566:4566 localstack/localstack
+docker run -d -p 5432:5432 -e POSTGRES_DB=archiving \
+  -e POSTGRES_USER=archiving_user -e POSTGRES_PASSWORD=archiving_pass postgres:15
+
+# 3. Start application
+./mvnw spring-boot:run
+
+# 4. Test MCP servers
+./test-mcp-servers.sh
+
+# 5. Access endpoints
+curl http://localhost:2020/mcp          # List all MCP servers
+curl http://localhost:2020/mcp/usage    # Get usage documentation
+```
+
+### Example Usage
+
+```bash
+# List S3 objects
+curl -X POST http://localhost:2020/mcp/localstack/tools/list_objects \
+  -H "Content-Type: application/json" \
+  -d '{"prefix": "uploads/", "maxKeys": 10}'
+
+# Query database
+curl -X POST http://localhost:2020/mcp/datasource/tools/execute_query \
+  -H "Content-Type: application/json" \
+  -d '{"query": "SELECT * FROM users LIMIT 5", "maxRows": 5}'
+
+# List all tables
+curl -X POST http://localhost:2020/mcp/datasource/tools/list_tables \
+  -H "Content-Type: application/json" \
+  -d '{"schema": "public"}'
+```
+
+📖 **Full documentation**: See [MCP_SERVERS.md](./MCP_SERVERS.md)
+
+⚠️ **Security Note**: MCP servers are ONLY active in `local` profile and should never be enabled in production.
+
+---
 
 ## 🤝 Contributing
 
