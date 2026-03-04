@@ -169,6 +169,9 @@
                 <div class="form-group">
                   <label for={`field-${field.name}`}>
                     {field.label || field.name}
+                    {#if field.required}
+                      <span class="required-marker">*</span>
+                    {/if}
                     {#if field.type}
                       <span class="field-type">({field.type})</span>
                     {/if}
@@ -179,6 +182,7 @@
                       type="date"
                       id={`field-${field.name}`}
                       value={elementForm.fieldValues[field.name] || ''}
+                      required={field.required}
                       on:input={(e) => {
                         elementForm.fieldValues[field.name] = e.currentTarget?.value || '';
                         elementForm.fieldValues = elementForm.fieldValues;
@@ -190,6 +194,7 @@
                       type="number"
                       id={`field-${field.name}`}
                       value={elementForm.fieldValues[field.name] || ''}
+                      required={field.required}
                       on:input={(e) => {
                         elementForm.fieldValues[field.name] = e.currentTarget?.value || '';
                         elementForm.fieldValues = elementForm.fieldValues;
@@ -201,6 +206,7 @@
                       type="text"
                       id={`field-${field.name}`}
                       value={elementForm.fieldValues[field.name] || ''}
+                      required={field.required}
                       on:input={(e) => {
                         elementForm.fieldValues[field.name] = e.currentTarget?.value || '';
                         elementForm.fieldValues = elementForm.fieldValues;
@@ -326,6 +332,12 @@
     font-weight: 400;
     font-size: 0.75rem;
     margin-left: 0.25rem;
+  }
+
+  .required-marker {
+    color: #ef4444;
+    font-weight: 600;
+    margin-left: 0.125rem;
   }
 
   .form-group input,

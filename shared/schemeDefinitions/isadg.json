@@ -1,432 +1,605 @@
 {
   "standard": "ISAD(G)",
   "fullName": "General International Standard Archival Description",
-  "reference": "ISAD(G) Second Edition",
-  "description": "International standard for archival description developed by the International Council on Archives, providing general guidance for the preparation of archival descriptions",
+  "reference": "ISAD(G) Second Edition, 2000",
+  "description": "International standard for archival description developed by the International Council on Archives (ICA). Defines 26 elements organized in 7 areas for the preparation of archival descriptions applicable to all types of archival material. Based on the principle of multi-level description from the general to the specific.",
   "version": "2.0",
-  "xsdReference": "https://www.ica.org/en/isadg-general-international-standard-archival-description-second-edition",
+  "xsdReference": "https://www.ica.org/resource/isadg-general-international-standard-archival-description-second-edition/",
   "url": "https://www.ica.org/standards/isad-g/",
   "entities": [
     {
       "name": "Archival Description",
       "type": "root_element",
-      "description": "Complete archival description following ISAD(G) standard",
+      "description": "A complete archival description following ISAD(G), containing all seven areas of description. May represent any level of archival arrangement from fonds to item.",
       "parent": null,
-      "children": ["Identity Statement", "Context", "Content and Structure", "Conditions of Access and Use", "Allied Materials", "Notes", "Description Control"],
-      "note": "Seven areas of description",
+      "children": ["Identity Statement Area", "Context Area", "Content and Structure Area", "Conditions of Access and Use Area", "Allied Materials Area", "Notes Area", "Description Control Area"],
+      "note": "ISAD(G) defines 26 elements in 7 areas. Six elements are essential for international exchange: reference code, title, date(s), level of description, extent and medium, and name of creator(s).",
       "fields": [
-        { "name": "descriptionID", "type": "string", "label": "Description ID" },
-        { "name": "levelOfDescription", "type": "string", "label": "Level of Description" }
+        { "name": "descriptionID", "type": "string", "label": "Description ID", "required": false },
+        { "name": "levelOfDescription", "type": "string", "label": "Level of Description", "required": true }
       ]
     },
     {
-      "name": "Identity Statement",
+      "name": "Identity Statement Area",
       "type": "area",
-      "description": "Area 1: Information essential for identifying the unit of description",
+      "description": "Area 1 (ISAD 3.1): Information essential to identify the unit of description. Contains 5 elements, all of which are required for international exchange.",
       "parent": "Archival Description",
       "children": ["Reference Code", "Title", "Date", "Level of Description", "Extent and Medium"],
-      "note": "Essential identifying information",
+      "note": "All five elements in this area are mandatory for multilevel description.",
       "fields": [
-        { "name": "identityStatementID", "type": "string", "label": "Identity Statement ID" }
+        { "name": "identityStatementID", "type": "string", "label": "Identity Statement ID", "required": false }
       ]
     },
     {
       "name": "Reference Code",
       "type": "identity_element",
-      "description": "3.1.1 - Unique identifier for the unit of description",
-      "parent": "Identity Statement",
+      "description": "ISAD 3.1.1: Identify uniquely the unit of description and provide a link to the description that represents it. The reference code should comprise: country code (ISO 3166), repository code, and a specific local reference code, control number, or other unique identifier.",
+      "parent": "Identity Statement Area",
       "children": [],
-      "note": "Combination of country code, repository code, and local reference",
+      "note": "REQUIRED. Essential for international exchange. At the highest level, provide the country code, repository code, and a specific reference code.",
       "fields": [
-        { "name": "countryCode", "type": "string", "label": "Country Code (ISO 3166)" },
-        { "name": "repositoryCode", "type": "string", "label": "Repository Code" },
-        { "name": "localReference", "type": "string", "label": "Local Reference" },
-        { "name": "referenceCode", "type": "string", "label": "Complete Reference Code" }
+        { "name": "countryCode", "type": "string", "label": "Country Code (ISO 3166)", "required": true },
+        { "name": "repositoryCode", "type": "string", "label": "Repository Code", "required": true },
+        { "name": "localReference", "type": "string", "label": "Local Reference Code", "required": true },
+        { "name": "referenceCode", "type": "string", "label": "Complete Reference Code", "required": true },
+        { "name": "alternativeIdentifier", "type": "string", "label": "Alternative Identifier", "required": false },
+        { "name": "alternativeIdentifierType", "type": "string", "label": "Alternative Identifier Type", "required": false }
       ]
     },
     {
       "name": "Title",
       "type": "identity_element",
-      "description": "3.1.2 - Name of the unit of description",
-      "parent": "Identity Statement",
+      "description": "ISAD 3.1.2: Name the unit of description. Provide either a formal title or a concise supplied title in accordance with multilevel description rules. If a formal title exists, transcribe it exactly. If not, supply a brief title indicating the creator, nature of the materials, subject/function, or activity.",
+      "parent": "Identity Statement Area",
       "children": [],
+      "note": "REQUIRED. Essential for international exchange.",
       "fields": [
-        { "name": "title", "type": "string", "label": "Title" },
-        { "name": "titleType", "type": "string", "label": "Title Type" }
+        { "name": "title", "type": "string", "label": "Title", "required": true },
+        { "name": "titleType", "type": "string", "label": "Title Type", "required": false },
+        { "name": "parallelTitle", "type": "string", "label": "Parallel Title", "required": false },
+        { "name": "otherTitleInformation", "type": "string", "label": "Other Title Information", "required": false }
       ]
     },
     {
       "name": "Date",
       "type": "identity_element",
-      "description": "3.1.3 - Date(s) of creation of the unit of description",
-      "parent": "Identity Statement",
+      "description": "ISAD 3.1.3: Identify and record the date(s) of the unit of description. Record the date(s) of creation of the unit of description. For aggregations of records, this may be the dates of accumulation. Identify the type of date(s) given. Record as a single date or range of dates.",
+      "parent": "Identity Statement Area",
       "children": [],
+      "note": "REQUIRED. Essential for international exchange. Express in ISO 8601 format where possible.",
       "fields": [
-        { "name": "dateExpression", "type": "string", "label": "Date Expression" },
-        { "name": "dateType", "type": "string", "label": "Date Type" },
-        { "name": "startDate", "type": "date", "label": "Start Date" },
-        { "name": "endDate", "type": "date", "label": "End Date" },
-        { "name": "certainty", "type": "string", "label": "Certainty" }
+        { "name": "dateExpression", "type": "string", "label": "Date Expression", "required": true },
+        { "name": "dateType", "type": "string", "label": "Date Type", "required": false },
+        { "name": "startDate", "type": "date", "label": "Start Date (ISO 8601)", "required": false },
+        { "name": "endDate", "type": "date", "label": "End Date (ISO 8601)", "required": false },
+        { "name": "bulkStartDate", "type": "date", "label": "Bulk Start Date", "required": false },
+        { "name": "bulkEndDate", "type": "date", "label": "Bulk End Date", "required": false },
+        { "name": "certainty", "type": "string", "label": "Certainty", "required": false }
       ]
     },
     {
       "name": "Level of Description",
       "type": "identity_element",
-      "description": "3.1.4 - Level of arrangement of the unit of description",
-      "parent": "Identity Statement",
+      "description": "ISAD 3.1.4: Identify the level of arrangement of the unit of description. Record the level of this unit of description (fonds, sub-fonds, series, sub-series, file, item, or other).",
+      "parent": "Identity Statement Area",
       "children": [],
+      "note": "REQUIRED. Essential for international exchange.",
       "fields": [
-        { "name": "level", "type": "string", "label": "Level" }
+        { "name": "level", "type": "string", "label": "Level of Description", "required": true },
+        { "name": "otherLevel", "type": "string", "label": "Other Level", "required": false }
       ]
     },
     {
       "name": "Extent and Medium",
       "type": "identity_element",
-      "description": "3.1.5 - Physical or logical extent and medium of the unit of description",
-      "parent": "Identity Statement",
+      "description": "ISAD 3.1.5: Identify and describe the physical or logical extent and the medium of the unit of description. Record the extent in appropriate units (linear shelf space, number of items, etc.) and the medium or media of the unit.",
+      "parent": "Identity Statement Area",
       "children": [],
+      "note": "REQUIRED. Essential for international exchange. Give quantity, unit, and medium.",
       "fields": [
-        { "name": "extent", "type": "string", "label": "Extent" },
-        { "name": "medium", "type": "string", "label": "Medium of the Unit" },
-        { "name": "quantity", "type": "number", "label": "Quantity" },
-        { "name": "unit", "type": "string", "label": "Unit of Measurement" }
+        { "name": "extent", "type": "string", "label": "Extent", "required": true },
+        { "name": "quantity", "type": "number", "label": "Quantity", "required": false },
+        { "name": "unit", "type": "string", "label": "Unit of Measurement", "required": false },
+        { "name": "medium", "type": "string", "label": "Medium", "required": false },
+        { "name": "dimensions", "type": "string", "label": "Dimensions", "required": false }
       ]
     },
     {
-      "name": "Context",
+      "name": "Context Area",
       "type": "area",
-      "description": "Area 2: Information about the origin and custody of the unit of description",
+      "description": "Area 2 (ISAD 3.2): Information about the origin and custody of the unit of description. Contains 4 elements recording the provenance and custodial history of the materials.",
       "parent": "Archival Description",
       "children": ["Name of Creator", "Administrative/Biographical History", "Archival History", "Immediate Source of Acquisition"],
       "fields": [
-        { "name": "contextID", "type": "string", "label": "Context ID" }
+        { "name": "contextID", "type": "string", "label": "Context ID", "required": false }
       ]
     },
     {
       "name": "Name of Creator",
       "type": "context_element",
-      "description": "3.2.1 - Entity(ies) responsible for creating the unit of description",
-      "parent": "Context",
+      "description": "ISAD 3.2.1: Identify the creator(s) of the unit of description. Record the name of the organization(s) or the individual(s) responsible for the creation, accumulation, and maintenance of the records in the unit of description. Use authorised forms of names where available.",
+      "parent": "Context Area",
       "children": [],
+      "note": "REQUIRED for international exchange when the name of the creator is not included in the title. Use authorized name forms (e.g., ISAAR(CPF)).",
       "fields": [
-        { "name": "creatorName", "type": "string", "label": "Creator Name" },
-        { "name": "creatorType", "type": "string", "label": "Creator Type" },
-        { "name": "authorityIdentifier", "type": "string", "label": "Authority Identifier" }
+        { "name": "creatorName", "type": "string", "label": "Creator Name", "required": true },
+        { "name": "creatorType", "type": "string", "label": "Creator Type", "required": false },
+        { "name": "authorityRecord", "type": "string", "label": "Authority Record Reference", "required": false },
+        { "name": "dates", "type": "string", "label": "Dates of Creator", "required": false },
+        { "name": "authorityIdentifier", "type": "string", "label": "Authority Identifier", "required": false }
       ]
     },
     {
       "name": "Administrative/Biographical History",
       "type": "context_element",
-      "description": "3.2.2 - History of the creator(s) of the unit of description",
-      "parent": "Context",
+      "description": "ISAD 3.2.2: Provide an administrative history of, or biographical sketch about, the creator(s) of the unit of description to place the material in context and make it better understood. For a corporate body, record the dates of establishment, legislation, mandate, functions, organizational structure. For a person, record dates, places, occupations, activities, achievements.",
+      "parent": "Context Area",
       "children": [],
+      "note": "OPTIONAL. Alternatively, a separate authority record following ISAAR(CPF) may be used.",
       "fields": [
-        { "name": "history", "type": "string", "label": "Administrative/Biographical History" },
-        { "name": "historyType", "type": "string", "label": "History Type" }
+        { "name": "history", "type": "string", "label": "Administrative/Biographical History", "required": true },
+        { "name": "historyType", "type": "string", "label": "History Type", "required": false }
       ]
     },
     {
       "name": "Archival History",
       "type": "context_element",
-      "description": "3.2.3 - History of the custody of the unit of description",
-      "parent": "Context",
+      "description": "ISAD 3.2.3: Provide information on the history of the unit of description that is significant for its authenticity, integrity, and interpretation. Record the successive transfers of ownership, responsibility, and/or custody of the unit of description and indicate those actions, such as history of the arrangement, production of contemporary finding aids, re-use of the records for other purposes, or software migrations, that have affected interpretation of the material.",
+      "parent": "Context Area",
       "children": [],
+      "note": "OPTIONAL.",
       "fields": [
-        { "name": "archivalHistory", "type": "string", "label": "Archival History" },
-        { "name": "custodialHistory", "type": "string", "label": "Custodial History" }
+        { "name": "archivalHistory", "type": "string", "label": "Archival History", "required": true },
+        { "name": "custodialHistory", "type": "string", "label": "Custodial History Details", "required": false }
       ]
     },
     {
       "name": "Immediate Source of Acquisition",
       "type": "context_element",
-      "description": "3.2.4 - Source and date of acquisition or transfer",
-      "parent": "Context",
+      "description": "ISAD 3.2.4: Identify the immediate source of acquisition or transfer. Record the source from which the unit of description was acquired and the date and/or method of acquisition if any of this information is not confidential.",
+      "parent": "Context Area",
       "children": [],
+      "note": "OPTIONAL.",
       "fields": [
-        { "name": "acquisitionSource", "type": "string", "label": "Source of Acquisition" },
-        { "name": "acquisitionDate", "type": "date", "label": "Date of Acquisition" },
-        { "name": "acquisitionMethod", "type": "string", "label": "Method of Acquisition" }
+        { "name": "acquisitionSource", "type": "string", "label": "Source of Acquisition", "required": true },
+        { "name": "acquisitionDate", "type": "date", "label": "Date of Acquisition", "required": false },
+        { "name": "acquisitionMethod", "type": "string", "label": "Method of Acquisition", "required": false },
+        { "name": "accessionNumber", "type": "string", "label": "Accession Number", "required": false }
       ]
     },
     {
-      "name": "Content and Structure",
+      "name": "Content and Structure Area",
       "type": "area",
-      "description": "Area 3: Information about the subject matter and arrangement of the unit of description",
+      "description": "Area 3 (ISAD 3.3): Information about the subject matter and arrangement of the unit of description. Contains 4 elements.",
       "parent": "Archival Description",
-      "children": ["Scope and Content", "Appraisal and Destruction", "Accruals", "System of Arrangement"],
+      "children": ["Scope and Content", "Appraisal Destruction and Scheduling", "Accruals", "System of Arrangement"],
       "fields": [
-        { "name": "contentStructureID", "type": "string", "label": "Content and Structure ID" }
+        { "name": "contentStructureID", "type": "string", "label": "Content and Structure ID", "required": false }
       ]
     },
     {
       "name": "Scope and Content",
       "type": "content_element",
-      "description": "3.3.1 - Summary of scope and content of the unit of description",
-      "parent": "Content and Structure",
+      "description": "ISAD 3.3.1: Enable users to judge the potential relevance of the unit of description. Give a summary of the scope (such as time periods, geography) and content (such as documentary forms, subject matter, administrative processes) of the unit of description, appropriate to the level of description.",
+      "parent": "Content and Structure Area",
       "children": [],
+      "note": "OPTIONAL but strongly recommended at fonds and series levels.",
       "fields": [
-        { "name": "scopeContent", "type": "string", "label": "Scope and Content" }
+        { "name": "scopeContent", "type": "string", "label": "Scope and Content", "required": true },
+        { "name": "documentaryForms", "type": "string", "label": "Documentary Forms", "required": false },
+        { "name": "subjectMatter", "type": "string", "label": "Subject Matter", "required": false },
+        { "name": "geographicCoverage", "type": "string", "label": "Geographic Coverage", "required": false },
+        { "name": "temporalCoverage", "type": "string", "label": "Temporal Coverage", "required": false }
       ]
     },
     {
-      "name": "Appraisal and Destruction",
+      "name": "Appraisal Destruction and Scheduling",
       "type": "content_element",
-      "description": "3.3.2 - Information about appraisal, scheduling, and destruction actions",
-      "parent": "Content and Structure",
+      "description": "ISAD 3.3.2: Provide information on any appraisal, destruction and scheduling action. Record appraisal, destruction and scheduling actions taken on or planned for the unit of description, especially if they may affect the interpretation of the material.",
+      "parent": "Content and Structure Area",
       "children": [],
+      "note": "OPTIONAL.",
       "fields": [
-        { "name": "appraisalInfo", "type": "string", "label": "Appraisal Information" },
-        { "name": "destructionInfo", "type": "string", "label": "Destruction Information" },
-        { "name": "retentionPeriod", "type": "string", "label": "Retention Period" }
+        { "name": "appraisalInfo", "type": "string", "label": "Appraisal Information", "required": true },
+        { "name": "destructionInfo", "type": "string", "label": "Destruction Information", "required": false },
+        { "name": "retentionSchedule", "type": "string", "label": "Retention Schedule", "required": false },
+        { "name": "retentionPeriod", "type": "string", "label": "Retention Period", "required": false },
+        { "name": "appraisalDate", "type": "date", "label": "Appraisal Date", "required": false },
+        { "name": "authorizedBy", "type": "string", "label": "Authorized By", "required": false }
       ]
     },
     {
       "name": "Accruals",
       "type": "content_element",
-      "description": "3.3.3 - Information about anticipated additions to the unit of description",
-      "parent": "Content and Structure",
+      "description": "ISAD 3.3.3: Inform the user of anticipated additions to the unit of description. Indicate if accruals are expected. Where appropriate, give an estimate of their quantity and frequency.",
+      "parent": "Content and Structure Area",
       "children": [],
+      "note": "OPTIONAL.",
       "fields": [
-        { "name": "accruals", "type": "string", "label": "Accruals" },
-        { "name": "accrualPolicy", "type": "string", "label": "Accrual Policy" }
+        { "name": "accruals", "type": "string", "label": "Accruals", "required": true },
+        { "name": "accrualPolicy", "type": "string", "label": "Accrual Policy", "required": false },
+        { "name": "estimatedQuantity", "type": "string", "label": "Estimated Quantity", "required": false },
+        { "name": "frequency", "type": "string", "label": "Frequency", "required": false }
       ]
     },
     {
       "name": "System of Arrangement",
       "type": "content_element",
-      "description": "3.3.4 - Information about the internal structure and organization",
-      "parent": "Content and Structure",
+      "description": "ISAD 3.3.4: Provide information on the internal structure, the order and/or the system of classification of the unit of description. Specify the internal structure, ordering and/or classification system. Where appropriate, quote the filing plan of the creator.",
+      "parent": "Content and Structure Area",
       "children": [],
+      "note": "OPTIONAL.",
       "fields": [
-        { "name": "arrangement", "type": "string", "label": "System of Arrangement" },
-        { "name": "arrangementNote", "type": "string", "label": "Arrangement Note" }
+        { "name": "arrangement", "type": "string", "label": "System of Arrangement", "required": true },
+        { "name": "classificationSystem", "type": "string", "label": "Classification System", "required": false },
+        { "name": "arrangementNote", "type": "string", "label": "Arrangement Note", "required": false }
       ]
     },
     {
-      "name": "Conditions of Access and Use",
+      "name": "Conditions of Access and Use Area",
       "type": "area",
-      "description": "Area 4: Information about availability and use of the unit of description",
+      "description": "Area 4 (ISAD 3.4): Information about the availability of the unit of description. Contains 5 elements.",
       "parent": "Archival Description",
-      "children": ["Conditions Governing Access", "Conditions Governing Reproduction", "Language/Scripts", "Physical Characteristics", "Finding Aids"],
+      "children": ["Conditions Governing Access", "Conditions Governing Reproduction", "Language and Scripts of Material", "Physical Characteristics and Technical Requirements", "Finding Aids"],
       "fields": [
-        { "name": "accessUseID", "type": "string", "label": "Access and Use ID" }
+        { "name": "accessUseID", "type": "string", "label": "Access and Use ID", "required": false }
       ]
     },
     {
       "name": "Conditions Governing Access",
       "type": "access_element",
-      "description": "3.4.1 - Information about conditions affecting access",
-      "parent": "Conditions of Access and Use",
+      "description": "ISAD 3.4.1: Provide information about conditions that affect access to the unit of description. Specify the law or legal status, contract, regulation, or policy that affects access. Indicate the extent of the period of closure and the date at which the material will open, where appropriate.",
+      "parent": "Conditions of Access and Use Area",
       "children": [],
+      "note": "OPTIONAL.",
       "fields": [
-        { "name": "accessConditions", "type": "string", "label": "Access Conditions" },
-        { "name": "restrictionType", "type": "string", "label": "Restriction Type" },
-        { "name": "restrictionEndDate", "type": "date", "label": "Restriction End Date" }
+        { "name": "accessConditions", "type": "string", "label": "Access Conditions", "required": true },
+        { "name": "legalStatus", "type": "string", "label": "Legal Status", "required": false },
+        { "name": "restrictionType", "type": "string", "label": "Restriction Type", "required": false },
+        { "name": "closurePeriod", "type": "string", "label": "Closure Period", "required": false },
+        { "name": "restrictionEndDate", "type": "date", "label": "Restriction End Date", "required": false },
+        { "name": "authorizingAuthority", "type": "string", "label": "Authorizing Authority", "required": false }
       ]
     },
     {
       "name": "Conditions Governing Reproduction",
       "type": "access_element",
-      "description": "3.4.2 - Information about conditions affecting reproduction",
-      "parent": "Conditions of Access and Use",
+      "description": "ISAD 3.4.2: Identify any restrictions on reproduction of the unit of description. Give information about conditions, such as copyright, governing reproduction of the unit after access has been provided. If the existence of such conditions is not known, this should be stated.",
+      "parent": "Conditions of Access and Use Area",
       "children": [],
+      "note": "OPTIONAL.",
       "fields": [
-        { "name": "reproductionConditions", "type": "string", "label": "Reproduction Conditions" },
-        { "name": "copyrightStatus", "type": "string", "label": "Copyright Status" }
+        { "name": "reproductionConditions", "type": "string", "label": "Reproduction Conditions", "required": true },
+        { "name": "copyrightStatus", "type": "string", "label": "Copyright Status", "required": false },
+        { "name": "copyrightHolder", "type": "string", "label": "Copyright Holder", "required": false },
+        { "name": "copyrightDate", "type": "date", "label": "Copyright Date", "required": false },
+        { "name": "permissionsRequired", "type": "string", "label": "Permissions Required", "required": false }
       ]
     },
     {
-      "name": "Language/Scripts",
+      "name": "Language and Scripts of Material",
       "type": "access_element",
-      "description": "3.4.3 - Information about languages and scripts of materials",
-      "parent": "Conditions of Access and Use",
+      "description": "ISAD 3.4.3: Identify the language(s), script(s), and symbol systems employed in the unit of description. Record the language(s) and/or script(s) of the materials comprising the unit of description. Note any distinctive alphabets, scripts, symbol systems, or abbreviations employed.",
+      "parent": "Conditions of Access and Use Area",
       "children": [],
+      "note": "OPTIONAL. Use ISO 639-2 for language codes and ISO 15924 for script codes.",
       "fields": [
-        { "name": "languageCode", "type": "string", "label": "Language Code (ISO 639-2)" },
-        { "name": "scriptCode", "type": "string", "label": "Script Code (ISO 15924)" },
-        { "name": "languageNote", "type": "string", "label": "Language Note" }
+        { "name": "languageCode", "type": "string", "label": "Language Code (ISO 639-2)", "required": false },
+        { "name": "languageName", "type": "string", "label": "Language Name", "required": false },
+        { "name": "scriptCode", "type": "string", "label": "Script Code (ISO 15924)", "required": false },
+        { "name": "scriptName", "type": "string", "label": "Script Name", "required": false },
+        { "name": "languageNote", "type": "string", "label": "Language/Script Note", "required": false }
       ]
     },
     {
-      "name": "Physical Characteristics",
+      "name": "Physical Characteristics and Technical Requirements",
       "type": "access_element",
-      "description": "3.4.4 - Information about physical characteristics affecting use",
-      "parent": "Conditions of Access and Use",
+      "description": "ISAD 3.4.4: Provide information about any important physical characteristics or technical requirements that affect use of the unit of description. Indicate any important physical conditions such as preservation requirements or physical characteristics that affect use, or any software and/or hardware required to access the material.",
+      "parent": "Conditions of Access and Use Area",
       "children": [],
+      "note": "OPTIONAL.",
       "fields": [
-        { "name": "physicalCharacteristics", "type": "string", "label": "Physical Characteristics" },
-        { "name": "technicalRequirements", "type": "string", "label": "Technical Requirements" }
+        { "name": "physicalCharacteristics", "type": "string", "label": "Physical Characteristics", "required": false },
+        { "name": "technicalRequirements", "type": "string", "label": "Technical Requirements", "required": false },
+        { "name": "preservationRequirements", "type": "string", "label": "Preservation Requirements", "required": false },
+        { "name": "conditionNote", "type": "string", "label": "Condition Note", "required": false }
       ]
     },
     {
       "name": "Finding Aids",
       "type": "access_element",
-      "description": "3.4.5 - Information about finding aids",
-      "parent": "Conditions of Access and Use",
+      "description": "ISAD 3.4.5: Identify any finding aids to the unit of description. Give information about any finding aids that the repository or the creator of the unit of description may have prepared. If appropriate, publish finding aids or make them available online.",
+      "parent": "Conditions of Access and Use Area",
       "children": [],
+      "note": "OPTIONAL.",
       "fields": [
-        { "name": "findingAids", "type": "string", "label": "Finding Aids" },
-        { "name": "findingAidURL", "type": "string", "label": "Finding Aid URL" }
+        { "name": "findingAids", "type": "string", "label": "Finding Aids", "required": true },
+        { "name": "findingAidType", "type": "string", "label": "Finding Aid Type", "required": false },
+        { "name": "findingAidURL", "type": "string", "label": "Finding Aid URL", "required": false },
+        { "name": "findingAidDate", "type": "date", "label": "Finding Aid Date", "required": false }
       ]
     },
     {
-      "name": "Allied Materials",
+      "name": "Allied Materials Area",
       "type": "area",
-      "description": "Area 5: Information about related materials",
+      "description": "Area 5 (ISAD 3.5): Information about materials that have an important relationship to the unit of description. Contains 4 elements.",
       "parent": "Archival Description",
-      "children": ["Existence of Originals", "Existence of Copies", "Related Units of Description", "Publication Note"],
+      "children": ["Existence and Location of Originals", "Existence and Location of Copies", "Related Units of Description", "Publication Note"],
       "fields": [
-        { "name": "alliedMaterialsID", "type": "string", "label": "Allied Materials ID" }
+        { "name": "alliedMaterialsID", "type": "string", "label": "Allied Materials ID", "required": false }
       ]
     },
     {
-      "name": "Existence of Originals",
+      "name": "Existence and Location of Originals",
       "type": "related_element",
-      "description": "3.5.1 - Information about location of originals if the unit consists of copies",
-      "parent": "Allied Materials",
+      "description": "ISAD 3.5.1: Indicate the existence, location, availability, and/or destruction of originals where the unit of description consists of copies. If the original of the unit of description is available (either in the same repository or elsewhere), record its location together with any significant control numbers.",
+      "parent": "Allied Materials Area",
       "children": [],
+      "note": "OPTIONAL.",
       "fields": [
-        { "name": "originalsLocation", "type": "string", "label": "Location of Originals" },
-        { "name": "originalsNote", "type": "string", "label": "Originals Note" }
+        { "name": "originalsExistence", "type": "string", "label": "Existence of Originals", "required": true },
+        { "name": "originalsLocation", "type": "string", "label": "Location of Originals", "required": false },
+        { "name": "originalsControlNumbers", "type": "string", "label": "Control Numbers", "required": false },
+        { "name": "originalsNote", "type": "string", "label": "Originals Note", "required": false }
       ]
     },
     {
-      "name": "Existence of Copies",
+      "name": "Existence and Location of Copies",
       "type": "related_element",
-      "description": "3.5.2 - Information about copies of the unit of description",
-      "parent": "Allied Materials",
+      "description": "ISAD 3.5.2: Indicate the existence, location, and availability of copies of the unit of description. If the copy of the unit of description is available (either in the same repository or elsewhere), record its location together with any significant control numbers.",
+      "parent": "Allied Materials Area",
       "children": [],
+      "note": "OPTIONAL.",
       "fields": [
-        { "name": "copiesLocation", "type": "string", "label": "Location of Copies" },
-        { "name": "copiesNote", "type": "string", "label": "Copies Note" }
+        { "name": "copiesExistence", "type": "string", "label": "Existence of Copies", "required": true },
+        { "name": "copiesLocation", "type": "string", "label": "Location of Copies", "required": false },
+        { "name": "copiesControlNumbers", "type": "string", "label": "Control Numbers", "required": false },
+        { "name": "copiesNote", "type": "string", "label": "Copies Note", "required": false }
       ]
     },
     {
       "name": "Related Units of Description",
       "type": "related_element",
-      "description": "3.5.3 - Information about related materials in other locations",
-      "parent": "Allied Materials",
+      "description": "ISAD 3.5.3: Identify related units of description. Record information about units of description in the same repository or elsewhere that are related by provenance or other association(s). Use appropriate introductory wording and explain the nature of the relationship.",
+      "parent": "Allied Materials Area",
       "children": [],
+      "note": "OPTIONAL.",
       "fields": [
-        { "name": "relatedUnits", "type": "string", "label": "Related Units" },
-        { "name": "relationshipType", "type": "string", "label": "Relationship Type" }
+        { "name": "relatedUnits", "type": "string", "label": "Related Units of Description", "required": true },
+        { "name": "relationshipType", "type": "string", "label": "Relationship Type", "required": false },
+        { "name": "relatedUnitReference", "type": "string", "label": "Related Unit Reference Code", "required": false },
+        { "name": "relatedUnitRepository", "type": "string", "label": "Related Unit Repository", "required": false }
       ]
     },
     {
       "name": "Publication Note",
       "type": "related_element",
-      "description": "3.5.4 - Information about published materials based on the unit of description",
-      "parent": "Allied Materials",
+      "description": "ISAD 3.5.4: Identify any publications that are about or based on the use, study, or analysis of the unit of description. Record a citation to and/or information about any publication based on the use, study, or analysis of the unit of description, including references to published facsimiles or transcriptions.",
+      "parent": "Allied Materials Area",
       "children": [],
+      "note": "OPTIONAL.",
       "fields": [
-        { "name": "publicationNote", "type": "string", "label": "Publication Note" },
-        { "name": "citation", "type": "string", "label": "Citation" }
+        { "name": "publicationNote", "type": "string", "label": "Publication Note", "required": true },
+        { "name": "citation", "type": "string", "label": "Citation", "required": false },
+        { "name": "publicationDate", "type": "date", "label": "Publication Date", "required": false },
+        { "name": "publicationURL", "type": "string", "label": "Publication URL", "required": false }
       ]
     },
     {
-      "name": "Notes",
+      "name": "Notes Area",
       "type": "area",
-      "description": "Area 6: Information that cannot be accommodated in other areas",
+      "description": "Area 6 (ISAD 3.6): Specialized information and information that cannot be accommodated in any of the other areas. Contains 1 element.",
       "parent": "Archival Description",
-      "children": ["General Note"],
+      "children": ["Note"],
       "fields": [
-        { "name": "notesID", "type": "string", "label": "Notes ID" }
+        { "name": "notesAreaID", "type": "string", "label": "Notes Area ID", "required": false }
       ]
     },
     {
-      "name": "General Note",
+      "name": "Note",
       "type": "note_element",
-      "description": "3.6.1 - Special information not fitting elsewhere",
-      "parent": "Notes",
+      "description": "ISAD 3.6.1: Provide information that cannot be accommodated in any of the other areas. Record specialized or other important information not covered elsewhere, such as conservation information, binding information, donor information, or other significant details.",
+      "parent": "Notes Area",
       "children": [],
+      "note": "OPTIONAL. Repeatable.",
       "fields": [
-        { "name": "note", "type": "string", "label": "Note" },
-        { "name": "noteType", "type": "string", "label": "Note Type" }
+        { "name": "note", "type": "string", "label": "Note", "required": true },
+        { "name": "noteType", "type": "string", "label": "Note Type", "required": false },
+        { "name": "noteDate", "type": "date", "label": "Note Date", "required": false }
       ]
     },
     {
-      "name": "Description Control",
+      "name": "Description Control Area",
       "type": "area",
-      "description": "Area 7: Information about how, when, and by whom the description was created",
+      "description": "Area 7 (ISAD 3.7): Information about how, when, and by whom the archival description was prepared. Contains 3 elements.",
       "parent": "Archival Description",
       "children": ["Archivist Note", "Rules or Conventions", "Date of Description"],
       "fields": [
-        { "name": "descriptionControlID", "type": "string", "label": "Description Control ID" }
+        { "name": "descriptionControlID", "type": "string", "label": "Description Control ID", "required": false }
       ]
     },
     {
       "name": "Archivist Note",
       "type": "control_element",
-      "description": "3.7.1 - Information about who prepared the description",
-      "parent": "Description Control",
+      "description": "ISAD 3.7.1: Explain how the description was prepared and by whom. Record notes on sources consulted in preparing the description and who prepared it.",
+      "parent": "Description Control Area",
       "children": [],
+      "note": "OPTIONAL.",
       "fields": [
-        { "name": "archivistName", "type": "string", "label": "Archivist Name" },
-        { "name": "archivistNote", "type": "string", "label": "Archivist Note" }
+        { "name": "archivistName", "type": "string", "label": "Archivist Name", "required": false },
+        { "name": "archivistNote", "type": "string", "label": "Archivist Note", "required": true },
+        { "name": "sourcesConsulted", "type": "string", "label": "Sources Consulted", "required": false }
       ]
     },
     {
       "name": "Rules or Conventions",
       "type": "control_element",
-      "description": "3.7.2 - Standards or conventions used in preparing the description",
-      "parent": "Description Control",
+      "description": "ISAD 3.7.2: Identify the protocols on which the description is based. Record the international, national, and/or local rules or conventions followed in preparing the description. Record the names and, where useful, the editions or publication dates of the conventions or rules applied.",
+      "parent": "Description Control Area",
       "children": [],
+      "note": "OPTIONAL.",
       "fields": [
-        { "name": "rulesConventions", "type": "string", "label": "Rules or Conventions" },
-        { "name": "conventionCitation", "type": "string", "label": "Convention Citation" }
+        { "name": "rulesConventions", "type": "string", "label": "Rules or Conventions", "required": true },
+        { "name": "conventionCitation", "type": "string", "label": "Convention Citation", "required": false },
+        { "name": "conventionEdition", "type": "string", "label": "Convention Edition/Date", "required": false }
       ]
     },
     {
       "name": "Date of Description",
       "type": "control_element",
-      "description": "3.7.3 - Date(s) when the description was prepared and/or revised",
-      "parent": "Description Control",
+      "description": "ISAD 3.7.3: Indicate when the description was prepared and/or revised. Record the date(s) the description was prepared and/or revised.",
+      "parent": "Description Control Area",
+      "children": [],
+      "note": "OPTIONAL.",
+      "fields": [
+        { "name": "creationDate", "type": "date", "label": "Date of Creation", "required": false },
+        { "name": "revisionDate", "type": "date", "label": "Date of Revision", "required": false },
+        { "name": "status", "type": "string", "label": "Description Status", "required": false },
+        { "name": "levelOfDetail", "type": "string", "label": "Level of Detail", "required": false },
+        { "name": "languageOfDescription", "type": "string", "label": "Language of Description", "required": false },
+        { "name": "scriptOfDescription", "type": "string", "label": "Script of Description", "required": false }
+      ]
+    },
+    {
+      "name": "Access Points",
+      "type": "supplementary",
+      "description": "Controlled vocabulary terms that provide access to the unit of description. Not part of the 26 core ISAD(G) elements but recommended for discovery. ISAD(G) defers to companion standards for controlled access points.",
+      "parent": "Archival Description",
+      "children": ["Subject Access Point", "Place Access Point", "Name Access Point", "Genre Access Point"],
+      "note": "Recommended. Use controlled vocabularies and authority files where available.",
+      "fields": [
+        { "name": "accessPointsID", "type": "string", "label": "Access Points ID", "required": false }
+      ]
+    },
+    {
+      "name": "Subject Access Point",
+      "type": "access_point",
+      "description": "Topical term for subject-based discovery of the described materials.",
+      "parent": "Access Points",
       "children": [],
       "fields": [
-        { "name": "descriptionDate", "type": "date", "label": "Date of Description" },
-        { "name": "revisionDate", "type": "date", "label": "Revision Date" }
+        { "name": "subjectTerm", "type": "string", "label": "Subject Term", "required": true },
+        { "name": "source", "type": "string", "label": "Authority Source", "required": false },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier", "required": false }
+      ]
+    },
+    {
+      "name": "Place Access Point",
+      "type": "access_point",
+      "description": "Geographic term for place-based discovery of the described materials.",
+      "parent": "Access Points",
+      "children": [],
+      "fields": [
+        { "name": "placeTerm", "type": "string", "label": "Place Term", "required": true },
+        { "name": "source", "type": "string", "label": "Authority Source", "required": false },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier", "required": false }
+      ]
+    },
+    {
+      "name": "Name Access Point",
+      "type": "access_point",
+      "description": "Personal, corporate, or family name as a subject access point for discovery.",
+      "parent": "Access Points",
+      "children": [],
+      "fields": [
+        { "name": "nameTerm", "type": "string", "label": "Name", "required": true },
+        { "name": "nameType", "type": "string", "label": "Name Type", "required": false },
+        { "name": "source", "type": "string", "label": "Authority Source", "required": false },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier", "required": false }
+      ]
+    },
+    {
+      "name": "Genre Access Point",
+      "type": "access_point",
+      "description": "Form or genre term for documentary type-based discovery of the described materials.",
+      "parent": "Access Points",
+      "children": [],
+      "fields": [
+        { "name": "genreTerm", "type": "string", "label": "Genre/Form Term", "required": true },
+        { "name": "source", "type": "string", "label": "Authority Source", "required": false },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier", "required": false }
       ]
     }
   ],
   "levelsOfDescription": {
-    "fonds": "Whole of the records of an organization, family, or individual",
-    "sub-fonds": "Subdivision of a fonds",
-    "series": "Documents arranged in accordance with a filing system or maintained as a unit",
-    "sub-series": "Subdivision of a series",
-    "file": "Organized unit of documents grouped together for current use or preservation",
-    "item": "Smallest intellectually indivisible unit"
+    "fonds": "The whole of the records, regardless of form or medium, organically created and/or accumulated and used by a particular person, family, or corporate body in the course of that creator's activities and functions",
+    "sub-fonds": "A subdivision of a fonds containing a body of related records corresponding to administrative subdivisions in the originating agency or, when that is not possible, to geographical, chronological, functional, or similar groupings",
+    "series": "Documents arranged in accordance with a filing system or maintained as a unit because they result from the same accumulation or filing process, or the same activity",
+    "sub-series": "A subdivision of a series",
+    "file": "An organized unit of documents grouped together either for current use by the creator or in the process of archival arrangement, because they relate to the same subject, activity, or transaction",
+    "item": "The smallest intellectually indivisible archival unit, e.g., a letter, memorandum, report, photograph, sound recording",
+    "collection": "An artificial accumulation of documents assembled on the basis of some common characteristic without regard to the provenance of those documents"
   },
   "dateTypes": {
-    "creation": "Date(s) of creation of the records",
-    "accumulation": "Date(s) records were accumulated",
-    "broadcast": "Date of broadcast",
-    "publication": "Date of publication"
+    "creation": "Date(s) when the records were created",
+    "accumulation": "Date(s) when the records were accumulated over time",
+    "bulk": "Predominant date range of the majority of materials",
+    "inclusive": "Earliest and latest dates of the materials",
+    "broadcast": "Date(s) of broadcast (for audiovisual materials)",
+    "publication": "Date(s) of publication"
   },
   "extentUnits": {
-    "linear_meters": "Linear meters",
-    "cubic_meters": "Cubic meters",
-    "items": "Number of items",
-    "boxes": "Number of boxes",
-    "volumes": "Number of volumes",
-    "files": "Number of files",
+    "linear_metres": "Linear metres of shelf space",
+    "linear_feet": "Linear feet of shelf space",
+    "cubic_metres": "Cubic metres",
+    "items": "Number of individual items",
+    "boxes": "Number of archival boxes",
+    "volumes": "Number of bound volumes",
+    "files": "Number of folders or files",
     "pages": "Number of pages",
-    "megabytes": "Megabytes",
-    "gigabytes": "Gigabytes"
+    "photographs": "Number of photographs",
+    "maps": "Number of maps",
+    "reels": "Number of microfilm or tape reels",
+    "megabytes": "Digital extent in megabytes",
+    "gigabytes": "Digital extent in gigabytes",
+    "terabytes": "Digital extent in terabytes"
   },
   "descriptionAreas": {
-    "area1": "Identity Statement Area (3.1)",
-    "area2": "Context Area (3.2)",
-    "area3": "Content and Structure Area (3.3)",
-    "area4": "Conditions of Access and Use Area (3.4)",
-    "area5": "Allied Materials Area (3.5)",
-    "area6": "Notes Area (3.6)",
-    "area7": "Description Control Area (3.7)"
+    "3.1": "Identity Statement Area — Essential identifying information (5 elements)",
+    "3.2": "Context Area — Origin and custody (4 elements)",
+    "3.3": "Content and Structure Area — Subject matter and arrangement (4 elements)",
+    "3.4": "Conditions of Access and Use Area — Availability (5 elements)",
+    "3.5": "Allied Materials Area — Related materials (4 elements)",
+    "3.6": "Notes Area — Other information (1 element)",
+    "3.7": "Description Control Area — Description provenance (3 elements)"
   },
-  "requiredElements": {
-    "3.1.1": "Reference code",
-    "3.1.2": "Title",
-    "3.1.3": "Date(s)",
-    "3.1.4": "Level of description",
-    "3.1.5": "Extent and medium of the unit of description"
+  "essentialElements": {
+    "3.1.1": "Reference code(s) — REQUIRED for international exchange",
+    "3.1.2": "Title — REQUIRED for international exchange",
+    "3.1.3": "Date(s) — REQUIRED for international exchange",
+    "3.1.4": "Level of description — REQUIRED for international exchange",
+    "3.1.5": "Extent and medium of the unit of description — REQUIRED for international exchange",
+    "3.2.1": "Name of creator(s) — REQUIRED for international exchange if not included in the title"
+  },
+  "creatorTypes": {
+    "corporateBody": "Corporate body or organization",
+    "person": "Individual person",
+    "family": "Family"
+  },
+  "restrictionTypes": {
+    "open": "Unrestricted access",
+    "restricted": "Access restricted by law, regulation, or policy",
+    "closed": "Closed to public access",
+    "conditional": "Access granted under specific conditions",
+    "partiallyRestricted": "Some parts restricted, others open"
+  },
+  "descriptionStatuses": {
+    "draft": "Description is in draft form",
+    "revised": "Description has been revised",
+    "final": "Description is finalized"
+  },
+  "levelsOfDetail": {
+    "minimal": "Minimum elements necessary for identification",
+    "partial": "Selected elements beyond the minimum",
+    "full": "All relevant elements completed"
+  },
+  "companionStandards": {
+    "ISAAR(CPF)": "International Standard Archival Authority Record for Corporate Bodies, Persons, and Families",
+    "ISDF": "International Standard for Describing Functions",
+    "ISDIAH": "International Standard for Describing Institutions with Archival Holdings",
+    "EAD": "Encoded Archival Description (XML encoding)",
+    "DACS": "Describing Archives: A Content Standard (US implementation)",
+    "RAD": "Rules for Archival Description (Canadian implementation)",
+    "MAD": "Manual of Archival Description (UK implementation)"
   }
 }

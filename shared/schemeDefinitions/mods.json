@@ -2,894 +2,1525 @@
   "standard": "MODS",
   "fullName": "Metadata Object Description Schema",
   "reference": "MODS Version 3.8",
-  "description": "Bibliographic element set for description of digital library objects, richer and more specific than Dublin Core",
+  "description": "A bibliographic element set maintained by the Library of Congress that may be used for a variety of purposes, including original resource description and as a simplified version of MARC 21 records. It is richer than Dublin Core, includes a subset of MARC fields, and uses language-based tags rather than numeric codes.",
   "version": "3.8",
   "xsdReference": "http://www.loc.gov/standards/mods/v3/mods-3-8.xsd",
   "url": "https://www.loc.gov/standards/mods/",
   "entities": [
     {
+      "name": "MODS Collection",
+      "type": "root_wrapper",
+      "description": "A wrapper element for grouping multiple MODS records together. Used when a single XML document contains metadata for more than one resource.",
+      "parent": null,
+      "children": ["MODS"],
+      "note": "Optional wrapper. Each child MODS element represents a separate bibliographic record.",
+      "fields": [
+        { "name": "collectionID", "type": "string", "label": "Collection ID", "required": false }
+      ]
+    },
+    {
       "name": "MODS",
       "type": "root_element",
-      "description": "Root element for MODS metadata record",
-      "parent": null,
+      "description": "Root element for a single MODS metadata record. Contains all top-level descriptive elements for a bibliographic resource. The version attribute indicates the MODS schema version used.",
+      "parent": "MODS Collection",
       "children": ["Title Info", "Name", "Type of Resource", "Genre", "Origin Info", "Language", "Physical Description", "Abstract", "Table of Contents", "Target Audience", "Note", "Subject", "Classification", "Related Item", "Identifier", "Location", "Access Condition", "Part", "Extension", "Record Info"],
-      "note": "Top-level container for bibliographic description",
+      "note": "All top-level elements are optional and repeatable. Best practice recommends at least one titleInfo with a title sub-element.",
       "fields": [
-        { "name": "modsID", "type": "string", "label": "MODS ID" },
-        { "name": "version", "type": "string", "label": "MODS Version" }
+        { "name": "modsID", "type": "string", "label": "MODS ID", "required": false },
+        { "name": "version", "type": "string", "label": "MODS Version", "required": true }
       ]
     },
     {
       "name": "Title Info",
       "type": "element",
-      "description": "Title and subtitle information",
+      "description": "A word, phrase, character, or group of characters that constitutes the title of the resource. Includes subtitles and part designations. The type attribute distinguishes alternative, abbreviated, translated, and uniform titles.",
       "parent": "MODS",
-      "children": ["Title", "Subtitle", "Part Number", "Part Name"],
+      "children": ["Title", "Subtitle", "Part Number", "Part Name", "Non Sort"],
+      "note": "Repeatable. Best practice: include at least one titleInfo with a title sub-element. Use type attribute to distinguish title variants.",
       "fields": [
-        { "name": "titleInfoID", "type": "string", "label": "Title Info ID" },
-        { "name": "titleType", "type": "string", "label": "Title Type" },
-        { "name": "usage", "type": "string", "label": "Usage" },
-        { "name": "authority", "type": "string", "label": "Authority" }
+        { "name": "titleInfoID", "type": "string", "label": "Title Info ID", "required": false },
+        { "name": "titleType", "type": "string", "label": "Type (abbreviated, translated, alternative, uniform)", "required": false },
+        { "name": "otherType", "type": "string", "label": "Other Type", "required": false },
+        { "name": "usage", "type": "string", "label": "Usage (primary)", "required": false },
+        { "name": "supplied", "type": "string", "label": "Supplied (yes)", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false },
+        { "name": "nameTitleGroup", "type": "string", "label": "Name Title Group", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "altFormat", "type": "string", "label": "Alt Format URI", "required": false },
+        { "name": "contentType", "type": "string", "label": "Content Type", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Title",
       "type": "title_element",
-      "description": "Main title of the resource",
+      "description": "A word, phrase, character, or group of characters that constitutes the chief title of the resource. This is the primary content of the titleInfo element.",
       "parent": "Title Info",
       "children": [],
       "fields": [
-        { "name": "title", "type": "string", "label": "Title" }
+        { "name": "title", "type": "string", "label": "Title", "required": true }
       ]
     },
     {
       "name": "Subtitle",
       "type": "title_element",
-      "description": "Subtitle of the resource",
+      "description": "The remainder of the title information following the main title. Typically separated by a colon or other punctuation.",
       "parent": "Title Info",
       "children": [],
       "fields": [
-        { "name": "subTitle", "type": "string", "label": "Subtitle" }
+        { "name": "subTitle", "type": "string", "label": "Subtitle", "required": true }
       ]
     },
     {
       "name": "Part Number",
       "type": "title_element",
-      "description": "Number designation for a part",
+      "description": "A part or section number of a title. Used for multipart resources to identify the numeric designation of a part.",
       "parent": "Title Info",
       "children": [],
       "fields": [
-        { "name": "partNumber", "type": "string", "label": "Part Number" }
+        { "name": "partNumber", "type": "string", "label": "Part Number", "required": true }
       ]
     },
     {
       "name": "Part Name",
       "type": "title_element",
-      "description": "Name designation for a part",
+      "description": "A part or section name of a title. Used for multipart resources to identify a named part or section.",
       "parent": "Title Info",
       "children": [],
       "fields": [
-        { "name": "partName", "type": "string", "label": "Part Name" }
+        { "name": "partName", "type": "string", "label": "Part Name", "required": true }
+      ]
+    },
+    {
+      "name": "Non Sort",
+      "type": "title_element",
+      "description": "Characters, including initial articles, that appear at the beginning of a title and should be ignored for indexing and sorting purposes. Introduced in MODS to handle non-filing characters.",
+      "parent": "Title Info",
+      "children": [],
+      "note": "Common values include initial articles such as 'The ', 'A ', 'An ', 'Le ', 'La ', 'Les '. Include trailing space if needed.",
+      "fields": [
+        { "name": "nonSort", "type": "string", "label": "Non-Sort Characters", "required": true },
+        { "name": "xmlSpace", "type": "string", "label": "XML Space (preserve)", "required": false }
       ]
     },
     {
       "name": "Name",
       "type": "element",
-      "description": "Name of person, organization, or event associated with the resource",
+      "description": "The name of a person, organization, family, or event (conference, meeting, etc.) associated with the resource. Used for creators, contributors, and other associated entities.",
       "parent": "MODS",
-      "children": ["Name Part", "Display Form", "Affiliation", "Role", "Description"],
+      "children": ["Name Part", "Display Form", "Affiliation", "Role", "Name Identifier", "Name Description", "Alternative Name"],
+      "note": "Repeatable. Use the type attribute to distinguish personal, corporate, conference, and family names. Use nameTitleGroup to link a name with a related titleInfo.",
       "fields": [
-        { "name": "nameID", "type": "string", "label": "Name ID" },
-        { "name": "nameType", "type": "string", "label": "Name Type" },
-        { "name": "authority", "type": "string", "label": "Authority" },
-        { "name": "authorityURI", "type": "string", "label": "Authority URI" },
-        { "name": "valueURI", "type": "string", "label": "Value URI" }
+        { "name": "nameID", "type": "string", "label": "Name ID", "required": false },
+        { "name": "nameType", "type": "string", "label": "Type (personal, corporate, conference, family)", "required": false },
+        { "name": "usage", "type": "string", "label": "Usage (primary)", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false },
+        { "name": "nameTitleGroup", "type": "string", "label": "Name Title Group", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Name Part",
       "type": "name_element",
-      "description": "Part of a name",
+      "description": "An individual parsed part that together with other name parts makes up the full name. The type attribute distinguishes date, family, given, and terms of address components.",
       "parent": "Name",
       "children": [],
       "fields": [
-        { "name": "namePart", "type": "string", "label": "Name Part" },
-        { "name": "namePartType", "type": "string", "label": "Name Part Type" }
+        { "name": "namePart", "type": "string", "label": "Name Part", "required": true },
+        { "name": "namePartType", "type": "string", "label": "Type (date, family, given, termsOfAddress)", "required": false }
       ]
     },
     {
       "name": "Display Form",
       "type": "name_element",
-      "description": "Display form of the name",
+      "description": "The form of the name intended for display to the user. Used when the display form differs from the structured name parts, such as when showing a complete name string.",
       "parent": "Name",
       "children": [],
       "fields": [
-        { "name": "displayForm", "type": "string", "label": "Display Form" }
+        { "name": "displayForm", "type": "string", "label": "Display Form", "required": true }
       ]
     },
     {
       "name": "Affiliation",
       "type": "name_element",
-      "description": "Affiliation of the named entity",
+      "description": "The name or address of an organization, institution, or other entity with which the named person or corporate body was associated at the time the resource was created.",
       "parent": "Name",
       "children": [],
       "fields": [
-        { "name": "affiliation", "type": "string", "label": "Affiliation" }
+        { "name": "affiliation", "type": "string", "label": "Affiliation", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "Role",
       "type": "name_element",
-      "description": "Role of the named entity",
+      "description": "Container element designating the relationship (role) of the named entity to the resource. Contains one or more roleTerm sub-elements expressing the role in text or code form.",
       "parent": "Name",
       "children": ["Role Term"],
-      "fields": [
-        { "name": "roleID", "type": "string", "label": "Role ID" }
-      ]
+      "fields": []
     },
     {
       "name": "Role Term",
       "type": "role_element",
-      "description": "Specific role designation",
+      "description": "A textual or coded designation of the relationship (e.g. author, editor, illustrator) of the named entity to the resource. Use authority attribute to indicate the controlled vocabulary (e.g. marcrelator).",
       "parent": "Role",
       "children": [],
       "fields": [
-        { "name": "roleTerm", "type": "string", "label": "Role Term" },
-        { "name": "roleType", "type": "string", "label": "Role Type" },
-        { "name": "authority", "type": "string", "label": "Authority" }
+        { "name": "roleTerm", "type": "string", "label": "Role Term", "required": true },
+        { "name": "roleType", "type": "string", "label": "Type (text, code)", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
-      "name": "Description",
+      "name": "Name Identifier",
       "type": "name_element",
-      "description": "Description of the named entity",
+      "description": "A unique standard number, code, or URI associated with the named entity. Used for identifiers such as ORCID, ISNI, or VIAF IDs. Introduced in MODS 3.6.",
+      "parent": "Name",
+      "children": [],
+      "note": "Repeatable. Use the type attribute to indicate the identifier scheme (e.g. orcid, isni, viaf).",
+      "fields": [
+        { "name": "nameIdentifier", "type": "string", "label": "Name Identifier", "required": true },
+        { "name": "identifierType", "type": "string", "label": "Type", "required": false },
+        { "name": "typeURI", "type": "string", "label": "Type URI", "required": false },
+        { "name": "invalid", "type": "string", "label": "Invalid (yes)", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false }
+      ]
+    },
+    {
+      "name": "Name Description",
+      "type": "name_element",
+      "description": "A textual description of the named entity when additional characterization is necessary to identify the entity. Used when other name sub-elements are insufficient.",
       "parent": "Name",
       "children": [],
       "fields": [
-        { "name": "description", "type": "string", "label": "Description" }
+        { "name": "description", "type": "string", "label": "Description", "required": true }
+      ]
+    },
+    {
+      "name": "Alternative Name",
+      "type": "name_element",
+      "description": "An alternative name for the same entity described in the parent name element. Introduced in MODS 3.7 to support variant name forms. Contains the same sub-elements as name.",
+      "parent": "Name",
+      "children": ["Name Part", "Display Form", "Affiliation", "Role", "Name Identifier", "Name Description"],
+      "note": "Repeatable. Use altType attribute to indicate the type of alternative name (e.g. pseudonym, earlier, later).",
+      "fields": [
+        { "name": "altType", "type": "string", "label": "Alternative Name Type", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Type of Resource",
       "type": "element",
-      "description": "General type of content of the resource",
+      "description": "A term that specifies the general type or category of content of the resource. Uses a controlled vocabulary of broad content types. The collection and manuscript attributes are boolean qualifiers.",
       "parent": "MODS",
       "children": [],
+      "note": "Repeatable. Values from a controlled list. Use collection='yes' for aggregate resources and manuscript='yes' for handwritten items.",
       "fields": [
-        { "name": "typeOfResource", "type": "string", "label": "Type of Resource" },
-        { "name": "collection", "type": "string", "label": "Collection" },
-        { "name": "manuscript", "type": "string", "label": "Manuscript" }
+        { "name": "typeOfResource", "type": "string", "label": "Type of Resource", "required": true },
+        { "name": "collection", "type": "string", "label": "Collection (yes)", "required": false },
+        { "name": "manuscript", "type": "string", "label": "Manuscript (yes)", "required": false },
+        { "name": "usage", "type": "string", "label": "Usage (primary)", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false }
       ]
     },
     {
       "name": "Genre",
       "type": "element",
-      "description": "More specific type designation than Type of Resource",
+      "description": "A term that designates a category characterizing a particular style, form, or content of the resource. More specific than typeOfResource, genre reflects the intellectual content rather than physical type.",
       "parent": "MODS",
       "children": [],
+      "note": "Repeatable. Use authority attribute to specify the controlled vocabulary source (e.g. marcgt, lcgft, aat).",
       "fields": [
-        { "name": "genre", "type": "string", "label": "Genre" },
-        { "name": "authority", "type": "string", "label": "Authority" },
-        { "name": "authorityURI", "type": "string", "label": "Authority URI" },
-        { "name": "valueURI", "type": "string", "label": "Value URI" }
+        { "name": "genre", "type": "string", "label": "Genre", "required": true },
+        { "name": "genreType", "type": "string", "label": "Type", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false },
+        { "name": "usage", "type": "string", "label": "Usage (primary)", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Origin Info",
       "type": "element",
-      "description": "Information about the origin of the resource",
+      "description": "Information about the origin of the resource, including place of origin or publication, publisher/originator, and dates associated with the resource's lifecycle. In MODS 3.8, the agent element generalizes publisher.",
       "parent": "MODS",
-      "children": ["Place", "Publisher", "Date Issued", "Date Created", "Date Captured", "Date Modified", "Edition", "Issuance", "Frequency"],
+      "children": ["Place", "Agent", "Publisher", "Date Issued", "Date Created", "Date Captured", "Date Valid", "Date Modified", "Copyright Date", "Date Other", "Edition", "Issuance", "Frequency"],
+      "note": "Repeatable. Use eventType attribute to distinguish publication, production, distribution, manufacture events.",
       "fields": [
-        { "name": "originInfoID", "type": "string", "label": "Origin Info ID" },
-        { "name": "eventType", "type": "string", "label": "Event Type" }
+        { "name": "originInfoID", "type": "string", "label": "Origin Info ID", "required": false },
+        { "name": "eventType", "type": "string", "label": "Event Type", "required": false },
+        { "name": "eventTypeURI", "type": "string", "label": "Event Type URI", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Place",
       "type": "origin_element",
-      "description": "Place associated with the origin of the resource",
+      "description": "A place associated with the origin event of the resource. Contains placeTerm sub-elements expressing the place in text or coded form.",
       "parent": "Origin Info",
       "children": ["Place Term"],
+      "note": "Repeatable. Use the supplied attribute when the place of publication is inferred rather than stated.",
       "fields": [
-        { "name": "placeID", "type": "string", "label": "Place ID" }
+        { "name": "supplied", "type": "string", "label": "Supplied (yes)", "required": false }
       ]
     },
     {
       "name": "Place Term",
       "type": "place_element",
-      "description": "Specific place designation",
+      "description": "A specific place designation expressed in textual or coded form. The type attribute distinguishes text-based place names from coded forms (e.g. MARC country codes).",
       "parent": "Place",
       "children": [],
       "fields": [
-        { "name": "placeTerm", "type": "string", "label": "Place Term" },
-        { "name": "placeTermType", "type": "string", "label": "Place Term Type" },
-        { "name": "authority", "type": "string", "label": "Authority" }
+        { "name": "placeTerm", "type": "string", "label": "Place Term", "required": true },
+        { "name": "placeTermType", "type": "string", "label": "Type (text, code)", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
+      ]
+    },
+    {
+      "name": "Agent",
+      "type": "origin_element",
+      "description": "A generalized element for identifying agents (publishers, manufacturers, distributors, etc.) associated with the origin event. Introduced in MODS 3.8 as a replacement for the publisher element. Contains the same sub-elements as the name element.",
+      "parent": "Origin Info",
+      "children": ["Name Part", "Display Form", "Role"],
+      "note": "New in MODS 3.8. Preferred over publisher element for new records. Use type and role sub-elements to specify the agent's relationship.",
+      "fields": [
+        { "name": "agentType", "type": "string", "label": "Type (personal, corporate, conference, family)", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false },
+        { "name": "nameTitleGroup", "type": "string", "label": "Name Title Group", "required": false },
+        { "name": "usage", "type": "string", "label": "Usage (primary)", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Publisher",
       "type": "origin_element",
-      "description": "Name of the publisher",
+      "description": "The name of the entity that published, printed, distributed, released, issued, or produced the resource. Deprecated in MODS 3.8 in favor of the agent element.",
       "parent": "Origin Info",
       "children": [],
+      "note": "Deprecated in MODS 3.8. Use agent element for new records.",
       "fields": [
-        { "name": "publisher", "type": "string", "label": "Publisher" }
+        { "name": "publisher", "type": "string", "label": "Publisher", "required": true },
+        { "name": "supplied", "type": "string", "label": "Supplied (yes)", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Date Issued",
       "type": "origin_element",
-      "description": "Date of publication or issuance",
+      "description": "The date that the resource was published, released, or issued. For continuing resources, this may include beginning and ending dates.",
       "parent": "Origin Info",
       "children": [],
       "fields": [
-        { "name": "dateIssued", "type": "date", "label": "Date Issued" },
-        { "name": "point", "type": "string", "label": "Point" },
-        { "name": "encoding", "type": "string", "label": "Encoding" },
-        { "name": "qualifier", "type": "string", "label": "Qualifier" }
+        { "name": "dateIssued", "type": "date", "label": "Date Issued", "required": true },
+        { "name": "encoding", "type": "string", "label": "Encoding (w3cdtf, iso8601, marc, edtf, temper)", "required": false },
+        { "name": "point", "type": "string", "label": "Point (start, end)", "required": false },
+        { "name": "keyDate", "type": "string", "label": "Key Date (yes)", "required": false },
+        { "name": "qualifier", "type": "string", "label": "Qualifier (approximate, inferred, questionable)", "required": false },
+        { "name": "calendar", "type": "string", "label": "Calendar", "required": false }
       ]
     },
     {
       "name": "Date Created",
       "type": "origin_element",
-      "description": "Date of creation",
+      "description": "The date of creation of the resource. Distinct from dateIssued, which refers to publication. Used for the date the intellectual content was created.",
       "parent": "Origin Info",
       "children": [],
       "fields": [
-        { "name": "dateCreated", "type": "date", "label": "Date Created" },
-        { "name": "point", "type": "string", "label": "Point" },
-        { "name": "encoding", "type": "string", "label": "Encoding" },
-        { "name": "qualifier", "type": "string", "label": "Qualifier" }
+        { "name": "dateCreated", "type": "date", "label": "Date Created", "required": true },
+        { "name": "encoding", "type": "string", "label": "Encoding (w3cdtf, iso8601, marc, edtf, temper)", "required": false },
+        { "name": "point", "type": "string", "label": "Point (start, end)", "required": false },
+        { "name": "keyDate", "type": "string", "label": "Key Date (yes)", "required": false },
+        { "name": "qualifier", "type": "string", "label": "Qualifier (approximate, inferred, questionable)", "required": false },
+        { "name": "calendar", "type": "string", "label": "Calendar", "required": false }
       ]
     },
     {
       "name": "Date Captured",
       "type": "origin_element",
-      "description": "Date of digitization or other capture",
+      "description": "The date on which the resource was digitized or a subsequent snapshot was taken. Used for recording when a digital capture of an analog resource occurred.",
       "parent": "Origin Info",
       "children": [],
       "fields": [
-        { "name": "dateCaptured", "type": "date", "label": "Date Captured" },
-        { "name": "point", "type": "string", "label": "Point" },
-        { "name": "encoding", "type": "string", "label": "Encoding" }
+        { "name": "dateCaptured", "type": "date", "label": "Date Captured", "required": true },
+        { "name": "encoding", "type": "string", "label": "Encoding (w3cdtf, iso8601, marc, edtf, temper)", "required": false },
+        { "name": "point", "type": "string", "label": "Point (start, end)", "required": false },
+        { "name": "keyDate", "type": "string", "label": "Key Date (yes)", "required": false },
+        { "name": "qualifier", "type": "string", "label": "Qualifier (approximate, inferred, questionable)", "required": false },
+        { "name": "calendar", "type": "string", "label": "Calendar", "required": false }
+      ]
+    },
+    {
+      "name": "Date Valid",
+      "type": "origin_element",
+      "description": "A date in which the content of the resource is valid. Used for resources whose content has a defined period of validity, such as standards, regulations, or datasets.",
+      "parent": "Origin Info",
+      "children": [],
+      "fields": [
+        { "name": "dateValid", "type": "date", "label": "Date Valid", "required": true },
+        { "name": "encoding", "type": "string", "label": "Encoding (w3cdtf, iso8601, marc, edtf, temper)", "required": false },
+        { "name": "point", "type": "string", "label": "Point (start, end)", "required": false },
+        { "name": "keyDate", "type": "string", "label": "Key Date (yes)", "required": false },
+        { "name": "qualifier", "type": "string", "label": "Qualifier (approximate, inferred, questionable)", "required": false },
+        { "name": "calendar", "type": "string", "label": "Calendar", "required": false }
       ]
     },
     {
       "name": "Date Modified",
       "type": "origin_element",
-      "description": "Date of modification",
+      "description": "The date on which the resource was modified or changed. Refers to modifications of the resource itself rather than the metadata record.",
       "parent": "Origin Info",
       "children": [],
       "fields": [
-        { "name": "dateModified", "type": "date", "label": "Date Modified" },
-        { "name": "encoding", "type": "string", "label": "Encoding" }
+        { "name": "dateModified", "type": "date", "label": "Date Modified", "required": true },
+        { "name": "encoding", "type": "string", "label": "Encoding (w3cdtf, iso8601, marc, edtf, temper)", "required": false },
+        { "name": "point", "type": "string", "label": "Point (start, end)", "required": false },
+        { "name": "keyDate", "type": "string", "label": "Key Date (yes)", "required": false },
+        { "name": "qualifier", "type": "string", "label": "Qualifier (approximate, inferred, questionable)", "required": false },
+        { "name": "calendar", "type": "string", "label": "Calendar", "required": false }
+      ]
+    },
+    {
+      "name": "Copyright Date",
+      "type": "origin_element",
+      "description": "A date associated with the copyright of the resource. Distinct from dateIssued which covers publication.",
+      "parent": "Origin Info",
+      "children": [],
+      "fields": [
+        { "name": "copyrightDate", "type": "date", "label": "Copyright Date", "required": true },
+        { "name": "encoding", "type": "string", "label": "Encoding (w3cdtf, iso8601, marc, edtf, temper)", "required": false },
+        { "name": "point", "type": "string", "label": "Point (start, end)", "required": false },
+        { "name": "keyDate", "type": "string", "label": "Key Date (yes)", "required": false },
+        { "name": "qualifier", "type": "string", "label": "Qualifier (approximate, inferred, questionable)", "required": false },
+        { "name": "calendar", "type": "string", "label": "Calendar", "required": false }
+      ]
+    },
+    {
+      "name": "Date Other",
+      "type": "origin_element",
+      "description": "A date associated with the resource that does not fall into another defined date category. The type attribute specifies what kind of date it represents.",
+      "parent": "Origin Info",
+      "children": [],
+      "fields": [
+        { "name": "dateOther", "type": "date", "label": "Date Other", "required": true },
+        { "name": "dateOtherType", "type": "string", "label": "Type", "required": false },
+        { "name": "encoding", "type": "string", "label": "Encoding (w3cdtf, iso8601, marc, edtf, temper)", "required": false },
+        { "name": "point", "type": "string", "label": "Point (start, end)", "required": false },
+        { "name": "keyDate", "type": "string", "label": "Key Date (yes)", "required": false },
+        { "name": "qualifier", "type": "string", "label": "Qualifier (approximate, inferred, questionable)", "required": false },
+        { "name": "calendar", "type": "string", "label": "Calendar", "required": false }
       ]
     },
     {
       "name": "Edition",
       "type": "origin_element",
-      "description": "Edition statement",
+      "description": "Information identifying the version or edition of the resource. May include designation such as 'First edition', 'Version 2.0', etc.",
       "parent": "Origin Info",
       "children": [],
       "fields": [
-        { "name": "edition", "type": "string", "label": "Edition" }
+        { "name": "edition", "type": "string", "label": "Edition", "required": true },
+        { "name": "supplied", "type": "string", "label": "Supplied (yes)", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Issuance",
       "type": "origin_element",
-      "description": "Mode of issuance",
+      "description": "A term that designates how the resource is issued or published. Uses a controlled vocabulary: monographic, single unit, multipart monograph, continuing, serial, integrating resource.",
       "parent": "Origin Info",
       "children": [],
       "fields": [
-        { "name": "issuance", "type": "string", "label": "Issuance" }
+        { "name": "issuance", "type": "string", "label": "Issuance", "required": true }
       ]
     },
     {
       "name": "Frequency",
       "type": "origin_element",
-      "description": "Frequency of publication",
+      "description": "The publication frequency of a continuing resource in textual form (e.g. monthly, annual, irregular). Use authority attribute to reference a controlled vocabulary.",
       "parent": "Origin Info",
       "children": [],
       "fields": [
-        { "name": "frequency", "type": "string", "label": "Frequency" },
-        { "name": "authority", "type": "string", "label": "Authority" }
+        { "name": "frequency", "type": "string", "label": "Frequency", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "Language",
       "type": "element",
-      "description": "Language of the content",
+      "description": "The language of the intellectual content of the resource. Contains languageTerm and/or scriptTerm sub-elements. The objectPart attribute designates which part of the resource uses the specified language.",
       "parent": "MODS",
       "children": ["Language Term", "Script Term"],
+      "note": "Repeatable. Use separate language elements for multilingual resources.",
       "fields": [
-        { "name": "languageID", "type": "string", "label": "Language ID" }
+        { "name": "languageID", "type": "string", "label": "Language ID", "required": false },
+        { "name": "objectPart", "type": "string", "label": "Object Part", "required": false },
+        { "name": "usage", "type": "string", "label": "Usage (primary)", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Language Term",
       "type": "language_element",
-      "description": "Specific language designation",
+      "description": "Contains the language of the resource expressed in textual or coded form. The type attribute distinguishes between text (e.g. 'English') and code (e.g. 'eng'). Use authority to specify the code source.",
       "parent": "Language",
       "children": [],
       "fields": [
-        { "name": "languageTerm", "type": "string", "label": "Language Term" },
-        { "name": "languageTermType", "type": "string", "label": "Language Term Type" },
-        { "name": "authority", "type": "string", "label": "Authority" }
+        { "name": "languageTerm", "type": "string", "label": "Language Term", "required": true },
+        { "name": "languageTermType", "type": "string", "label": "Type (text, code)", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "Script Term",
       "type": "language_element",
-      "description": "Script designation",
+      "description": "Contains the script used in the resource expressed in textual or coded form. Uses ISO 15924 script codes. The type attribute distinguishes between text and code forms.",
       "parent": "Language",
       "children": [],
       "fields": [
-        { "name": "scriptTerm", "type": "string", "label": "Script Term" },
-        { "name": "authority", "type": "string", "label": "Authority" }
+        { "name": "scriptTerm", "type": "string", "label": "Script Term", "required": true },
+        { "name": "scriptTermType", "type": "string", "label": "Type (text, code)", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "Physical Description",
       "type": "element",
-      "description": "Physical characteristics of the resource",
+      "description": "Information about the physical characteristics of the resource, including form, extent, MIME type, digital origin, and reformatting quality. Contains sub-elements for specific physical attributes.",
       "parent": "MODS",
-      "children": ["Form", "Extent", "Digital Origin", "Internet Media Type", "Note"],
+      "children": ["Form", "Reformatting Quality", "Internet Media Type", "Extent", "Digital Origin"],
+      "note": "Repeatable. Contains sub-elements only; no direct text content.",
       "fields": [
-        { "name": "physicalDescriptionID", "type": "string", "label": "Physical Description ID" }
+        { "name": "physicalDescriptionID", "type": "string", "label": "Physical Description ID", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Form",
       "type": "physical_element",
-      "description": "Physical or digital form of the resource",
+      "description": "A designation of a particular physical presentation of a resource, including the physical form or medium of material. The type attribute can distinguish material from technique.",
       "parent": "Physical Description",
       "children": [],
       "fields": [
-        { "name": "form", "type": "string", "label": "Form" },
-        { "name": "authority", "type": "string", "label": "Authority" }
+        { "name": "form", "type": "string", "label": "Form", "required": true },
+        { "name": "formType", "type": "string", "label": "Type (material, technique)", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
-      "name": "Extent",
+      "name": "Reformatting Quality",
       "type": "physical_element",
-      "description": "Statement of size or duration",
+      "description": "An assessment of the quality of the reformatted version of the resource relative to its intended use. Uses a controlled vocabulary: access, preservation, replacement.",
       "parent": "Physical Description",
       "children": [],
+      "note": "Controlled values: access (suitable for viewing), preservation (suitable for long-term retention), replacement (suitable as a substitute for the original).",
       "fields": [
-        { "name": "extent", "type": "string", "label": "Extent" },
-        { "name": "unit", "type": "string", "label": "Unit" }
-      ]
-    },
-    {
-      "name": "Digital Origin",
-      "type": "physical_element",
-      "description": "Method by which resource was digitized or created",
-      "parent": "Physical Description",
-      "children": [],
-      "fields": [
-        { "name": "digitalOrigin", "type": "string", "label": "Digital Origin" }
+        { "name": "reformattingQuality", "type": "string", "label": "Reformatting Quality (access, preservation, replacement)", "required": true }
       ]
     },
     {
       "name": "Internet Media Type",
       "type": "physical_element",
-      "description": "MIME type",
+      "description": "The electronic format type of the resource expressed as an IANA MIME type (e.g. application/pdf, image/jpeg, text/html).",
       "parent": "Physical Description",
       "children": [],
       "fields": [
-        { "name": "internetMediaType", "type": "string", "label": "Internet Media Type" }
+        { "name": "internetMediaType", "type": "string", "label": "Internet Media Type", "required": true }
+      ]
+    },
+    {
+      "name": "Extent",
+      "type": "physical_element",
+      "description": "A statement of the physical extent of the resource in terms of units of measurement and material (e.g. '300 pages', '1 sound disc', '45 minutes'). The unit attribute specifies the unit of measurement.",
+      "parent": "Physical Description",
+      "children": [],
+      "fields": [
+        { "name": "extent", "type": "string", "label": "Extent", "required": true },
+        { "name": "unit", "type": "string", "label": "Unit", "required": false },
+        { "name": "supplied", "type": "string", "label": "Supplied (yes)", "required": false }
+      ]
+    },
+    {
+      "name": "Digital Origin",
+      "type": "physical_element",
+      "description": "The method by which the resource achieved digital form. Uses a controlled vocabulary to distinguish born-digital resources from those digitized from various analog sources.",
+      "parent": "Physical Description",
+      "children": [],
+      "fields": [
+        { "name": "digitalOrigin", "type": "string", "label": "Digital Origin", "required": true }
       ]
     },
     {
       "name": "Abstract",
       "type": "element",
-      "description": "Summary of the content",
+      "description": "A summary of the content of the resource. May include a description, annotation, scope and content note, or other form of content summary.",
       "parent": "MODS",
       "children": [],
+      "note": "Repeatable. Use type attribute to distinguish different kinds of summaries.",
       "fields": [
-        { "name": "abstract", "type": "string", "label": "Abstract" },
-        { "name": "abstractType", "type": "string", "label": "Abstract Type" }
+        { "name": "abstract", "type": "string", "label": "Abstract", "required": true },
+        { "name": "abstractType", "type": "string", "label": "Type", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "shareable", "type": "string", "label": "Shareable (no)", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "altFormat", "type": "string", "label": "Alt Format URI", "required": false },
+        { "name": "contentType", "type": "string", "label": "Content Type", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Table of Contents",
       "type": "element",
-      "description": "Table of contents or list of sections",
+      "description": "A description of the contents of the resource, such as a table of contents, list of parts or sections, or other structured listing of contents.",
       "parent": "MODS",
       "children": [],
+      "note": "Repeatable. Contents may be recorded as unstructured text or as a formatted list.",
       "fields": [
-        { "name": "tableOfContents", "type": "string", "label": "Table of Contents" },
-        { "name": "displayLabel", "type": "string", "label": "Display Label" }
+        { "name": "tableOfContents", "type": "string", "label": "Table of Contents", "required": true },
+        { "name": "tableOfContentsType", "type": "string", "label": "Type", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "shareable", "type": "string", "label": "Shareable (no)", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "altFormat", "type": "string", "label": "Alt Format URI", "required": false },
+        { "name": "contentType", "type": "string", "label": "Content Type", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Target Audience",
       "type": "element",
-      "description": "Intended audience",
+      "description": "A description of the intellectual level, interest level, or special characteristics of the audience for which the resource is intended.",
       "parent": "MODS",
       "children": [],
+      "note": "Repeatable. Use authority attribute to specify controlled vocabulary source (e.g. marctarget).",
       "fields": [
-        { "name": "targetAudience", "type": "string", "label": "Target Audience" },
-        { "name": "authority", "type": "string", "label": "Authority" }
+        { "name": "targetAudience", "type": "string", "label": "Target Audience", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false }
       ]
     },
     {
       "name": "Note",
       "type": "element",
-      "description": "General note",
+      "description": "General textual information about the resource that does not fit in other more specific elements. The type attribute categorizes the note.",
       "parent": "MODS",
       "children": [],
+      "note": "Repeatable. Also used as a sub-element within physicalDescription and location/copyInformation.",
       "fields": [
-        { "name": "note", "type": "string", "label": "Note" },
-        { "name": "noteType", "type": "string", "label": "Note Type" },
-        { "name": "displayLabel", "type": "string", "label": "Display Label" }
+        { "name": "note", "type": "string", "label": "Note", "required": true },
+        { "name": "noteType", "type": "string", "label": "Type", "required": false },
+        { "name": "typeURI", "type": "string", "label": "Type URI", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "altFormat", "type": "string", "label": "Alt Format URI", "required": false },
+        { "name": "contentType", "type": "string", "label": "Content Type", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Subject",
       "type": "element",
-      "description": "Subject term or phrase",
+      "description": "A term or phrase representing the primary topic(s) of the resource. Contains sub-elements for different types of subject terms including topical, geographic, temporal, name, title, and genre headings.",
       "parent": "MODS",
-      "children": ["Topic", "Geographic", "Temporal", "Title Info", "Name", "Genre", "Hierarchical Geographic", "Cartographics", "Occupation"],
+      "children": ["Topic", "Geographic", "Temporal", "Title Info", "Name", "Genre", "Hierarchical Geographic", "Geographic Code", "Cartographics", "Occupation"],
+      "note": "Repeatable. Use authority attribute to specify the subject heading system (e.g. lcsh, mesh, fast).",
       "fields": [
-        { "name": "subjectID", "type": "string", "label": "Subject ID" },
-        { "name": "authority", "type": "string", "label": "Authority" },
-        { "name": "authorityURI", "type": "string", "label": "Authority URI" }
+        { "name": "subjectID", "type": "string", "label": "Subject ID", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false },
+        { "name": "usage", "type": "string", "label": "Usage (primary)", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Topic",
       "type": "subject_element",
-      "description": "Topical subject term",
+      "description": "A topical subject term that does not fit into the geographic, temporal, name, title, or other subject categories.",
       "parent": "Subject",
       "children": [],
       "fields": [
-        { "name": "topic", "type": "string", "label": "Topic" },
-        { "name": "authority", "type": "string", "label": "Authority" }
+        { "name": "topic", "type": "string", "label": "Topic", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "Geographic",
       "type": "subject_element",
-      "description": "Geographic subject term",
+      "description": "A simple geographic subject term expressed as a single string. For structured hierarchical geographic data, use hierarchicalGeographic instead.",
       "parent": "Subject",
       "children": [],
       "fields": [
-        { "name": "geographic", "type": "string", "label": "Geographic" },
-        { "name": "authority", "type": "string", "label": "Authority" }
+        { "name": "geographic", "type": "string", "label": "Geographic", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "Temporal",
       "type": "subject_element",
-      "description": "Temporal subject term",
+      "description": "A chronological or temporal subject term used to describe the time period covered or addressed by the resource.",
       "parent": "Subject",
       "children": [],
       "fields": [
-        { "name": "temporal", "type": "string", "label": "Temporal" },
-        { "name": "encoding", "type": "string", "label": "Encoding" }
+        { "name": "temporal", "type": "string", "label": "Temporal", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false },
+        { "name": "encoding", "type": "string", "label": "Encoding", "required": false },
+        { "name": "point", "type": "string", "label": "Point (start, end)", "required": false },
+        { "name": "keyDate", "type": "string", "label": "Key Date (yes)", "required": false },
+        { "name": "qualifier", "type": "string", "label": "Qualifier (approximate, inferred, questionable)", "required": false },
+        { "name": "calendar", "type": "string", "label": "Calendar", "required": false }
+      ]
+    },
+    {
+      "name": "Geographic Code",
+      "type": "subject_element",
+      "description": "A geographic area code used as a subject access point. Typically uses MARC Geographic Area Codes or ISO 3166 country codes.",
+      "parent": "Subject",
+      "children": [],
+      "fields": [
+        { "name": "geographicCode", "type": "string", "label": "Geographic Code", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "Hierarchical Geographic",
       "type": "subject_element",
-      "description": "Hierarchical geographic subject",
+      "description": "A geographic name given in a hierarchical form, parsed into individual geographic components from broadest to most specific level.",
       "parent": "Subject",
-      "children": ["Continent", "Country", "Region", "State", "County", "City", "City Section", "Area"],
+      "children": ["Continent", "Country", "Region", "State", "Territory", "County", "City", "City Section", "Island", "Area", "Extraterrestrial Area"],
+      "note": "Components appear in hierarchical order. Use authority attribute to reference a geographic thesaurus.",
       "fields": [
-        { "name": "hierarchicalGeographicID", "type": "string", "label": "Hierarchical Geographic ID" }
+        { "name": "hierarchicalGeographicID", "type": "string", "label": "Hierarchical Geographic ID", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "Continent",
       "type": "geographic_element",
-      "description": "Continent name",
+      "description": "The name of a continent in a hierarchical geographic subject heading.",
       "parent": "Hierarchical Geographic",
       "children": [],
       "fields": [
-        { "name": "continent", "type": "string", "label": "Continent" }
+        { "name": "continent", "type": "string", "label": "Continent", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "Country",
       "type": "geographic_element",
-      "description": "Country name",
+      "description": "The name of a country in a hierarchical geographic subject heading.",
       "parent": "Hierarchical Geographic",
       "children": [],
       "fields": [
-        { "name": "country", "type": "string", "label": "Country" }
+        { "name": "country", "type": "string", "label": "Country", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "Region",
       "type": "geographic_element",
-      "description": "Region name",
+      "description": "The name of a region in a hierarchical geographic subject heading. The regionType attribute can qualify the kind of region.",
       "parent": "Hierarchical Geographic",
       "children": [],
       "fields": [
-        { "name": "region", "type": "string", "label": "Region" }
+        { "name": "region", "type": "string", "label": "Region", "required": true },
+        { "name": "regionType", "type": "string", "label": "Region Type", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "State",
       "type": "geographic_element",
-      "description": "State or province name",
+      "description": "The name of a state or province in a hierarchical geographic subject heading. The stateType attribute can qualify the kind of administrative unit.",
       "parent": "Hierarchical Geographic",
       "children": [],
       "fields": [
-        { "name": "state", "type": "string", "label": "State" }
+        { "name": "state", "type": "string", "label": "State", "required": true },
+        { "name": "stateType", "type": "string", "label": "State Type", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
+      ]
+    },
+    {
+      "name": "Territory",
+      "type": "geographic_element",
+      "description": "The name of a territory in a hierarchical geographic subject heading. Used for political territories that are not states or provinces.",
+      "parent": "Hierarchical Geographic",
+      "children": [],
+      "fields": [
+        { "name": "territory", "type": "string", "label": "Territory", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "County",
       "type": "geographic_element",
-      "description": "County name",
+      "description": "The name of a county or equivalent administrative division in a hierarchical geographic subject heading.",
       "parent": "Hierarchical Geographic",
       "children": [],
       "fields": [
-        { "name": "county", "type": "string", "label": "County" }
+        { "name": "county", "type": "string", "label": "County", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "City",
       "type": "geographic_element",
-      "description": "City name",
+      "description": "The name of a city or town in a hierarchical geographic subject heading.",
       "parent": "Hierarchical Geographic",
       "children": [],
       "fields": [
-        { "name": "city", "type": "string", "label": "City" }
+        { "name": "city", "type": "string", "label": "City", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "City Section",
       "type": "geographic_element",
-      "description": "Section of city",
+      "description": "The name of a section or district of a city in a hierarchical geographic subject heading. The citySectionType attribute qualifies the kind of city section.",
       "parent": "Hierarchical Geographic",
       "children": [],
       "fields": [
-        { "name": "citySection", "type": "string", "label": "City Section" }
+        { "name": "citySection", "type": "string", "label": "City Section", "required": true },
+        { "name": "citySectionType", "type": "string", "label": "City Section Type", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
+      ]
+    },
+    {
+      "name": "Island",
+      "type": "geographic_element",
+      "description": "The name of an island in a hierarchical geographic subject heading.",
+      "parent": "Hierarchical Geographic",
+      "children": [],
+      "fields": [
+        { "name": "island", "type": "string", "label": "Island", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "Area",
       "type": "geographic_element",
-      "description": "General area designation",
+      "description": "A general geographic area designation that does not fit another hierarchical geographic category. The areaType attribute qualifies the kind of area.",
       "parent": "Hierarchical Geographic",
       "children": [],
       "fields": [
-        { "name": "area", "type": "string", "label": "Area" }
+        { "name": "area", "type": "string", "label": "Area", "required": true },
+        { "name": "areaType", "type": "string", "label": "Area Type", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
+      ]
+    },
+    {
+      "name": "Extraterrestrial Area",
+      "type": "geographic_element",
+      "description": "The name of an extraterrestrial area (e.g. planet, satellite, asteroid) in a hierarchical geographic subject heading.",
+      "parent": "Hierarchical Geographic",
+      "children": [],
+      "fields": [
+        { "name": "extraterrestrialArea", "type": "string", "label": "Extraterrestrial Area", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "Cartographics",
       "type": "subject_element",
-      "description": "Cartographic data",
+      "description": "Cartographic data such as scale, projection, and coordinates, used to describe the spatial characteristics of the resource.",
       "parent": "Subject",
       "children": ["Scale", "Projection", "Coordinates"],
       "fields": [
-        { "name": "cartographicsID", "type": "string", "label": "Cartographics ID" }
+        { "name": "cartographicsID", "type": "string", "label": "Cartographics ID", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "Scale",
       "type": "cartographic_element",
-      "description": "Map scale",
+      "description": "The ratio of distances on a map to actual distances (e.g. '1:24,000').",
       "parent": "Cartographics",
       "children": [],
       "fields": [
-        { "name": "scale", "type": "string", "label": "Scale" }
+        { "name": "scale", "type": "string", "label": "Scale", "required": true }
       ]
     },
     {
       "name": "Projection",
       "type": "cartographic_element",
-      "description": "Map projection",
+      "description": "The method of representing the earth's surface on a flat map (e.g. 'Mercator', 'transverse Mercator').",
       "parent": "Cartographics",
       "children": [],
       "fields": [
-        { "name": "projection", "type": "string", "label": "Projection" }
+        { "name": "projection", "type": "string", "label": "Projection", "required": true }
       ]
     },
     {
       "name": "Coordinates",
       "type": "cartographic_element",
-      "description": "Cartographic coordinates",
+      "description": "The geographic coordinates of the area covered by the resource, typically expressed as bounding box coordinates.",
       "parent": "Cartographics",
       "children": [],
       "fields": [
-        { "name": "coordinates", "type": "string", "label": "Coordinates" }
+        { "name": "coordinates", "type": "string", "label": "Coordinates", "required": true }
       ]
     },
     {
       "name": "Occupation",
       "type": "subject_element",
-      "description": "Occupation subject term",
+      "description": "An occupation subject term. Used when the content of the resource is about or intended for persons in a specific occupation.",
       "parent": "Subject",
       "children": [],
       "fields": [
-        { "name": "occupation", "type": "string", "label": "Occupation" },
-        { "name": "authority", "type": "string", "label": "Authority" }
+        { "name": "occupation", "type": "string", "label": "Occupation", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "Classification",
       "type": "element",
-      "description": "Classification code",
+      "description": "A designation applied to a resource that indicates the subject by applying a formal system of coding and organizing resources. The authority attribute identifies the classification scheme (e.g. lcc, ddc, udc).",
       "parent": "MODS",
       "children": [],
+      "note": "Repeatable. Use separate classification elements for different schemes.",
       "fields": [
-        { "name": "classification", "type": "string", "label": "Classification" },
-        { "name": "authority", "type": "string", "label": "Authority" },
-        { "name": "edition", "type": "string", "label": "Edition" }
+        { "name": "classification", "type": "string", "label": "Classification", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false },
+        { "name": "edition", "type": "string", "label": "Edition", "required": false },
+        { "name": "usage", "type": "string", "label": "Usage (primary)", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "generator", "type": "string", "label": "Generator", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Related Item",
       "type": "element",
-      "description": "Information about related resources",
+      "description": "Information that identifies other resources related to the one being described. May contain any MODS top-level element as a sub-element to describe the related resource. The type attribute specifies the nature of the relationship.",
       "parent": "MODS",
       "children": ["MODS"],
-      "note": "Can contain full MODS record",
+      "note": "Repeatable. Can contain a full MODS record describing the related item. Use of type or otherType attribute is strongly recommended.",
       "fields": [
-        { "name": "relatedItemID", "type": "string", "label": "Related Item ID" },
-        { "name": "relationType", "type": "string", "label": "Relation Type" },
-        { "name": "displayLabel", "type": "string", "label": "Display Label" }
+        { "name": "relatedItemID", "type": "string", "label": "Related Item ID", "required": false },
+        { "name": "relationType", "type": "string", "label": "Type", "required": false },
+        { "name": "otherType", "type": "string", "label": "Other Type", "required": false },
+        { "name": "otherTypeAuth", "type": "string", "label": "Other Type Authority", "required": false },
+        { "name": "otherTypeAuthURI", "type": "string", "label": "Other Type Authority URI", "required": false },
+        { "name": "otherTypeURI", "type": "string", "label": "Other Type URI", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false }
       ]
     },
     {
       "name": "Identifier",
       "type": "element",
-      "description": "Standard identifier for the resource",
+      "description": "A unique standard number or code that distinctly identifies the resource. The type attribute specifies the identifier scheme (e.g. doi, isbn, issn, uri, lccn).",
       "parent": "MODS",
       "children": [],
+      "note": "Repeatable. Use the invalid attribute set to 'yes' for canceled or invalid identifiers.",
       "fields": [
-        { "name": "identifier", "type": "string", "label": "Identifier" },
-        { "name": "identifierType", "type": "string", "label": "Identifier Type" },
-        { "name": "displayLabel", "type": "string", "label": "Display Label" }
+        { "name": "identifier", "type": "string", "label": "Identifier", "required": true },
+        { "name": "identifierType", "type": "string", "label": "Type", "required": false },
+        { "name": "typeURI", "type": "string", "label": "Type URI", "required": false },
+        { "name": "invalid", "type": "string", "label": "Invalid (yes)", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Location",
       "type": "element",
-      "description": "Location information",
+      "description": "Information about the institution or repository holding the resource, the physical location of the resource, and/or the electronic location in the form of a URL.",
       "parent": "MODS",
-      "children": ["Physical Location", "URL", "Holding Simple"],
+      "children": ["Physical Location", "Shelf Locator", "URL", "Holding Simple", "Holding External"],
+      "note": "Repeatable. Contains sub-elements for physical and electronic locations as well as holdings data.",
       "fields": [
-        { "name": "locationID", "type": "string", "label": "Location ID" }
+        { "name": "locationID", "type": "string", "label": "Location ID", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Physical Location",
       "type": "location_element",
-      "description": "Physical location of the resource",
+      "description": "The name of the institution or repository holding the resource, or the physical location of a specific copy. The type attribute can specify current, discovery, former, or creation location.",
       "parent": "Location",
       "children": [],
       "fields": [
-        { "name": "physicalLocation", "type": "string", "label": "Physical Location" },
-        { "name": "authority", "type": "string", "label": "Authority" }
+        { "name": "physicalLocation", "type": "string", "label": "Physical Location", "required": true },
+        { "name": "locationType", "type": "string", "label": "Type (current, discovery, former, creation)", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false }
+      ]
+    },
+    {
+      "name": "Shelf Locator",
+      "type": "location_element",
+      "description": "A shelfmark or other shelving designation indicating the specific location of the resource within a repository.",
+      "parent": "Location",
+      "children": [],
+      "fields": [
+        { "name": "shelfLocator", "type": "string", "label": "Shelf Locator", "required": true },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "URL",
       "type": "location_element",
-      "description": "URL for electronic access",
+      "description": "The Uniform Resource Location (URL) providing electronic access to the resource. The access attribute specifies whether it is a preview, raw object, or object in context.",
       "parent": "Location",
       "children": [],
       "fields": [
-        { "name": "url", "type": "string", "label": "URL" },
-        { "name": "usage", "type": "string", "label": "Usage" },
-        { "name": "access", "type": "string", "label": "Access" }
+        { "name": "url", "type": "string", "label": "URL", "required": true },
+        { "name": "usage", "type": "string", "label": "Usage (primary display, primary)", "required": false },
+        { "name": "access", "type": "string", "label": "Access (preview, raw object, object in context)", "required": false },
+        { "name": "dateLastAccessed", "type": "string", "label": "Date Last Accessed", "required": false },
+        { "name": "note", "type": "string", "label": "Note", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false }
       ]
     },
     {
       "name": "Holding Simple",
       "type": "location_element",
-      "description": "Simple holdings information",
+      "description": "A container for summary holdings information about a copy of the resource held at a specific location. Contains copyInformation sub-elements.",
       "parent": "Location",
       "children": ["Copy Information"],
-      "fields": [
-        { "name": "holdingSimpleID", "type": "string", "label": "Holding Simple ID" }
-      ]
+      "fields": []
     },
     {
       "name": "Copy Information",
       "type": "holdings_element",
-      "description": "Information about specific copy",
+      "description": "Information about a specific copy of the resource, including its form, sub-location, shelf locator, electronic locator, notes, enumeration, and identifiers.",
       "parent": "Holding Simple",
+      "children": ["Enumeration and Chronology", "Item Identifier"],
+      "fields": [
+        { "name": "form", "type": "string", "label": "Form", "required": false },
+        { "name": "subLocation", "type": "string", "label": "Sub-Location", "required": false },
+        { "name": "shelfLocator", "type": "string", "label": "Shelf Locator", "required": false },
+        { "name": "electronicLocator", "type": "string", "label": "Electronic Locator", "required": false },
+        { "name": "note", "type": "string", "label": "Note", "required": false }
+      ]
+    },
+    {
+      "name": "Enumeration and Chronology",
+      "type": "holdings_element",
+      "description": "Identification of the parts of a multipart resource held at the location. Uses unitType to distinguish basic bibliographic unit (1), supplementary material (2), and indexes (3).",
+      "parent": "Copy Information",
       "children": [],
       "fields": [
-        { "name": "form", "type": "string", "label": "Form" },
-        { "name": "subLocation", "type": "string", "label": "Sub-Location" },
-        { "name": "shelfLocator", "type": "string", "label": "Shelf Locator" },
-        { "name": "electronicLocator", "type": "string", "label": "Electronic Locator" }
+        { "name": "enumerationAndChronology", "type": "string", "label": "Enumeration and Chronology", "required": true },
+        { "name": "unitType", "type": "string", "label": "Unit Type (1, 2, 3)", "required": false }
       ]
+    },
+    {
+      "name": "Item Identifier",
+      "type": "holdings_element",
+      "description": "A unique standard number or code identifying a specific copy of the resource. The type attribute specifies the identifier scheme.",
+      "parent": "Copy Information",
+      "children": [],
+      "fields": [
+        { "name": "itemIdentifier", "type": "string", "label": "Item Identifier", "required": true },
+        { "name": "identifierType", "type": "string", "label": "Type", "required": false }
+      ]
+    },
+    {
+      "name": "Holding External",
+      "type": "location_element",
+      "description": "A container for holdings information using an externally defined schema such as ISO 20775 (Holdings Schema). Allows embedding non-MODS holdings data.",
+      "parent": "Location",
+      "children": [],
+      "note": "Contains XML from external schemas. Use when holdingSimple is insufficient for complex holdings data.",
+      "fields": []
     },
     {
       "name": "Access Condition",
       "type": "element",
-      "description": "Information about access or use restrictions",
+      "description": "Information about restrictions imposed on access to or use of the resource. The type attribute distinguishes between restriction on access and use and reproduction terms.",
       "parent": "MODS",
       "children": [],
+      "note": "Repeatable. There is no controlled list of types, but suggested values include 'restriction on access' and 'use and reproduction'.",
       "fields": [
-        { "name": "accessCondition", "type": "string", "label": "Access Condition" },
-        { "name": "accessConditionType", "type": "string", "label": "Access Condition Type" }
+        { "name": "accessCondition", "type": "string", "label": "Access Condition", "required": true },
+        { "name": "accessConditionType", "type": "string", "label": "Type (restriction on access, use and reproduction)", "required": false },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "altFormat", "type": "string", "label": "Alt Format URI", "required": false },
+        { "name": "contentType", "type": "string", "label": "Content Type", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Part",
       "type": "element",
-      "description": "Information about a part of the resource",
+      "description": "Information about a physical or logical part of the resource, such as a volume, issue, or chapter. Used to describe enumeration and pagination of component parts.",
       "parent": "MODS",
-      "children": ["Detail", "Extent", "Date", "Text"],
+      "children": ["Detail", "Part Extent", "Part Date", "Text"],
+      "note": "Repeatable. Use type attribute to categorize the part and order attribute for sequencing.",
       "fields": [
-        { "name": "partID", "type": "string", "label": "Part ID" },
-        { "name": "partType", "type": "string", "label": "Part Type" },
-        { "name": "order", "type": "number", "label": "Order" }
+        { "name": "partID", "type": "string", "label": "Part ID", "required": false },
+        { "name": "partType", "type": "string", "label": "Type", "required": false },
+        { "name": "order", "type": "number", "label": "Order", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Detail",
       "type": "part_element",
-      "description": "Detailed part information",
+      "description": "Detailed enumeration information about a part, including number, caption, and title. The type attribute specifies the kind of detail (e.g. volume, issue, chapter, page).",
       "parent": "Part",
       "children": [],
       "fields": [
-        { "name": "detailType", "type": "string", "label": "Detail Type" },
-        { "name": "number", "type": "string", "label": "Number" },
-        { "name": "caption", "type": "string", "label": "Caption" },
-        { "name": "title", "type": "string", "label": "Title" }
+        { "name": "detailType", "type": "string", "label": "Type (volume, issue, chapter, page, etc.)", "required": false },
+        { "name": "level", "type": "number", "label": "Level", "required": false },
+        { "name": "number", "type": "string", "label": "Number", "required": false },
+        { "name": "caption", "type": "string", "label": "Caption", "required": false },
+        { "name": "title", "type": "string", "label": "Title", "required": false }
+      ]
+    },
+    {
+      "name": "Part Extent",
+      "type": "part_element",
+      "description": "The extent of a part expressed as a range with start and end values, a total count, or a textual list. Distinct from the physicalDescription extent element.",
+      "parent": "Part",
+      "children": [],
+      "note": "The unit attribute specifies the unit of measurement (e.g. pages, minutes).",
+      "fields": [
+        { "name": "unit", "type": "string", "label": "Unit", "required": false },
+        { "name": "start", "type": "string", "label": "Start", "required": false },
+        { "name": "end", "type": "string", "label": "End", "required": false },
+        { "name": "total", "type": "number", "label": "Total", "required": false },
+        { "name": "list", "type": "string", "label": "List", "required": false }
+      ]
+    },
+    {
+      "name": "Part Date",
+      "type": "part_element",
+      "description": "A date associated with a specific part of the resource. Uses the same date attributes as other MODS date elements.",
+      "parent": "Part",
+      "children": [],
+      "fields": [
+        { "name": "date", "type": "date", "label": "Date", "required": true },
+        { "name": "encoding", "type": "string", "label": "Encoding (w3cdtf, iso8601, marc, edtf, temper)", "required": false },
+        { "name": "point", "type": "string", "label": "Point (start, end)", "required": false },
+        { "name": "keyDate", "type": "string", "label": "Key Date (yes)", "required": false },
+        { "name": "qualifier", "type": "string", "label": "Qualifier (approximate, inferred, questionable)", "required": false },
+        { "name": "calendar", "type": "string", "label": "Calendar", "required": false }
       ]
     },
     {
       "name": "Text",
       "type": "part_element",
-      "description": "Textual designation of part",
+      "description": "A textual designation of a part of the resource that cannot be adequately expressed using the detail or extent sub-elements.",
       "parent": "Part",
       "children": [],
       "fields": [
-        { "name": "text", "type": "string", "label": "Text" },
-        { "name": "displayLabel", "type": "string", "label": "Display Label" }
+        { "name": "text", "type": "string", "label": "Text", "required": true },
+        { "name": "textType", "type": "string", "label": "Type", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false }
       ]
     },
     {
       "name": "Extension",
       "type": "element",
-      "description": "Extension wrapper for additional metadata",
+      "description": "A wrapper element for additional metadata not covered by the MODS schema. Used to embed metadata from other schemas or local extensions without violating MODS validity.",
       "parent": "MODS",
       "children": [],
-      "note": "Container for non-MODS metadata",
+      "note": "Repeatable. Content may be from any namespace. Used to extend MODS with local or community-specific metadata.",
       "fields": [
-        { "name": "extensionID", "type": "string", "label": "Extension ID" },
-        { "name": "displayLabel", "type": "string", "label": "Display Label" }
+        { "name": "extensionID", "type": "string", "label": "Extension ID", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false }
       ]
     },
     {
       "name": "Record Info",
       "type": "element",
-      "description": "Information about the metadata record",
+      "description": "Information about the metadata record itself rather than the resource being described. Includes data about the record's creation, modification, origin, content source, and cataloging standards used.",
       "parent": "MODS",
-      "children": ["Record Content Source", "Record Creation Date", "Record Change Date", "Record Identifier", "Language of Cataloging", "Description Standard"],
+      "children": ["Record Content Source", "Record Creation Date", "Record Change Date", "Record Identifier", "Record Origin", "Record Info Note", "Language of Cataloging", "Description Standard"],
+      "note": "Contains sub-elements only. Use displayLabel and altRepGroup attributes as needed.",
       "fields": [
-        { "name": "recordInfoID", "type": "string", "label": "Record Info ID" }
+        { "name": "recordInfoID", "type": "string", "label": "Record Info ID", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
       ]
     },
     {
       "name": "Record Content Source",
       "type": "record_element",
-      "description": "Source of the metadata",
+      "description": "The code or name of the organization or entity that created or modified the original metadata record. Use authority to specify the code source (e.g. marcorg).",
       "parent": "Record Info",
       "children": [],
       "fields": [
-        { "name": "recordContentSource", "type": "string", "label": "Record Content Source" },
-        { "name": "authority", "type": "string", "label": "Authority" }
+        { "name": "recordContentSource", "type": "string", "label": "Record Content Source", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     },
     {
       "name": "Record Creation Date",
       "type": "record_element",
-      "description": "Date the record was created",
+      "description": "The date or date and time when the original metadata record was first created.",
       "parent": "Record Info",
       "children": [],
       "fields": [
-        { "name": "recordCreationDate", "type": "date", "label": "Record Creation Date" },
-        { "name": "encoding", "type": "string", "label": "Encoding" }
+        { "name": "recordCreationDate", "type": "date", "label": "Record Creation Date", "required": true },
+        { "name": "encoding", "type": "string", "label": "Encoding (w3cdtf, iso8601, marc, edtf, temper)", "required": false },
+        { "name": "point", "type": "string", "label": "Point (start, end)", "required": false },
+        { "name": "keyDate", "type": "string", "label": "Key Date (yes)", "required": false },
+        { "name": "qualifier", "type": "string", "label": "Qualifier", "required": false },
+        { "name": "calendar", "type": "string", "label": "Calendar", "required": false }
       ]
     },
     {
       "name": "Record Change Date",
       "type": "record_element",
-      "description": "Date the record was changed",
+      "description": "The date or date and time when the original metadata record was last modified.",
       "parent": "Record Info",
       "children": [],
       "fields": [
-        { "name": "recordChangeDate", "type": "date", "label": "Record Change Date" },
-        { "name": "encoding", "type": "string", "label": "Encoding" }
+        { "name": "recordChangeDate", "type": "date", "label": "Record Change Date", "required": true },
+        { "name": "encoding", "type": "string", "label": "Encoding (w3cdtf, iso8601, marc, edtf, temper)", "required": false },
+        { "name": "point", "type": "string", "label": "Point (start, end)", "required": false },
+        { "name": "keyDate", "type": "string", "label": "Key Date (yes)", "required": false },
+        { "name": "qualifier", "type": "string", "label": "Qualifier", "required": false },
+        { "name": "calendar", "type": "string", "label": "Calendar", "required": false }
       ]
     },
     {
       "name": "Record Identifier",
       "type": "record_element",
-      "description": "Identifier for the metadata record",
+      "description": "The system control number assigned by the organization creating, using, or distributing the record. The source attribute identifies the assigning organization.",
       "parent": "Record Info",
       "children": [],
       "fields": [
-        { "name": "recordIdentifier", "type": "string", "label": "Record Identifier" },
-        { "name": "source", "type": "string", "label": "Source" }
+        { "name": "recordIdentifier", "type": "string", "label": "Record Identifier", "required": true },
+        { "name": "source", "type": "string", "label": "Source", "required": false }
+      ]
+    },
+    {
+      "name": "Record Origin",
+      "type": "record_element",
+      "description": "A description of the origin or provenance of the metadata record, such as how it was created (e.g. machine-generated, converted from MARC, hand-created).",
+      "parent": "Record Info",
+      "children": [],
+      "fields": [
+        { "name": "recordOrigin", "type": "string", "label": "Record Origin", "required": true },
+        { "name": "lang", "type": "string", "label": "Language Code", "required": false },
+        { "name": "xmlLang", "type": "string", "label": "XML Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "transliteration", "type": "string", "label": "Transliteration", "required": false }
+      ]
+    },
+    {
+      "name": "Record Info Note",
+      "type": "record_element",
+      "description": "General textual information relating to the metadata record itself, such as notes about its creation, conversion, or quality.",
+      "parent": "Record Info",
+      "children": [],
+      "fields": [
+        { "name": "recordInfoNote", "type": "string", "label": "Record Info Note", "required": true },
+        { "name": "noteType", "type": "string", "label": "Type", "required": false },
+        { "name": "typeURI", "type": "string", "label": "Type URI", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "usage", "type": "string", "label": "Usage", "required": false }
       ]
     },
     {
       "name": "Language of Cataloging",
       "type": "record_element",
-      "description": "Language used in creating metadata",
+      "description": "The language used in creating the metadata record. Contains languageTerm and scriptTerm sub-elements to express the cataloging language in text or code form.",
       "parent": "Record Info",
-      "children": [],
+      "children": ["Language Term", "Script Term"],
       "fields": [
-        { "name": "languageTerm", "type": "string", "label": "Language Term" },
-        { "name": "authority", "type": "string", "label": "Authority" }
+        { "name": "objectPart", "type": "string", "label": "Object Part", "required": false },
+        { "name": "usage", "type": "string", "label": "Usage (primary)", "required": false },
+        { "name": "displayLabel", "type": "string", "label": "Display Label", "required": false },
+        { "name": "altRepGroup", "type": "string", "label": "Alt Rep Group", "required": false }
       ]
     },
     {
       "name": "Description Standard",
       "type": "record_element",
-      "description": "Standard used for description",
+      "description": "The descriptive cataloging rules or conventions used for the content of the description (e.g. AACR2, RDA, DACS, ISBD).",
       "parent": "Record Info",
       "children": [],
       "fields": [
-        { "name": "descriptionStandard", "type": "string", "label": "Description Standard" }
+        { "name": "descriptionStandard", "type": "string", "label": "Description Standard", "required": true },
+        { "name": "authority", "type": "string", "label": "Authority", "required": false },
+        { "name": "authorityURI", "type": "string", "label": "Authority URI", "required": false },
+        { "name": "valueURI", "type": "string", "label": "Value URI", "required": false }
       ]
     }
   ],
   "typeOfResourceValues": {
-    "text": "Text resources",
-    "cartographic": "Maps and atlases",
-    "notated music": "Musical notation",
-    "sound recording": "Audio recordings",
-    "sound recording-musical": "Musical recordings",
-    "sound recording-nonmusical": "Non-musical audio",
-    "still image": "Photographs, drawings, graphics",
-    "moving image": "Video, film",
-    "three dimensional object": "Physical objects",
-    "software, multimedia": "Software and multimedia",
-    "mixed material": "Mixed materials"
+    "text": "Text resources including books, articles, and documents",
+    "cartographic": "Maps, atlases, globes, and related cartographic materials",
+    "notated music": "Musical notation and scores",
+    "sound recording": "General audio recordings",
+    "sound recording-musical": "Musical audio recordings",
+    "sound recording-nonmusical": "Non-musical audio recordings such as speeches and interviews",
+    "still image": "Photographs, prints, drawings, and other static visual representations",
+    "moving image": "Video, film, and animation",
+    "three dimensional object": "Physical objects, models, sculptures, and artifacts",
+    "software, multimedia": "Computer software and interactive multimedia",
+    "mixed material": "Collections containing multiple material types"
+  },
+  "titleTypes": {
+    "abbreviated": "Shortened form of the title",
+    "translated": "Title translated into another language",
+    "alternative": "Variant form of the title",
+    "uniform": "Standardized or authorized form of the title"
+  },
+  "nameTypes": {
+    "personal": "Name of an individual person",
+    "corporate": "Name of an organization, institution, or corporation",
+    "conference": "Name of a conference, meeting, or event",
+    "family": "Name of a family or dynasty"
+  },
+  "namePartTypes": {
+    "date": "Date associated with the name (e.g. birth/death dates)",
+    "family": "Family or surname component",
+    "given": "Given or forename component",
+    "termsOfAddress": "Titles, honorifics, or other terms of address"
   },
   "issuanceValues": {
-    "monographic": "Single unit resource",
-    "continuing": "Ongoing resource",
-    "serial": "Serial publication",
-    "integrating resource": "Integrating resource"
+    "monographic": "Single complete unit",
+    "single unit": "Single physical unit",
+    "multipart monograph": "Multipart item issued in a finite number of parts",
+    "continuing": "Ongoing resource with no predetermined conclusion",
+    "serial": "Publication issued in successive parts at regular or irregular intervals",
+    "integrating resource": "Resource updated by additions or changes integrated into the whole"
   },
   "relatedItemTypes": {
-    "preceding": "Preceding resource",
-    "succeeding": "Succeeding resource",
-    "original": "Original version",
-    "host": "Host resource",
-    "constituent": "Constituent part",
-    "series": "Series",
-    "otherVersion": "Other version",
-    "otherFormat": "Other format",
-    "isReferencedBy": "Referenced by",
-    "references": "References",
-    "reviewOf": "Review of"
+    "preceding": "Earlier version or predecessor of the resource",
+    "succeeding": "Later version or successor of the resource",
+    "original": "Original version from which the resource derives",
+    "host": "Larger resource that contains the described resource",
+    "constituent": "Part contained within the described resource",
+    "series": "Series to which the resource belongs",
+    "otherVersion": "Another version of the same resource",
+    "otherFormat": "Same content in a different physical format",
+    "isReferencedBy": "Resource that references the described resource",
+    "references": "Resource referenced by the described resource",
+    "reviewOf": "Resource reviewed by the described resource"
   },
   "identifierTypes": {
     "doi": "Digital Object Identifier",
+    "hdl": "Handle System identifier",
     "isbn": "International Standard Book Number",
     "issn": "International Standard Serial Number",
+    "isni": "International Standard Name Identifier",
+    "ismn": "International Standard Music Number",
+    "lccn": "Library of Congress Control Number",
     "uri": "Uniform Resource Identifier",
-    "local": "Local identifier",
-    "stock number": "Stock number",
-    "issue number": "Issue number",
-    "matrix number": "Matrix number",
+    "urn": "Uniform Resource Name",
+    "local": "Local or institutional identifier",
+    "stock number": "Distributor stock number",
+    "issue number": "Sound recording issue number",
+    "matrix number": "Sound recording matrix number",
     "music publisher": "Music publisher number",
     "music plate": "Music plate number",
-    "videorecording identifier": "Videorecording identifier"
+    "videorecording identifier": "Videorecording identifier",
+    "oclc": "OCLC number"
   },
   "digitalOriginValues": {
-    "born digital": "Created in digital form",
-    "reformatted digital": "Digitized from analog",
-    "digitized microfilm": "Digitized from microfilm",
-    "digitized other analog": "Digitized from other analog source"
+    "born digital": "Resource created originally in digital form",
+    "reformatted digital": "Resource digitized from an analog original",
+    "digitized microfilm": "Resource digitized from microfilm",
+    "digitized other analog": "Resource digitized from another analog source"
+  },
+  "reformattingQualityValues": {
+    "access": "Quality suitable for access and viewing",
+    "preservation": "Quality suitable for long-term preservation",
+    "replacement": "Quality sufficient to serve as a substitute for the original"
+  },
+  "dateEncodings": {
+    "w3cdtf": "W3C Date and Time Format (subset of ISO 8601)",
+    "iso8601": "ISO 8601 date format",
+    "marc": "MARC 21 date format",
+    "edtf": "Extended Date/Time Format (ISO 8601-2)",
+    "temper": "Temporal Expression language"
+  },
+  "dateQualifiers": {
+    "approximate": "Date is approximate",
+    "inferred": "Date is inferred from other evidence",
+    "questionable": "Date is uncertain or doubtful"
+  },
+  "accessConditionTypes": {
+    "restriction on access": "Restrictions imposed on access to the described materials",
+    "use and reproduction": "Terms governing the use and reproduction of the materials after access"
+  },
+  "placeTermTypes": {
+    "text": "Place expressed as text (e.g. 'New York')",
+    "code": "Place expressed as a code (e.g. MARC country code)"
+  },
+  "languageTermTypes": {
+    "text": "Language expressed as text (e.g. 'English')",
+    "code": "Language expressed as a code (e.g. 'eng')"
+  },
+  "commonAuthorities": {
+    "lcsh": "Library of Congress Subject Headings",
+    "mesh": "Medical Subject Headings",
+    "fast": "Faceted Application of Subject Terminology",
+    "lcgft": "Library of Congress Genre/Form Terms",
+    "aat": "Art and Architecture Thesaurus",
+    "tgm": "Thesaurus for Graphic Materials",
+    "marcrelator": "MARC Code List for Relators",
+    "marcgt": "MARC Genre Term List",
+    "marccountry": "MARC Code List for Countries",
+    "iso639-2b": "ISO 639-2 Language Codes (bibliographic)",
+    "iso639-3": "ISO 639-3 Language Codes",
+    "iso15924": "ISO 15924 Script Codes",
+    "lcc": "Library of Congress Classification",
+    "ddc": "Dewey Decimal Classification",
+    "udc": "Universal Decimal Classification",
+    "naf": "NACO Authority File",
+    "rda": "Resource Description and Access"
   }
 }

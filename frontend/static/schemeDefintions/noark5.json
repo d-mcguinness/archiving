@@ -10,201 +10,613 @@
     {
       "name": "Archive",
       "type": "root",
-      "description": "The root archive element",
+      "description": "The root archive element (arkiv)",
       "parent": null,
       "children": ["Archive", "Series"],
-      "note": "Can contain sub-archives (Archive) or archive parts (Series)",
+      "note": "Can contain sub-archives (arkiv) or series (arkivdel). Must have at least one Archive Creator.",
       "fields": [
-        { "name": "systemID", "type": "string", "label": "System ID" },
-        { "name": "title", "type": "string", "label": "Title" },
-        { "name": "createdDate", "type": "date", "label": "Created Date" },
-        { "name": "createdBy", "type": "string", "label": "Created By" },
-        { "name": "closedDate", "type": "date", "label": "Closed Date" },
-        { "name": "closedBy", "type": "string", "label": "Closed By" },
-        { "name": "archiveCreator", "type": "string", "label": "Archive Creator" }
+        { "name": "systemID", "type": "string", "label": "System ID", "required": true },
+        { "name": "title", "type": "string", "label": "Title", "required": true },
+        { "name": "description", "type": "string", "label": "Description", "required": false },
+        { "name": "archiveStatus", "type": "string", "label": "Archive Status", "required": false },
+        { "name": "documentMedium", "type": "string", "label": "Document Medium", "required": false },
+        { "name": "storageLocation", "type": "string", "label": "Storage Location", "required": false },
+        { "name": "createdDate", "type": "date", "label": "Created Date", "required": true },
+        { "name": "createdBy", "type": "string", "label": "Created By", "required": true },
+        { "name": "closedDate", "type": "date", "label": "Closed Date", "required": true },
+        { "name": "closedBy", "type": "string", "label": "Closed By", "required": true }
       ]
     },
     {
       "name": "Archive Creator",
       "type": "metadata",
-      "description": "Information about the archive creator organization",
+      "description": "Information about the archive creator organization (arkivskaper)",
       "parent": "Archive",
-      "children": []
+      "children": [],
+      "note": "An archive must have at least one archive creator. Multiple are allowed.",
+      "fields": [
+        { "name": "creatorID", "type": "string", "label": "Creator ID", "required": true },
+        { "name": "creatorName", "type": "string", "label": "Creator Name", "required": true },
+        { "name": "description", "type": "string", "label": "Description", "required": false }
+      ]
     },
     {
       "name": "Series",
       "type": "structural_unit",
-      "description": "Archive part/series - a logical subdivision of the archive",
+      "description": "Archive part/series - a logical subdivision of the archive (arkivdel)",
       "parent": "Archive",
       "children": ["Classification System", "File", "Registration"],
-      "note": "Can contain classification system, files, or registrations directly",
+      "note": "Can contain a classification system, files, or registrations directly (choice). Supports disposal, screening, and grading.",
       "fields": [
-        { "name": "systemID", "type": "string", "label": "System ID" },
-        { "name": "title", "type": "string", "label": "Title" },
-        { "name": "seriesStatus", "type": "string", "label": "Series Status" },
-        { "name": "createdDate", "type": "date", "label": "Created Date" },
-        { "name": "createdBy", "type": "string", "label": "Created By" },
-        { "name": "closedDate", "type": "date", "label": "Closed Date" },
-        { "name": "closedBy", "type": "string", "label": "Closed By" }
+        { "name": "systemID", "type": "string", "label": "System ID", "required": true },
+        { "name": "title", "type": "string", "label": "Title", "required": true },
+        { "name": "description", "type": "string", "label": "Description", "required": false },
+        { "name": "seriesStatus", "type": "string", "label": "Series Status", "required": true },
+        { "name": "documentMedium", "type": "string", "label": "Document Medium", "required": false },
+        { "name": "storageLocation", "type": "string", "label": "Storage Location", "required": false },
+        { "name": "createdDate", "type": "date", "label": "Created Date", "required": true },
+        { "name": "createdBy", "type": "string", "label": "Created By", "required": true },
+        { "name": "closedDate", "type": "date", "label": "Closed Date", "required": true },
+        { "name": "closedBy", "type": "string", "label": "Closed By", "required": true },
+        { "name": "archivePeriodStartDate", "type": "date", "label": "Archive Period Start Date", "required": false },
+        { "name": "archivePeriodEndDate", "type": "date", "label": "Archive Period End Date", "required": false },
+        { "name": "predecessorReference", "type": "string", "label": "Predecessor Reference", "required": false },
+        { "name": "successorReference", "type": "string", "label": "Successor Reference", "required": false }
       ]
     },
     {
       "name": "Classification System",
       "type": "structural_unit",
-      "description": "Classification system for organizing records",
+      "description": "Classification system for organizing records (klassifikasjonssystem)",
       "parent": "Series",
       "children": ["Class"],
       "fields": [
-        { "name": "systemID", "type": "string", "label": "System ID" },
-        { "name": "title", "type": "string", "label": "Title" },
-        { "name": "createdDate", "type": "date", "label": "Created Date" },
-        { "name": "createdBy", "type": "string", "label": "Created By" }
+        { "name": "systemID", "type": "string", "label": "System ID", "required": true },
+        { "name": "classificationType", "type": "string", "label": "Classification Type", "required": false },
+        { "name": "title", "type": "string", "label": "Title", "required": true },
+        { "name": "description", "type": "string", "label": "Description", "required": false },
+        { "name": "createdDate", "type": "date", "label": "Created Date", "required": true },
+        { "name": "createdBy", "type": "string", "label": "Created By", "required": true },
+        { "name": "closedDate", "type": "date", "label": "Closed Date", "required": false },
+        { "name": "closedBy", "type": "string", "label": "Closed By", "required": false }
       ]
     },
     {
       "name": "Class",
       "type": "structural_unit",
-      "description": "Classification class - a category in the classification system",
+      "description": "Classification class - a category in the classification system (klasse)",
       "parent": "Classification System",
       "children": ["Class", "File", "Registration"],
-      "note": "Can contain sub-classes, files, or registrations",
+      "note": "Can contain sub-classes, files, or registrations (choice). Supports cross-references, disposal, screening, and grading.",
       "fields": [
-        { "name": "systemID", "type": "string", "label": "System ID" },
-        { "name": "classID", "type": "string", "label": "Class ID" },
-        { "name": "title", "type": "string", "label": "Title" },
-        { "name": "createdDate", "type": "date", "label": "Created Date" },
-        { "name": "createdBy", "type": "string", "label": "Created By" }
+        { "name": "systemID", "type": "string", "label": "System ID", "required": true },
+        { "name": "classID", "type": "string", "label": "Class ID", "required": true },
+        { "name": "title", "type": "string", "label": "Title", "required": true },
+        { "name": "description", "type": "string", "label": "Description", "required": false },
+        { "name": "keywords", "type": "string", "label": "Keywords", "required": false },
+        { "name": "createdDate", "type": "date", "label": "Created Date", "required": true },
+        { "name": "createdBy", "type": "string", "label": "Created By", "required": true },
+        { "name": "closedDate", "type": "date", "label": "Closed Date", "required": false },
+        { "name": "closedBy", "type": "string", "label": "Closed By", "required": false }
       ]
     },
     {
       "name": "File",
       "type": "structural_unit",
-      "description": "File - a collection of records related to a case or subject",
+      "description": "File - a collection of records related to a case or subject (mappe)",
       "parent": "Series",
       "children": ["Registration", "File"],
-      "note": "Can contain registrations and sub-files. Base type for Case File and Meeting File",
+      "note": "Can contain registrations and sub-files. Base type for Case File (saksmappe) and Meeting File (moetemappe). Supports parties, cross-references, notes, disposal, screening, and grading.",
       "fields": [
-        { "name": "systemID", "type": "string", "label": "System ID" },
-        { "name": "fileID", "type": "string", "label": "File ID" },
-        { "name": "title", "type": "string", "label": "Title" },
-        { "name": "createdDate", "type": "date", "label": "Created Date" },
-        { "name": "createdBy", "type": "string", "label": "Created By" },
-        { "name": "closedDate", "type": "date", "label": "Closed Date" },
-        { "name": "closedBy", "type": "string", "label": "Closed By" }
+        { "name": "systemID", "type": "string", "label": "System ID", "required": true },
+        { "name": "fileID", "type": "string", "label": "File ID", "required": true },
+        { "name": "title", "type": "string", "label": "Title", "required": true },
+        { "name": "publicTitle", "type": "string", "label": "Public Title", "required": false },
+        { "name": "description", "type": "string", "label": "Description", "required": false },
+        { "name": "keywords", "type": "string", "label": "Keywords", "required": false },
+        { "name": "documentMedium", "type": "string", "label": "Document Medium", "required": false },
+        { "name": "storageLocation", "type": "string", "label": "Storage Location", "required": false },
+        { "name": "createdDate", "type": "date", "label": "Created Date", "required": true },
+        { "name": "createdBy", "type": "string", "label": "Created By", "required": true },
+        { "name": "closedDate", "type": "date", "label": "Closed Date", "required": true },
+        { "name": "closedBy", "type": "string", "label": "Closed By", "required": true },
+        { "name": "archivePartReference", "type": "string", "label": "Archive Part Reference", "required": false }
       ]
     },
     {
       "name": "Registration",
       "type": "record_unit",
-      "description": "Registration entry - basic record unit",
+      "description": "Registration entry - basic record unit (registrering)",
       "parent": "File",
       "children": ["Document Description"],
-      "note": "Base type for Journal Entry, Meeting Registration, and Archive Note",
+      "note": "Base type for Journal Entry (journalpost), Meeting Registration (moeteregistrering), and Archive Note (arkivnotat). Supports parties, disposal, screening, grading, notes, cross-references, and correspondence parties.",
       "fields": [
-        { "name": "systemID", "type": "string", "label": "System ID" },
-        { "name": "createdDate", "type": "date", "label": "Created Date" },
-        { "name": "createdBy", "type": "string", "label": "Created By" },
-        { "name": "archivedDate", "type": "date", "label": "Archived Date" },
-        { "name": "archivedBy", "type": "string", "label": "Archived By" }
+        { "name": "systemID", "type": "string", "label": "System ID", "required": true },
+        { "name": "createdDate", "type": "date", "label": "Created Date", "required": true },
+        { "name": "createdBy", "type": "string", "label": "Created By", "required": true },
+        { "name": "archivedDate", "type": "date", "label": "Archived Date", "required": true },
+        { "name": "archivedBy", "type": "string", "label": "Archived By", "required": true },
+        { "name": "archivePartReference", "type": "string", "label": "Archive Part Reference", "required": false },
+        { "name": "registrationID", "type": "string", "label": "Registration ID", "required": false },
+        { "name": "title", "type": "string", "label": "Title", "required": true },
+        { "name": "publicTitle", "type": "string", "label": "Public Title", "required": false },
+        { "name": "description", "type": "string", "label": "Description", "required": false },
+        { "name": "keywords", "type": "string", "label": "Keywords", "required": false },
+        { "name": "author", "type": "string", "label": "Author", "required": false },
+        { "name": "documentMedium", "type": "string", "label": "Document Medium", "required": false },
+        { "name": "storageLocation", "type": "string", "label": "Storage Location", "required": false }
       ]
     },
     {
       "name": "Document Description",
       "type": "document_unit",
-      "description": "Document description - metadata about a document",
+      "description": "Document description - metadata about a document (dokumentbeskrivelse)",
       "parent": "Registration",
       "children": ["Document Object"],
+      "note": "Supports parties, notes, disposal, executed disposal, deletion, screening, grading, and electronic signature.",
       "fields": [
-        { "name": "systemID", "type": "string", "label": "System ID" },
-        { "name": "documentType", "type": "string", "label": "Document Type" },
-        { "name": "documentStatus", "type": "string", "label": "Document Status" },
-        { "name": "title", "type": "string", "label": "Title" },
-        { "name": "createdDate", "type": "date", "label": "Created Date" },
-        { "name": "createdBy", "type": "string", "label": "Created By" },
-        { "name": "associatedAs", "type": "string", "label": "Associated As" },
-        { "name": "documentNumber", "type": "number", "label": "Document Number" },
-        { "name": "associatedDate", "type": "date", "label": "Associated Date" },
-        { "name": "associatedBy", "type": "string", "label": "Associated By" }
+        { "name": "systemID", "type": "string", "label": "System ID", "required": true },
+        { "name": "documentType", "type": "string", "label": "Document Type", "required": true },
+        { "name": "documentStatus", "type": "string", "label": "Document Status", "required": true },
+        { "name": "title", "type": "string", "label": "Title", "required": true },
+        { "name": "description", "type": "string", "label": "Description", "required": false },
+        { "name": "author", "type": "string", "label": "Author", "required": false },
+        { "name": "createdDate", "type": "date", "label": "Created Date", "required": true },
+        { "name": "createdBy", "type": "string", "label": "Created By", "required": true },
+        { "name": "documentMedium", "type": "string", "label": "Document Medium", "required": false },
+        { "name": "storageLocation", "type": "string", "label": "Storage Location", "required": false },
+        { "name": "archivePartReference", "type": "string", "label": "Archive Part Reference", "required": false },
+        { "name": "associatedAs", "type": "string", "label": "Associated As", "required": true },
+        { "name": "documentNumber", "type": "number", "label": "Document Number", "required": true },
+        { "name": "associatedDate", "type": "date", "label": "Associated Date", "required": true },
+        { "name": "associatedBy", "type": "string", "label": "Associated By", "required": true }
       ]
     },
     {
       "name": "Document Object",
       "type": "document_unit",
-      "description": "Document object - the actual digital file",
+      "description": "Document object - the actual digital file (dokumentobjekt)",
       "parent": "Document Description",
       "children": [],
+      "note": "Supports electronic signature and conversion history.",
       "fields": [
-        { "name": "systemID", "type": "string", "label": "System ID" },
-        { "name": "versionNumber", "type": "number", "label": "Version Number" },
-        { "name": "variantFormat", "type": "string", "label": "Variant Format" },
-        { "name": "format", "type": "string", "label": "Format" },
-        { "name": "createdDate", "type": "date", "label": "Created Date" },
-        { "name": "createdBy", "type": "string", "label": "Created By" },
-        { "name": "fileReference", "type": "string", "label": "File Reference" },
-        { "name": "checksum", "type": "string", "label": "Checksum" },
-        { "name": "checksumAlgorithm", "type": "string", "label": "Checksum Algorithm" },
-        { "name": "fileSize", "type": "number", "label": "File Size" }
+        { "name": "systemID", "type": "string", "label": "System ID", "required": true },
+        { "name": "versionNumber", "type": "number", "label": "Version Number", "required": true },
+        { "name": "variantFormat", "type": "string", "label": "Variant Format", "required": true },
+        { "name": "format", "type": "string", "label": "Format", "required": true },
+        { "name": "formatDetails", "type": "string", "label": "Format Details", "required": false },
+        { "name": "createdDate", "type": "date", "label": "Created Date", "required": true },
+        { "name": "createdBy", "type": "string", "label": "Created By", "required": true },
+        { "name": "fileReference", "type": "string", "label": "File Reference", "required": true },
+        { "name": "checksum", "type": "string", "label": "Checksum", "required": true },
+        { "name": "checksumAlgorithm", "type": "string", "label": "Checksum Algorithm", "required": true },
+        { "name": "fileSize", "type": "number", "label": "File Size", "required": true }
+      ]
+    },
+    {
+      "name": "Correspondence Party",
+      "type": "metadata",
+      "description": "Party involved in correspondence (korrespondansepart)",
+      "parent": "Registration",
+      "children": [],
+      "fields": [
+        { "name": "correspondencePartyType", "type": "string", "label": "Correspondence Party Type", "required": true },
+        { "name": "correspondencePartyName", "type": "string", "label": "Correspondence Party Name", "required": true },
+        { "name": "postAddress", "type": "string", "label": "Post Address", "required": false },
+        { "name": "postCode", "type": "string", "label": "Post Code", "required": false },
+        { "name": "postCity", "type": "string", "label": "Post City", "required": false },
+        { "name": "country", "type": "string", "label": "Country", "required": false },
+        { "name": "emailAddress", "type": "string", "label": "Email Address", "required": false },
+        { "name": "phoneNumber", "type": "string", "label": "Phone Number", "required": false },
+        { "name": "contactPerson", "type": "string", "label": "Contact Person", "required": false },
+        { "name": "administrativeUnit", "type": "string", "label": "Administrative Unit", "required": false },
+        { "name": "caseHandler", "type": "string", "label": "Case Handler", "required": false }
+      ]
+    },
+    {
+      "name": "Party",
+      "type": "metadata",
+      "description": "Party associated with a file or registration (part)",
+      "parent": "File",
+      "children": [],
+      "note": "Can be attached to File, Registration, or Document Description.",
+      "fields": [
+        { "name": "partyID", "type": "string", "label": "Party ID", "required": false },
+        { "name": "partyName", "type": "string", "label": "Party Name", "required": true },
+        { "name": "partyRole", "type": "string", "label": "Party Role", "required": true },
+        { "name": "postAddress", "type": "string", "label": "Post Address", "required": false },
+        { "name": "postCode", "type": "string", "label": "Post Code", "required": false },
+        { "name": "postCity", "type": "string", "label": "Post City", "required": false },
+        { "name": "country", "type": "string", "label": "Country", "required": false },
+        { "name": "emailAddress", "type": "string", "label": "Email Address", "required": false },
+        { "name": "phoneNumber", "type": "string", "label": "Phone Number", "required": false },
+        { "name": "contactPerson", "type": "string", "label": "Contact Person", "required": false }
+      ]
+    },
+    {
+      "name": "Note",
+      "type": "metadata",
+      "description": "Note or comment attached to a file, registration, or document description (merknad)",
+      "parent": "File",
+      "children": [],
+      "note": "Can be attached to File, Registration, or Document Description.",
+      "fields": [
+        { "name": "noteText", "type": "string", "label": "Note Text", "required": true },
+        { "name": "noteType", "type": "string", "label": "Note Type", "required": false },
+        { "name": "noteDate", "type": "date", "label": "Note Date", "required": true },
+        { "name": "noteRegisteredBy", "type": "string", "label": "Note Registered By", "required": true }
+      ]
+    },
+    {
+      "name": "Cross Reference",
+      "type": "metadata",
+      "description": "Cross reference to another class, file, or registration (kryssreferanse)",
+      "parent": "Class",
+      "children": [],
+      "note": "Can be attached to Class, File, or Registration. Exactly one of the three reference fields should be used.",
+      "fields": [
+        { "name": "referenceToClass", "type": "string", "label": "Reference to Class", "required": false },
+        { "name": "referenceToFile", "type": "string", "label": "Reference to File", "required": false },
+        { "name": "referenceToRegistration", "type": "string", "label": "Reference to Registration", "required": false }
+      ]
+    },
+    {
+      "name": "Disposal",
+      "type": "metadata",
+      "description": "Disposal decision and schedule (kassasjon)",
+      "parent": "Series",
+      "children": [],
+      "note": "Can be attached to Series, Class, File, Registration, or Document Description.",
+      "fields": [
+        { "name": "disposalDecision", "type": "string", "label": "Disposal Decision", "required": true },
+        { "name": "disposalAuthority", "type": "string", "label": "Disposal Authority", "required": false },
+        { "name": "retentionPeriod", "type": "number", "label": "Retention Period", "required": true },
+        { "name": "disposalDate", "type": "date", "label": "Disposal Date", "required": true }
+      ]
+    },
+    {
+      "name": "Executed Disposal",
+      "type": "metadata",
+      "description": "Record of disposal that has been carried out (utfoertKassasjon)",
+      "parent": "Series",
+      "children": [],
+      "note": "Can be attached to Series or Document Description.",
+      "fields": [
+        { "name": "disposedDate", "type": "date", "label": "Disposed Date", "required": true },
+        { "name": "disposedBy", "type": "string", "label": "Disposed By", "required": true }
+      ]
+    },
+    {
+      "name": "Deletion",
+      "type": "metadata",
+      "description": "Record of deletion (sletting)",
+      "parent": "Series",
+      "children": [],
+      "note": "Can be attached to Series or Document Description.",
+      "fields": [
+        { "name": "deletionType", "type": "string", "label": "Deletion Type", "required": true },
+        { "name": "deletedDate", "type": "date", "label": "Deleted Date", "required": true },
+        { "name": "deletedBy", "type": "string", "label": "Deleted By", "required": true }
+      ]
+    },
+    {
+      "name": "Screening",
+      "type": "metadata",
+      "description": "Access restriction/screening information (skjerming)",
+      "parent": "Series",
+      "children": [],
+      "note": "Can be attached to Series, Class, File, Registration, or Document Description.",
+      "fields": [
+        { "name": "accessRestriction", "type": "string", "label": "Access Restriction", "required": true },
+        { "name": "screeningAuthority", "type": "string", "label": "Screening Authority", "required": true },
+        { "name": "screeningMetadata", "type": "string", "label": "Screening Metadata", "required": true },
+        { "name": "screeningDocument", "type": "string", "label": "Screening Document", "required": false },
+        { "name": "screeningDuration", "type": "number", "label": "Screening Duration", "required": false },
+        { "name": "screeningExpiryDate", "type": "date", "label": "Screening Expiry Date", "required": false }
+      ]
+    },
+    {
+      "name": "Grading",
+      "type": "metadata",
+      "description": "Security classification/grading (gradering)",
+      "parent": "Series",
+      "children": [],
+      "note": "Can be attached to Series, Class, File, Registration, or Document Description.",
+      "fields": [
+        { "name": "grade", "type": "string", "label": "Grade", "required": true },
+        { "name": "gradingDate", "type": "date", "label": "Grading Date", "required": true },
+        { "name": "gradedBy", "type": "string", "label": "Graded By", "required": true },
+        { "name": "downgradingDate", "type": "date", "label": "Downgrading Date", "required": false },
+        { "name": "downgradedBy", "type": "string", "label": "Downgraded By", "required": false }
+      ]
+    },
+    {
+      "name": "Precedent",
+      "type": "metadata",
+      "description": "Legal precedent associated with a case (presedens)",
+      "parent": "File",
+      "children": [],
+      "note": "Can be attached to Case File or Journal Entry.",
+      "fields": [
+        { "name": "precedentDate", "type": "date", "label": "Precedent Date", "required": true },
+        { "name": "createdDate", "type": "date", "label": "Created Date", "required": true },
+        { "name": "createdBy", "type": "string", "label": "Created By", "required": true },
+        { "name": "title", "type": "string", "label": "Title", "required": true },
+        { "name": "description", "type": "string", "label": "Description", "required": false },
+        { "name": "precedentAuthority", "type": "string", "label": "Precedent Authority", "required": false },
+        { "name": "legalSourceFactor", "type": "string", "label": "Legal Source Factor", "required": true },
+        { "name": "precedentApprovedDate", "type": "date", "label": "Precedent Approved Date", "required": false },
+        { "name": "precedentApprovedBy", "type": "string", "label": "Precedent Approved By", "required": false },
+        { "name": "closedDate", "type": "date", "label": "Closed Date", "required": false },
+        { "name": "closedBy", "type": "string", "label": "Closed By", "required": false },
+        { "name": "precedentStatus", "type": "string", "label": "Precedent Status", "required": false }
+      ]
+    },
+    {
+      "name": "Electronic Signature",
+      "type": "metadata",
+      "description": "Electronic signature information (elektroniskSignatur)",
+      "parent": "Document Description",
+      "children": [],
+      "note": "Can be attached to Journal Entry, Document Description, or Document Object.",
+      "fields": [
+        { "name": "signatureSecurityLevel", "type": "string", "label": "Signature Security Level", "required": true },
+        { "name": "signatureVerified", "type": "string", "label": "Signature Verified", "required": true },
+        { "name": "verifiedDate", "type": "date", "label": "Verified Date", "required": true },
+        { "name": "verifiedBy", "type": "string", "label": "Verified By", "required": true }
+      ]
+    },
+    {
+      "name": "Follow-up",
+      "type": "metadata",
+      "description": "Follow-up/reply record for a journal entry (avskrivning)",
+      "parent": "Registration",
+      "children": [],
+      "note": "Attached to Journal Entry only.",
+      "fields": [
+        { "name": "followUpDate", "type": "date", "label": "Follow-up Date", "required": true },
+        { "name": "followUpBy", "type": "string", "label": "Follow-up By", "required": true },
+        { "name": "followUpMethod", "type": "string", "label": "Follow-up Method", "required": true },
+        { "name": "referenceFollowedUpByJournalEntry", "type": "string", "label": "Reference Followed Up By Journal Entry", "required": false }
+      ]
+    },
+    {
+      "name": "Document Flow",
+      "type": "metadata",
+      "description": "Document routing/flow information (dokumentflyt)",
+      "parent": "Registration",
+      "children": [],
+      "note": "Attached to Journal Entry or Archive Note.",
+      "fields": [
+        { "name": "flowTo", "type": "string", "label": "Flow To", "required": true },
+        { "name": "flowFrom", "type": "string", "label": "Flow From", "required": true },
+        { "name": "flowReceivedDate", "type": "date", "label": "Flow Received Date", "required": true },
+        { "name": "flowSentDate", "type": "date", "label": "Flow Sent Date", "required": true },
+        { "name": "flowStatus", "type": "string", "label": "Flow Status", "required": true },
+        { "name": "flowComment", "type": "string", "label": "Flow Comment", "required": false }
+      ]
+    },
+    {
+      "name": "Conversion",
+      "type": "metadata",
+      "description": "Format conversion history for a document object (konvertering)",
+      "parent": "Document Object",
+      "children": [],
+      "fields": [
+        { "name": "convertedDate", "type": "date", "label": "Converted Date", "required": true },
+        { "name": "convertedBy", "type": "string", "label": "Converted By", "required": true },
+        { "name": "convertedFromFormat", "type": "string", "label": "Converted From Format", "required": true },
+        { "name": "convertedToFormat", "type": "string", "label": "Converted To Format", "required": true },
+        { "name": "conversionTool", "type": "string", "label": "Conversion Tool", "required": false },
+        { "name": "conversionComment", "type": "string", "label": "Conversion Comment", "required": false }
+      ]
+    },
+    {
+      "name": "Meeting Participant",
+      "type": "metadata",
+      "description": "Participant in a meeting (moetedeltaker)",
+      "parent": "File",
+      "children": [],
+      "note": "Attached to Meeting File only.",
+      "fields": [
+        { "name": "participantName", "type": "string", "label": "Participant Name", "required": true },
+        { "name": "participantFunction", "type": "string", "label": "Participant Function", "required": false }
       ]
     }
   ],
   "specializedMappeTypes": [
     {
       "name": "Case File",
-      "description": "Specialized file type for case management",
+      "description": "Specialized file type for case management (saksmappe). Extends File.",
       "baseType": "File",
-      "additionalElements": ["saksaar", "sakssekvensnummer", "saksdato", "administrativEnhet", "saksansvarlig", "saksstatus"]
+      "additionalFields": [
+        { "name": "caseYear", "type": "number", "label": "Case Year", "required": true },
+        { "name": "caseSequenceNumber", "type": "number", "label": "Case Sequence Number", "required": true },
+        { "name": "caseDate", "type": "date", "label": "Case Date", "required": true },
+        { "name": "administrativeUnit", "type": "string", "label": "Administrative Unit", "required": true },
+        { "name": "caseResponsible", "type": "string", "label": "Case Responsible", "required": true },
+        { "name": "journalUnit", "type": "string", "label": "Journal Unit", "required": false },
+        { "name": "caseStatus", "type": "string", "label": "Case Status", "required": true },
+        { "name": "loanedDate", "type": "date", "label": "Loaned Date", "required": false },
+        { "name": "loanedTo", "type": "string", "label": "Loaned To", "required": false },
+        { "name": "secondaryClassificationReference", "type": "string", "label": "Secondary Classification Reference", "required": false }
+      ],
+      "xsdElements": ["saksaar", "sakssekvensnummer", "saksdato", "administrativEnhet", "saksansvarlig", "journalenhet", "saksstatus", "utlaantDato", "utlaantTil", "referanseSekundaerKlassifikasjon"],
+      "supportingEntities": ["Precedent"]
     },
     {
       "name": "Meeting File",
-      "description": "Specialized file type for meeting records",
+      "description": "Specialized file type for meeting records (moetemappe). Extends File.",
       "baseType": "File",
-      "additionalElements": ["moetenummer", "utvalg", "moetested", "moetedato", "referanseForrigeMoete", "referanseNesteMoete"]
+      "additionalFields": [
+        { "name": "meetingNumber", "type": "string", "label": "Meeting Number", "required": true },
+        { "name": "committee", "type": "string", "label": "Committee", "required": true },
+        { "name": "meetingDate", "type": "date", "label": "Meeting Date", "required": true },
+        { "name": "meetingPlace", "type": "string", "label": "Meeting Place", "required": false },
+        { "name": "referencePreviousMeeting", "type": "string", "label": "Reference Previous Meeting", "required": false },
+        { "name": "referenceNextMeeting", "type": "string", "label": "Reference Next Meeting", "required": false }
+      ],
+      "xsdElements": ["moetenummer", "utvalg", "moetedato", "moetested", "referanseForrigeMoete", "referanseNesteMoete"],
+      "supportingEntities": ["Meeting Participant"]
     }
   ],
   "specializedRegistrationTypes": [
     {
       "name": "Journal Entry",
-      "description": "Journal entry for official correspondence",
+      "description": "Journal entry for official correspondence (journalpost). Extends Registration.",
       "baseType": "Registration",
-      "additionalElements": ["journalaar", "journalsekvensnummer", "journalpostnummer", "journalposttype", "journalstatus", "journaldato", "dokumentetsDato", "mottattDato", "sendtDato", "forfallsdato", "offentlighetsvurdertDato", "antallVedlegg", "korrespondansepart"]
+      "additionalFields": [
+        { "name": "journalYear", "type": "number", "label": "Journal Year", "required": true },
+        { "name": "journalSequenceNumber", "type": "number", "label": "Journal Sequence Number", "required": true },
+        { "name": "journalEntryNumber", "type": "number", "label": "Journal Entry Number", "required": true },
+        { "name": "journalEntryType", "type": "string", "label": "Journal Entry Type", "required": true },
+        { "name": "journalStatus", "type": "string", "label": "Journal Status", "required": true },
+        { "name": "journalDate", "type": "date", "label": "Journal Date", "required": true },
+        { "name": "documentDate", "type": "date", "label": "Document Date", "required": false },
+        { "name": "receivedDate", "type": "date", "label": "Received Date", "required": false },
+        { "name": "sentDate", "type": "date", "label": "Sent Date", "required": false },
+        { "name": "dueDate", "type": "date", "label": "Due Date", "required": false },
+        { "name": "publicityAssessedDate", "type": "date", "label": "Publicity Assessed Date", "required": false },
+        { "name": "numberOfAttachments", "type": "number", "label": "Number of Attachments", "required": false },
+        { "name": "loanedDate", "type": "date", "label": "Loaned Date", "required": false },
+        { "name": "loanedTo", "type": "string", "label": "Loaned To", "required": false },
+        { "name": "journalUnit", "type": "string", "label": "Journal Unit", "required": false }
+      ],
+      "xsdElements": ["journalaar", "journalsekvensnummer", "journalpostnummer", "journalposttype", "journalstatus", "journaldato", "dokumentetsDato", "mottattDato", "sendtDato", "forfallsdato", "offentlighetsvurdertDato", "antallVedlegg", "utlaantDato", "utlaantTil", "journalenhet"],
+      "supportingEntities": ["Correspondence Party", "Follow-up", "Document Flow", "Precedent", "Electronic Signature"]
     },
     {
       "name": "Meeting Registration",
-      "description": "Registration for meeting records",
+      "description": "Registration for meeting records (moeteregistrering). Extends Registration.",
       "baseType": "Registration",
-      "additionalElements": ["moetesakstype", "moeteregistreringstype", "moetedeltaker"]
+      "additionalFields": [
+        { "name": "meetingRegistrationType", "type": "string", "label": "Meeting Registration Type", "required": true },
+        { "name": "meetingCaseType", "type": "string", "label": "Meeting Case Type", "required": false },
+        { "name": "meetingRegistrationStatus", "type": "string", "label": "Meeting Registration Status", "required": false },
+        { "name": "administrativeUnit", "type": "string", "label": "Administrative Unit", "required": true },
+        { "name": "caseHandler", "type": "string", "label": "Case Handler", "required": true },
+        { "name": "referenceToMeetingRegistration", "type": "string", "label": "Reference to Meeting Registration", "required": false },
+        { "name": "referenceFromMeetingRegistration", "type": "string", "label": "Reference from Meeting Registration", "required": false }
+      ],
+      "xsdElements": ["moeteregistreringstype", "moetesakstype", "moeteregistreringsstatus", "administrativEnhet", "saksbehandler", "referanseTilMoeteregistrering", "referanseFraMoeteregistrering"]
     },
     {
       "name": "Archive Note",
-      "description": "Internal archive note",
+      "description": "Internal archive note (arkivnotat). Extends Registration.",
       "baseType": "Registration",
-      "additionalElements": ["dokumentetsDato", "mottattDato", "sendtDato", "forfallsdato", "offentlighetsvurdertDato", "antallVedlegg", "korrespondansepart"]
+      "additionalFields": [
+        { "name": "documentDate", "type": "date", "label": "Document Date", "required": false },
+        { "name": "receivedDate", "type": "date", "label": "Received Date", "required": false },
+        { "name": "sentDate", "type": "date", "label": "Sent Date", "required": false },
+        { "name": "dueDate", "type": "date", "label": "Due Date", "required": false },
+        { "name": "publicityAssessedDate", "type": "date", "label": "Publicity Assessed Date", "required": false },
+        { "name": "numberOfAttachments", "type": "number", "label": "Number of Attachments", "required": false },
+        { "name": "loanedDate", "type": "date", "label": "Loaned Date", "required": false },
+        { "name": "loanedTo", "type": "string", "label": "Loaned To", "required": false }
+      ],
+      "xsdElements": ["dokumentetsDato", "mottattDato", "sendtDato", "forfallsdato", "offentlighetsvurdertDato", "antallVedlegg", "utlaantDato", "utlaantTil"],
+      "supportingEntities": ["Document Flow"]
     }
   ],
   "statusValues": {
-    "arkivstatus": ["Opprettet", "Avsluttet", "Avlevert", "Periodisert", "Slettet"],
-    "arkivdelstatus": ["Aktiv periode", "Overlappingsperiode", "Avsluttet periode", "Uaktuelle mapper"],
-    "mappestatus": ["Opprettet", "Under behandling", "Avsluttet", "Utgår"],
-    "saksstatus": ["Under behandling", "Avsluttet", "Utgår"],
-    "journalstatus": ["Journalført", "Ferdigstilt fra saksbehandler", "Godkjent av leder", "Ekspedert", "Arkivert", "Utgår"],
-    "dokumentstatus": ["Dokumentet er ferdigstilt", "Dokumentet er under redigering"],
-    "moeteregistreringsstatus": ["Ferdigstilt fra saksbehandler", "Godkjent av leder", "Publisert"]
+    "archiveStatus": ["Created", "Closed", "Transferred", "Periodized", "Deleted"],
+    "seriesStatus": ["Active period", "Overlap period", "Closed period", "Obsolete files"],
+    "fileStatus": ["Created", "In progress", "Closed", "Expired"],
+    "caseStatus": ["In progress", "Closed", "Expired"],
+    "journalStatus": ["Journaled", "Completed by case handler", "Approved by manager", "Dispatched", "Archived", "Expired"],
+    "documentStatus": ["Document is finalized", "Document is being edited"],
+    "meetingRegistrationStatus": ["Completed by case handler", "Approved by manager", "Published"]
+  },
+  "documentMedium": {
+    "Physical medium": "Physical medium",
+    "Electronic archive": "Electronic archive",
+    "Mixed physical and electronic archive": "A mix of physical and electronic archive"
   },
   "variantFormats": {
-    "Produksjonsformat": "Production format - the working format",
-    "Arkivformat": "Archive format - the preservation format",
-    "Dokument hvor deler av innholdet er skjermet": "Screened document - parts of content are hidden"
+    "Production format": "Production format - the working format",
+    "Archive format": "Archive format - the preservation format",
+    "Screened document": "Screened document - parts of content are hidden"
   },
-  "dokumenttyper": {
-    "Hoveddokument": "Main document",
-    "Vedlegg": "Attachment"
+  "documentTypes": {
+    "Main document": "Main document",
+    "Attachment": "Attachment"
   },
-  "journalposttyper": {
-    "Inngående dokument": "Incoming document",
-    "Utgående dokument": "Outgoing document",
-    "Organinternt dokument for oppfølging": "Internal document for follow-up",
-    "Organinternt dokument uten oppfølging": "Internal document without follow-up",
-    "Saksframlegg": "Case proposal"
+  "journalEntryTypes": {
+    "Incoming document": "Incoming document",
+    "Outgoing document": "Outgoing document",
+    "Internal document for follow-up": "Internal document for follow-up",
+    "Internal document without follow-up": "Internal document without follow-up",
+    "Case proposal": "Case proposal"
+  },
+  "correspondencePartyTypes": {
+    "Sender": "Sender",
+    "Recipient": "Recipient",
+    "Copy recipient": "Copy recipient",
+    "Group recipient": "Group recipient",
+    "Internal sender": "Internal sender",
+    "Internal recipient": "Internal recipient"
+  },
+  "followUpMethods": {
+    "Replied by letter": "Replied by letter",
+    "Replied by email": "Replied by email",
+    "Replied by phone": "Replied by phone",
+    "Noted/acknowledged": "Noted/acknowledged",
+    "Taken for information": "Taken for information"
+  },
+  "disposalDecisions": {
+    "Preserve": "Preserve",
+    "Dispose": "Dispose",
+    "Evaluate later": "Evaluate later"
+  },
+  "gradingCodes": {
+    "Top secret": "Top secret",
+    "Secret": "Secret",
+    "Confidential": "Confidential",
+    "Restricted": "Restricted",
+    "Confidential (FOL)": "Confidential (Freedom of Information Act)",
+    "Strictly confidential (FOL)": "Strictly confidential (Freedom of Information Act)"
+  },
+  "accessRestrictions": {
+    "Exempt from public disclosure": "Exempt from public disclosure",
+    "Personnel matters": "Personnel matters",
+    "Client matters": "Client matters"
+  },
+  "electronicSignatureSecurityLevels": {
+    "Symmetric encryption": "Symmetric encryption",
+    "Sent with PKI/phone confirmation": "Sent with PKI/phone confirmation",
+    "Sent with PKI/phone confirmation and receipt": "Sent with PKI/phone confirmation and receipt",
+    "Sent with PKI/approved certificate and receipt": "Sent with PKI/approved certificate and receipt"
+  },
+  "electronicSignatureVerified": {
+    "Signature applied, not verified": "Signature applied, not verified",
+    "Signature applied and verified": "Signature applied and verified"
+  },
+  "flowStatuses": {
+    "Approved": "Approved",
+    "Not approved": "Not approved",
+    "Returned to case handler with comments": "Returned to case handler with comments"
+  },
+  "noteTypes": {
+    "Note from case handler": "Note from case handler",
+    "Note from manager": "Note from manager",
+    "Note from archive responsible": "Note from archive responsible"
+  },
+  "meetingRegistrationTypes": {
+    "Meeting notice": "Meeting notice",
+    "Recommendation": "Recommendation",
+    "Minutes": "Minutes",
+    "Decision": "Decision"
+  },
+  "meetingCaseTypes": {
+    "Political case": "Political case",
+    "Delegated meeting case": "Delegated meeting case",
+    "Information case": "Information case",
+    "Interpellation": "Interpellation"
+  },
+  "deletionTypes": {
+    "Deletion of production format": "Deletion of production format",
+    "Deletion of earlier version": "Deletion of earlier version",
+    "Deletion of variant with redacted information": "Deletion of variant with redacted information",
+    "Deletion of all content in series": "Deletion of all content in series"
   }
 }
-

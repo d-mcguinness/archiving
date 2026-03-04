@@ -22,7 +22,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/documents")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:4173", "http://localhost:5173"})
+@CrossOrigin(origins = {"http://localhost:3001", "http://localhost:4173", "http://localhost:5173"})
 public class DocumentController {
 
     private static final Logger log = LoggerFactory.getLogger(DocumentController.class);

@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => ({
         noExternal: ['@apollo/client', '@apollo/client/*']
     },
     server: {
-        port: 3000,
+        port: 3001,
         proxy: {
             '/graphql': {
                 target: 'http://localhost:2020',

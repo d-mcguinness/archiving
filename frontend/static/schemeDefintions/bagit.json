@@ -2,7 +2,7 @@
   "standard": "BagIt",
   "fullName": "BagIt File Packaging Format",
   "reference": "RFC 8493",
-  "description": "Hierarchical file packaging format for storage and transfer of digital content, designed to support reliable digital preservation",
+  "description": "A hierarchical file packaging format for the storage and transfer of arbitrary digital content. A bag consists of a payload (the content) and tag files (metadata about the content). Designed to support disk-based or network-based storage and transfer of digital content.",
   "version": "1.0",
   "xsdReference": "https://tools.ietf.org/html/rfc8493",
   "url": "https://datatracker.ietf.org/doc/html/rfc8493",
@@ -10,242 +10,295 @@
     {
       "name": "Bag",
       "type": "root_container",
-      "description": "Complete bag containing payload and tag files",
+      "description": "A bag is a base directory containing a set of tag files and a payload directory (data/). The base directory may have any name. A bag is complete when every element in every payload manifest and tag manifest is present, and valid when additionally all checksums match.",
       "parent": null,
-      "children": ["Payload", "Tag Files"],
-      "note": "Root directory structure",
+      "children": ["Bag Declaration", "Payload", "Manifest", "Tag Manifest", "Bag Info", "Fetch File", "Other Tag Files"],
+      "note": "A bag MUST contain bagit.txt, at least one payload manifest, and the data/ directory.",
       "fields": [
-        { "name": "bagName", "type": "string", "label": "Bag Name" },
-        { "name": "bagSize", "type": "number", "label": "Bag Size (bytes)" },
-        { "name": "payloadOxum", "type": "string", "label": "Payload Oxum" }
-      ]
-    },
-    {
-      "name": "Payload",
-      "type": "data_container",
-      "description": "Directory containing the actual data files being preserved",
-      "parent": "Bag",
-      "children": ["Data File", "Data Directory"],
-      "note": "All payload files must be in the 'data' directory",
-      "fields": [
-        { "name": "payloadSize", "type": "number", "label": "Payload Size (bytes)" },
-        { "name": "fileCount", "type": "number", "label": "File Count" }
-      ]
-    },
-    {
-      "name": "Data File",
-      "type": "payload_element",
-      "description": "Individual file in the payload",
-      "parent": "Payload",
-      "children": [],
-      "fields": [
-        { "name": "fileName", "type": "string", "label": "File Name" },
-        { "name": "filePath", "type": "string", "label": "File Path" },
-        { "name": "fileSize", "type": "number", "label": "File Size (bytes)" },
-        { "name": "checksum", "type": "string", "label": "Checksum" },
-        { "name": "checksumAlgorithm", "type": "string", "label": "Checksum Algorithm" }
-      ]
-    },
-    {
-      "name": "Data Directory",
-      "type": "payload_element",
-      "description": "Subdirectory within payload",
-      "parent": "Payload",
-      "children": ["Data File", "Data Directory"],
-      "note": "Can nest recursively",
-      "fields": [
-        { "name": "directoryName", "type": "string", "label": "Directory Name" },
-        { "name": "directoryPath", "type": "string", "label": "Directory Path" }
-      ]
-    },
-    {
-      "name": "Tag Files",
-      "type": "metadata_container",
-      "description": "Metadata and manifest files",
-      "parent": "Bag",
-      "children": ["Bag Info", "Bag Declaration", "Manifest", "Tag Manifest", "Fetch File"],
-      "note": "Files outside the data directory",
-      "fields": [
-        { "name": "tagFilesCount", "type": "number", "label": "Tag Files Count" }
-      ]
-    },
-    {
-      "name": "Bag Info",
-      "type": "metadata_file",
-      "description": "bag-info.txt - Optional metadata about the bag",
-      "parent": "Tag Files",
-      "children": [],
-      "note": "Key-value pairs with bag metadata",
-      "fields": [
-        { "name": "sourceOrganization", "type": "string", "label": "Source-Organization" },
-        { "name": "organizationAddress", "type": "string", "label": "Organization-Address" },
-        { "name": "contactName", "type": "string", "label": "Contact-Name" },
-        { "name": "contactPhone", "type": "string", "label": "Contact-Phone" },
-        { "name": "contactEmail", "type": "string", "label": "Contact-Email" },
-        { "name": "externalDescription", "type": "string", "label": "External-Description" },
-        { "name": "externalIdentifier", "type": "string", "label": "External-Identifier" },
-        { "name": "bagSize", "type": "string", "label": "Bag-Size" },
-        { "name": "payloadOxum", "type": "string", "label": "Payload-Oxum" },
-        { "name": "bagGroupIdentifier", "type": "string", "label": "Bag-Group-Identifier" },
-        { "name": "bagCount", "type": "string", "label": "Bag-Count" },
-        { "name": "internalSenderIdentifier", "type": "string", "label": "Internal-Sender-Identifier" },
-        { "name": "internalSenderDescription", "type": "string", "label": "Internal-Sender-Description" },
-        { "name": "baggingDate", "type": "date", "label": "Bagging-Date" }
+        { "name": "bagName", "type": "string", "label": "Bag Name (Base Directory)", "required": true },
+        { "name": "payloadOxum", "type": "string", "label": "Payload-Oxum (OctetCount.StreamCount)", "required": false },
+        { "name": "bagSize", "type": "string", "label": "Bag-Size", "required": false },
+        { "name": "isComplete", "type": "string", "label": "Completeness Status", "required": false },
+        { "name": "isValid", "type": "string", "label": "Validity Status", "required": false }
       ]
     },
     {
       "name": "Bag Declaration",
-      "type": "metadata_file",
-      "description": "bagit.txt - Required file declaring BagIt version and encoding",
-      "parent": "Tag Files",
+      "type": "required_tag_file",
+      "description": "The bagit.txt file, which MUST be present in every bag. Contains exactly two lines declaring the BagIt version and the tag file character encoding. Must be encoded in UTF-8 without BOM.",
+      "parent": "Bag",
       "children": [],
-      "note": "Must be first line in bag base directory",
+      "note": "REQUIRED. Must be named 'bagit.txt'. Must be encoded in UTF-8. Must contain exactly two lines.",
       "fields": [
-        { "name": "bagItVersion", "type": "string", "label": "BagIt-Version" },
-        { "name": "tagFileCharacterEncoding", "type": "string", "label": "Tag-File-Character-Encoding" }
+        { "name": "bagItVersion", "type": "string", "label": "BagIt-Version", "required": true },
+        { "name": "tagFileCharacterEncoding", "type": "string", "label": "Tag-File-Character-Encoding", "required": true }
+      ]
+    },
+    {
+      "name": "Payload",
+      "type": "required_directory",
+      "description": "The data/ directory containing the actual digital content being packaged. All payload files MUST reside under this directory. Files are treated as opaque octet streams with no size limitations.",
+      "parent": "Bag",
+      "children": ["Payload File", "Payload Directory"],
+      "note": "REQUIRED. Must be named 'data/'. May contain arbitrary subdirectory structures.",
+      "fields": [
+        { "name": "payloadDirectory", "type": "string", "label": "Payload Directory Path", "required": true },
+        { "name": "octetCount", "type": "number", "label": "Total Octet Count", "required": false },
+        { "name": "streamCount", "type": "number", "label": "Total Stream (File) Count", "required": false }
+      ]
+    },
+    {
+      "name": "Payload File",
+      "type": "payload_element",
+      "description": "An individual file within the data/ payload directory. Every payload file MUST be listed in every payload manifest with its checksum.",
+      "parent": "Payload",
+      "children": [],
+      "fields": [
+        { "name": "filePath", "type": "string", "label": "File Path (relative to base)", "required": true },
+        { "name": "fileName", "type": "string", "label": "File Name", "required": true },
+        { "name": "fileSize", "type": "number", "label": "File Size (bytes)", "required": false },
+        { "name": "checksum", "type": "string", "label": "Checksum (hex-encoded)", "required": true },
+        { "name": "checksumAlgorithm", "type": "string", "label": "Checksum Algorithm", "required": true }
+      ]
+    },
+    {
+      "name": "Payload Directory",
+      "type": "payload_element",
+      "description": "A subdirectory within the data/ payload directory. Directories themselves are not listed in manifests; only files are listed.",
+      "parent": "Payload",
+      "children": ["Payload File", "Payload Directory"],
+      "note": "Can nest recursively. Only files (not directories) appear in manifests.",
+      "fields": [
+        { "name": "directoryPath", "type": "string", "label": "Directory Path (relative to base)", "required": true },
+        { "name": "directoryName", "type": "string", "label": "Directory Name", "required": true }
       ]
     },
     {
       "name": "Manifest",
-      "type": "checksum_file",
-      "description": "Checksum manifest for payload files",
-      "parent": "Tag Files",
+      "type": "required_tag_file",
+      "description": "A payload manifest file listing the checksum and path of every file in the payload directory. At least one manifest MUST be present. Named manifest-ALGORITHM.txt (e.g., manifest-sha256.txt). Each line has format: CHECKSUM FILEPATH.",
+      "parent": "Bag",
       "children": ["Manifest Entry"],
-      "note": "At least one manifest required (e.g., manifest-md5.txt)",
+      "note": "REQUIRED (at least one). Starting with BagIt 1.0, implementations MUST support SHA-256 and SHA-512, and SHOULD enable SHA-512 by default. Must list every payload file exactly once.",
       "fields": [
-        { "name": "manifestAlgorithm", "type": "string", "label": "Manifest Algorithm" },
-        { "name": "manifestFileName", "type": "string", "label": "Manifest File Name" },
-        { "name": "entryCount", "type": "number", "label": "Entry Count" }
+        { "name": "manifestFileName", "type": "string", "label": "Manifest File Name", "required": true },
+        { "name": "algorithm", "type": "string", "label": "Checksum Algorithm", "required": true },
+        { "name": "entryCount", "type": "number", "label": "Entry Count", "required": false }
       ]
     },
     {
       "name": "Manifest Entry",
       "type": "checksum_entry",
-      "description": "Individual checksum entry in manifest",
+      "description": "A single line in a payload manifest. Contains the hex-encoded checksum and the file path relative to the bag base directory. The checksum is case-insensitive. Special characters in the filepath (LF, CR, CRLF, %) must be percent-encoded per RFC 3986.",
       "parent": "Manifest",
       "children": [],
       "fields": [
-        { "name": "checksum", "type": "string", "label": "Checksum" },
-        { "name": "filePath", "type": "string", "label": "File Path" }
+        { "name": "checksum", "type": "string", "label": "Checksum (hex-encoded)", "required": true },
+        { "name": "filePath", "type": "string", "label": "File Path (relative to base)", "required": true }
       ]
     },
     {
       "name": "Tag Manifest",
-      "type": "checksum_file",
-      "description": "Checksum manifest for tag files",
-      "parent": "Tag Files",
+      "type": "optional_tag_file",
+      "description": "An optional manifest for tag files (files outside the data/ directory). Named tagmanifest-ALGORITHM.txt. Same format as payload manifests. Must list every payload manifest. Should list remaining tag files except other tag manifests.",
+      "parent": "Bag",
       "children": ["Tag Manifest Entry"],
-      "note": "Optional manifest for tag files (e.g., tagmanifest-md5.txt)",
+      "note": "OPTIONAL. Cannot reference payload files. Tag manifest filepaths never begin with 'data/'.",
       "fields": [
-        { "name": "tagManifestAlgorithm", "type": "string", "label": "Tag Manifest Algorithm" },
-        { "name": "tagManifestFileName", "type": "string", "label": "Tag Manifest File Name" },
-        { "name": "entryCount", "type": "number", "label": "Entry Count" }
+        { "name": "tagManifestFileName", "type": "string", "label": "Tag Manifest File Name", "required": true },
+        { "name": "algorithm", "type": "string", "label": "Checksum Algorithm", "required": true },
+        { "name": "entryCount", "type": "number", "label": "Entry Count", "required": false }
       ]
     },
     {
       "name": "Tag Manifest Entry",
       "type": "checksum_entry",
-      "description": "Individual checksum entry for tag files",
+      "description": "A single line in a tag manifest. Contains the hex-encoded checksum and the file path of a tag file relative to the bag base directory.",
       "parent": "Tag Manifest",
       "children": [],
       "fields": [
-        { "name": "checksum", "type": "string", "label": "Checksum" },
-        { "name": "filePath", "type": "string", "label": "File Path" }
+        { "name": "checksum", "type": "string", "label": "Checksum (hex-encoded)", "required": true },
+        { "name": "filePath", "type": "string", "label": "Tag File Path (relative to base)", "required": true }
+      ]
+    },
+    {
+      "name": "Bag Info",
+      "type": "optional_tag_file",
+      "description": "The bag-info.txt file containing metadata elements about the bag as key-value pairs. All metadata elements are optional and most are repeatable. Labels are case-insensitive. Long values may be continued on the next line with leading whitespace.",
+      "parent": "Bag",
+      "children": [],
+      "note": "OPTIONAL. Labels cannot contain colons, LF, or CR. Recommended max 79 characters per line. Arbitrary additional metadata elements are permitted.",
+      "fields": [
+        { "name": "sourceOrganization", "type": "string", "label": "Source-Organization", "required": false },
+        { "name": "organizationAddress", "type": "string", "label": "Organization-Address", "required": false },
+        { "name": "contactName", "type": "string", "label": "Contact-Name", "required": false },
+        { "name": "contactPhone", "type": "string", "label": "Contact-Phone", "required": false },
+        { "name": "contactEmail", "type": "string", "label": "Contact-Email", "required": false },
+        { "name": "externalDescription", "type": "string", "label": "External-Description", "required": false },
+        { "name": "baggingDate", "type": "date", "label": "Bagging-Date (YYYY-MM-DD)", "required": false },
+        { "name": "externalIdentifier", "type": "string", "label": "External-Identifier", "required": false },
+        { "name": "bagSize", "type": "string", "label": "Bag-Size", "required": false },
+        { "name": "payloadOxum", "type": "string", "label": "Payload-Oxum", "required": false },
+        { "name": "bagGroupIdentifier", "type": "string", "label": "Bag-Group-Identifier", "required": false },
+        { "name": "bagCount", "type": "string", "label": "Bag-Count (N of T)", "required": false },
+        { "name": "internalSenderIdentifier", "type": "string", "label": "Internal-Sender-Identifier", "required": false },
+        { "name": "internalSenderDescription", "type": "string", "label": "Internal-Sender-Description", "required": false }
       ]
     },
     {
       "name": "Fetch File",
-      "type": "reference_file",
-      "description": "fetch.txt - Optional file listing URLs for remote payload files",
-      "parent": "Tag Files",
+      "type": "optional_tag_file",
+      "description": "The fetch.txt file listing payload files that can be retrieved from remote locations instead of being included directly in the bag. Enables incomplete or 'holey' bags for transfer. Each line has three space-separated fields: URL LENGTH FILEPATH.",
+      "parent": "Bag",
       "children": ["Fetch Entry"],
-      "note": "Allows sparse bags with external content",
+      "note": "OPTIONAL. All files listed in fetch.txt MUST also appear in every payload manifest. Cannot list tag files. Only absolute URIs per RFC 3986 are allowed.",
       "fields": [
-        { "name": "fetchFileName", "type": "string", "label": "Fetch File Name" },
-        { "name": "entryCount", "type": "number", "label": "Entry Count" }
+        { "name": "fetchFileName", "type": "string", "label": "Fetch File Name", "required": true },
+        { "name": "entryCount", "type": "number", "label": "Entry Count", "required": false }
       ]
     },
     {
       "name": "Fetch Entry",
       "type": "fetch_reference",
-      "description": "Individual fetch entry",
+      "description": "A single line in fetch.txt. Contains the URL from which the file can be retrieved, its expected length (or '-' if unknown), and the file path where it should be placed relative to the bag base directory.",
       "parent": "Fetch File",
       "children": [],
       "fields": [
-        { "name": "url", "type": "string", "label": "URL" },
-        { "name": "length", "type": "number", "label": "Length (bytes)" },
-        { "name": "filename", "type": "string", "label": "Filename" }
+        { "name": "url", "type": "string", "label": "URL (absolute URI)", "required": true },
+        { "name": "length", "type": "string", "label": "Length (bytes or '-')", "required": true },
+        { "name": "filePath", "type": "string", "label": "File Path (relative to base)", "required": true }
       ]
     },
     {
-      "name": "Bag Metadata",
-      "type": "extended_metadata",
-      "description": "Additional optional metadata files",
-      "parent": "Tag Files",
-      "children": ["Custom Metadata"],
-      "fields": [
-        { "name": "metadataFileName", "type": "string", "label": "Metadata File Name" },
-        { "name": "metadataFormat", "type": "string", "label": "Metadata Format" }
-      ]
-    },
-    {
-      "name": "Custom Metadata",
-      "type": "metadata_element",
-      "description": "Custom metadata in any format",
-      "parent": "Bag Metadata",
+      "name": "Other Tag Files",
+      "type": "optional_tag_file",
+      "description": "Arbitrary additional tag files created by implementers. May be in any format and placed in the bag base directory or in tag subdirectories. Their contents are otherwise ignored by BagIt processing unless listed in a tag manifest.",
+      "parent": "Bag",
       "children": [],
+      "note": "OPTIONAL. If listed in a tag manifest, must pass checksum validation. Tag directories may be used to organize additional tag files.",
       "fields": [
-        { "name": "metadataKey", "type": "string", "label": "Metadata Key" },
-        { "name": "metadataValue", "type": "string", "label": "Metadata Value" }
+        { "name": "tagFileName", "type": "string", "label": "Tag File Name", "required": true },
+        { "name": "tagFilePath", "type": "string", "label": "Tag File Path (relative to base)", "required": true },
+        { "name": "tagFileFormat", "type": "string", "label": "Tag File Format", "required": false }
       ]
     }
   ],
   "checksumAlgorithms": {
-    "md5": "MD5 message digest (manifest-md5.txt)",
-    "sha1": "SHA-1 secure hash (manifest-sha1.txt)",
-    "sha256": "SHA-256 secure hash (manifest-sha256.txt)",
-    "sha512": "SHA-512 secure hash (manifest-sha512.txt)"
+    "md5": "MD5 message digest (manifest-md5.txt). Widely supported but not recommended for new bags.",
+    "sha1": "SHA-1 secure hash (manifest-sha1.txt). Supported but not recommended for new bags.",
+    "sha256": "SHA-256 secure hash (manifest-sha256.txt). MUST be supported by BagIt 1.0 implementations.",
+    "sha512": "SHA-512 secure hash (manifest-sha512.txt). MUST be supported by BagIt 1.0 implementations. SHOULD be enabled by default."
   },
   "requiredFiles": {
-    "bagit.txt": "BagIt version and encoding declaration (REQUIRED)",
-    "data/": "Directory containing payload files (REQUIRED)",
-    "manifest-<algorithm>.txt": "At least one payload manifest (REQUIRED)"
+    "bagit.txt": "BagIt version and tag file character encoding declaration. REQUIRED in every bag.",
+    "data/": "Payload directory containing all digital content. REQUIRED in every bag.",
+    "manifest-ALGORITHM.txt": "Payload manifest with checksum for every payload file. At least one REQUIRED."
   },
   "optionalFiles": {
-    "bag-info.txt": "Metadata about the bag",
-    "tagmanifest-<algorithm>.txt": "Manifest for tag files",
-    "fetch.txt": "List of files to fetch from URLs"
+    "bag-info.txt": "Metadata about the bag as key-value pairs. OPTIONAL.",
+    "tagmanifest-ALGORITHM.txt": "Manifest with checksums for tag files. OPTIONAL.",
+    "fetch.txt": "List of URLs for remote payload files. OPTIONAL."
   },
-  "standardMetadataFields": {
-    "Source-Organization": "Organization transferring the content",
-    "Organization-Address": "Mailing address of source organization",
-    "Contact-Name": "Person at source organization",
-    "Contact-Phone": "Phone number of contact",
-    "Contact-Email": "Email address of contact",
-    "External-Description": "Brief explanation of content and provenance",
-    "External-Identifier": "Sender-supplied identifier",
-    "Bag-Size": "Size or size range of bag (e.g., 260 GB)",
-    "Payload-Oxum": "Octet stream sum (bytes.files)",
-    "Bag-Group-Identifier": "Identifier for collection of bags",
-    "Bag-Count": "Position in bag group (e.g., 1 of 15)",
-    "Internal-Sender-Identifier": "Alternate sender-specific identifier",
-    "Internal-Sender-Description": "Sender-local description",
-    "Bagging-Date": "Date the content was prepared (YYYY-MM-DD)",
-    "Bagging-Software": "Software and version used to create bag"
+  "reservedMetadataElements": {
+    "Source-Organization": {
+      "description": "Organization transferring the content",
+      "repeatable": true
+    },
+    "Organization-Address": {
+      "description": "Mailing address of the source organization",
+      "repeatable": true
+    },
+    "Contact-Name": {
+      "description": "Person at the source organization responsible for the content transfer",
+      "repeatable": true
+    },
+    "Contact-Phone": {
+      "description": "International format telephone number of the contact person",
+      "repeatable": true
+    },
+    "Contact-Email": {
+      "description": "Fully qualified email address of the contact person",
+      "repeatable": true
+    },
+    "External-Description": {
+      "description": "Brief explanation of the contents and provenance",
+      "repeatable": true
+    },
+    "Bagging-Date": {
+      "description": "Date the content was prepared for transfer, in YYYY-MM-DD format per RFC 3339",
+      "repeatable": false
+    },
+    "External-Identifier": {
+      "description": "Sender-supplied identifier for the bag",
+      "repeatable": true
+    },
+    "Bag-Size": {
+      "description": "Approximate size of the bag, intended for human consumption (e.g., '260 MB', '5.2 GB')",
+      "repeatable": false
+    },
+    "Payload-Oxum": {
+      "description": "The payload octet stream sum in format 'OctetCount.StreamCount' where OctetCount is total bytes and StreamCount is total number of payload files",
+      "repeatable": false
+    },
+    "Bag-Group-Identifier": {
+      "description": "A unique name given to a set of bags that together form a logical group",
+      "repeatable": false
+    },
+    "Bag-Count": {
+      "description": "Sequence number within a bag group in format 'N of T' (e.g., '1 of 15'). Use '?' for unknown total.",
+      "repeatable": false
+    },
+    "Internal-Sender-Identifier": {
+      "description": "An alternate sender-specific identifier for the content being transferred",
+      "repeatable": true
+    },
+    "Internal-Sender-Description": {
+      "description": "A sender-local explanation of the contents and provenance",
+      "repeatable": true
+    }
+  },
+  "bagStructure": {
+    "baseDirectory": "The top-level directory of the bag, which may have any name",
+    "payloadDirectory": "data/ — REQUIRED directory containing all payload files",
+    "tagDirectory": "Any directory at the top level other than data/, used for organizing additional tag files",
+    "payloadFile": "Any file under data/",
+    "tagFile": "Any file not under data/"
+  },
+  "validationRequirements": {
+    "completeness": [
+      "bagit.txt exists and is valid",
+      "At least one payload manifest exists",
+      "Every file listed in every payload manifest is present",
+      "Every file listed in every tag manifest is present",
+      "Every payload file appears in every payload manifest",
+      "No tag file appears in a payload manifest",
+      "No payload file appears in a tag manifest"
+    ],
+    "validity": [
+      "Bag is complete",
+      "Every checksum in every payload manifest matches the corresponding file",
+      "Every checksum in every tag manifest matches the corresponding file"
+    ]
   },
   "fileNamingRules": {
-    "payload_directory": "Must be named 'data'",
-    "manifest_naming": "manifest-<algorithm>.txt (e.g., manifest-md5.txt)",
-    "tagmanifest_naming": "tagmanifest-<algorithm>.txt",
-    "reserved_names": "bagit.txt, bag-info.txt, fetch.txt reserved"
+    "payloadDirectory": "Must be named 'data'",
+    "manifestNaming": "manifest-ALGORITHM.txt (e.g., manifest-sha256.txt)",
+    "tagManifestNaming": "tagmanifest-ALGORITHM.txt (e.g., tagmanifest-sha512.txt)",
+    "reservedNames": "bagit.txt, bag-info.txt, fetch.txt are reserved tag file names",
+    "pathSeparator": "Filepaths in manifests and fetch.txt MUST use '/' (forward slash) as separator",
+    "percentEncoding": "LF, CR, CRLF, and % in filepaths must be percent-encoded per RFC 3986"
   },
-  "validationSteps": {
-    "step1": "Verify bagit.txt exists and is valid",
-    "step2": "Verify at least one manifest exists",
-    "step3": "Verify all payload files in manifest exist",
-    "step4": "Verify checksums of all payload files",
-    "step5": "Verify no extra files in payload directory",
-    "step6": "If tag manifest exists, verify tag file checksums",
-    "step7": "If fetch.txt exists, fetch and verify remote files"
+  "serialization": {
+    "zip": "ZIP archive of the bag base directory",
+    "tar": "TAR archive of the bag base directory",
+    "tar.gz": "Gzip-compressed TAR archive",
+    "tar.bz2": "Bzip2-compressed TAR archive"
+  },
+  "bagItVersions": {
+    "0.93": "Early draft version",
+    "0.95": "Intermediate draft version",
+    "0.96": "Late draft version",
+    "0.97": "Final draft before RFC",
+    "1.0": "Current version as defined in RFC 8493 (October 2018)"
   }
 }

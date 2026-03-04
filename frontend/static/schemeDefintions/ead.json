@@ -1,499 +1,1093 @@
 {
   "standard": "EAD",
   "fullName": "Encoded Archival Description",
-  "reference": "EAD3 Version 1.1.1",
-  "description": "Standard for encoding archival finding aids using XML, enabling detailed hierarchical description of archival collections",
-  "version": "3.1.1",
+  "reference": "EAD3 Version 1.1.2",
+  "description": "XML standard for encoding archival finding aids, enabling detailed hierarchical description of archival collections. EAD3 consists of two major sections: control (administrative metadata about the finding aid) and archdesc (description of the archival materials).",
+  "version": "3.1.2",
   "xsdReference": "https://www.loc.gov/ead/ead3.xsd",
   "url": "https://www.loc.gov/ead/",
   "entities": [
     {
       "name": "EAD",
       "type": "root_element",
-      "description": "Root element of an EAD document",
+      "description": "Root element of an EAD3 document. Must contain control followed by archdesc, in that order.",
       "parent": null,
       "children": ["Control", "Archival Description"],
-      "note": "Top-level container for finding aid",
+      "note": "EAD3 root element. The two required children must appear sequentially: control first, then archdesc.",
       "fields": [
-        { "name": "eadID", "type": "string", "label": "EAD ID" },
-        { "name": "audience", "type": "string", "label": "Audience" },
-        { "name": "relatedEncoding", "type": "string", "label": "Related Encoding" }
+        { "name": "eadID", "type": "string", "label": "EAD ID", "required": false },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "relatedEncoding", "type": "string", "label": "Related Encoding", "required": false },
+        { "name": "lang", "type": "string", "label": "Language (xml:lang)", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "base", "type": "string", "label": "Base URI (xml:base)", "required": false }
       ]
     },
     {
       "name": "Control",
       "type": "section",
-      "description": "Administrative metadata about the finding aid itself",
+      "description": "Administrative metadata about the finding aid itself, replacing eadheader from EAD 2002. Contains record identifiers, file description, maintenance status/agency/history, and optional declarations.",
       "parent": "EAD",
-      "children": ["Record ID", "File Description", "Maintenance History"],
+      "children": ["Record ID", "Other Record ID", "Representation", "File Description", "Maintenance Status", "Publication Status", "Maintenance Agency", "Language Declaration", "Convention Declaration", "Rights Declaration", "Local Type Declaration", "Local Control", "Maintenance History", "Sources"],
+      "note": "REQUIRED first child of ead. Must contain recordid, filedesc, maintenancestatus, maintenanceagency, and maintenancehistory.",
       "fields": [
-        { "name": "controlID", "type": "string", "label": "Control ID" },
-        { "name": "maintenanceStatus", "type": "string", "label": "Maintenance Status" },
-        { "name": "publicationStatus", "type": "string", "label": "Publication Status" }
+        { "name": "controlID", "type": "string", "label": "Control ID", "required": false },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "lang", "type": "string", "label": "Language", "required": false },
+        { "name": "script", "type": "string", "label": "Script", "required": false },
+        { "name": "countryEncoding", "type": "string", "label": "Country Encoding", "required": false },
+        { "name": "dateEncoding", "type": "string", "label": "Date Encoding", "required": false },
+        { "name": "langEncoding", "type": "string", "label": "Language Encoding", "required": false },
+        { "name": "repositoryEncoding", "type": "string", "label": "Repository Encoding", "required": false },
+        { "name": "scriptEncoding", "type": "string", "label": "Script Encoding", "required": false },
+        { "name": "relatedEncoding", "type": "string", "label": "Related Encoding", "required": false }
       ]
     },
     {
       "name": "Record ID",
       "type": "control_element",
-      "description": "Unique identifier for the finding aid",
+      "description": "A required unique identifier for the EAD instance (finding aid). Corresponds to the recordid element.",
       "parent": "Control",
       "children": [],
       "fields": [
-        { "name": "recordID", "type": "string", "label": "Record ID" },
-        { "name": "instanceURL", "type": "string", "label": "Instance URL" }
+        { "name": "recordIDValue", "type": "string", "label": "Record ID Value", "required": true },
+        { "name": "instanceURL", "type": "string", "label": "Instance URL", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Other Record ID",
+      "type": "control_element",
+      "description": "Alternative or additional identifiers for the finding aid from other systems. Corresponds to the otherrecordid element.",
+      "parent": "Control",
+      "children": [],
+      "fields": [
+        { "name": "otherRecordIDValue", "type": "string", "label": "Other Record ID Value", "required": true },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Representation",
+      "type": "control_element",
+      "description": "Links to alternate representations of the finding aid (e.g., HTML, PDF versions). Corresponds to the representation element.",
+      "parent": "Control",
+      "children": [],
+      "fields": [
+        { "name": "href", "type": "string", "label": "Reference URL", "required": true },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "linkTitle", "type": "string", "label": "Link Title", "required": false }
       ]
     },
     {
       "name": "File Description",
       "type": "control_element",
-      "description": "Description of the electronic finding aid file",
+      "description": "Bibliographic information about the finding aid document. Must contain titlestmt. Corresponds to the filedesc element.",
       "parent": "Control",
-      "children": ["Title Statement", "Publication Statement"],
+      "children": ["Title Statement", "Edition Statement", "Publication Statement", "Series Statement", "Note Statement"],
+      "note": "REQUIRED child of control.",
       "fields": [
-        { "name": "titleProper", "type": "string", "label": "Title Proper" },
-        { "name": "subtitle", "type": "string", "label": "Subtitle" },
-        { "name": "author", "type": "string", "label": "Author" }
+        { "name": "filedescID", "type": "string", "label": "File Description ID", "required": false }
       ]
     },
     {
       "name": "Title Statement",
       "type": "descriptive_element",
-      "description": "Title information for the finding aid",
+      "description": "Title information for the finding aid, including the title proper, subtitle, author, and sponsor. Must contain at least titleproper. Corresponds to the titlestmt element.",
+      "parent": "File Description",
+      "children": [],
+      "note": "REQUIRED child of filedesc.",
+      "fields": [
+        { "name": "titleProper", "type": "string", "label": "Title Proper", "required": true },
+        { "name": "subtitle", "type": "string", "label": "Subtitle", "required": false },
+        { "name": "author", "type": "string", "label": "Author", "required": false },
+        { "name": "sponsor", "type": "string", "label": "Sponsor", "required": false }
+      ]
+    },
+    {
+      "name": "Edition Statement",
+      "type": "descriptive_element",
+      "description": "Information about the edition of the finding aid. Corresponds to the editionstmt element.",
       "parent": "File Description",
       "children": [],
       "fields": [
-        { "name": "titleProper", "type": "string", "label": "Title Proper" },
-        { "name": "subtitle", "type": "string", "label": "Subtitle" },
-        { "name": "author", "type": "string", "label": "Author" }
+        { "name": "edition", "type": "string", "label": "Edition", "required": false }
       ]
     },
     {
       "name": "Publication Statement",
       "type": "descriptive_element",
-      "description": "Publication information for the finding aid",
+      "description": "Publication or distribution information for the finding aid. Corresponds to the publicationstmt element.",
       "parent": "File Description",
       "children": [],
       "fields": [
-        { "name": "publisher", "type": "string", "label": "Publisher" },
-        { "name": "date", "type": "date", "label": "Publication Date" },
-        { "name": "address", "type": "string", "label": "Address" }
+        { "name": "publisher", "type": "string", "label": "Publisher", "required": false },
+        { "name": "date", "type": "date", "label": "Publication Date", "required": false },
+        { "name": "address", "type": "string", "label": "Address", "required": false },
+        { "name": "num", "type": "string", "label": "Number", "required": false }
+      ]
+    },
+    {
+      "name": "Series Statement",
+      "type": "descriptive_element",
+      "description": "Information about the published series to which the finding aid belongs. Corresponds to the seriesstmt element.",
+      "parent": "File Description",
+      "children": [],
+      "fields": [
+        { "name": "titleProper", "type": "string", "label": "Series Title", "required": false },
+        { "name": "num", "type": "string", "label": "Series Number", "required": false }
+      ]
+    },
+    {
+      "name": "Note Statement",
+      "type": "descriptive_element",
+      "description": "General notes about the finding aid not covered by other elements. Corresponds to the notestmt element.",
+      "parent": "File Description",
+      "children": [],
+      "fields": [
+        { "name": "controlNote", "type": "string", "label": "Control Note", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false }
+      ]
+    },
+    {
+      "name": "Maintenance Status",
+      "type": "control_element",
+      "description": "Current drafting status of the finding aid. The @value attribute is required. Corresponds to the maintenancestatus element.",
+      "parent": "Control",
+      "children": [],
+      "note": "REQUIRED child of control.",
+      "fields": [
+        { "name": "value", "type": "string", "label": "Status Value", "required": true }
+      ]
+    },
+    {
+      "name": "Publication Status",
+      "type": "control_element",
+      "description": "Publication status of the finding aid. Corresponds to the publicationstatus element.",
+      "parent": "Control",
+      "children": [],
+      "fields": [
+        { "name": "value", "type": "string", "label": "Publication Status Value", "required": true }
+      ]
+    },
+    {
+      "name": "Maintenance Agency",
+      "type": "control_element",
+      "description": "Institution or service responsible for the creation, maintenance, and/or dissemination of the finding aid. Corresponds to the maintenanceagency element.",
+      "parent": "Control",
+      "children": [],
+      "note": "REQUIRED child of control. Must contain agencyname.",
+      "fields": [
+        { "name": "agencyCode", "type": "string", "label": "Agency Code", "required": false },
+        { "name": "otherAgencyCode", "type": "string", "label": "Other Agency Code", "required": false },
+        { "name": "agencyName", "type": "string", "label": "Agency Name", "required": true },
+        { "name": "countryCode", "type": "string", "label": "Country Code", "required": false }
+      ]
+    },
+    {
+      "name": "Language Declaration",
+      "type": "control_element",
+      "description": "Declares the language and script used in the finding aid (not the archival materials). Repeatable for multilingual finding aids. Corresponds to the languagedeclaration element.",
+      "parent": "Control",
+      "children": [],
+      "fields": [
+        { "name": "languageCode", "type": "string", "label": "Language Code", "required": true },
+        { "name": "languageLabel", "type": "string", "label": "Language Label", "required": false },
+        { "name": "scriptCode", "type": "string", "label": "Script Code", "required": true },
+        { "name": "scriptLabel", "type": "string", "label": "Script Label", "required": false },
+        { "name": "descriptiveNote", "type": "string", "label": "Descriptive Note", "required": false }
+      ]
+    },
+    {
+      "name": "Convention Declaration",
+      "type": "control_element",
+      "description": "Declares the rules or conventions applied in creating the finding aid (e.g., DACS, ISAD(G), RDA). Corresponds to the conventiondeclaration element.",
+      "parent": "Control",
+      "children": [],
+      "fields": [
+        { "name": "abbreviation", "type": "string", "label": "Abbreviation", "required": false },
+        { "name": "citation", "type": "string", "label": "Citation", "required": true },
+        { "name": "descriptiveNote", "type": "string", "label": "Descriptive Note", "required": false }
+      ]
+    },
+    {
+      "name": "Rights Declaration",
+      "type": "control_element",
+      "description": "Declares the rights and permissions associated with the finding aid (not the archival materials). New in EAD3. Corresponds to the rightsdeclaration element.",
+      "parent": "Control",
+      "children": [],
+      "fields": [
+        { "name": "abbreviation", "type": "string", "label": "Abbreviation", "required": false },
+        { "name": "citation", "type": "string", "label": "Citation", "required": true },
+        { "name": "descriptiveNote", "type": "string", "label": "Descriptive Note", "required": false }
+      ]
+    },
+    {
+      "name": "Local Type Declaration",
+      "type": "control_element",
+      "description": "Declares locally-defined types used in @localtype attributes throughout the finding aid. Corresponds to the localtypedeclaration element.",
+      "parent": "Control",
+      "children": [],
+      "fields": [
+        { "name": "abbreviation", "type": "string", "label": "Abbreviation", "required": false },
+        { "name": "citation", "type": "string", "label": "Citation", "required": true },
+        { "name": "descriptiveNote", "type": "string", "label": "Descriptive Note", "required": false }
+      ]
+    },
+    {
+      "name": "Local Control",
+      "type": "control_element",
+      "description": "Provides locally-defined controlled access terms for the finding aid. Corresponds to the localcontrol element.",
+      "parent": "Control",
+      "children": [],
+      "fields": [
+        { "name": "localType", "type": "string", "label": "Local Type", "required": true },
+        { "name": "term", "type": "string", "label": "Term", "required": true },
+        { "name": "dateRange", "type": "string", "label": "Date Range", "required": false }
       ]
     },
     {
       "name": "Maintenance History",
       "type": "control_element",
-      "description": "History of changes to the finding aid",
+      "description": "Documents the history of the creation and maintenance of the finding aid. Contains one or more maintenance events. Corresponds to the maintenancehistory element.",
       "parent": "Control",
       "children": ["Maintenance Event"],
+      "note": "REQUIRED child of control. Must contain at least one maintenanceevent.",
       "fields": [
-        { "name": "maintenanceHistoryID", "type": "string", "label": "Maintenance History ID" }
+        { "name": "maintenanceHistoryID", "type": "string", "label": "Maintenance History ID", "required": false }
       ]
     },
     {
       "name": "Maintenance Event",
       "type": "event_element",
-      "description": "Individual maintenance event",
+      "description": "Records a single creation, modification, or other maintenance action performed on the finding aid. Must contain eventtype, eventdatetime, agenttype, and agent in that order. Corresponds to the maintenanceevent element.",
       "parent": "Maintenance History",
       "children": [],
+      "note": "REQUIRED within maintenancehistory. All four child elements are required.",
       "fields": [
-        { "name": "eventType", "type": "string", "label": "Event Type" },
-        { "name": "eventDateTime", "type": "date", "label": "Event Date/Time" },
-        { "name": "agentType", "type": "string", "label": "Agent Type" },
-        { "name": "agent", "type": "string", "label": "Agent" },
-        { "name": "eventDescription", "type": "string", "label": "Event Description" }
+        { "name": "eventType", "type": "string", "label": "Event Type (@value)", "required": true },
+        { "name": "eventDateTime", "type": "date", "label": "Event Date/Time", "required": true },
+        { "name": "standardDateTime", "type": "string", "label": "Standard Date/Time (@standarddatetime)", "required": false },
+        { "name": "agentType", "type": "string", "label": "Agent Type (@value)", "required": true },
+        { "name": "agent", "type": "string", "label": "Agent", "required": true },
+        { "name": "eventDescription", "type": "string", "label": "Event Description", "required": false }
+      ]
+    },
+    {
+      "name": "Sources",
+      "type": "control_element",
+      "description": "References to source materials used in creating the finding aid. Corresponds to the sources element.",
+      "parent": "Control",
+      "children": [],
+      "fields": [
+        { "name": "sourceEntry", "type": "string", "label": "Source Entry", "required": false },
+        { "name": "sourceReference", "type": "string", "label": "Source Reference", "required": false },
+        { "name": "descriptiveNote", "type": "string", "label": "Descriptive Note", "required": false }
       ]
     },
     {
       "name": "Archival Description",
       "type": "section",
-      "description": "Description of the archival materials",
+      "description": "Core intellectual description of the archival materials. Must begin with a did (descriptive identification) element. The @level attribute is required. Corresponds to the archdesc element.",
       "parent": "EAD",
-      "children": ["Description Identification", "Components"],
-      "note": "Main descriptive content",
+      "children": ["Description Identification", "Scope and Content", "Biographical/Historical Note", "Custodial History", "Acquisition Information", "Arrangement", "Access Restrictions", "Use Restrictions", "Physical Characteristics and Technical Requirements", "Legal Status", "Appraisal", "Accruals", "Processing Information", "Alternative Form Available", "Location of Originals", "Related Material", "Separated Material", "Other Finding Aid", "Bibliography", "Preferred Citation", "File Plan", "Other Descriptive Data", "Controlled Access Headings", "Index", "Description of Subordinate Components"],
+      "note": "REQUIRED second child of ead. @level is required. Must contain did as its first descriptive element.",
       "fields": [
-        { "name": "archdescID", "type": "string", "label": "Archival Description ID" },
-        { "name": "level", "type": "string", "label": "Level of Description" },
-        { "name": "relatedEncoding", "type": "string", "label": "Related Encoding" }
+        { "name": "archdescID", "type": "string", "label": "Archival Description ID", "required": false },
+        { "name": "level", "type": "string", "label": "Level of Description", "required": true },
+        { "name": "otherLevel", "type": "string", "label": "Other Level", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "relatedEncoding", "type": "string", "label": "Related Encoding", "required": false },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "lang", "type": "string", "label": "Language", "required": false }
       ]
     },
     {
       "name": "Description Identification",
       "type": "did_section",
-      "description": "Core identifying information about the materials",
+      "description": "Binds together core identifying information about the archival materials: title, identifier, dates, extent, repository, creator, language, and abstract. Corresponds to the did element.",
       "parent": "Archival Description",
-      "children": ["Unit Title", "Unit ID", "Unit Date", "Physical Description", "Repository", "Origination", "Language of Material"],
-      "note": "Required descriptive elements",
+      "children": ["Unit Title", "Unit ID", "Unit Date", "Unit Date Structured", "Physical Description", "Physical Description Structured", "Physical Description Set", "Physical Location", "Repository", "Origination", "Language of Material", "Abstract", "Container", "Material Specific Details", "Digital Archival Object", "Digital Archival Object Set", "DID Note"],
+      "note": "REQUIRED first child of archdesc and each component. At minimum should include unittitle and unitid.",
       "fields": [
-        { "name": "didID", "type": "string", "label": "DID ID" },
-        { "name": "audience", "type": "string", "label": "Audience" }
+        { "name": "didID", "type": "string", "label": "DID ID", "required": false },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false }
       ]
     },
     {
       "name": "Unit Title",
       "type": "did_element",
-      "description": "Title of the archival unit",
+      "description": "Title of the described materials. May include dates and name sub-elements. Corresponds to the unittitle element.",
       "parent": "Description Identification",
       "children": [],
       "fields": [
-        { "name": "unitTitle", "type": "string", "label": "Unit Title" },
-        { "name": "titleType", "type": "string", "label": "Title Type" }
+        { "name": "unitTitle", "type": "string", "label": "Unit Title", "required": true },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
       "name": "Unit ID",
       "type": "did_element",
-      "description": "Unique identifier for the archival unit",
+      "description": "Reference code or identifier for the described materials. Corresponds to the unitid element.",
       "parent": "Description Identification",
       "children": [],
       "fields": [
-        { "name": "unitID", "type": "string", "label": "Unit ID" },
-        { "name": "identifier", "type": "string", "label": "Identifier" },
-        { "name": "repositoryCode", "type": "string", "label": "Repository Code" }
+        { "name": "unitIDValue", "type": "string", "label": "Unit ID Value", "required": true },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "countryCode", "type": "string", "label": "Country Code", "required": false },
+        { "name": "repositoryCode", "type": "string", "label": "Repository Code", "required": false },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
       "name": "Unit Date",
       "type": "did_element",
-      "description": "Date(s) of the archival materials",
+      "description": "Date or date range of the described materials, expressed as a text string. Corresponds to the unitdate element.",
       "parent": "Description Identification",
       "children": [],
       "fields": [
-        { "name": "unitDate", "type": "string", "label": "Unit Date" },
-        { "name": "dateType", "type": "string", "label": "Date Type" },
-        { "name": "normal", "type": "string", "label": "Normalized Date" },
-        { "name": "calendar", "type": "string", "label": "Calendar" },
-        { "name": "era", "type": "string", "label": "Era" }
+        { "name": "unitDateValue", "type": "string", "label": "Unit Date", "required": true },
+        { "name": "dateType", "type": "string", "label": "Date Type", "required": false },
+        { "name": "normal", "type": "string", "label": "Normalized Date (ISO 8601)", "required": false },
+        { "name": "calendar", "type": "string", "label": "Calendar", "required": false },
+        { "name": "era", "type": "string", "label": "Era", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false },
+        { "name": "certainty", "type": "string", "label": "Certainty", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Unit Date Structured",
+      "type": "did_element",
+      "description": "Machine-processable date or date range of the described materials. New in EAD3. Contains datesingle, daterange, or dateset sub-elements. Corresponds to the unitdatestructured element.",
+      "parent": "Description Identification",
+      "children": [],
+      "fields": [
+        { "name": "dateType", "type": "string", "label": "Date Type", "required": false },
+        { "name": "dateSingle", "type": "date", "label": "Single Date", "required": false },
+        { "name": "fromDate", "type": "date", "label": "From Date", "required": false },
+        { "name": "toDate", "type": "date", "label": "To Date", "required": false },
+        { "name": "standardDate", "type": "string", "label": "Standard Date (ISO 8601)", "required": false },
+        { "name": "calendar", "type": "string", "label": "Calendar", "required": false },
+        { "name": "era", "type": "string", "label": "Era", "required": false },
+        { "name": "certainty", "type": "string", "label": "Certainty", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
       "name": "Physical Description",
       "type": "did_element",
-      "description": "Physical characteristics and extent",
+      "description": "Free-text statement of the physical characteristics and extent of the described materials. Corresponds to the physdesc element.",
       "parent": "Description Identification",
-      "children": ["Extent", "Dimensions"],
+      "children": [],
       "fields": [
-        { "name": "physdescID", "type": "string", "label": "Physical Description ID" }
+        { "name": "physDescValue", "type": "string", "label": "Physical Description", "required": true },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
-      "name": "Extent",
-      "type": "physdesc_element",
-      "description": "Quantity of materials",
-      "parent": "Physical Description",
+      "name": "Physical Description Structured",
+      "type": "did_element",
+      "description": "Machine-processable structured physical description using quantity, unittype, physfacet, and dimensions. New in EAD3. Corresponds to the physdescstructured element.",
+      "parent": "Description Identification",
       "children": [],
       "fields": [
-        { "name": "extent", "type": "string", "label": "Extent" },
-        { "name": "unit", "type": "string", "label": "Unit" },
-        { "name": "quantity", "type": "number", "label": "Quantity" }
+        { "name": "quantity", "type": "number", "label": "Quantity", "required": true },
+        { "name": "unitType", "type": "string", "label": "Unit Type", "required": true },
+        { "name": "physFacet", "type": "string", "label": "Physical Facet", "required": false },
+        { "name": "dimensions", "type": "string", "label": "Dimensions", "required": false },
+        { "name": "coverage", "type": "string", "label": "Coverage", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
-      "name": "Dimensions",
-      "type": "physdesc_element",
-      "description": "Physical dimensions of materials",
-      "parent": "Physical Description",
+      "name": "Physical Description Set",
+      "type": "did_element",
+      "description": "Groups multiple physdescstructured elements using parallel or coverage attributes. New in EAD3. Corresponds to the physdescset element.",
+      "parent": "Description Identification",
+      "children": ["Physical Description Structured"],
+      "fields": [
+        { "name": "parallel", "type": "string", "label": "Parallel", "required": false },
+        { "name": "coverage", "type": "string", "label": "Coverage", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false }
+      ]
+    },
+    {
+      "name": "Physical Location",
+      "type": "did_element",
+      "description": "Information identifying the physical location of the described materials. Corresponds to the physloc element.",
+      "parent": "Description Identification",
       "children": [],
       "fields": [
-        { "name": "dimensions", "type": "string", "label": "Dimensions" },
-        { "name": "unit", "type": "string", "label": "Unit" }
+        { "name": "physLocValue", "type": "string", "label": "Physical Location", "required": true },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false },
+        { "name": "parent", "type": "string", "label": "Parent Location", "required": false }
       ]
     },
     {
       "name": "Repository",
       "type": "did_element",
-      "description": "Institution holding the materials",
+      "description": "Institution or agency responsible for providing intellectual access to the described materials. Corresponds to the repository element.",
       "parent": "Description Identification",
       "children": [],
       "fields": [
-        { "name": "repositoryName", "type": "string", "label": "Repository Name" },
-        { "name": "repositoryCode", "type": "string", "label": "Repository Code" },
-        { "name": "address", "type": "string", "label": "Address" }
+        { "name": "repositoryName", "type": "string", "label": "Repository Name", "required": true },
+        { "name": "repositoryCode", "type": "string", "label": "Repository Code", "required": false },
+        { "name": "address", "type": "string", "label": "Address", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
       "name": "Origination",
       "type": "did_element",
-      "description": "Creator(s) of the materials",
+      "description": "Creator or source of the described materials. Contains name elements (persname, corpname, famname, or name). Corresponds to the origination element.",
       "parent": "Description Identification",
       "children": ["Person Name", "Corporate Name", "Family Name"],
       "fields": [
-        { "name": "originationID", "type": "string", "label": "Origination ID" },
-        { "name": "label", "type": "string", "label": "Label" }
+        { "name": "originationLabel", "type": "string", "label": "Label", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
       "name": "Person Name",
       "type": "name_element",
-      "description": "Personal name",
+      "description": "Name of a person, used in origination, controlaccess, and other contexts. Contains one or more part sub-elements. Corresponds to the persname element.",
       "parent": "Origination",
       "children": [],
       "fields": [
-        { "name": "persName", "type": "string", "label": "Person Name" },
-        { "name": "source", "type": "string", "label": "Authority Source" },
-        { "name": "identifier", "type": "string", "label": "Authority Identifier" },
-        { "name": "role", "type": "string", "label": "Role" }
+        { "name": "persNameValue", "type": "string", "label": "Person Name", "required": true },
+        { "name": "source", "type": "string", "label": "Authority Source", "required": false },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier", "required": false },
+        { "name": "rules", "type": "string", "label": "Rules", "required": false },
+        { "name": "role", "type": "string", "label": "Role", "required": false },
+        { "name": "relator", "type": "string", "label": "Relator", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
       "name": "Corporate Name",
       "type": "name_element",
-      "description": "Corporate body name",
+      "description": "Name of a corporate body or organization. Corresponds to the corpname element.",
       "parent": "Origination",
       "children": [],
       "fields": [
-        { "name": "corpName", "type": "string", "label": "Corporate Name" },
-        { "name": "source", "type": "string", "label": "Authority Source" },
-        { "name": "identifier", "type": "string", "label": "Authority Identifier" },
-        { "name": "role", "type": "string", "label": "Role" }
+        { "name": "corpNameValue", "type": "string", "label": "Corporate Name", "required": true },
+        { "name": "source", "type": "string", "label": "Authority Source", "required": false },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier", "required": false },
+        { "name": "rules", "type": "string", "label": "Rules", "required": false },
+        { "name": "role", "type": "string", "label": "Role", "required": false },
+        { "name": "relator", "type": "string", "label": "Relator", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
       "name": "Family Name",
       "type": "name_element",
-      "description": "Family name",
+      "description": "Name of a family. Corresponds to the famname element.",
       "parent": "Origination",
       "children": [],
       "fields": [
-        { "name": "famName", "type": "string", "label": "Family Name" },
-        { "name": "source", "type": "string", "label": "Authority Source" },
-        { "name": "identifier", "type": "string", "label": "Authority Identifier" },
-        { "name": "role", "type": "string", "label": "Role" }
+        { "name": "famNameValue", "type": "string", "label": "Family Name", "required": true },
+        { "name": "source", "type": "string", "label": "Authority Source", "required": false },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier", "required": false },
+        { "name": "rules", "type": "string", "label": "Rules", "required": false },
+        { "name": "role", "type": "string", "label": "Role", "required": false },
+        { "name": "relator", "type": "string", "label": "Relator", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
       "name": "Language of Material",
       "type": "did_element",
-      "description": "Language(s) of the archival materials",
+      "description": "Language(s) and script(s) of the described archival materials. May contain language and languageset sub-elements. Corresponds to the langmaterial element.",
       "parent": "Description Identification",
       "children": [],
       "fields": [
-        { "name": "languageCode", "type": "string", "label": "Language Code (ISO 639-2)" },
-        { "name": "scriptCode", "type": "string", "label": "Script Code (ISO 15924)" },
-        { "name": "languageText", "type": "string", "label": "Language Text" }
+        { "name": "languageCode", "type": "string", "label": "Language Code (ISO 639-2/3)", "required": false },
+        { "name": "languageLabel", "type": "string", "label": "Language Label", "required": false },
+        { "name": "scriptCode", "type": "string", "label": "Script Code (ISO 15924)", "required": false },
+        { "name": "scriptLabel", "type": "string", "label": "Script Label", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
-      "name": "Components",
-      "type": "hierarchical_section",
-      "description": "Hierarchical components of the collection",
-      "parent": "Archival Description",
-      "children": ["Component", "Series", "Subseries", "File", "Item"],
-      "note": "Nested structure for multi-level description",
+      "name": "Abstract",
+      "type": "did_element",
+      "description": "Brief summary of the described materials, including scope, content, and biographical/historical context. Corresponds to the abstract element.",
+      "parent": "Description Identification",
+      "children": [],
       "fields": [
-        { "name": "componentID", "type": "string", "label": "Component ID" },
-        { "name": "level", "type": "string", "label": "Level" }
+        { "name": "abstractValue", "type": "string", "label": "Abstract", "required": true },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
-      "name": "Component",
-      "type": "component_element",
-      "description": "Generic component in the hierarchy",
-      "parent": "Components",
-      "children": ["Description Identification", "Component"],
-      "note": "Can nest recursively",
+      "name": "Container",
+      "type": "did_element",
+      "description": "Identifies the physical housing (box, folder, volume, etc.) of the described materials. Corresponds to the container element.",
+      "parent": "Description Identification",
+      "children": [],
       "fields": [
-        { "name": "componentID", "type": "string", "label": "Component ID" },
-        { "name": "level", "type": "string", "label": "Level of Description" },
-        { "name": "otherlevel", "type": "string", "label": "Other Level" },
-        { "name": "audience", "type": "string", "label": "Audience" }
+        { "name": "containerValue", "type": "string", "label": "Container Value", "required": true },
+        { "name": "localType", "type": "string", "label": "Container Type", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false },
+        { "name": "parent", "type": "string", "label": "Parent Container", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
-      "name": "Series",
-      "type": "component_element",
-      "description": "Series-level component",
-      "parent": "Components",
-      "children": ["Description Identification", "Subseries", "File", "Item"],
+      "name": "Material Specific Details",
+      "type": "did_element",
+      "description": "Information unique to specific types of materials (e.g., cartographic, musical). Corresponds to the materialspec element.",
+      "parent": "Description Identification",
+      "children": [],
       "fields": [
-        { "name": "seriesID", "type": "string", "label": "Series ID" },
-        { "name": "level", "type": "string", "label": "Level" }
+        { "name": "materialSpecValue", "type": "string", "label": "Material Specific Details", "required": true },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false }
       ]
     },
     {
-      "name": "Subseries",
-      "type": "component_element",
-      "description": "Subseries-level component",
-      "parent": "Series",
-      "children": ["Description Identification", "File", "Item"],
+      "name": "Digital Archival Object",
+      "type": "did_element",
+      "description": "Links to a born-digital or digitized archival object. Uses @href to point to the digital object and @daotype to specify born digital or derived. Corresponds to the dao element.",
+      "parent": "Description Identification",
+      "children": [],
       "fields": [
-        { "name": "subseriesID", "type": "string", "label": "Subseries ID" },
-        { "name": "level", "type": "string", "label": "Level" }
+        { "name": "href", "type": "string", "label": "Reference URL", "required": true },
+        { "name": "daoType", "type": "string", "label": "DAO Type", "required": true },
+        { "name": "coverage", "type": "string", "label": "Coverage", "required": false },
+        { "name": "linkTitle", "type": "string", "label": "Link Title", "required": false },
+        { "name": "linkRole", "type": "string", "label": "Link Role", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false }
       ]
     },
     {
-      "name": "File",
-      "type": "component_element",
-      "description": "File-level component",
-      "parent": "Subseries",
-      "children": ["Description Identification", "Item"],
+      "name": "Digital Archival Object Set",
+      "type": "did_element",
+      "description": "Groups multiple related digital archival objects. New in EAD3. Corresponds to the daoset element.",
+      "parent": "Description Identification",
+      "children": ["Digital Archival Object"],
       "fields": [
-        { "name": "fileID", "type": "string", "label": "File ID" },
-        { "name": "level", "type": "string", "label": "Level" }
+        { "name": "coverage", "type": "string", "label": "Coverage", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false }
       ]
     },
     {
-      "name": "Item",
-      "type": "component_element",
-      "description": "Item-level component",
-      "parent": "File",
-      "children": ["Description Identification"],
+      "name": "DID Note",
+      "type": "did_element",
+      "description": "General note within the descriptive identification section. Corresponds to the didnote element.",
+      "parent": "Description Identification",
+      "children": [],
       "fields": [
-        { "name": "itemID", "type": "string", "label": "Item ID" },
-        { "name": "level", "type": "string", "label": "Level" }
+        { "name": "didNoteValue", "type": "string", "label": "DID Note", "required": true },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "label", "type": "string", "label": "Label", "required": false }
       ]
     },
     {
       "name": "Scope and Content",
       "type": "descriptive_note",
-      "description": "Summary of the scope and content of the materials",
+      "description": "Summary of the range and topical coverage of the described materials, including content types and dates. Corresponds to the scopecontent element.",
       "parent": "Archival Description",
       "children": [],
       "fields": [
-        { "name": "scopeContent", "type": "string", "label": "Scope and Content" },
-        { "name": "audience", "type": "string", "label": "Audience" }
-      ]
-    },
-    {
-      "name": "Arrangement",
-      "type": "descriptive_note",
-      "description": "Information about the arrangement of materials",
-      "parent": "Archival Description",
-      "children": [],
-      "fields": [
-        { "name": "arrangement", "type": "string", "label": "Arrangement" },
-        { "name": "audience", "type": "string", "label": "Audience" }
-      ]
-    },
-    {
-      "name": "Access Restrictions",
-      "type": "access_element",
-      "description": "Conditions affecting access to materials",
-      "parent": "Archival Description",
-      "children": [],
-      "fields": [
-        { "name": "accessRestrict", "type": "string", "label": "Access Restrictions" },
-        { "name": "restrictionType", "type": "string", "label": "Restriction Type" },
-        { "name": "audience", "type": "string", "label": "Audience" }
-      ]
-    },
-    {
-      "name": "Use Restrictions",
-      "type": "access_element",
-      "description": "Conditions affecting use of materials",
-      "parent": "Archival Description",
-      "children": [],
-      "fields": [
-        { "name": "useRestrict", "type": "string", "label": "Use Restrictions" },
-        { "name": "restrictionType", "type": "string", "label": "Restriction Type" },
-        { "name": "audience", "type": "string", "label": "Audience" }
+        { "name": "scopeContent", "type": "string", "label": "Scope and Content", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
       "name": "Biographical/Historical Note",
       "type": "descriptive_note",
-      "description": "Biographical or historical information about the creator",
+      "description": "Biographical sketch or administrative history of the creator of the described materials. Corresponds to the bioghist element.",
       "parent": "Archival Description",
       "children": [],
       "fields": [
-        { "name": "bioghist", "type": "string", "label": "Biographical/Historical Note" },
-        { "name": "audience", "type": "string", "label": "Audience" }
+        { "name": "bioghist", "type": "string", "label": "Biographical/Historical Note", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
-      "name": "Related Materials",
+      "name": "Custodial History",
       "type": "descriptive_note",
-      "description": "Information about related archival materials",
+      "description": "Information about the chain of ownership and custody of the described materials prior to their acquisition. Corresponds to the custodhist element.",
       "parent": "Archival Description",
       "children": [],
       "fields": [
-        { "name": "relatedMaterial", "type": "string", "label": "Related Materials" },
-        { "name": "audience", "type": "string", "label": "Audience" }
+        { "name": "custodHist", "type": "string", "label": "Custodial History", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Acquisition Information",
+      "type": "descriptive_note",
+      "description": "Information about how the described materials were acquired by the repository. Corresponds to the acqinfo element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "acqInfo", "type": "string", "label": "Acquisition Information", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Arrangement",
+      "type": "descriptive_note",
+      "description": "Information about the organization and arrangement of the described materials. Corresponds to the arrangement element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "arrangement", "type": "string", "label": "Arrangement", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Access Restrictions",
+      "type": "access_element",
+      "description": "Conditions governing access to the described materials. Corresponds to the accessrestrict element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "accessRestrict", "type": "string", "label": "Access Restrictions", "required": true },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Use Restrictions",
+      "type": "access_element",
+      "description": "Conditions governing the use of the described materials after access has been granted. Corresponds to the userestrict element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "useRestrict", "type": "string", "label": "Use Restrictions", "required": true },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Physical Characteristics and Technical Requirements",
+      "type": "descriptive_note",
+      "description": "Information about physical characteristics or technical requirements that affect use of the described materials. Corresponds to the phystech element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "physTech", "type": "string", "label": "Physical/Technical Requirements", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Legal Status",
+      "type": "descriptive_note",
+      "description": "Legal status or nature of the described materials. Corresponds to the legalstatus element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "legalStatus", "type": "string", "label": "Legal Status", "required": true },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Appraisal",
+      "type": "descriptive_note",
+      "description": "Information about the appraisal or evaluation of the described materials. Corresponds to the appraisal element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "appraisal", "type": "string", "label": "Appraisal Information", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Accruals",
+      "type": "descriptive_note",
+      "description": "Information about anticipated additions to the described materials. Corresponds to the accruals element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "accruals", "type": "string", "label": "Accruals", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Processing Information",
+      "type": "descriptive_note",
+      "description": "Information about actions taken by the repository in preparing the described materials for use. Corresponds to the processinfo element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "processInfo", "type": "string", "label": "Processing Information", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Alternative Form Available",
+      "type": "descriptive_note",
+      "description": "Information about alternative formats in which the described materials exist (e.g., microfilm, digital copies). Corresponds to the altformavail element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "altFormAvail", "type": "string", "label": "Alternative Form Available", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Location of Originals",
+      "type": "descriptive_note",
+      "description": "Information about the location of originals when the repository holds copies. Corresponds to the originalsloc element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "originalsLoc", "type": "string", "label": "Location of Originals", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Related Material",
+      "type": "descriptive_note",
+      "description": "Information about materials related to the described materials that are not physically or logically part of them. Corresponds to the relatedmaterial element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "relatedMaterial", "type": "string", "label": "Related Material", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Separated Material",
+      "type": "descriptive_note",
+      "description": "Information about materials that have been separated from the described materials and are now held elsewhere. Corresponds to the separatedmaterial element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "separatedMaterial", "type": "string", "label": "Separated Material", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Other Finding Aid",
+      "type": "descriptive_note",
+      "description": "Information about other finding aids to the described materials. Corresponds to the otherfindaid element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "otherFindAid", "type": "string", "label": "Other Finding Aid", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Bibliography",
+      "type": "descriptive_note",
+      "description": "Citations to works based on or about the described materials. Corresponds to the bibliography element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "bibliography", "type": "string", "label": "Bibliography", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Preferred Citation",
+      "type": "descriptive_note",
+      "description": "The preferred form of citation for the described materials. Corresponds to the prefercite element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "preferCite", "type": "string", "label": "Preferred Citation", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "File Plan",
+      "type": "descriptive_note",
+      "description": "Information about the classification scheme or file plan of the described materials. Corresponds to the fileplan element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "filePlan", "type": "string", "label": "File Plan", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Other Descriptive Data",
+      "type": "descriptive_note",
+      "description": "Descriptive information not covered by other EAD elements. Corresponds to the odd element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "oddValue", "type": "string", "label": "Other Descriptive Data", "required": true },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
       "name": "Controlled Access Headings",
       "type": "index_section",
-      "description": "Controlled vocabulary terms for indexing",
+      "description": "Groups controlled vocabulary access terms for indexing and retrieval. Contains name, subject, and other access point elements. Corresponds to the controlaccess element.",
       "parent": "Archival Description",
-      "children": ["Subject", "Geographic Name", "Genre/Form", "Occupation"],
+      "children": ["Subject", "Person Name", "Corporate Name", "Family Name", "Geographic Name", "Genre/Form", "Function", "Occupation", "Title"],
       "fields": [
-        { "name": "controlAccessID", "type": "string", "label": "Control Access ID" }
+        { "name": "controlAccessID", "type": "string", "label": "Control Access ID", "required": false },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
       "name": "Subject",
       "type": "index_term",
-      "description": "Subject heading",
+      "description": "Subject heading from a controlled vocabulary. Corresponds to the subject element.",
       "parent": "Controlled Access Headings",
       "children": [],
       "fields": [
-        { "name": "subject", "type": "string", "label": "Subject" },
-        { "name": "source", "type": "string", "label": "Authority Source" },
-        { "name": "identifier", "type": "string", "label": "Authority Identifier" }
+        { "name": "subjectValue", "type": "string", "label": "Subject", "required": true },
+        { "name": "source", "type": "string", "label": "Authority Source", "required": false },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier", "required": false },
+        { "name": "rules", "type": "string", "label": "Rules", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
       "name": "Geographic Name",
       "type": "index_term",
-      "description": "Geographic subject heading",
+      "description": "Geographic name heading from a controlled vocabulary. Corresponds to the geogname element.",
       "parent": "Controlled Access Headings",
       "children": [],
       "fields": [
-        { "name": "geogName", "type": "string", "label": "Geographic Name" },
-        { "name": "source", "type": "string", "label": "Authority Source" },
-        { "name": "identifier", "type": "string", "label": "Authority Identifier" }
+        { "name": "geogNameValue", "type": "string", "label": "Geographic Name", "required": true },
+        { "name": "source", "type": "string", "label": "Authority Source", "required": false },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier", "required": false },
+        { "name": "rules", "type": "string", "label": "Rules", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
       "name": "Genre/Form",
       "type": "index_term",
-      "description": "Genre or form term",
+      "description": "Genre or physical form heading. Corresponds to the genreform element.",
       "parent": "Controlled Access Headings",
       "children": [],
       "fields": [
-        { "name": "genreForm", "type": "string", "label": "Genre/Form" },
-        { "name": "source", "type": "string", "label": "Authority Source" },
-        { "name": "identifier", "type": "string", "label": "Authority Identifier" }
+        { "name": "genreFormValue", "type": "string", "label": "Genre/Form", "required": true },
+        { "name": "source", "type": "string", "label": "Authority Source", "required": false },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier", "required": false },
+        { "name": "rules", "type": "string", "label": "Rules", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Function",
+      "type": "index_term",
+      "description": "Access term for a function or activity that generated the described materials. Corresponds to the function element.",
+      "parent": "Controlled Access Headings",
+      "children": [],
+      "fields": [
+        { "name": "functionValue", "type": "string", "label": "Function", "required": true },
+        { "name": "source", "type": "string", "label": "Authority Source", "required": false },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier", "required": false },
+        { "name": "rules", "type": "string", "label": "Rules", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     },
     {
       "name": "Occupation",
       "type": "index_term",
-      "description": "Occupation term",
+      "description": "Occupation access term. Corresponds to the occupation element.",
       "parent": "Controlled Access Headings",
       "children": [],
       "fields": [
-        { "name": "occupation", "type": "string", "label": "Occupation" },
-        { "name": "source", "type": "string", "label": "Authority Source" },
-        { "name": "identifier", "type": "string", "label": "Authority Identifier" }
+        { "name": "occupationValue", "type": "string", "label": "Occupation", "required": true },
+        { "name": "source", "type": "string", "label": "Authority Source", "required": false },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier", "required": false },
+        { "name": "rules", "type": "string", "label": "Rules", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Title",
+      "type": "index_term",
+      "description": "Title access term for a related work. Corresponds to the title element within controlaccess.",
+      "parent": "Controlled Access Headings",
+      "children": [],
+      "fields": [
+        { "name": "titleValue", "type": "string", "label": "Title", "required": true },
+        { "name": "source", "type": "string", "label": "Authority Source", "required": false },
+        { "name": "identifier", "type": "string", "label": "Authority Identifier", "required": false },
+        { "name": "rules", "type": "string", "label": "Rules", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Index",
+      "type": "descriptive_note",
+      "description": "Index to the described materials. Corresponds to the index element.",
+      "parent": "Archival Description",
+      "children": [],
+      "fields": [
+        { "name": "indexID", "type": "string", "label": "Index ID", "required": false },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
+      ]
+    },
+    {
+      "name": "Description of Subordinate Components",
+      "type": "hierarchical_section",
+      "description": "Wrapper for hierarchical components (c/c01-c12) that describe sub-units of the archival materials. Corresponds to the dsc element.",
+      "parent": "Archival Description",
+      "children": ["Component"],
+      "fields": [
+        { "name": "dscID", "type": "string", "label": "DSC ID", "required": false },
+        { "name": "dscType", "type": "string", "label": "DSC Type", "required": false },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false }
+      ]
+    },
+    {
+      "name": "Component",
+      "type": "component_element",
+      "description": "A hierarchical component representing a sub-unit of the archival materials (series, subseries, file, item, etc.). Can be unnumbered (c) or numbered (c01-c12). Contains a required did plus optional descriptive elements and child components. Corresponds to c/c01-c12 elements.",
+      "parent": "Description of Subordinate Components",
+      "children": ["Description Identification", "Scope and Content", "Biographical/Historical Note", "Custodial History", "Acquisition Information", "Arrangement", "Access Restrictions", "Use Restrictions", "Controlled Access Headings", "Component"],
+      "note": "Recursive nesting creates the multi-level hierarchy. Each component must contain a did. The @level attribute is optional but recommended.",
+      "fields": [
+        { "name": "componentID", "type": "string", "label": "Component ID", "required": false },
+        { "name": "level", "type": "string", "label": "Level of Description", "required": false },
+        { "name": "otherLevel", "type": "string", "label": "Other Level", "required": false },
+        { "name": "audience", "type": "string", "label": "Audience", "required": false },
+        { "name": "localType", "type": "string", "label": "Local Type", "required": false },
+        { "name": "encodingAnalog", "type": "string", "label": "Encoding Analog", "required": false }
       ]
     }
   ],
   "levelsOfDescription": {
+    "collection": "Artificial accumulation of documents assembled by a common theme, person, or source",
     "fonds": "Whole of the records of an organization, family, or individual",
     "subfonds": "Subdivision of a fonds",
-    "collection": "Artificial accumulation of materials",
-    "recordgrp": "Record group",
-    "subgrp": "Subgroup",
-    "series": "Documents arranged in accordance with a filing system",
+    "recordgrp": "Record group (North American usage)",
+    "subgrp": "Subgroup within a record group",
+    "series": "Documents arranged in accordance with a filing system or maintained as a unit",
     "subseries": "Subdivision of a series",
-    "file": "Organized unit of documents grouped together",
+    "file": "Organized unit of documents grouped together for use or filing",
     "item": "Smallest intellectually indivisible archival unit",
-    "otherlevel": "Other level not specified"
+    "class": "A grouping of material resulting from a classification process",
+    "otherlevel": "Level not covered by the controlled list (specify in @otherlevel)"
   },
-  "maintenanceStatuses": {
-    "new": "New finding aid",
-    "revised": "Revised finding aid",
-    "deleted": "Deleted finding aid",
-    "cancelled": "Cancelled finding aid",
-    "derived": "Derived from another finding aid"
+  "maintenanceStatusValues": {
+    "cancelled": "Finding aid instance was cancelled before publication",
+    "deleted": "Finding aid instance has been deleted from the system",
+    "deletedmerged": "Finding aid has been deleted and merged into another record",
+    "deletedreplaced": "Finding aid has been deleted and replaced by another record",
+    "deletedsplit": "Finding aid has been deleted and split into multiple records",
+    "derived": "Finding aid derived from another descriptive system",
+    "new": "Newly created finding aid",
+    "revised": "Finding aid has been revised"
   },
-  "eventTypes": {
-    "created": "Finding aid created",
-    "revised": "Finding aid revised",
-    "updated": "Finding aid updated",
-    "deleted": "Finding aid deleted",
-    "cancelled": "Finding aid cancelled",
-    "derived": "Finding aid derived from another source"
+  "publicationStatusValues": {
+    "approved": "Approved for publication",
+    "inprocess": "In process, not yet approved for publication",
+    "published": "Published and publicly available"
+  },
+  "maintenanceEventTypes": {
+    "cancelled": "Finding aid creation was cancelled",
+    "created": "Finding aid was created",
+    "deleted": "Finding aid was deleted",
+    "derived": "Finding aid was derived from another source",
+    "revised": "Finding aid was revised",
+    "unknown": "Maintenance event type is unknown",
+    "updated": "Finding aid was updated"
+  },
+  "agentTypes": {
+    "human": "A person performed the maintenance action",
+    "machine": "Software performed the maintenance action",
+    "unknown": "The agent type is unknown"
+  },
+  "dateTypes": {
+    "bulk": "Bulk dates (predominant dates of the materials)",
+    "inclusive": "Inclusive dates (earliest to latest dates of the materials)"
+  },
+  "daoTypes": {
+    "borndigital": "Content originally created in digital form",
+    "derived": "Content derived from a physical original (e.g., digitized)",
+    "otherdaotype": "Other type (specify in @otherdaotype)"
+  },
+  "coverageValues": {
+    "whole": "Represents the entirety of the described unit",
+    "part": "Represents only a portion of the described unit"
+  },
+  "physDescStructuredCoverage": {
+    "whole": "Physical description applies to all materials at this level",
+    "part": "Physical description applies to some materials at this level"
+  },
+  "containerTypes": {
+    "box": "Archival box",
+    "folder": "Folder within a box",
+    "volume": "Bound volume",
+    "carton": "Carton or large container",
+    "reel": "Microfilm or tape reel",
+    "frame": "Microfilm frame",
+    "page": "Page within a volume",
+    "oversize": "Oversize container",
+    "mapcase": "Map case drawer"
+  },
+  "authoritySources": {
+    "lcnaf": "Library of Congress Name Authority File",
+    "lcsh": "Library of Congress Subject Headings",
+    "aat": "Art & Architecture Thesaurus (Getty)",
+    "tgn": "Thesaurus of Geographic Names (Getty)",
+    "gmgpc": "Library of Congress Genre/Form terms",
+    "local": "Local authority file"
   }
 }

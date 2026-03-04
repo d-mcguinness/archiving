@@ -1,7 +1,7 @@
 {
   "standard": "Dublin Core",
   "fullName": "Dublin Core Metadata Element Set",
-  "reference": "ISO 15836-1:2017",
+  "reference": "ISO 15836-1:2017 / DCMI Metadata Terms",
   "description": "Simple and effective element set for describing a wide range of networked resources",
   "version": "1.1",
   "xsdReference": "http://dublincore.org/schemas/xmls/",
@@ -12,214 +12,336 @@
       "type": "core_entity",
       "description": "Any resource described using Dublin Core metadata",
       "parent": null,
-      "children": ["Title", "Creator", "Subject", "Description", "Publisher", "Contributor", "Date", "Type", "Format", "Identifier", "Source", "Language", "Relation", "Coverage", "Rights"],
-      "note": "Dublin Core describes any resource using 15 core elements",
+      "children": ["Title", "Creator", "Subject", "Description", "Publisher", "Contributor", "Date", "Type", "Format", "Identifier", "Source", "Language", "Relation", "Coverage", "Rights", "Audience", "Provenance", "Rights Holder"],
+      "note": "Dublin Core describes any resource using 15 core elements (DCES) plus extended DCMI Terms. All elements are optional and repeatable.",
       "fields": [
-        { "name": "resourceIdentifier", "type": "string", "label": "Resource Identifier" },
-        { "name": "resourceType", "type": "string", "label": "Resource Type" }
+        { "name": "resourceIdentifier", "type": "string", "label": "Resource Identifier", "required": true },
+        { "name": "resourceType", "type": "string", "label": "Resource Type", "required": false }
       ]
     },
     {
       "name": "Title",
       "type": "element",
-      "description": "A name given to the resource",
+      "description": "A name given to the resource (dc:title)",
       "parent": "Resource",
+      "children": ["Alternative Title"],
+      "fields": [
+        { "name": "title", "type": "string", "label": "Title", "required": true },
+        { "name": "titleType", "type": "string", "label": "Title Type", "required": false },
+        { "name": "titleLanguage", "type": "string", "label": "Language", "required": false }
+      ]
+    },
+    {
+      "name": "Alternative Title",
+      "type": "element_refinement",
+      "description": "An alternative name for the resource (dcterms:alternative). Refines Title.",
+      "parent": "Title",
       "children": [],
       "fields": [
-        { "name": "title", "type": "string", "label": "Title" },
-        { "name": "titleType", "type": "string", "label": "Title Type" },
-        { "name": "titleLanguage", "type": "string", "label": "Language" }
+        { "name": "alternativeTitle", "type": "string", "label": "Alternative Title", "required": true },
+        { "name": "titleLanguage", "type": "string", "label": "Language", "required": false }
       ]
     },
     {
       "name": "Creator",
       "type": "element",
-      "description": "An entity primarily responsible for making the resource",
+      "description": "An entity primarily responsible for making the resource (dc:creator)",
       "parent": "Resource",
       "children": [],
       "fields": [
-        { "name": "creator", "type": "string", "label": "Creator" },
-        { "name": "creatorType", "type": "string", "label": "Creator Type" },
-        { "name": "creatorIdentifier", "type": "string", "label": "Creator Identifier" }
+        { "name": "creator", "type": "string", "label": "Creator", "required": true },
+        { "name": "creatorType", "type": "string", "label": "Creator Type", "required": false },
+        { "name": "creatorIdentifier", "type": "string", "label": "Creator Identifier", "required": false }
       ]
     },
     {
       "name": "Subject",
       "type": "element",
-      "description": "The topic of the resource",
+      "description": "The topic of the resource (dc:subject). Recommended practice is to use a controlled vocabulary.",
       "parent": "Resource",
       "children": [],
       "fields": [
-        { "name": "subject", "type": "string", "label": "Subject" },
-        { "name": "subjectScheme", "type": "string", "label": "Subject Scheme" },
-        { "name": "subjectSchemeURI", "type": "string", "label": "Scheme URI" }
+        { "name": "subject", "type": "string", "label": "Subject", "required": true },
+        { "name": "subjectScheme", "type": "string", "label": "Subject Scheme", "required": false },
+        { "name": "subjectSchemeURI", "type": "string", "label": "Scheme URI", "required": false }
       ]
     },
     {
       "name": "Description",
       "type": "element",
-      "description": "An account of the resource",
+      "description": "An account of the resource (dc:description). May include abstracts, tables of contents, or free-text accounts.",
       "parent": "Resource",
+      "children": ["Abstract", "Table of Contents"],
+      "fields": [
+        { "name": "description", "type": "string", "label": "Description", "required": true },
+        { "name": "descriptionType", "type": "string", "label": "Description Type", "required": false },
+        { "name": "descriptionLanguage", "type": "string", "label": "Language", "required": false }
+      ]
+    },
+    {
+      "name": "Abstract",
+      "type": "element_refinement",
+      "description": "A summary of the resource (dcterms:abstract). Refines Description.",
+      "parent": "Description",
       "children": [],
       "fields": [
-        { "name": "description", "type": "string", "label": "Description" },
-        { "name": "descriptionType", "type": "string", "label": "Description Type" },
-        { "name": "descriptionLanguage", "type": "string", "label": "Language" }
+        { "name": "abstract", "type": "string", "label": "Abstract", "required": true },
+        { "name": "abstractLanguage", "type": "string", "label": "Language", "required": false }
+      ]
+    },
+    {
+      "name": "Table of Contents",
+      "type": "element_refinement",
+      "description": "A list of subunits of the resource (dcterms:tableOfContents). Refines Description.",
+      "parent": "Description",
+      "children": [],
+      "fields": [
+        { "name": "tableOfContents", "type": "string", "label": "Table of Contents", "required": true }
       ]
     },
     {
       "name": "Publisher",
       "type": "element",
-      "description": "An entity responsible for making the resource available",
+      "description": "An entity responsible for making the resource available (dc:publisher)",
       "parent": "Resource",
       "children": [],
       "fields": [
-        { "name": "publisher", "type": "string", "label": "Publisher" },
-        { "name": "publisherIdentifier", "type": "string", "label": "Publisher Identifier" },
-        { "name": "publisherType", "type": "string", "label": "Publisher Type" }
+        { "name": "publisher", "type": "string", "label": "Publisher", "required": true },
+        { "name": "publisherIdentifier", "type": "string", "label": "Publisher Identifier", "required": false },
+        { "name": "publisherType", "type": "string", "label": "Publisher Type", "required": false }
       ]
     },
     {
       "name": "Contributor",
       "type": "element",
-      "description": "An entity responsible for making contributions to the resource",
+      "description": "An entity responsible for making contributions to the resource (dc:contributor)",
       "parent": "Resource",
       "children": [],
       "fields": [
-        { "name": "contributor", "type": "string", "label": "Contributor" },
-        { "name": "contributorType", "type": "string", "label": "Contributor Type" },
-        { "name": "contributorRole", "type": "string", "label": "Role" }
+        { "name": "contributor", "type": "string", "label": "Contributor", "required": true },
+        { "name": "contributorType", "type": "string", "label": "Contributor Type", "required": false },
+        { "name": "contributorRole", "type": "string", "label": "Role", "required": false }
       ]
     },
     {
       "name": "Date",
       "type": "element",
-      "description": "A point or period of time associated with an event in the lifecycle of the resource",
+      "description": "A point or period of time associated with an event in the lifecycle of the resource (dc:date). Recommended encoding: W3CDTF (ISO 8601).",
       "parent": "Resource",
       "children": [],
+      "note": "Refinements: created, valid, available, issued, modified, dateAccepted, dateCopyrighted, dateSubmitted",
       "fields": [
-        { "name": "date", "type": "date", "label": "Date" },
-        { "name": "dateType", "type": "string", "label": "Date Type" },
-        { "name": "dateFormat", "type": "string", "label": "Date Format" }
+        { "name": "date", "type": "date", "label": "Date", "required": true },
+        { "name": "dateType", "type": "string", "label": "Date Type", "required": false },
+        { "name": "dateFormat", "type": "string", "label": "Date Format", "required": false }
       ]
     },
     {
       "name": "Type",
       "type": "element",
-      "description": "The nature or genre of the resource",
+      "description": "The nature or genre of the resource (dc:type). Recommended vocabulary: DCMI Type Vocabulary.",
       "parent": "Resource",
       "children": [],
       "fields": [
-        { "name": "type", "type": "string", "label": "Type" },
-        { "name": "typeVocabulary", "type": "string", "label": "Type Vocabulary" }
+        { "name": "type", "type": "string", "label": "Type", "required": true },
+        { "name": "typeVocabulary", "type": "string", "label": "Type Vocabulary", "required": false }
       ]
     },
     {
       "name": "Format",
       "type": "element",
-      "description": "The file format, physical medium, or dimensions of the resource",
+      "description": "The file format, physical medium, or dimensions of the resource (dc:format). Recommended vocabulary: Internet Media Types (MIME).",
       "parent": "Resource",
+      "children": ["Extent", "Medium"],
+      "fields": [
+        { "name": "format", "type": "string", "label": "Format", "required": true },
+        { "name": "formatMIMEType", "type": "string", "label": "MIME Type", "required": false },
+        { "name": "formatExtent", "type": "string", "label": "Extent/Size", "required": false }
+      ]
+    },
+    {
+      "name": "Extent",
+      "type": "element_refinement",
+      "description": "The size or duration of the resource (dcterms:extent). Refines Format.",
+      "parent": "Format",
       "children": [],
       "fields": [
-        { "name": "format", "type": "string", "label": "Format" },
-        { "name": "formatMIMEType", "type": "string", "label": "MIME Type" },
-        { "name": "formatExtent", "type": "string", "label": "Extent/Size" }
+        { "name": "extent", "type": "string", "label": "Extent", "required": true }
+      ]
+    },
+    {
+      "name": "Medium",
+      "type": "element_refinement",
+      "description": "The material or physical carrier of the resource (dcterms:medium). Refines Format.",
+      "parent": "Format",
+      "children": [],
+      "fields": [
+        { "name": "medium", "type": "string", "label": "Medium", "required": true }
       ]
     },
     {
       "name": "Identifier",
       "type": "element",
-      "description": "An unambiguous reference to the resource within a given context",
+      "description": "An unambiguous reference to the resource within a given context (dc:identifier). Should conform to a formal identification system.",
       "parent": "Resource",
+      "children": ["Bibliographic Citation"],
+      "fields": [
+        { "name": "identifier", "type": "string", "label": "Identifier", "required": true },
+        { "name": "identifierType", "type": "string", "label": "Identifier Type", "required": false },
+        { "name": "identifierScheme", "type": "string", "label": "Identifier Scheme", "required": false }
+      ]
+    },
+    {
+      "name": "Bibliographic Citation",
+      "type": "element_refinement",
+      "description": "A bibliographic reference for the resource (dcterms:bibliographicCitation). Refines Identifier.",
+      "parent": "Identifier",
       "children": [],
       "fields": [
-        { "name": "identifier", "type": "string", "label": "Identifier" },
-        { "name": "identifierType", "type": "string", "label": "Identifier Type" },
-        { "name": "identifierScheme", "type": "string", "label": "Identifier Scheme" }
+        { "name": "bibliographicCitation", "type": "string", "label": "Bibliographic Citation", "required": true }
       ]
     },
     {
       "name": "Source",
       "type": "element",
-      "description": "A related resource from which the described resource is derived",
+      "description": "A related resource from which the described resource is derived (dc:source)",
       "parent": "Resource",
       "children": [],
       "fields": [
-        { "name": "source", "type": "string", "label": "Source" },
-        { "name": "sourceIdentifier", "type": "string", "label": "Source Identifier" },
-        { "name": "sourceType", "type": "string", "label": "Source Type" }
+        { "name": "source", "type": "string", "label": "Source", "required": true },
+        { "name": "sourceIdentifier", "type": "string", "label": "Source Identifier", "required": false },
+        { "name": "sourceType", "type": "string", "label": "Source Type", "required": false }
       ]
     },
     {
       "name": "Language",
       "type": "element",
-      "description": "A language of the resource",
+      "description": "A language of the resource (dc:language). Recommended encoding: RFC 4646 / ISO 639.",
       "parent": "Resource",
       "children": [],
       "fields": [
-        { "name": "language", "type": "string", "label": "Language" },
-        { "name": "languageCode", "type": "string", "label": "Language Code (ISO 639)" }
+        { "name": "language", "type": "string", "label": "Language", "required": true },
+        { "name": "languageCode", "type": "string", "label": "Language Code (ISO 639)", "required": false }
       ]
     },
     {
       "name": "Relation",
       "type": "element",
-      "description": "A related resource",
+      "description": "A related resource (dc:relation). Related resources should be identified using formal identification systems.",
       "parent": "Resource",
       "children": [],
+      "note": "Refinements: isVersionOf, hasVersion, isReplacedBy, replaces, isRequiredBy, requires, isPartOf, hasPart, isReferencedBy, references, isFormatOf, hasFormat, conformsTo",
       "fields": [
-        { "name": "relation", "type": "string", "label": "Relation" },
-        { "name": "relationType", "type": "string", "label": "Relation Type" },
-        { "name": "relatedResourceIdentifier", "type": "string", "label": "Related Resource ID" }
+        { "name": "relation", "type": "string", "label": "Relation", "required": true },
+        { "name": "relationType", "type": "string", "label": "Relation Type", "required": false },
+        { "name": "relatedResourceIdentifier", "type": "string", "label": "Related Resource ID", "required": false }
       ]
     },
     {
       "name": "Coverage",
       "type": "element",
-      "description": "The spatial or temporal topic of the resource, spatial applicability, or jurisdiction",
+      "description": "The spatial or temporal topic of the resource, spatial applicability, or jurisdiction (dc:coverage). Recommended vocabulary: TGN for spatial, W3CDTF/Period for temporal.",
       "parent": "Resource",
       "children": ["Spatial Coverage", "Temporal Coverage"],
       "fields": [
-        { "name": "coverage", "type": "string", "label": "Coverage" },
-        { "name": "coverageType", "type": "string", "label": "Coverage Type" }
+        { "name": "coverage", "type": "string", "label": "Coverage", "required": true },
+        { "name": "coverageType", "type": "string", "label": "Coverage Type", "required": false }
       ]
     },
     {
       "name": "Spatial Coverage",
-      "type": "coverage_type",
-      "description": "Spatial characteristics of the resource",
+      "type": "element_refinement",
+      "description": "Spatial characteristics of the resource (dcterms:spatial). Refines Coverage.",
       "parent": "Coverage",
       "children": [],
       "fields": [
-        { "name": "spatialCoverage", "type": "string", "label": "Spatial Coverage" },
-        { "name": "place", "type": "string", "label": "Place" },
-        { "name": "coordinates", "type": "string", "label": "Coordinates" }
+        { "name": "spatialCoverage", "type": "string", "label": "Spatial Coverage", "required": true },
+        { "name": "place", "type": "string", "label": "Place", "required": false },
+        { "name": "coordinates", "type": "string", "label": "Coordinates", "required": false }
       ]
     },
     {
       "name": "Temporal Coverage",
-      "type": "coverage_type",
-      "description": "Temporal characteristics of the resource",
+      "type": "element_refinement",
+      "description": "Temporal characteristics of the resource (dcterms:temporal). Refines Coverage.",
       "parent": "Coverage",
       "children": [],
       "fields": [
-        { "name": "temporalCoverage", "type": "string", "label": "Temporal Coverage" },
-        { "name": "periodName", "type": "string", "label": "Period Name" },
-        { "name": "startDate", "type": "date", "label": "Start Date" },
-        { "name": "endDate", "type": "date", "label": "End Date" }
+        { "name": "temporalCoverage", "type": "string", "label": "Temporal Coverage", "required": true },
+        { "name": "periodName", "type": "string", "label": "Period Name", "required": false },
+        { "name": "startDate", "type": "date", "label": "Start Date", "required": false },
+        { "name": "endDate", "type": "date", "label": "End Date", "required": false }
       ]
     },
     {
       "name": "Rights",
       "type": "element",
-      "description": "Information about rights held in and over the resource",
+      "description": "Information about rights held in and over the resource (dc:rights). Typically addresses intellectual property rights.",
       "parent": "Resource",
+      "children": ["Access Rights", "License"],
+      "fields": [
+        { "name": "rights", "type": "string", "label": "Rights Statement", "required": true },
+        { "name": "rightsHolder", "type": "string", "label": "Rights Holder", "required": false },
+        { "name": "rightsURI", "type": "string", "label": "Rights URI", "required": false },
+        { "name": "licenseURI", "type": "string", "label": "License URI", "required": false }
+      ]
+    },
+    {
+      "name": "Access Rights",
+      "type": "element_refinement",
+      "description": "Information about who can access the resource or its security status (dcterms:accessRights). Refines Rights.",
+      "parent": "Rights",
       "children": [],
       "fields": [
-        { "name": "rights", "type": "string", "label": "Rights Statement" },
-        { "name": "rightsHolder", "type": "string", "label": "Rights Holder" },
-        { "name": "rightsURI", "type": "string", "label": "Rights URI" },
-        { "name": "licenseURI", "type": "string", "label": "License URI" }
+        { "name": "accessRights", "type": "string", "label": "Access Rights", "required": true },
+        { "name": "accessRightsURI", "type": "string", "label": "Access Rights URI", "required": false }
+      ]
+    },
+    {
+      "name": "License",
+      "type": "element_refinement",
+      "description": "A legal document giving official permission to do something with the resource (dcterms:license). Refines Rights.",
+      "parent": "Rights",
+      "children": [],
+      "fields": [
+        { "name": "license", "type": "string", "label": "License", "required": true },
+        { "name": "licenseURI", "type": "string", "label": "License URI", "required": false }
+      ]
+    },
+    {
+      "name": "Audience",
+      "type": "element",
+      "description": "A class of agents for whom the resource is intended or useful (dcterms:audience)",
+      "parent": "Resource",
+      "children": [],
+      "note": "DCMI Term (not part of the original 15 DCES elements). Refinements: educationLevel, mediator.",
+      "fields": [
+        { "name": "audience", "type": "string", "label": "Audience", "required": true },
+        { "name": "educationLevel", "type": "string", "label": "Education Level", "required": false },
+        { "name": "mediator", "type": "string", "label": "Mediator", "required": false }
+      ]
+    },
+    {
+      "name": "Provenance",
+      "type": "element",
+      "description": "A statement of any changes in ownership and custody of the resource since its creation that are significant for its authenticity, integrity, and interpretation (dcterms:provenance)",
+      "parent": "Resource",
+      "children": [],
+      "note": "DCMI Term (not part of the original 15 DCES elements).",
+      "fields": [
+        { "name": "provenance", "type": "string", "label": "Provenance Statement", "required": true }
+      ]
+    },
+    {
+      "name": "Rights Holder",
+      "type": "element",
+      "description": "A person or organization owning or managing rights over the resource (dcterms:rightsHolder)",
+      "parent": "Resource",
+      "children": [],
+      "note": "DCMI Term (not part of the original 15 DCES elements).",
+      "fields": [
+        { "name": "rightsHolder", "type": "string", "label": "Rights Holder", "required": true },
+        { "name": "rightsHolderIdentifier", "type": "string", "label": "Rights Holder Identifier", "required": false }
       ]
     }
   ],
@@ -272,5 +394,28 @@
     "Handle": "Handle System identifier",
     "ARK": "Archival Resource Key",
     "PURL": "Persistent Uniform Resource Locator"
+  },
+  "vocabularyEncodingSchemes": {
+    "DCMIType": "DCMI Type Vocabulary - categorizes the nature or genre of the resource",
+    "DDC": "Dewey Decimal Classification",
+    "IMT": "Internet Media Types (MIME types)",
+    "LCC": "Library of Congress Classification",
+    "LCSH": "Library of Congress Subject Headings",
+    "MESH": "Medical Subject Headings",
+    "NLM": "National Library of Medicine Classification",
+    "TGN": "Getty Thesaurus of Geographic Names",
+    "UDC": "Universal Decimal Classification"
+  },
+  "syntaxEncodingSchemes": {
+    "Box": "DCMI Box - regions in space defined by geographic coordinates",
+    "ISO3166": "ISO 3166 - codes for names of countries",
+    "ISO639-2": "ISO 639-2 - three-letter codes for names of languages",
+    "ISO639-3": "ISO 639-3 - three-letter codes for names of languages",
+    "Period": "DCMI Period - time intervals defined by their limits",
+    "Point": "DCMI Point - points in space defined by geographic coordinates",
+    "RFC4646": "RFC 4646 - tags for the identification of languages",
+    "RFC5646": "RFC 5646 - tags for the identification of languages",
+    "URI": "Uniform Resource Identifier",
+    "W3CDTF": "W3C Date and Time Formats (profile of ISO 8601)"
   }
 }
