@@ -2,6 +2,16 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
 
+  function getArchivesPath() {
+    const role = localStorage.getItem('auth_role');
+    const tenantId = localStorage.getItem('auth_tenantId');
+    if (role === 'ADMIN') return '/admin/archives';
+    if (role === 'TENANT' && tenantId) return `/tenants/${tenantId}/archives`;
+    return '/';
+  }
+
+  $: archivesPath = getArchivesPath();
+
   // URL parameters
   let archiveId: string | null = null;
   let archiveName: string = '';
@@ -161,7 +171,7 @@
 <div class="document-upload-page">
   <div class="page-header">
     <div class="header-left">
-      <a href="/archives" class="back-button">← Back to Archives</a>
+      <a href={archivesPath} class="back-button">← Back to Archives</a>
       <h1>📄 Document Upload</h1>
       {#if archiveId}
         <p class="archive-context">
@@ -396,7 +406,7 @@
 
   <!-- Bottom Navigation -->
   <div class="bottom-navigation">
-    <a href="/archives" class="back-button-bottom">← Back to Archives</a>
+    <a href={archivesPath} class="back-button-bottom">← Back to Archives</a>
   </div>
 </div>
 

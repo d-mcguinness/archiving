@@ -71,6 +71,21 @@ public class ArchiveController {
         return archiveService.getArchivesByOwner(ownerId);
     }
 
+    @QueryMapping
+    public List<Archive> getArchivesByTenant(@Argument Long tenantId) {
+        return archiveService.getArchivesByTenant(tenantId);
+    }
+
+    @QueryMapping
+    public List<Archive> getAllSips() {
+        return archiveService.getAllSips();
+    }
+
+    @QueryMapping
+    public List<Archive> getSipsByTenant(@Argument Long tenantId) {
+        return archiveService.getSipsByTenant(tenantId);
+    }
+
     // New query methods for user assignments
     @QueryMapping
     public List<Archive> getArchivesByUserAssignment(@Argument Long userId) {

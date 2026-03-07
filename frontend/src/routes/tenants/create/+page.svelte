@@ -29,6 +29,22 @@ onMount(async () => {
   }
 });
 
+function fillRandom() {
+    const adjectives = ['Acme', 'Global', 'Nordic', 'Summit', 'Atlas', 'Apex', 'Vanguard', 'Pinnacle'];
+    const nouns = ['Corp', 'Systems', 'Solutions', 'Industries', 'Labs', 'Digital', 'Technologies', 'Group'];
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const slug = `${adj.toLowerCase()}-${noun.toLowerCase()}`;
+    newTenant.name = slug;
+    newTenant.domain = `${slug}.example.com`;
+    newTenant.displayName = `${adj} ${noun}`;
+    newTenant.description = `${adj} ${noun} is a leading provider of archiving solutions.`;
+    newTenant.plan = plans[Math.floor(Math.random() * plans.length)];
+    if (users.length > 0) {
+      newTenant.ownerId = users[Math.floor(Math.random() * users.length)].id;
+    }
+  }
+
 async function createTenant() {
   if (!newTenant.name || !newTenant.domain || !newTenant.ownerId) return;
   try {
@@ -62,6 +78,7 @@ async function createTenant() {
 
 <div class="form-container">
   <h3>Create New Tenant</h3>
+  <button type="button" class="btn-fill" on:click={fillRandom}>Fill Random</button>
   {#if error}
     <div class="error">Error: {error}</div>
   {/if}
@@ -153,6 +170,22 @@ async function createTenant() {
   button[type="submit"]:disabled {
     background: #90cdf4;
     cursor: not-allowed;
+  }
+  .btn-fill {
+    padding: 0.5rem 1rem;
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.25rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 1rem;
+  }
+  .btn-fill:hover {
+    background: #dcfce7;
+    border-color: #86efac;
   }
   .error {
     color: #f44336;

@@ -2,7 +2,8 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
-  import { GET_ARCHIVES_BY_OWNER, GET_ALL_USERS, GET_TENANT } from '$lib/graphql/queries';
+  import { GET_ARCHIVES_BY_TENANT, GET_ALL_USERS, GET_TENANT } from '$lib/graphql/queries';
+  import { gql } from '@apollo/client/core';
   import { toasts } from '$lib/stores/toastStore';
 
   interface PageData {
@@ -25,6 +26,21 @@
   let extractPassword = '';
   let extracting = false;
   let extractError: string | null = null;
+
+  // Create archive modal state
+  let showCreateModal = false;
+  let creating = false;
+  let createError: string | null = null;
+  let newArchive = {
+    ownerId: '',
+    userId: '',
+    title: '',
+    description: '',
+    content: '',
+    standard: 'NOARK5'
+  };
+
+  const standards = ['NOARK5', 'OAIS', 'PREMIS', 'Dublin Core', 'METS', 'EAD', 'BagIt', 'ISAD(G)', 'MODS'];
 
   onMount(async () => {
     // Check authentication and role
@@ -72,14 +88,14 @@
     try {
       loading = true;
 
-      // Fetch archives filtered by owner (tenant)
+      // Fetch archives by tenant
       const result = await client.query({
-        query: GET_ARCHIVES_BY_OWNER,
-        variables: { ownerId: data.tenantId },
+        query: GET_ARCHIVES_BY_TENANT,
+        variables: { tenantId: data.tenantId },
         fetchPolicy: 'network-only'
       });
 
-      archives = result?.data?.getArchivesByOwner || [];
+      archives = result?.data?.getArchivesByTenant || [];
       error = null;
     } catch (e) {
       error = e instanceof Error ? e.message : 'An unknown error occurred';
@@ -176,6 +192,87 @@
       extracting = false;
     }
   }
+
+  function openCreateModal() {
+    newArchive = { ownerId: '', userId: '', title: '', description: '', content: '', standard: 'NOARK5' };
+    createError = null;
+    showCreateModal = true;
+  }
+
+  function closeCreateModal() {
+    showCreateModal = false;
+    createError = null;
+    creating = false;
+  }
+
+  function fillRandomArchive() {
+    const titles = ['Annual Report Archive', 'Legal Documents', 'Project Files', 'Financial Records', 'HR Documentation', 'Technical Specs', 'Client Correspondence', 'Research Data'];
+    const descs = ['Collection of important organizational documents', 'Archived records for compliance purposes', 'Historical data preservation', 'Critical business documentation'];
+    const contents = ['Archived content ready for long-term preservation', 'Digital records maintained per regulatory requirements', 'Organizational knowledge base archive', 'Structured data collection for institutional memory'];
+    newArchive.title = titles[Math.floor(Math.random() * titles.length)];
+    newArchive.description = descs[Math.floor(Math.random() * descs.length)];
+    newArchive.content = contents[Math.floor(Math.random() * contents.length)];
+    newArchive.standard = standards[Math.floor(Math.random() * standards.length)];
+    if (users.length > 0) {
+      newArchive.ownerId = users[Math.floor(Math.random() * users.length)].id;
+      newArchive.userId = users[Math.floor(Math.random() * users.length)].id;
+    }
+  }
+
+  async function handleCreateArchive() {
+    if (!newArchive.userId || !newArchive.ownerId || !newArchive.title || !newArchive.content) {
+      createError = 'Please fill in all required fields';
+      return;
+    }
+
+    const standardMap: Record<string, string> = {
+      'NOARK5': 'NOARK5', 'OAIS': 'OAIS', 'PREMIS': 'PREMIS',
+      'Dublin Core': 'DUBLIN_CORE', 'METS': 'METS', 'EAD': 'EAD',
+      'BagIt': 'BAGIT', 'ISAD(G)': 'ISADG', 'MODS': 'MODS'
+    };
+
+    try {
+      creating = true;
+      createError = null;
+
+      const CREATE_ARCHIVE = gql`
+        mutation CreateArchive($input: CreateArchiveInput!) {
+          createArchive(input: $input) {
+            id
+            title
+            status
+            standard
+          }
+        }
+      `;
+
+      const result = await client.mutate({
+        mutation: CREATE_ARCHIVE,
+        variables: {
+          input: {
+            tenantId: parseInt(data.tenantId),
+            ownerId: parseInt(newArchive.ownerId),
+            userId: parseInt(newArchive.userId),
+            title: newArchive.title,
+            description: newArchive.description || null,
+            content: newArchive.content,
+            standard: standardMap[newArchive.standard] || newArchive.standard
+          }
+        }
+      });
+
+      if (result.data?.createArchive) {
+        toasts.success(`Archive "${newArchive.title}" created successfully`);
+        closeCreateModal();
+        await loadArchives();
+      }
+    } catch (e) {
+      createError = e instanceof Error ? e.message : 'An unknown error occurred';
+      toasts.error(`Failed to create archive: ${createError}`);
+    } finally {
+      creating = false;
+    }
+  }
 </script>
 
 <svelte:head>
@@ -208,7 +305,7 @@
           </div>
         {/if}
       </div>
-      <a href="/tenants/{data.tenantId}/create" class="add-archive-btn">+ Create Archive</a>
+      <button class="add-archive-btn" on:click={openCreateModal}>+ Create Archive</button>
     </div>
 
     {#if error}
@@ -358,6 +455,89 @@
   </div>
 {/if}
 
+<!-- Create Archive Modal -->
+{#if showCreateModal}
+  <div class="modal-overlay" on:click={closeCreateModal} role="dialog" aria-modal="true">
+    <div class="modal-content modal-wide" on:click|stopPropagation role="document">
+      <div class="modal-header">
+        <h3>Create New Archive</h3>
+        <div class="modal-header-actions">
+          <button type="button" class="btn-fill" on:click={fillRandomArchive}>Fill Random</button>
+          <button class="modal-close" on:click={closeCreateModal} aria-label="Close">×</button>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        {#if createError}
+          <div class="alert alert-error">
+            <span class="alert-icon">⚠️</span>
+            <span>{createError}</span>
+          </div>
+        {/if}
+
+        <form on:submit|preventDefault={handleCreateArchive}>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="createOwnerId">Archive Owner *</label>
+              <select id="createOwnerId" bind:value={newArchive.ownerId} required disabled={creating}>
+                <option value="">Select owner</option>
+                {#each users as user}
+                  <option value={user.id}>{user.name} ({user.email})</option>
+                {/each}
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="createUserId">Creator *</label>
+              <select id="createUserId" bind:value={newArchive.userId} required disabled={creating}>
+                <option value="">Select creator</option>
+                {#each users as user}
+                  <option value={user.id}>{user.name} ({user.email})</option>
+                {/each}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="createTitle">Title *</label>
+              <input type="text" id="createTitle" bind:value={newArchive.title} required disabled={creating} placeholder="Enter archive title" />
+            </div>
+            <div class="form-group">
+              <label for="createStandard">Standard *</label>
+              <select id="createStandard" bind:value={newArchive.standard} required disabled={creating}>
+                {#each standards as std}
+                  <option value={std}>{std}</option>
+                {/each}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="createDescription">Description</label>
+            <textarea id="createDescription" bind:value={newArchive.description} disabled={creating} rows="2" placeholder="Optional description"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="createContent">Content *</label>
+            <textarea id="createContent" bind:value={newArchive.content} required disabled={creating} rows="3" placeholder="Enter archive content"></textarea>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" on:click={closeCreateModal} disabled={creating}>Cancel</button>
+        <button
+          class="btn-primary"
+          on:click={handleCreateArchive}
+          disabled={creating || !newArchive.ownerId || !newArchive.userId || !newArchive.title || !newArchive.content}
+        >
+          {creating ? 'Creating...' : 'Create Archive'}
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
 <style>
   .tenant-archives-page {
     max-width: 1600px;
@@ -458,9 +638,11 @@
     padding: 0.75rem 1.5rem;
     background: #3b82f6;
     color: white;
+    border: none;
     border-radius: 0.5rem;
-    text-decoration: none;
+    font-size: 1rem;
     font-weight: 600;
+    cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
   }
@@ -574,7 +756,7 @@
   .table-container {
     background: white;
     border-radius: 0.75rem;
-    overflow: hidden;
+    overflow-x: auto;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border: 1px solid #e2e8f0;
   }
@@ -778,7 +960,70 @@
     border-radius: 0.75rem;
     max-width: 500px;
     width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+
+  .modal-wide {
+    max-width: 700px;
+  }
+
+  .modal-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .btn-fill {
+    padding: 0.375rem 0.75rem;
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-fill:hover {
+    background: #dcfce7;
+    border-color: #86efac;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .form-group select:disabled,
+  .form-group textarea:disabled,
+  .form-group input:disabled {
+    background: #f1f5f9;
+    cursor: not-allowed;
+  }
+
+  .form-group textarea {
+    resize: vertical;
   }
 
   .modal-header {

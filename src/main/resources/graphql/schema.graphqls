@@ -93,7 +93,7 @@ type Archive {
 # Element Type - represents actual instances in archive hierarchy
 type Element {
     id: ID!
-    archive: Archive!
+    archive: Archive
     parent: Element
     children: [Element!]!
     fields: [Field!]!
@@ -165,6 +165,8 @@ enum ArchiveStandard {
 }
 
 input CreateArchiveInput {
+    tenantId: ID
+    ownerId: ID
     userId: ID!
     title: String!
     description: String
@@ -215,6 +217,57 @@ input AssignUserInput {
 input UnassignUserInput {
     archiveId: ID!
     userId: ID!
+}
+
+# SIP Module Types
+type Sip {
+    id: ID!
+    tenantId: ID!
+    ownerId: ID!
+    tenant: Tenant
+    title: String!
+    description: String
+    content: String
+    createdAt: String!
+    updatedAt: String
+    status: SipStatus!
+    standard: ArchiveStandard!
+    rootElement: Element
+    assignedUsers: [SipUserAssignment!]!
+}
+
+enum SipStatus {
+    DRAFT
+    SUBMITTED
+    VALIDATED
+    ACCEPTED
+    REJECTED
+}
+
+type SipUserAssignment {
+    id: ID!
+    userId: ID!
+    role: UserRole!
+    assignedAt: String!
+}
+
+input CreateSipInput {
+    tenantId: ID
+    ownerId: ID
+    userId: ID!
+    title: String!
+    description: String
+    content: String
+    standard: ArchiveStandard!
+    elementIdentifier: String!
+    entityName: String!
+    entityType: String!
+    norwegianName: String
+    englishName: String
+    elementTitle: String!
+    elementDescription: String
+    createdBy: String!
+    fields: [FieldInput!]
 }
 
 # Dashboard Types
@@ -278,6 +331,9 @@ type Query {
     getArchive(id: ID!): Archive
     getArchivesByUser(userId: ID!): [Archive!]!
     getArchivesByOwner(ownerId: ID!): [Archive!]!
+    getArchivesByTenant(tenantId: ID!): [Archive!]!
+    getAllSips: [Archive!]!
+    getSipsByTenant(tenantId: ID!): [Archive!]!
     getArchivesByUserAssignment(userId: ID!): [Archive!]!
     getArchivesByUserRole(userId: ID!, role: UserRole!): [Archive!]!
 
@@ -288,6 +344,11 @@ type Query {
     getArchivesByStatusPaginated(status: ArchiveStatus!, page: Int, size: Int, sortBy: String, sortDirection: String): ArchivePage!
     searchArchivesByTitlePaginated(title: String!, page: Int, size: Int, sortBy: String, sortDirection: String): ArchivePage!
 
+
+    # SIP Queries
+    getAllSipsV2: [Sip!]!
+    getSipsByTenantV2(tenantId: ID!): [Sip!]!
+    getSip(id: ID!): Sip
 
     # Element Queries
     getElement(id: ID!): Element
@@ -326,6 +387,11 @@ type Mutation {
     # User Assignment Mutations
     assignUserToArchive(input: AssignUserInput!): Archive!
     unassignUserFromArchive(input: UnassignUserInput!): Archive!
+
+    # SIP Mutations
+    createSipV2(input: CreateSipInput!): Sip!
+    updateSipStatusV2(sipId: ID!, status: SipStatus!): Sip
+    deleteSipV2(id: ID!): Boolean!
 
     # Element Mutations
     createElement(input: CreateElementInput!): Element!

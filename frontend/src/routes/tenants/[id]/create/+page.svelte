@@ -166,6 +166,20 @@
     }
   }
 
+  function fillRandom() {
+    const titles = ['Annual Report Archive', 'Legal Documents', 'Project Files', 'Financial Records', 'HR Documentation', 'Technical Specs', 'Client Correspondence', 'Research Data'];
+    const descs = ['Collection of important organizational documents', 'Archived records for compliance purposes', 'Historical data preservation', 'Critical business documentation'];
+    const contents = ['Archived content ready for long-term preservation', 'Digital records maintained per regulatory requirements', 'Organizational knowledge base archive', 'Structured data collection for institutional memory'];
+    newArchive.title = titles[Math.floor(Math.random() * titles.length)];
+    newArchive.description = descs[Math.floor(Math.random() * descs.length)];
+    newArchive.content = contents[Math.floor(Math.random() * contents.length)];
+    newArchive.standard = standards[Math.floor(Math.random() * standards.length)];
+    if (users.length > 0) {
+      newArchive.ownerId = users[Math.floor(Math.random() * users.length)].id;
+      newArchive.userId = users[Math.floor(Math.random() * users.length)].id;
+    }
+  }
+
   function handleCancel() {
     goto(`/tenants/${data.tenantId}/archives`);
   }
@@ -194,6 +208,7 @@
     <div class="page-header">
       <div class="header-content">
         <h1>📁 Create New Archive</h1>
+        <button type="button" class="btn-fill" on:click={fillRandom}>Fill Random</button>
         {#if tenant}
           <div class="tenant-badge">
             <span class="tenant-icon">🏢</span>
@@ -380,6 +395,23 @@
     border-radius: 0.5rem;
     font-weight: 600;
     width: fit-content;
+  }
+
+  .btn-fill {
+    padding: 0.5rem 1rem;
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-fill:hover {
+    background: #dcfce7;
+    border-color: #86efac;
   }
 
   .tenant-icon {

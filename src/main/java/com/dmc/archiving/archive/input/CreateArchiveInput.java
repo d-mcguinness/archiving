@@ -13,11 +13,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CreateArchiveInput {
 
-    @NotNull(message = "Tenant ID is required")
-    private Long tenantId;  // Tenant (organization) ID
+    private Long tenantId;  // Tenant (organization) ID - optional, defaults to ownerId
 
-    @NotNull(message = "Owner ID (User ID) is required")
-    private Long ownerId;  // User ID - owner/creator of the archive
+    private Long ownerId;  // User ID - owner/creator, defaults to userId if not provided
 
     @NotNull(message = "User ID is required")
     private Long userId;  // User ID for backward compatibility

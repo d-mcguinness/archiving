@@ -346,6 +346,101 @@ export const GET_ARCHIVES_BY_OWNER: DocumentNode = gql`
   }
 `;
 
+export const GET_ALL_SIPS: DocumentNode = gql`
+  query GetAllSips {
+    getAllSips {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      createdAt
+      updatedAt
+      status
+      standard
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+      }
+      assignedUsers {
+        id
+        userId
+        role
+        assignedAt
+      }
+    }
+  }
+`;
+
+export const GET_SIPS_BY_TENANT: DocumentNode = gql`
+  query GetSipsByTenant($tenantId: ID!) {
+    getSipsByTenant(tenantId: $tenantId) {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      createdAt
+      updatedAt
+      status
+      standard
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+      }
+      assignedUsers {
+        id
+        userId
+        role
+        assignedAt
+      }
+    }
+  }
+`;
+
+export const GET_ARCHIVES_BY_TENANT: DocumentNode = gql`
+  query GetArchivesByTenant($tenantId: ID!) {
+    getArchivesByTenant(tenantId: $tenantId) {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      content
+      createdAt
+      updatedAt
+      status
+      standard
+      assignedUsers {
+        id
+        userId
+        role
+        assignedAt
+      }
+    }
+  }
+`;
+
 export const GET_ARCHIVES_BY_USER_ASSIGNMENT: DocumentNode = gql`
   query GetArchivesByUserAssignment($userId: ID!) {
     getArchivesByUserAssignment(userId: $userId) {
@@ -475,5 +570,158 @@ export const UNASSIGN_USER_FROM_ARCHIVE: DocumentNode = gql`
         assignedAt
       }
     }
+  }
+`;
+
+// SIP V2 Queries (dedicated Sip entity)
+export const GET_ALL_SIPS_V2: DocumentNode = gql`
+  query GetAllSipsV2 {
+    getAllSipsV2 {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      createdAt
+      updatedAt
+      status
+      standard
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+      }
+      assignedUsers {
+        id
+        userId
+        role
+        assignedAt
+      }
+    }
+  }
+`;
+
+export const GET_SIPS_BY_TENANT_V2: DocumentNode = gql`
+  query GetSipsByTenantV2($tenantId: ID!) {
+    getSipsByTenantV2(tenantId: $tenantId) {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      createdAt
+      updatedAt
+      status
+      standard
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+      }
+      assignedUsers {
+        id
+        userId
+        role
+        assignedAt
+      }
+    }
+  }
+`;
+
+export const GET_SIP: DocumentNode = gql`
+  query GetSip($id: ID!) {
+    getSip(id: $id) {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      content
+      createdAt
+      updatedAt
+      status
+      standard
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        description
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+      }
+      assignedUsers {
+        id
+        userId
+        role
+        assignedAt
+      }
+    }
+  }
+`;
+
+export const CREATE_SIP: DocumentNode = gql`
+  mutation CreateSipV2($input: CreateSipInput!) {
+    createSipV2(input: $input) {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      createdAt
+      updatedAt
+      status
+      standard
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+      }
+      assignedUsers {
+        id
+        userId
+        role
+        assignedAt
+      }
+    }
+  }
+`;
+
+export const DELETE_SIP: DocumentNode = gql`
+  mutation DeleteSipV2($id: ID!) {
+    deleteSipV2(id: $id)
   }
 `;

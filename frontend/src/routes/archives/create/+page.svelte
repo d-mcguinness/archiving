@@ -7,6 +7,14 @@
   import ArchiveCanvas from '../ArchiveCanvas.svelte';
   import { toasts } from '$lib/stores/toastStore';
 
+  function getArchivesPath() {
+    const role = localStorage.getItem('auth_role');
+    const tenantId = localStorage.getItem('auth_tenantId');
+    if (role === 'ADMIN') return '/admin/archives';
+    if (role === 'TENANT' && tenantId) return `/tenants/${tenantId}/archives`;
+    return '/';
+  }
+
   // Step tracking
   let currentStep = 1;
   const totalSteps = 2;
@@ -401,7 +409,7 @@
 
       // Navigate to archives list - the cache is now updated with the new archive
       toasts.add(`Archive "${newArchive.title}" created successfully`, 'success');
-      goto('/archives');
+      goto(getArchivesPath());
     } catch (e) {
       error = e instanceof Error ? e.message : 'An unknown error occurred';
       console.error('Create archive error:', e);
@@ -483,8 +491,115 @@
     return firstElementId;
   }
 
+  function fillRandom() {
+    const titles = ['Annual Report Archive', 'Legal Documents', 'Project Files', 'Financial Records', 'HR Documentation', 'Technical Specs', 'Client Correspondence', 'Research Data'];
+    const descs = ['Collection of important organizational documents', 'Archived records for compliance purposes', 'Historical data preservation', 'Critical business documentation'];
+    const contents = ['Archived content ready for long-term preservation', 'Digital records maintained per regulatory requirements', 'Organizational knowledge base archive', 'Structured data collection for institutional memory'];
+    const standardOptions = ['NOARK5', 'OAIS', 'PREMIS', 'Dublin Core', 'METS', 'EAD', 'BagIt', 'ISAD(G)', 'MODS'];
+    newArchive.title = titles[Math.floor(Math.random() * titles.length)];
+    newArchive.description = descs[Math.floor(Math.random() * descs.length)];
+    newArchive.content = contents[Math.floor(Math.random() * contents.length)];
+    newArchive.standard = standardOptions[Math.floor(Math.random() * standardOptions.length)];
+    if (users.length > 0) {
+      newArchive.userId = users[Math.floor(Math.random() * users.length)].id;
+    }
+  }
+
+  function randomPick(arr: any[]) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function randomDate() {
+    const start = new Date(2020, 0, 1);
+    const end = new Date(2026, 2, 1);
+    const d = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+    return d.toISOString().split('T')[0];
+  }
+
+  function randomFieldValue(field: any): string {
+    if (field.type === 'date') return randomDate();
+    if (field.type === 'number') return String(Math.floor(Math.random() * 1000) + 1);
+    // string fields - generate contextual values
+    const name = field.name.toLowerCase();
+    if (name.includes('id') || name === 'systemid') return `SYS-${Math.floor(Math.random() * 90000) + 10000}`;
+    if (name.includes('title')) return randomPick(['Main Collection', 'Administrative Records', 'Correspondence Series', 'Financial Documents', 'Personnel Files', 'Meeting Records', 'Project Archive', 'Policy Documents']);
+    if (name.includes('description')) return randomPick(['General administrative records', 'Archived for long-term preservation', 'Contains organizational documentation', 'Records per regulatory requirements']);
+    if (name.includes('status')) return randomPick(['Active', 'Closed', 'In progress', 'Completed']);
+    if (name.includes('by') || name.includes('author') || name.includes('handler') || name.includes('responsible')) return randomPick(['John Smith', 'Maria Garcia', 'Erik Hansen', 'Anna Olsen', 'Lars Nilsen']);
+    if (name.includes('format')) return randomPick(['PDF/A', 'TIFF', 'XML', 'JSON', 'DOCX']);
+    if (name.includes('medium')) return randomPick(['Electronic archive', 'Physical medium', 'Mixed physical and electronic archive']);
+    if (name.includes('location') || name.includes('place')) return randomPick(['Archive Room A', 'Digital Storage', 'Vault B', 'Remote Archive']);
+    if (name.includes('type')) return randomPick(['Main document', 'Attachment', 'Note', 'Report']);
+    if (name.includes('name')) return randomPick(['Oslo Municipality', 'Bergen Archives', 'Trondheim County', 'National Archive Service']);
+    if (name.includes('email')) return randomPick(['archive@example.com', 'admin@example.com', 'records@example.com']);
+    if (name.includes('phone')) return `+47 ${Math.floor(Math.random() * 90000000) + 10000000}`;
+    if (name.includes('address')) return randomPick(['Karl Johans gate 1', 'Storgata 10', 'Parkveien 5']);
+    if (name.includes('checksum')) return Array.from({length: 32}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    if (name.includes('algorithm')) return randomPick(['SHA-256', 'MD5', 'SHA-512']);
+    if (name.includes('reference')) return `REF-${Math.floor(Math.random() * 9000) + 1000}`;
+    if (name.includes('keyword')) return randomPick(['compliance, archiving', 'records, management', 'preservation, digital']);
+    return randomPick(['Sample value', 'Test data', 'Archive record', 'Generated entry']);
+  }
+
+  function buildRandomElement(scheme: any, parent: any | null, depth: number, maxDepth: number): any {
+    const fieldValues: Record<string, any> = {};
+    if (scheme.fields) {
+      scheme.fields.forEach((field: any) => {
+        fieldValues[field.name] = randomFieldValue(field);
+      });
+    }
+
+    const element: any = {
+      tempId: `temp-${Date.now()}-${Math.random()}`,
+      scheme,
+      parent,
+      elementIdentifier: fieldValues['systemID'] || `${scheme.entityName}-${Date.now()}`,
+      title: fieldValues['title'] || scheme.entityName,
+      description: fieldValues['description'] || '',
+      fieldValues,
+      children: []
+    };
+
+    // Add children if not at max depth and scheme has allowed children
+    if (depth < maxDepth && scheme.children && scheme.children.length > 0) {
+      // Pick 1-2 structural children (skip metadata-only entities to keep it clean)
+      const structuralChildren = scheme.children
+        .map((childName: string) => schemes.find(s => s.entityName === childName))
+        .filter((s: any) => s && s.entityType !== 'metadata');
+
+      const numChildren = Math.min(structuralChildren.length, Math.floor(Math.random() * 2) + 1);
+      const shuffled = structuralChildren.sort(() => Math.random() - 0.5);
+
+      for (let i = 0; i < numChildren; i++) {
+        const childScheme = shuffled[i];
+        const child = buildRandomElement(childScheme, element, depth + 1, maxDepth);
+        element.children.push(child);
+      }
+    }
+
+    return element;
+  }
+
+  async function fillRandomHierarchy() {
+    // Ensure schemes are loaded
+    if (schemes.length === 0) {
+      await loadSchemeDefinition(newArchive.standard);
+    }
+
+    // Find root entities
+    const rootSchemes = schemes.filter(s => s.isRoot);
+    if (rootSchemes.length === 0) {
+      toasts.add('No root elements found for this standard', 'error');
+      return;
+    }
+
+    const rootScheme = rootSchemes[0];
+    const rootElement = buildRandomElement(rootScheme, null, 0, 3);
+    designedElements = [rootElement];
+  }
+
   function handleCancel() {
-    goto('/archives');
+    goto(getArchivesPath());
   }
 </script>
 
@@ -492,6 +607,9 @@
   <div class="form-header">
     <h1>Create New Archive</h1>
     <p class="form-description">Step {currentStep} of {totalSteps}</p>
+    {#if currentStep === 1}
+      <button type="button" class="btn-fill" on:click={fillRandom}>Fill Random</button>
+    {/if}
   </div>
 
   <!-- Progress Steps -->
@@ -605,8 +723,13 @@
         </div>
       {:else}
         <div class="scheme-info">
-          <h2>Design Element Hierarchy</h2>
-          <p>Create elements for your archive based on the {newArchive.standard} standard. Build your archive structure by adding elements and organizing them hierarchically.</p>
+          <div class="scheme-info-header">
+            <div>
+              <h2>Design Element Hierarchy</h2>
+              <p>Create elements for your archive based on the {newArchive.standard} standard. Build your archive structure by adding elements and organizing them hierarchically.</p>
+            </div>
+            <button type="button" class="btn btn-fill" on:click={fillRandomHierarchy}>Fill Random Hierarchy</button>
+          </div>
         </div>
 
         <!-- Canvas with Add Element Button -->
@@ -820,6 +943,24 @@
     font-size: 0.875rem;
   }
 
+  .btn-fill {
+    padding: 0.5rem 1rem;
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.75rem;
+  }
+
+  .btn-fill:hover {
+    background: #dcfce7;
+    border-color: #86efac;
+  }
+
   /* Progress Steps */
   .progress-steps {
     display: flex;
@@ -990,6 +1131,13 @@
     background: #f8fafc;
     border-radius: 0.375rem;
     border-left: 4px solid #3b82f6;
+  }
+
+  .scheme-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
   }
 
   .scheme-info h2 {

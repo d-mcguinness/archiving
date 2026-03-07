@@ -213,43 +213,45 @@
         </button>
       </div>
     {:else}
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Age</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each tenantUsers as user (user.id)}
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
             <tr>
-              <td>{user.id}</td>
-              <td>
-                <div class="user-name">
-                  <span class="user-avatar">👤</span>
-                  {user.name}
-                </div>
-              </td>
-              <td>{user.email}</td>
-              <td>{user.age || 'N/A'}</td>
-              <td class="actions-cell">
-                <button
-                  class="btn-action btn-remove"
-                  on:click={() => removeUserFromTenant(user.id, user.name)}
-                >
-                  ✖️ Remove
-                </button>
-                <a href="/users/update?userId={user.id}" class="btn-action btn-edit">
-                  ✏️ Edit
-                </a>
-              </td>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Age</th>
+              <th>Actions</th>
             </tr>
-          {/each}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {#each tenantUsers as user (user.id)}
+              <tr>
+                <td>{user.id}</td>
+                <td>
+                  <div class="user-name">
+                    <span class="user-avatar">👤</span>
+                    {user.name}
+                  </div>
+                </td>
+                <td>{user.email}</td>
+                <td>{user.age || 'N/A'}</td>
+                <td class="actions-cell">
+                  <button
+                    class="btn-action btn-remove"
+                    on:click={() => removeUserFromTenant(user.id, user.name)}
+                  >
+                    ✖️ Remove
+                  </button>
+                  <a href="/users/update?userId={user.id}" class="btn-action btn-edit">
+                    ✏️ Edit
+                  </a>
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
     {/if}
   {/if}
   {/if}
@@ -494,13 +496,17 @@
     margin-bottom: 2rem;
   }
 
-  .data-table {
-    width: 100%;
+  .table-container {
     background: white;
     border-radius: 0.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+  }
+
+  .data-table {
+    width: 100%;
     border-collapse: collapse;
-    overflow: hidden;
   }
 
   .data-table thead {

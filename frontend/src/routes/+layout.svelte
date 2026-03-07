@@ -190,6 +190,29 @@
             </li>
           {/if}
 
+          <!-- SIPs - ADMIN shows all SIPs, TENANT shows their tenant's SIPs -->
+          {#if currentRole === 'ADMIN'}
+            <li>
+              <a
+                href="/admin/sips"
+                class="sips-link"
+                class:active={isActive('/admin/sips')}
+              >
+                📦 SIPs
+              </a>
+            </li>
+          {:else if currentRole === 'TENANT' && currentTenantId}
+            <li>
+              <a
+                href="/tenants/{currentTenantId}/sips"
+                class="sips-link"
+                class:active={isActive('/tenants/' + currentTenantId + '/sips')}
+              >
+                📦 SIPs
+              </a>
+            </li>
+          {/if}
+
           <!-- Documents - role-based navigation -->
           {#if isLoggedIn}
             <li>
@@ -228,6 +251,7 @@
               {/if}
             </li>
           {/if}
+
         </ul>
         <div class="auth-section">
           {#if isLoggedIn && currentUser}
@@ -370,6 +394,18 @@
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
   }
 
+  .nav-links a.sips-link {
+    background: linear-gradient(135deg, #ec4899, #db2777);
+  }
+
+  .nav-links a.sips-link:hover:not(.active) {
+    background: linear-gradient(135deg, #db2777, #be185d);
+  }
+
+  .nav-links a.sips-link.active {
+    background: linear-gradient(135deg, #f472b6, #ec4899);
+  }
+
   .nav-links a.documents-link {
     background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   }
@@ -381,7 +417,6 @@
   .nav-links a.documents-link.active {
     background: linear-gradient(135deg, #a78bfa, #8b5cf6);
   }
-
 
   .auth-section {
     display: flex;

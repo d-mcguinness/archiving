@@ -293,7 +293,7 @@
           <div class="stat-card">
             <h3>Archives</h3>
             <div class="stat-number">{stats.archives}</div>
-            <a href="/archives" class="stat-link">Manage Archives</a>
+            <a href="/admin/archives" class="stat-link">Manage Archives</a>
           </div>
         {:else if currentRole === 'TENANT' && currentTenantId}
           <div class="stat-card">

@@ -48,10 +48,15 @@ public class ArchiveService {
 
         LocalDateTime now = LocalDateTime.now();
 
+        // Use ownerId if provided, otherwise fall back to userId
+        Long ownerId = input.getOwnerId() != null ? input.getOwnerId() : input.getUserId();
+        // Use tenantId if provided, otherwise default to ownerId as a placeholder
+        Long tenantId = input.getTenantId() != null ? input.getTenantId() : ownerId;
+
         Archive archive = new Archive(
             null, // Let JPA generate the ID
-            input.getTenantId(),  // Set tenantId (organization)
-            input.getOwnerId(),   // Set ownerId (user who owns it)
+            tenantId,             // Set tenantId (organization)
+            ownerId,              // Set ownerId (user who owns it)
             input.getTitle(),
             input.getDescription(),
             input.getContent(),
@@ -106,6 +111,18 @@ public class ArchiveService {
 
     public List<Archive> getArchivesByOwner(Long ownerId) {
         return archiveRepository.findByOwnerId(ownerId);
+    }
+
+    public List<Archive> getArchivesByTenant(Long tenantId) {
+        return archiveRepository.findByTenantId(tenantId);
+    }
+
+    public List<Archive> getAllSips() {
+        return archiveRepository.findByRootElementIsNotNull();
+    }
+
+    public List<Archive> getSipsByTenant(Long tenantId) {
+        return archiveRepository.findSipsByTenantId(tenantId);
     }
 
     public List<Archive> getArchivesByUserRole(Long userId, UserRole role) {

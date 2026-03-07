@@ -10,6 +10,14 @@
   import ArchiveCanvas from '../../ArchiveCanvas.svelte';
   import { toasts } from '$lib/stores/toastStore';
 
+  function getArchivesPath() {
+    const role = localStorage.getItem('auth_role');
+    const tenantId = localStorage.getItem('auth_tenantId');
+    if (role === 'ADMIN') return '/admin/archives';
+    if (role === 'TENANT' && tenantId) return `/tenants/${tenantId}/archives`;
+    return '/';
+  }
+
   let archive: any = null;
   let users: any[] = [];
   let archiveElements: any[] = [];
@@ -240,7 +248,7 @@
   }
 
   function goBack() {
-    goto('/archives');
+    goto(getArchivesPath());
   }
 
   function enableEditMode() {

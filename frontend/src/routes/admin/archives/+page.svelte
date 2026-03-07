@@ -36,7 +36,7 @@
       if (currentRole === 'TENANT' && tenantId) {
         goto(`/tenants/${tenantId}/archives`);
       } else if (currentRole === 'USER') {
-        goto('/archives');  // Or could redirect to filtered view
+        goto('/');  // Redirect non-admin users to home
       } else {
         goto('/login');
       }
@@ -262,6 +262,13 @@
                   {/if}
                 </td>
                 <td class="actions-cell">
+                  <a
+                    href="/sip/create?standard={encodeURIComponent(archive.standard)}&userId={archive.ownerId}&title={encodeURIComponent(archive.title)}&description={encodeURIComponent(archive.description || '')}&archiveId={archive.id}"
+                    class="btn-action btn-sip"
+                    title="Create SIP from this archive"
+                  >
+                    📦 Create SIP
+                  </a>
                   <a href="/archives/delete/{archive.id}" class="btn-action btn-delete">
                     🗑️ Delete
                   </a>
@@ -524,7 +531,7 @@
     background: white;
     border-radius: 0.75rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    overflow-x: auto;
     border: 1px solid #e2e8f0;
   }
 
@@ -722,7 +729,7 @@
   .actions-cell {
     text-align: right;
     white-space: nowrap;
-    width: 320px;
+    width: 440px;
   }
 
   .btn-action {
@@ -745,6 +752,15 @@
 
   .btn-edit:hover {
     background: #d97706;
+  }
+
+  .btn-sip {
+    background: #ec4899;
+    color: white;
+  }
+
+  .btn-sip:hover {
+    background: #db2777;
   }
 
   .btn-extract {

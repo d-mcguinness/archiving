@@ -98,6 +98,22 @@
     }
   }
 
+  function fillRandom() {
+    const adjectives = ['Acme', 'Global', 'Nordic', 'Summit', 'Atlas', 'Apex', 'Vanguard', 'Pinnacle'];
+    const nouns = ['Corp', 'Systems', 'Solutions', 'Industries', 'Labs', 'Digital', 'Technologies', 'Group'];
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const slug = `${adj.toLowerCase()}-${noun.toLowerCase()}`;
+    newTenant.name = slug;
+    newTenant.domain = `${slug}.example.com`;
+    newTenant.displayName = `${adj} ${noun}`;
+    newTenant.description = `${adj} ${noun} is a leading provider of archiving solutions.`;
+    newTenant.plan = plans[Math.floor(Math.random() * plans.length)];
+    if (users.length > 0) {
+      newTenant.ownerId = users[Math.floor(Math.random() * users.length)].id;
+    }
+  }
+
   function handleCancel() {
     goto('/admin/tenants');
   }
@@ -119,9 +135,12 @@
   {:else}
     <div class="page-header">
       <h1>Create New Tenant</h1>
-      <button class="btn-cancel" on:click={handleCancel}>
-        ← Back to Tenants
-      </button>
+      <div class="header-actions">
+        <button type="button" class="btn-fill" on:click={fillRandom}>Fill Random</button>
+        <button class="btn-cancel" on:click={handleCancel}>
+          ← Back to Tenants
+        </button>
+      </div>
     </div>
 
     {#if error}
@@ -265,6 +284,29 @@
     margin: 0;
     color: #1e293b;
     font-size: 2rem;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .btn-fill {
+    padding: 0.5rem 1rem;
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-fill:hover {
+    background: #dcfce7;
+    border-color: #86efac;
   }
 
   .btn-cancel {

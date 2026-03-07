@@ -36,6 +36,16 @@
     }
   }
 
+  function fillRandom() {
+    const firstNames = ['Alice', 'Bob', 'Charlie', 'Diana', 'Erik', 'Fiona', 'George', 'Hannah'];
+    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis'];
+    const first = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const last = lastNames[Math.floor(Math.random() * lastNames.length)];
+    newUser.name = `${first} ${last}`;
+    newUser.email = `${first.toLowerCase()}.${last.toLowerCase()}@example.com`;
+    newUser.age = String(Math.floor(Math.random() * 50) + 20);
+  }
+
   function handleCancel() {
     goto('/users');
   }
@@ -45,6 +55,7 @@
   <div class="form-header">
     <h1>Create New User</h1>
     <p class="form-description">Add a new user to the system</p>
+    <button type="button" class="btn btn-fill" on:click={fillRandom}>Fill Random</button>
   </div>
 
   {#if error}
@@ -251,6 +262,24 @@
     background: #f1f5f9;
     color: #94a3b8;
     cursor: not-allowed;
+  }
+
+  .btn-fill {
+    padding: 0.5rem 1rem;
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.75rem;
+  }
+
+  .btn-fill:hover {
+    background: #dcfce7;
+    border-color: #86efac;
   }
 
   @media (max-width: 768px) {

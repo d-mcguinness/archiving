@@ -7,6 +7,14 @@
   import { GET_ALL_ARCHIVES } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
 
+  function getArchivesPath() {
+    const role = localStorage.getItem('auth_role');
+    const tenantId = localStorage.getItem('auth_tenantId');
+    if (role === 'ADMIN') return '/admin/archives';
+    if (role === 'TENANT' && tenantId) return `/tenants/${tenantId}/archives`;
+    return '/';
+  }
+
   let archive: any = null;
   let loading = true;
   let deleting = false;
@@ -73,7 +81,7 @@
 
       // Navigate back to archives list
       toasts.add(`Archive "${archive.title}" deleted successfully`, 'success');
-      goto('/archives');
+      goto(getArchivesPath());
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to delete archive';
       console.error('Delete archive error:', e);
@@ -84,7 +92,7 @@
   }
 
   function cancel() {
-    goto('/archives');
+    goto(getArchivesPath());
   }
 </script>
 

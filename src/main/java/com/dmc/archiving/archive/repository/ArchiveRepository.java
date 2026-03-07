@@ -75,6 +75,16 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
     // Find archives by owner and status
     List<Archive> findByOwnerIdAndStatus(Long ownerId, ArchiveStatus status);
 
+    // Find archives by tenant
+    List<Archive> findByTenantId(Long tenantId);
+
+    // Find archives with a root element (SIPs)
+    List<Archive> findByRootElementIsNotNull();
+
+    // Find SIPs by tenant
+    @Query("SELECT a FROM Archive a WHERE a.tenantId = :tenantId AND a.rootElement IS NOT NULL")
+    List<Archive> findSipsByTenantId(@Param("tenantId") Long tenantId);
+
     // ========== Performance Optimization Queries ==========
 
     // Fetch archives with all relationships for detailed view (prevents N+1)
