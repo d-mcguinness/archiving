@@ -9,12 +9,6 @@
   let loading = true;
   let error: string | null = null;
 
-  // File upload state
-  let selectedFile: File | null = null;
-  let uploading = false;
-  let uploadMessage = '';
-  let uploadError = '';
-
   // Edit modal state
   let showEditModal = false;
   let editingUser: any = null;
@@ -76,59 +70,6 @@
       console.error('Load users error:', e);
     } finally {
       loading = false;
-    }
-  }
-
-  function handleFileSelect(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      selectedFile = input.files[0];
-      uploadMessage = '';
-      uploadError = '';
-    }
-  }
-
-  async function handleUpload() {
-    if (!selectedFile) {
-      uploadError = 'Please select a file first';
-      return;
-    }
-
-    uploading = true;
-    uploadMessage = '';
-    uploadError = '';
-
-    try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-
-      const response = await fetch('http://localhost:2020/api/upload', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Upload failed: ${response.status}`);
-      }
-
-      const result = await response.json();
-      uploadMessage = result.message || 'File uploaded successfully!';
-      selectedFile = null;
-
-      // Reset file input
-      const fileInput = document.getElementById('file-upload') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
-
-      // Reload users list to show newly uploaded users
-      await loadUsers();
-      toasts.success(uploadMessage);
-    } catch (e) {
-      uploadError = e instanceof Error ? e.message : 'Failed to upload file';
-      console.error('Upload error:', e);
-      toasts.error(uploadError);
-    } finally {
-      uploading = false;
     }
   }
 
@@ -210,50 +151,6 @@
     <div class="page-header">
       <h1>Users Management</h1>
       <a href="/users/create" class="add-user-btn">+ Add User</a>
-    </div>
-
-    <!-- File Upload Section -->
-    <div class="file-upload-section">
-      <h2>📤 Upload Users File</h2>
-      <div class="upload-card">
-        <div class="upload-area">
-          <input
-            type="file"
-            id="file-upload"
-            on:change={handleFileSelect}
-            disabled={uploading}
-            class="file-input"
-          />
-          <label for="file-upload" class="file-label">
-            <span class="upload-icon">📁</span>
-            <span class="upload-text">
-              {selectedFile ? selectedFile.name : 'Choose a file to upload'}
-            </span>
-          </label>
-        </div>
-
-        {#if uploadMessage}
-          <div class="upload-success">
-            <span class="success-icon">✅</span>
-            <span>{uploadMessage}</span>
-          </div>
-        {/if}
-
-        {#if uploadError}
-          <div class="upload-error">
-            <span class="error-icon">❌</span>
-            <span>{uploadError}</span>
-          </div>
-        {/if}
-
-        <button
-          class="upload-button"
-          on:click={handleUpload}
-          disabled={!selectedFile || uploading}
-        >
-          {uploading ? '⏳ Uploading...' : '📤 Upload File'}
-        </button>
-      </div>
     </div>
 
     {#if error}
@@ -561,113 +458,6 @@
     color: #1e293b;
     font-weight: 700;
     font-size: 1.25rem;
-  }
-
-  /* File Upload Section */
-  .file-upload-section {
-    margin-bottom: 2rem;
-  }
-
-  .file-upload-section h2 {
-    margin-bottom: 1rem;
-    color: #1e293b;
-    font-size: 1.25rem;
-  }
-
-  .upload-card {
-    background: white;
-    padding: 2rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
-  }
-
-  .upload-area {
-    margin-bottom: 1.5rem;
-  }
-
-  .file-input {
-    display: none;
-  }
-
-  .file-label {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.5rem;
-    border: 2px dashed #cbd5e1;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: #f8fafc;
-  }
-
-  .file-label:hover {
-    border-color: #3b82f6;
-    background: #eff6ff;
-  }
-
-  .upload-icon {
-    font-size: 2rem;
-  }
-
-  .upload-text {
-    color: #475569;
-    font-weight: 500;
-  }
-
-  .upload-success {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: #dcfce7;
-    border: 1px solid #86efac;
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    color: #166534;
-  }
-
-  .success-icon {
-    font-size: 1.25rem;
-  }
-
-  .upload-error {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: #fee2e2;
-    border: 1px solid #fca5a5;
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    color: #991b1b;
-  }
-
-  .error-icon {
-    font-size: 1.25rem;
-  }
-
-  .upload-button {
-    width: 100%;
-    padding: 0.75rem 1.5rem;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .upload-button:hover:not(:disabled) {
-    background: #2563eb;
-  }
-
-  .upload-button:disabled {
-    background: #cbd5e1;
-    cursor: not-allowed;
   }
 
   /* Table Styles */

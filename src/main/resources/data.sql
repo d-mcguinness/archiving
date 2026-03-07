@@ -1,3 +1,6 @@
+-- Schema migration: make archive_id nullable on elements (elements can now belong to a SIP instead)
+ALTER TABLE elements ALTER COLUMN archive_id DROP NOT NULL;
+
 -- Insert Users (skip if already exists based on email)
 INSERT INTO users (name, email, age) VALUES
 ('John Doe', 'john.doe@example.com', 30),
@@ -281,4 +284,198 @@ WHERE NOT EXISTS (SELECT 1 FROM documents WHERE id = 20);
 
 -- Reset documents sequence
 SELECT setval('documents_id_seq', (SELECT COALESCE(MAX(id), 1) FROM documents), true);
+
+-- Insert SIPs (Submission Information Packages)
+-- SIP 1 - NOARK5, Tenant 1 (Acme Corp), Owner: John Doe (User 1)
+INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 1, 1, 1, 'NOARK5 Personnel Records SIP', 'Submission package for personnel records following NOARK5 standard', '{"sipType":"Archive (Arkiv)","standard":"NOARK5","entity":"Archive","fields":{"systemID":"SIP-NOARK5-001","title":"Personnel Records","archiveStatus":"Created","documentMedium":"Electronic archive"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'NOARK5'
+WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 1);
+
+-- SIP 2 - OAIS, Tenant 1 (Acme Corp), Owner: Jane Smith (User 2)
+INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 2, 1, 2, 'OAIS Digital Preservation Package', 'OAIS-compliant submission information package for digital preservation', '{"sipType":"Submission Information Package","standard":"OAIS","entity":"Submission Information Package","fields":{"packageID":"SIP-OAIS-001","title":"Digital Preservation Package","packageType":"SIP","producer":"Jane Smith"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'SUBMITTED', 'OAIS'
+WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 2);
+
+-- SIP 3 - PREMIS, Tenant 2 (Tech Innovations), Owner: Bob Johnson (User 3)
+INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 3, 2, 3, 'PREMIS Software Artifacts SIP', 'Preservation metadata package for software development artifacts', '{"sipType":"Preservation Object","standard":"PREMIS","entity":"Object","fields":{"objectIdentifierType":"local","objectIdentifierValue":"SIP-PREMIS-001","objectCategory":"Representation","originalName":"Software Artifacts"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'VALIDATED', 'PREMIS'
+WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 3);
+
+-- SIP 4 - DUBLIN_CORE, Tenant 2 (Tech Innovations), Owner: Jane Smith (User 2)
+INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 4, 2, 2, 'Dublin Core Research Dataset', 'Research publications described using Dublin Core metadata', '{"sipType":"Resource","standard":"Dublin Core","entity":"Resource","fields":{"resourceIdentifier":"SIP-DC-001","resourceType":"Dataset"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'DUBLIN_CORE'
+WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 4);
+
+-- SIP 5 - METS, Tenant 3 (Global Services), Owner: Bob Johnson (User 3)
+INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 5, 3, 3, 'METS Digitized Documents Package', 'METS-encoded package of digitized historical documents', '{"sipType":"METS Document","standard":"METS","entity":"METS Document","fields":{"metsID":"SIP-METS-001","label":"Digitized Documents","type":"digital object"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'ACCEPTED', 'METS'
+WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 5);
+
+-- SIP 6 - EAD, Tenant 3 (Global Services), Owner: Alice Williams (User 4)
+INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 6, 3, 4, 'EAD Finding Aid SIP', 'Encoded Archival Description finding aid submission', '{"sipType":"Finding Aid (EAD)","standard":"EAD","entity":"EAD","fields":{"eadID":"SIP-EAD-001","audience":"external","lang":"eng"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'EAD'
+WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 6);
+
+-- SIP 7 - BAGIT, Tenant 4 (Startup Labs), Owner: Alice Williams (User 4)
+INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 7, 4, 4, 'BagIt Source Code Package', 'BagIt-packaged source code and documentation', '{"sipType":"Bag","standard":"BagIt","entity":"Bag","fields":{"bagName":"source-code-bag","payloadOxum":"1024.5","bagSize":"1 GB","isComplete":"true","isValid":"true"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'SUBMITTED', 'BAGIT'
+WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 7);
+
+-- SIP 8 - ISADG, Tenant 4 (Startup Labs), Owner: Charlie Brown (User 5)
+INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 8, 4, 5, 'ISAD(G) Founders Archive', 'Multi-level archival description of founders documents', '{"sipType":"Archival Description","standard":"ISAD(G)","entity":"Archival Description","fields":{"descriptionID":"SIP-ISADG-001","levelOfDescription":"Fonds"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'ISADG'
+WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 8);
+
+-- SIP 9 - MODS, Tenant 4 (Startup Labs), Owner: Charlie Brown (User 5)
+INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 9, 4, 5, 'MODS Technical Library SIP', 'Bibliographic records for technical reference library', '{"sipType":"MODS Record","standard":"MODS","entity":"MODS","fields":{"modsID":"SIP-MODS-001","version":"3.8"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'VALIDATED', 'MODS'
+WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 9);
+
+-- Insert Elements for SIPs (root elements)
+-- Element for SIP 1 (NOARK5)
+INSERT INTO elements (id, sip_id, element_identifier, entity_name, entity_type, norwegian_name, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1000, 1, 'SIP-NOARK5-001', 'Archive', 'archive', 'Arkiv', 'Archive', 'Personnel Records', 'Root element for personnel records SIP', CURRENT_TIMESTAMP, '1', 'Opprettet', true
+WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1000);
+
+-- Element for SIP 2 (OAIS)
+INSERT INTO elements (id, sip_id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1001, 2, 'SIP-OAIS-001', 'Submission Information Package', 'sip', 'Submission Information Package', 'Digital Preservation Package', 'Root element for OAIS digital preservation SIP', CURRENT_TIMESTAMP, '2', 'Opprettet', true
+WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1001);
+
+-- Element for SIP 3 (PREMIS)
+INSERT INTO elements (id, sip_id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1002, 3, 'SIP-PREMIS-001', 'Object', 'object', 'Preservation Object', 'Software Artifacts', 'Root element for PREMIS preservation SIP', CURRENT_TIMESTAMP, '3', 'Opprettet', true
+WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1002);
+
+-- Element for SIP 5 (METS)
+INSERT INTO elements (id, sip_id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1004, 5, 'SIP-METS-001', 'METS Document', 'metsDocument', 'METS Document', 'Digitized Documents', 'Root element for METS digitized documents SIP', CURRENT_TIMESTAMP, '3', 'Opprettet', true
+WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1004);
+
+-- Element for SIP 7 (BAGIT)
+INSERT INTO elements (id, sip_id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1006, 7, 'source-code-bag', 'Bag', 'bag', 'Bag', 'Source Code Package', 'Root element for BagIt source code SIP', CURRENT_TIMESTAMP, '4', 'Opprettet', true
+WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1006);
+
+-- Set root elements on SIPs
+UPDATE sips SET root_element_id = 1000 WHERE id = 1 AND root_element_id IS NULL;
+UPDATE sips SET root_element_id = 1001 WHERE id = 2 AND root_element_id IS NULL;
+UPDATE sips SET root_element_id = 1002 WHERE id = 3 AND root_element_id IS NULL;
+UPDATE sips SET root_element_id = 1004 WHERE id = 5 AND root_element_id IS NULL;
+UPDATE sips SET root_element_id = 1006 WHERE id = 7 AND root_element_id IS NULL;
+
+-- Insert Fields for SIP root elements
+-- Fields for SIP 1 (NOARK5)
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2000, 1000, 'systemID', 'System ID', 'string', 'SIP-NOARK5-001'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2000);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2001, 1000, 'title', 'Title', 'string', 'Personnel Records'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2001);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2002, 1000, 'archiveStatus', 'Archive Status', 'string', 'Created'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2002);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2003, 1000, 'documentMedium', 'Document Medium', 'string', 'Electronic archive'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2003);
+
+-- Fields for SIP 2 (OAIS)
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2010, 1001, 'packageID', 'Package ID', 'string', 'SIP-OAIS-001'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2010);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2011, 1001, 'packageType', 'Package Type', 'string', 'SIP'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2011);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2012, 1001, 'producer', 'Producer', 'string', 'Jane Smith'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2012);
+
+-- Fields for SIP 3 (PREMIS)
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2020, 1002, 'objectIdentifierType', 'Object Identifier Type', 'string', 'local'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2020);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2021, 1002, 'objectIdentifierValue', 'Object Identifier Value', 'string', 'SIP-PREMIS-001'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2021);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2022, 1002, 'objectCategory', 'Object Category', 'string', 'Representation'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2022);
+
+-- Fields for SIP 5 (METS)
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2040, 1004, 'metsID', 'METS ID', 'string', 'SIP-METS-001'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2040);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2041, 1004, 'label', 'Label', 'string', 'Digitized Documents'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2041);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2042, 1004, 'type', 'Type', 'string', 'digital object'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2042);
+
+-- Fields for SIP 7 (BAGIT)
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2060, 1006, 'bagName', 'Bag Name', 'string', 'source-code-bag'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2060);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2061, 1006, 'payloadOxum', 'Payload Oxum', 'string', '1024.5'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2061);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2062, 1006, 'bagSize', 'Bag Size', 'string', '1 GB'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2062);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2063, 1006, 'isComplete', 'Is Complete', 'string', 'true'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2063);
+
+-- Insert SIP User Assignments
+-- SIP 1 - Owner + Editor
+INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
+SELECT 1, 1, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 1 AND user_id = 1);
+INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
+SELECT 1, 2, 'EDITOR', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 1 AND user_id = 2);
+
+-- SIP 2
+INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
+SELECT 2, 2, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 2 AND user_id = 2);
+
+-- SIP 3
+INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
+SELECT 3, 3, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 3 AND user_id = 3);
+INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
+SELECT 3, 2, 'REVIEWER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 3 AND user_id = 2);
+
+-- SIP 4
+INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
+SELECT 4, 2, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 4 AND user_id = 2);
+
+-- SIP 5
+INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
+SELECT 5, 3, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 5 AND user_id = 3);
+INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
+SELECT 5, 4, 'VIEWER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 5 AND user_id = 4);
+
+-- SIP 6
+INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
+SELECT 6, 4, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 6 AND user_id = 4);
+
+-- SIP 7
+INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
+SELECT 7, 4, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 7 AND user_id = 4);
+INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
+SELECT 7, 5, 'EDITOR', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 7 AND user_id = 5);
+
+-- SIP 8
+INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
+SELECT 8, 5, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 8 AND user_id = 5);
+
+-- SIP 9
+INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
+SELECT 9, 5, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 9 AND user_id = 5);
+INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
+SELECT 9, 4, 'VIEWER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 9 AND user_id = 4);
+
+-- Reset SIP-related sequences
+SELECT setval('sips_id_seq', (SELECT COALESCE(MAX(id), 1) FROM sips), true);
+SELECT setval('sip_user_assignments_id_seq', (SELECT COALESCE(MAX(id), 1) FROM sip_user_assignments), true);
+SELECT setval('elements_id_seq', (SELECT COALESCE(MAX(id), 1) FROM elements), true);
+SELECT setval('fields_id_seq', (SELECT COALESCE(MAX(id), 1) FROM fields), true);
 
