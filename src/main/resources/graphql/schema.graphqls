@@ -87,7 +87,7 @@ type Archive {
     status: ArchiveStatus!
     standard: ArchiveStandard!
     rootElement: Element
-    assignedUsers: [UserAssignment!]!
+    assignedUsers: [User!]!
 }
 
 # Element Type - represents actual instances in archive hierarchy
@@ -130,20 +130,6 @@ type Field {
     value: String
 }
 
-
-type UserAssignment {
-    id: ID!
-    userId: ID!
-    role: UserRole!
-    assignedAt: String!
-}
-
-enum UserRole {
-    OWNER
-    EDITOR
-    REVIEWER
-    VIEWER
-}
 
 enum ArchiveStatus {
     DRAFT
@@ -211,7 +197,6 @@ input UpdateElementInput {
 input AssignUserInput {
     archiveId: ID!
     userId: ID!
-    role: UserRole!
 }
 
 input UnassignUserInput {
@@ -233,7 +218,7 @@ type Sip {
     status: SipStatus!
     standard: ArchiveStandard!
     rootElement: Element
-    assignedUsers: [SipUserAssignment!]!
+    assignedUsers: [User!]!
 }
 
 enum SipStatus {
@@ -242,13 +227,6 @@ enum SipStatus {
     VALIDATED
     ACCEPTED
     REJECTED
-}
-
-type SipUserAssignment {
-    id: ID!
-    userId: ID!
-    role: UserRole!
-    assignedAt: String!
 }
 
 input CreateSipInput {
@@ -335,7 +313,6 @@ type Query {
     getAllSips: [Archive!]!
     getSipsByTenant(tenantId: ID!): [Archive!]!
     getArchivesByUserAssignment(userId: ID!): [Archive!]!
-    getArchivesByUserRole(userId: ID!, role: UserRole!): [Archive!]!
 
     # Archive Paginated Queries (Recommended for scalability)
     getAllArchivesPaginated(page: Int, size: Int, sortBy: String, sortDirection: String): ArchivePage!
@@ -390,6 +367,7 @@ type Mutation {
 
     # SIP Mutations
     createSipV2(input: CreateSipInput!): Sip!
+    generateSip(sipId: ID!): String!
     updateSipStatusV2(sipId: ID!, status: SipStatus!): Sip
     deleteSipV2(id: ID!): Boolean!
 

@@ -50,5 +50,15 @@ public interface CloudStorageService {
      * @return Presigned URL
      */
     String getPresignedUrl(String fileKey, int expirationMinutes) throws StorageException;
+
+    /**
+     * Upload raw bytes to cloud storage
+     *
+     * @param data The byte array to upload
+     * @param key The storage key/path for the file
+     * @param contentType The MIME content type
+     * @return Presigned URL for accessing the uploaded file
+     */
+    String uploadBytes(byte[] data, String key, String contentType) throws StorageException;
 }
 

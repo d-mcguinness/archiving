@@ -2,12 +2,15 @@ package com.dmc.archiving.sip;
 
 import com.dmc.archiving.archive.element.Element;
 import com.dmc.archiving.archive.element.field.Field;
-import com.dmc.archiving.archive.model.UserRole;
 import com.dmc.archiving.sip.input.CreateSipInput;
+import com.dmc.archiving.user.model.User;
 import com.dmc.archiving.sip.model.Sip;
 import com.dmc.archiving.sip.model.SipStatus;
+import com.dmc.archiving.sip.generator.SipGenerator;
+import com.dmc.archiving.sip.generator.SipGeneratorFactory;
 import com.dmc.archiving.sip.repository.SipRepository;
 import com.dmc.archiving.user.api.UserApi;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,17 +24,26 @@ public class SipService {
 
     private final SipRepository sipRepository;
     private final UserApi userApi;
+    private final SipGeneratorFactory sipGeneratorFactory;
 
-    public SipService(SipRepository sipRepository, UserApi userApi) {
+    public SipService(SipRepository sipRepository, UserApi userApi, SipGeneratorFactory sipGeneratorFactory) {
         this.sipRepository = sipRepository;
         this.userApi = userApi;
+        this.sipGeneratorFactory = sipGeneratorFactory;
+    }
+
+    @Transactional
+    public String generateSip(Long sipId) {
+        Sip sip = sipRepository.findById(sipId)
+                .orElseThrow(() -> new IllegalArgumentException("Sip not found: " + sipId));
+        SipGenerator generator = sipGeneratorFactory.getGenerator(sip.getStandard());
+        return generator.generate(sip);
     }
 
     @Transactional
     public Sip createSip(CreateSipInput input) {
-        if (!userApi.userExists(input.getUserId())) {
-            throw new IllegalArgumentException("User with ID " + input.getUserId() + " does not exist");
-        }
+        User user = userApi.getUserById(input.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User with ID " + input.getUserId() + " does not exist"));
 
         Long ownerId = input.getOwnerId() != null ? input.getOwnerId() : input.getUserId();
         Long tenantId = input.getTenantId() != null ? input.getTenantId() : ownerId;
@@ -49,22 +61,11 @@ public class SipService {
         sip.setStatus(SipStatus.DRAFT);
         sip.setStandard(input.getStandard());
 
-        // Assign creator as OWNER
-        sip.assignUser(input.getUserId(), UserRole.OWNER);
+        // Assign creator
+        sip.assignUser(user);
 
         // Create root element inline
-        Element rootElement = new Element();
-        rootElement.setElementIdentifier(input.getElementIdentifier());
-        rootElement.setEntityName(input.getEntityName());
-        rootElement.setEntityType(input.getEntityType());
-        rootElement.setNorwegianName(input.getNorwegianName());
-        rootElement.setEnglishName(input.getEnglishName());
-        rootElement.setTitle(input.getElementTitle());
-        rootElement.setDescription(input.getElementDescription());
-        rootElement.setCreatedBy(input.getCreatedBy());
-        rootElement.setCreatedAt(now);
-        rootElement.setIsRoot(true);
-        rootElement.setStatus("Opprettet");
+        Element rootElement = getRootElement(input, now);
 
         // Add fields to root element
         if (input.getFields() != null && !input.getFields().isEmpty()) {
@@ -82,6 +83,22 @@ public class SipService {
         sip.setRootElement(rootElement);
 
         return sipRepository.save(sip);
+    }
+
+    private static @NonNull Element getRootElement(CreateSipInput input, LocalDateTime now) {
+        Element rootElement = new Element();
+        rootElement.setElementIdentifier(input.getElementIdentifier());
+        rootElement.setEntityName(input.getEntityName());
+        rootElement.setEntityType(input.getEntityType());
+        rootElement.setNorwegianName(input.getNorwegianName());
+        rootElement.setEnglishName(input.getEnglishName());
+        rootElement.setTitle(input.getElementTitle());
+        rootElement.setDescription(input.getElementDescription());
+        rootElement.setCreatedBy(input.getCreatedBy());
+        rootElement.setCreatedAt(now);
+        rootElement.setIsRoot(true);
+        rootElement.setStatus("Opprettet");
+        return rootElement;
     }
 
     public List<Sip> getAllSips() {

@@ -6,7 +6,6 @@ import com.dmc.archiving.archive.input.AssignUserInput;
 import com.dmc.archiving.archive.input.UnassignUserInput;
 import com.dmc.archiving.archive.model.Archive;
 import com.dmc.archiving.archive.model.ArchiveStatus;
-import com.dmc.archiving.archive.model.UserRole;
 import com.dmc.archiving.archive.strategy.ArchiveStrategy;
 import com.dmc.archiving.archive.strategy.ArchiveStrategyFactory;
 import com.dmc.archiving.archive.strategy.ValidationResult;
@@ -15,7 +14,6 @@ import com.dmc.archiving.tenancy.service.TenancyService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -40,14 +38,15 @@ public class ArchiveController {
 
     private static final Logger log = LoggerFactory.getLogger(ArchiveController.class);
 
-    @Autowired
-    private ArchiveService archiveService;
+    private final ArchiveService archiveService;
+    private final ArchiveStrategyFactory strategyFactory;
+    private final TenancyService tenancyService;
 
-    @Autowired
-    private ArchiveStrategyFactory strategyFactory;
-
-    @Autowired
-    private TenancyService tenancyService;
+    public ArchiveController(ArchiveService archiveService, ArchiveStrategyFactory strategyFactory, TenancyService tenancyService) {
+        this.archiveService = archiveService;
+        this.strategyFactory = strategyFactory;
+        this.tenancyService = tenancyService;
+    }
 
     // ========== Legacy Query Methods (Non-paginated - use paginated versions for production) ==========
 
@@ -90,11 +89,6 @@ public class ArchiveController {
     @QueryMapping
     public List<Archive> getArchivesByUserAssignment(@Argument Long userId) {
         return archiveService.getArchivesByUserAssignment(userId);
-    }
-
-    @QueryMapping
-    public List<Archive> getArchivesByUserRole(@Argument Long userId, @Argument UserRole role) {
-        return archiveService.getArchivesByUserRole(userId, role);
     }
 
     // ========== Paginated Query Methods (Recommended for scalability) ==========
@@ -232,13 +226,6 @@ public class ArchiveController {
     public String updatedAt(Archive archive) {
         return archive.getUpdatedAt() != null ?
             archive.getUpdatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
-    }
-
-    // Field resolver for user assignments
-    @SchemaMapping(typeName = "UserAssignment", field = "assignedAt")
-    public String assignedAt(com.dmc.archiving.archive.model.UserAssignment userAssignment) {
-        return userAssignment.getAssignedAt() != null ?
-            userAssignment.getAssignedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
     }
 
     // Field resolver for tenant

@@ -104,79 +104,34 @@ INSERT INTO archives (id, tenant_id, owner_id, title, description, content, crea
 SELECT 12, 3, 3, 'Training Video Archive', 'Employee training and onboarding videos', 'Video content with PREMIS preservation metadata and access rights.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'PUBLISHED', 'PREMIS'
 WHERE NOT EXISTS (SELECT 1 FROM archives WHERE id = 12);
 
--- Insert User Assignments for Archives (skip duplicates)
--- Archive 1 (NOARK5 - Financial Reports)
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 1, 1, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 1 AND user_id = 1);
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 1, 2, 'EDITOR', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 1 AND user_id = 2);
-
--- Archive 2 (OAIS - Budget)
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 2, 1, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 2 AND user_id = 1);
-
--- Archive 3 (PREMIS - Digital Assets)
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 3, 2, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 3 AND user_id = 2);
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 3, 3, 'EDITOR', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 3 AND user_id = 3);
-
--- Archive 4 (DUBLIN_CORE - Research Publications)
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 4, 2, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 4 AND user_id = 2);
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 4, 3, 'VIEWER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 4 AND user_id = 3);
-
--- Archive 5 (METS - Historical Documents)
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 5, 3, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 5 AND user_id = 3);
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 5, 4, 'EDITOR', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 5 AND user_id = 4);
-
--- Archive 6 (EAD - Corporate Archives Finding Aid)
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 6, 3, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 6 AND user_id = 3);
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 6, 4, 'VIEWER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 6 AND user_id = 4);
-
--- Archive 7 (BAGIT - Product Development)
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 7, 4, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 7 AND user_id = 4);
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 7, 5, 'EDITOR', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 7 AND user_id = 5);
-
--- Archive 8 (ISADG - Organizational Records)
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 8, 4, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 8 AND user_id = 4);
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 8, 5, 'VIEWER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 8 AND user_id = 5);
-
--- Archive 9 (MODS - Corporate Library)
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 9, 5, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 9 AND user_id = 5);
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 9, 1, 'VIEWER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 9 AND user_id = 1);
-
--- Archive 10 (NOARK5 Draft - Project Template)
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 10, 1, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 10 AND user_id = 1);
-
--- Archive 11 (OAIS Archived - Marketing Materials)
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 11, 2, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 11 AND user_id = 2);
-
--- Archive 12 (PREMIS - Training Videos)
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 12, 3, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 12 AND user_id = 3);
-INSERT INTO user_assignments (archive_id, user_id, role, assigned_at)
-SELECT 12, 4, 'EDITOR', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM user_assignments WHERE archive_id = 12 AND user_id = 4);
+-- Insert Archive-User assignments (skip duplicates)
+INSERT INTO archive_users (archive_id, user_id) VALUES (1, 1) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (1, 2) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (2, 1) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (3, 2) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (3, 3) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (4, 2) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (4, 3) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (5, 3) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (5, 4) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (6, 3) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (6, 4) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (7, 4) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (7, 5) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (8, 4) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (8, 5) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (9, 5) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (9, 1) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (10, 1) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (11, 2) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (12, 3) ON CONFLICT DO NOTHING;
+INSERT INTO archive_users (archive_id, user_id) VALUES (12, 4) ON CONFLICT DO NOTHING;
 
 -- Reset sequences to prevent duplicate key errors
 -- This ensures that auto-generated IDs start after the manually inserted IDs
 SELECT setval('users_id_seq', (SELECT COALESCE(MAX(id), 1) FROM users), true);
 SELECT setval('tenants_id_seq', (SELECT COALESCE(MAX(id), 1) FROM tenants), true);
 SELECT setval('archives_id_seq', (SELECT COALESCE(MAX(id), 1) FROM archives), true);
-SELECT setval('user_assignments_id_seq', (SELECT COALESCE(MAX(id), 1) FROM user_assignments), true);
 SELECT setval('elements_id_seq', (SELECT COALESCE(MAX(id), 1) FROM elements), true);
 
 -- Insert sample documents
@@ -333,36 +288,60 @@ WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 9);
 
 -- Insert Elements for SIPs (root elements)
 -- Element for SIP 1 (NOARK5)
-INSERT INTO elements (id, sip_id, element_identifier, entity_name, entity_type, norwegian_name, english_name, title, description, created_at, created_by, status, is_root)
-SELECT 1000, 1, 'SIP-NOARK5-001', 'Archive', 'archive', 'Arkiv', 'Archive', 'Personnel Records', 'Root element for personnel records SIP', CURRENT_TIMESTAMP, '1', 'Opprettet', true
+INSERT INTO elements (id, element_identifier, entity_name, entity_type, norwegian_name, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1000, 'SIP-NOARK5-001', 'Archive', 'archive', 'Arkiv', 'Archive', 'Personnel Records', 'Root element for personnel records SIP', CURRENT_TIMESTAMP, '1', 'Opprettet', true
 WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1000);
 
 -- Element for SIP 2 (OAIS)
-INSERT INTO elements (id, sip_id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
-SELECT 1001, 2, 'SIP-OAIS-001', 'Submission Information Package', 'sip', 'Submission Information Package', 'Digital Preservation Package', 'Root element for OAIS digital preservation SIP', CURRENT_TIMESTAMP, '2', 'Opprettet', true
+INSERT INTO elements (id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1001, 'SIP-OAIS-001', 'Submission Information Package', 'sip', 'Submission Information Package', 'Digital Preservation Package', 'Root element for OAIS digital preservation SIP', CURRENT_TIMESTAMP, '2', 'Opprettet', true
 WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1001);
 
 -- Element for SIP 3 (PREMIS)
-INSERT INTO elements (id, sip_id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
-SELECT 1002, 3, 'SIP-PREMIS-001', 'Object', 'object', 'Preservation Object', 'Software Artifacts', 'Root element for PREMIS preservation SIP', CURRENT_TIMESTAMP, '3', 'Opprettet', true
+INSERT INTO elements (id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1002, 'SIP-PREMIS-001', 'Object', 'object', 'Preservation Object', 'Software Artifacts', 'Root element for PREMIS preservation SIP', CURRENT_TIMESTAMP, '3', 'Opprettet', true
 WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1002);
 
+-- Element for SIP 4 (DUBLIN_CORE)
+INSERT INTO elements (id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1003, 'SIP-DC-001', 'Resource', 'resource', 'Resource', 'Research Dataset', 'Root element for Dublin Core research dataset SIP', CURRENT_TIMESTAMP, '2', 'Opprettet', true
+WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1003);
+
 -- Element for SIP 5 (METS)
-INSERT INTO elements (id, sip_id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
-SELECT 1004, 5, 'SIP-METS-001', 'METS Document', 'metsDocument', 'METS Document', 'Digitized Documents', 'Root element for METS digitized documents SIP', CURRENT_TIMESTAMP, '3', 'Opprettet', true
+INSERT INTO elements (id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1004, 'SIP-METS-001', 'METS Document', 'metsDocument', 'METS Document', 'Digitized Documents', 'Root element for METS digitized documents SIP', CURRENT_TIMESTAMP, '3', 'Opprettet', true
 WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1004);
 
+-- Element for SIP 6 (EAD)
+INSERT INTO elements (id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1005, 'SIP-EAD-001', 'EAD', 'findingAid', 'Finding Aid', 'Finding Aid SIP', 'Root element for EAD finding aid SIP', CURRENT_TIMESTAMP, '4', 'Opprettet', true
+WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1005);
+
 -- Element for SIP 7 (BAGIT)
-INSERT INTO elements (id, sip_id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
-SELECT 1006, 7, 'source-code-bag', 'Bag', 'bag', 'Bag', 'Source Code Package', 'Root element for BagIt source code SIP', CURRENT_TIMESTAMP, '4', 'Opprettet', true
+INSERT INTO elements (id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1006, 'source-code-bag', 'Bag', 'bag', 'Bag', 'Source Code Package', 'Root element for BagIt source code SIP', CURRENT_TIMESTAMP, '4', 'Opprettet', true
 WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1006);
+
+-- Element for SIP 8 (ISADG)
+INSERT INTO elements (id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1007, 'SIP-ISADG-001', 'Archival Description', 'fonds', 'Archival Description', 'Founders Archive', 'Root element for ISAD(G) founders archive SIP', CURRENT_TIMESTAMP, '5', 'Opprettet', true
+WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1007);
+
+-- Element for SIP 9 (MODS)
+INSERT INTO elements (id, element_identifier, entity_name, entity_type, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1008, 'SIP-MODS-001', 'MODS', 'bibliographic', 'MODS Record', 'Technical Library', 'Root element for MODS technical library SIP', CURRENT_TIMESTAMP, '5', 'Opprettet', true
+WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1008);
 
 -- Set root elements on SIPs
 UPDATE sips SET root_element_id = 1000 WHERE id = 1 AND root_element_id IS NULL;
 UPDATE sips SET root_element_id = 1001 WHERE id = 2 AND root_element_id IS NULL;
 UPDATE sips SET root_element_id = 1002 WHERE id = 3 AND root_element_id IS NULL;
+UPDATE sips SET root_element_id = 1003 WHERE id = 4 AND root_element_id IS NULL;
 UPDATE sips SET root_element_id = 1004 WHERE id = 5 AND root_element_id IS NULL;
+UPDATE sips SET root_element_id = 1005 WHERE id = 6 AND root_element_id IS NULL;
 UPDATE sips SET root_element_id = 1006 WHERE id = 7 AND root_element_id IS NULL;
+UPDATE sips SET root_element_id = 1007 WHERE id = 8 AND root_element_id IS NULL;
+UPDATE sips SET root_element_id = 1008 WHERE id = 9 AND root_element_id IS NULL;
 
 -- Insert Fields for SIP root elements
 -- Fields for SIP 1 (NOARK5)
@@ -401,6 +380,17 @@ INSERT INTO fields (id, element_id, name, label, type, value)
 SELECT 2022, 1002, 'objectCategory', 'Object Category', 'string', 'Representation'
 WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2022);
 
+-- Fields for SIP 4 (DUBLIN_CORE)
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2030, 1003, 'resourceIdentifier', 'Resource Identifier', 'string', 'SIP-DC-001'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2030);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2031, 1003, 'resourceType', 'Resource Type', 'string', 'Dataset'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2031);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2032, 1003, 'language', 'Language', 'string', 'en'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2032);
+
 -- Fields for SIP 5 (METS)
 INSERT INTO fields (id, element_id, name, label, type, value)
 SELECT 2040, 1004, 'metsID', 'METS ID', 'string', 'SIP-METS-001'
@@ -411,6 +401,17 @@ WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2041);
 INSERT INTO fields (id, element_id, name, label, type, value)
 SELECT 2042, 1004, 'type', 'Type', 'string', 'digital object'
 WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2042);
+
+-- Fields for SIP 6 (EAD)
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2050, 1005, 'eadID', 'EAD ID', 'string', 'SIP-EAD-001'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2050);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2051, 1005, 'audience', 'Audience', 'string', 'external'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2051);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2052, 1005, 'lang', 'Language', 'string', 'eng'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2052);
 
 -- Fields for SIP 7 (BAGIT)
 INSERT INTO fields (id, element_id, name, label, type, value)
@@ -426,56 +427,46 @@ INSERT INTO fields (id, element_id, name, label, type, value)
 SELECT 2063, 1006, 'isComplete', 'Is Complete', 'string', 'true'
 WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2063);
 
--- Insert SIP User Assignments
--- SIP 1 - Owner + Editor
-INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
-SELECT 1, 1, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 1 AND user_id = 1);
-INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
-SELECT 1, 2, 'EDITOR', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 1 AND user_id = 2);
+-- Fields for SIP 8 (ISADG)
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2070, 1007, 'descriptionID', 'Description ID', 'string', 'SIP-ISADG-001'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2070);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2071, 1007, 'levelOfDescription', 'Level of Description', 'string', 'Fonds'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2071);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2072, 1007, 'repositoryCode', 'Repository Code', 'string', 'SL-ARCH'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2072);
 
--- SIP 2
-INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
-SELECT 2, 2, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 2 AND user_id = 2);
+-- Fields for SIP 9 (MODS)
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2080, 1008, 'modsID', 'MODS ID', 'string', 'SIP-MODS-001'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2080);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2081, 1008, 'version', 'Version', 'string', '3.8'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2081);
+INSERT INTO fields (id, element_id, name, label, type, value)
+SELECT 2082, 1008, 'genre', 'Genre', 'string', 'technical reference'
+WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2082);
 
--- SIP 3
-INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
-SELECT 3, 3, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 3 AND user_id = 3);
-INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
-SELECT 3, 2, 'REVIEWER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 3 AND user_id = 2);
-
--- SIP 4
-INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
-SELECT 4, 2, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 4 AND user_id = 2);
-
--- SIP 5
-INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
-SELECT 5, 3, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 5 AND user_id = 3);
-INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
-SELECT 5, 4, 'VIEWER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 5 AND user_id = 4);
-
--- SIP 6
-INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
-SELECT 6, 4, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 6 AND user_id = 4);
-
--- SIP 7
-INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
-SELECT 7, 4, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 7 AND user_id = 4);
-INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
-SELECT 7, 5, 'EDITOR', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 7 AND user_id = 5);
-
--- SIP 8
-INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
-SELECT 8, 5, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 8 AND user_id = 5);
-
--- SIP 9
-INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
-SELECT 9, 5, 'OWNER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 9 AND user_id = 5);
-INSERT INTO sip_user_assignments (sip_id, user_id, role, assigned_at)
-SELECT 9, 4, 'VIEWER', CURRENT_TIMESTAMP WHERE NOT EXISTS (SELECT 1 FROM sip_user_assignments WHERE sip_id = 9 AND user_id = 4);
+-- Insert SIP-User assignments
+INSERT INTO sip_users (sip_id, user_id) VALUES (1, 1) ON CONFLICT DO NOTHING;
+INSERT INTO sip_users (sip_id, user_id) VALUES (1, 2) ON CONFLICT DO NOTHING;
+INSERT INTO sip_users (sip_id, user_id) VALUES (2, 2) ON CONFLICT DO NOTHING;
+INSERT INTO sip_users (sip_id, user_id) VALUES (3, 3) ON CONFLICT DO NOTHING;
+INSERT INTO sip_users (sip_id, user_id) VALUES (3, 2) ON CONFLICT DO NOTHING;
+INSERT INTO sip_users (sip_id, user_id) VALUES (4, 2) ON CONFLICT DO NOTHING;
+INSERT INTO sip_users (sip_id, user_id) VALUES (5, 3) ON CONFLICT DO NOTHING;
+INSERT INTO sip_users (sip_id, user_id) VALUES (5, 4) ON CONFLICT DO NOTHING;
+INSERT INTO sip_users (sip_id, user_id) VALUES (6, 4) ON CONFLICT DO NOTHING;
+INSERT INTO sip_users (sip_id, user_id) VALUES (7, 4) ON CONFLICT DO NOTHING;
+INSERT INTO sip_users (sip_id, user_id) VALUES (7, 5) ON CONFLICT DO NOTHING;
+INSERT INTO sip_users (sip_id, user_id) VALUES (8, 5) ON CONFLICT DO NOTHING;
+INSERT INTO sip_users (sip_id, user_id) VALUES (9, 5) ON CONFLICT DO NOTHING;
+INSERT INTO sip_users (sip_id, user_id) VALUES (9, 4) ON CONFLICT DO NOTHING;
 
 -- Reset SIP-related sequences
 SELECT setval('sips_id_seq', (SELECT COALESCE(MAX(id), 1) FROM sips), true);
-SELECT setval('sip_user_assignments_id_seq', (SELECT COALESCE(MAX(id), 1) FROM sip_user_assignments), true);
 SELECT setval('elements_id_seq', (SELECT COALESCE(MAX(id), 1) FROM elements), true);
 SELECT setval('fields_id_seq', (SELECT COALESCE(MAX(id), 1) FROM fields), true);
 

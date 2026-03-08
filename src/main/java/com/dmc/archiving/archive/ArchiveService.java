@@ -8,9 +8,9 @@ import com.dmc.archiving.archive.input.AssignUserInput;
 import com.dmc.archiving.archive.input.UnassignUserInput;
 import com.dmc.archiving.archive.model.Archive;
 import com.dmc.archiving.archive.model.ArchiveStatus;
-import com.dmc.archiving.archive.model.UserRole;
 import com.dmc.archiving.archive.repository.ArchiveRepository;
 import com.dmc.archiving.user.api.UserApi;
+import com.dmc.archiving.user.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -41,10 +41,8 @@ public class ArchiveService {
 
     @Transactional
     public Archive createArchive(CreateArchiveInput input) {
-        // Validate that user exists using the public API
-        if (!userApi.userExists(input.getUserId())) {
-            throw new IllegalArgumentException("User with ID " + input.getUserId() + " does not exist");
-        }
+        User user = userApi.getUserById(input.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User with ID " + input.getUserId() + " does not exist"));
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -66,24 +64,21 @@ public class ArchiveService {
             input.getStandard()
         );
 
-        // Automatically assign the creator as OWNER
-        archive.assignUser(input.getUserId(), UserRole.OWNER);
+        // Automatically assign the creator
+        archive.assignUser(user);
 
         return archiveRepository.save(archive);
     }
 
     @Transactional
     public Archive assignUserToArchive(AssignUserInput input) {
-        // Validate that user exists using the public API
-        if (!userApi.userExists(input.getUserId())) {
-            throw new IllegalArgumentException("User with ID " + input.getUserId() + " does not exist");
-        }
+        User user = userApi.getUserById(input.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User with ID " + input.getUserId() + " does not exist"));
 
         Archive archive = archiveRepository.findById(input.getArchiveId())
                 .orElseThrow(() -> new IllegalArgumentException("Archive with ID " + input.getArchiveId() + " does not exist"));
 
-        // Assign the user with the specified role
-        archive.assignUser(input.getUserId(), input.getRole());
+        archive.assignUser(user);
         archive.setUpdatedAt(LocalDateTime.now());
 
         return archiveRepository.save(archive);
@@ -91,6 +86,9 @@ public class ArchiveService {
 
     @Transactional
     public Archive unassignUserFromArchive(UnassignUserInput input) {
+        User user = userApi.getUserById(input.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User with ID " + input.getUserId() + " does not exist"));
+
         Archive archive = archiveRepository.findById(input.getArchiveId())
                 .orElseThrow(() -> new IllegalArgumentException("Archive with ID " + input.getArchiveId() + " does not exist"));
 
@@ -99,7 +97,7 @@ public class ArchiveService {
             throw new IllegalArgumentException("Cannot unassign the owner from the archive");
         }
 
-        archive.unassignUser(input.getUserId());
+        archive.unassignUser(user);
         archive.setUpdatedAt(LocalDateTime.now());
 
         return archiveRepository.save(archive);
@@ -125,18 +123,6 @@ public class ArchiveService {
         return archiveRepository.findSipsByTenantId(tenantId);
     }
 
-    public List<Archive> getArchivesByUserRole(Long userId, UserRole role) {
-        if (role.equals(UserRole.OWNER)) {
-            // For owner role, check both actual owner and assigned owner role
-            List<Archive> ownedArchives = archiveRepository.findByOwnerId(userId);
-            List<Archive> assignedAsOwner = archiveRepository.findArchivesByUserIdAndRole(userId, UserRole.OWNER);
-            ownedArchives.addAll(assignedAsOwner);
-            return ownedArchives.stream().distinct().toList();
-        } else {
-            return archiveRepository.findArchivesByUserIdAndRole(userId, role);
-        }
-    }
-
     public Archive getArchiveById(Long id) {
         return archiveRepository.findById(id).orElse(null);
     }
@@ -157,10 +143,6 @@ public class ArchiveService {
 
     public Page<Archive> getArchivesByUserAssignmentPaginated(Long userId, Pageable pageable) {
         return archiveRepository.findArchivesByUserIdOwnerOrAssigned(userId, pageable);
-    }
-
-    public Page<Archive> getArchivesByUserRolePaginated(Long userId, UserRole role, Pageable pageable) {
-        return archiveRepository.findArchivesByUserIdAndRole(userId, role, pageable);
     }
 
     public Page<Archive> getArchivesByStatusPaginated(ArchiveStatus status, Pageable pageable) {
@@ -301,18 +283,18 @@ public class ArchiveService {
             exportData.put("createdAt", archive.getCreatedAt());
             exportData.put("updatedAt", archive.getUpdatedAt());
 
-            // User assignments
+            // Assigned users
             if (archive.getAssignedUsers() != null && !archive.getAssignedUsers().isEmpty()) {
-                List<Map<String, Object>> assignments = archive.getAssignedUsers().stream()
-                    .map(assignment -> {
-                        Map<String, Object> assignmentData = new HashMap<>();
-                        assignmentData.put("userId", assignment.getUserId());
-                        assignmentData.put("role", assignment.getRole());
-                        assignmentData.put("assignedAt", assignment.getAssignedAt());
-                        return assignmentData;
+                List<Map<String, Object>> users = archive.getAssignedUsers().stream()
+                    .map(user -> {
+                        Map<String, Object> userData = new HashMap<>();
+                        userData.put("id", user.getId());
+                        userData.put("name", user.getName());
+                        userData.put("email", user.getEmail());
+                        return userData;
                     })
                     .collect(Collectors.toList());
-                exportData.put("assignedUsers", assignments);
+                exportData.put("assignedUsers", users);
             }
 
             // Elements (if any)

@@ -1,11 +1,13 @@
 package com.dmc.archiving.archive.model;
 
 import com.dmc.archiving.archive.element.Element;
+import com.dmc.archiving.user.model.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import org.springframework.modulith.NamedInterface;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -13,6 +15,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Objects;
 
+@NamedInterface
 @Entity
 @Table(name = "archives", indexes = {
     @Index(name = "idx_archive_tenant_id", columnList = "tenant_id"),
@@ -69,8 +72,13 @@ public class Archive {
     @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Element> elements = new HashSet<>();
 
-    @OneToMany(mappedBy = "archive", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Set<UserAssignment> assignedUsers = new HashSet<>();
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "archive_users",
+        joinColumns = @JoinColumn(name = "archive_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> assignedUsers = new HashSet<>();
 
     // Constructor for backward compatibility (without assignments)
     public Archive(Long id, Long tenantId, Long ownerId, String title, String description,
@@ -102,36 +110,22 @@ public class Archive {
     }
 
     // Helper methods for user assignment management
-    public void assignUser(Long userId, UserRole role) {
+    public void assignUser(User user) {
         if (assignedUsers == null) {
             assignedUsers = new HashSet<>();
         }
-        UserAssignment assignment = new UserAssignment();
-        assignment.setUserId(userId);
-        assignment.setRole(role);
-        assignment.setAssignedAt(LocalDateTime.now());
-        assignment.setArchive(this);
-        assignedUsers.add(assignment);
+        assignedUsers.add(user);
     }
 
-    public void unassignUser(Long userId) {
+    public void unassignUser(User user) {
         if (assignedUsers != null) {
-            assignedUsers.removeIf(assignment -> assignment.getUserId().equals(userId));
+            assignedUsers.remove(user);
         }
     }
 
     public boolean isUserAssigned(Long userId) {
         return assignedUsers != null &&
-               assignedUsers.stream().anyMatch(assignment -> assignment.getUserId().equals(userId));
-    }
-
-    public UserRole getUserRole(Long userId) {
-        if (assignedUsers == null) return null;
-        return assignedUsers.stream()
-                .filter(assignment -> assignment.getUserId().equals(userId))
-                .map(UserAssignment::getRole)
-                .findFirst()
-                .orElse(null);
+               assignedUsers.stream().anyMatch(user -> user.getId().equals(userId));
     }
 
     // Helper method for root element management

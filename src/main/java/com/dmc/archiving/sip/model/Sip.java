@@ -2,7 +2,7 @@ package com.dmc.archiving.sip.model;
 
 import com.dmc.archiving.archive.element.Element;
 import com.dmc.archiving.archive.model.ArchiveStandard;
-import com.dmc.archiving.archive.model.UserRole;
+import com.dmc.archiving.user.model.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -68,11 +68,13 @@ public class Sip {
     @JoinColumn(name = "root_element_id")
     private Element rootElement;
 
-    @OneToMany(mappedBy = "sip", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Set<Element> elements = new HashSet<>();
-
-    @OneToMany(mappedBy = "sip", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Set<SipUserAssignment> assignedUsers = new HashSet<>();
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "sip_users",
+        joinColumns = @JoinColumn(name = "sip_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> assignedUsers = new HashSet<>();
 
     @Transient
     public String getCreatedAtString() {
@@ -84,22 +86,16 @@ public class Sip {
         return updatedAt != null ? updatedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
     }
 
-    public void assignUser(Long userId, UserRole role) {
+    public void assignUser(User user) {
         if (assignedUsers == null) {
             assignedUsers = new HashSet<>();
         }
-        SipUserAssignment assignment = new SipUserAssignment();
-        assignment.setUserId(userId);
-        assignment.setRole(role);
-        assignment.setAssignedAt(LocalDateTime.now());
-        assignment.setSip(this);
-        assignedUsers.add(assignment);
+        assignedUsers.add(user);
     }
 
     public void setRootElement(Element element) {
         this.rootElement = element;
         if (element != null) {
-            element.setSip(this);
             element.setIsRoot(true);
         }
     }

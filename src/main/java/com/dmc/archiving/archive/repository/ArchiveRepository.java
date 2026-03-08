@@ -37,17 +37,13 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
     @EntityGraph(attributePaths = {"assignedUsers"})
     Page<Archive> findByTitleContainingIgnoreCase(String title, Pageable pageable);
 
-    // Find archives where user is assigned (through UserAssignment) with pagination
-    @Query("SELECT DISTINCT a FROM Archive a LEFT JOIN FETCH a.assignedUsers ua WHERE ua.userId = :userId")
+    // Find archives where user is assigned with pagination
+    @Query("SELECT DISTINCT a FROM Archive a LEFT JOIN FETCH a.assignedUsers u WHERE u.id = :userId")
     Page<Archive> findArchivesByUserAssignment(@Param("userId") Long userId, Pageable pageable);
 
     // Find archives by owner or assigned user with pagination
-    @Query("SELECT DISTINCT a FROM Archive a LEFT JOIN FETCH a.assignedUsers ua WHERE a.ownerId = :userId OR ua.userId = :userId")
+    @Query("SELECT DISTINCT a FROM Archive a LEFT JOIN FETCH a.assignedUsers u WHERE a.ownerId = :userId OR u.id = :userId")
     Page<Archive> findArchivesByUserIdOwnerOrAssigned(@Param("userId") Long userId, Pageable pageable);
-
-    // Find archives by user and role with pagination
-    @Query("SELECT DISTINCT a FROM Archive a LEFT JOIN FETCH a.assignedUsers ua WHERE ua.userId = :userId AND ua.role = :role")
-    Page<Archive> findArchivesByUserIdAndRole(@Param("userId") Long userId, @Param("role") com.dmc.archiving.archive.model.UserRole role, Pageable pageable);
 
     // ========== Non-Paginated Queries (Backward compatibility) ==========
 
@@ -57,17 +53,13 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long> {
     // Find archives by status (legacy - prefer paginated version)
     List<Archive> findByStatus(ArchiveStatus status);
 
-    // Find archives where user is assigned (through UserAssignment)
-    @Query("SELECT DISTINCT a FROM Archive a JOIN a.assignedUsers ua WHERE ua.userId = :userId")
+    // Find archives where user is assigned
+    @Query("SELECT DISTINCT a FROM Archive a JOIN a.assignedUsers u WHERE u.id = :userId")
     List<Archive> findArchivesByUserAssignment(@Param("userId") Long userId);
 
     // Find archives by owner or assigned user
-    @Query("SELECT DISTINCT a FROM Archive a LEFT JOIN a.assignedUsers ua WHERE a.ownerId = :userId OR ua.userId = :userId")
+    @Query("SELECT DISTINCT a FROM Archive a LEFT JOIN a.assignedUsers u WHERE a.ownerId = :userId OR u.id = :userId")
     List<Archive> findArchivesByUserIdOwnerOrAssigned(@Param("userId") Long userId);
-
-    // Find archives by user and role
-    @Query("SELECT DISTINCT a FROM Archive a JOIN a.assignedUsers ua WHERE ua.userId = :userId AND ua.role = :role")
-    List<Archive> findArchivesByUserIdAndRole(@Param("userId") Long userId, @Param("role") com.dmc.archiving.archive.model.UserRole role);
 
     // Find archives by title containing (case insensitive)
     List<Archive> findByTitleContainingIgnoreCase(String title);

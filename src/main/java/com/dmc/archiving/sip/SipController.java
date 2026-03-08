@@ -3,12 +3,10 @@ package com.dmc.archiving.sip;
 import com.dmc.archiving.sip.input.CreateSipInput;
 import com.dmc.archiving.sip.model.Sip;
 import com.dmc.archiving.sip.model.SipStatus;
-import com.dmc.archiving.sip.model.SipUserAssignment;
 import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.tenancy.service.TenancyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -24,11 +22,13 @@ public class SipController {
 
     private static final Logger log = LoggerFactory.getLogger(SipController.class);
 
-    @Autowired
-    private SipService sipService;
+    private final SipService sipService;
+    private final TenancyService tenancyService;
 
-    @Autowired
-    private TenancyService tenancyService;
+    public SipController(SipService sipService, TenancyService tenancyService) {
+        this.sipService = sipService;
+        this.tenancyService = tenancyService;
+    }
 
     // Queries
     @QueryMapping
@@ -94,6 +94,11 @@ public class SipController {
     }
 
     @MutationMapping
+    public String generateSip(@Argument Long sipId) {
+        return sipService.generateSip(sipId);
+    }
+
+    @MutationMapping
     public Sip updateSipStatusV2(@Argument Long sipId, @Argument SipStatus status) {
         return sipService.updateSipStatus(sipId, status);
     }
@@ -114,12 +119,6 @@ public class SipController {
     public String updatedAt(Sip sip) {
         return sip.getUpdatedAt() != null ?
             sip.getUpdatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
-    }
-
-    @SchemaMapping(typeName = "SipUserAssignment", field = "assignedAt")
-    public String assignedAt(SipUserAssignment assignment) {
-        return assignment.getAssignedAt() != null ?
-            assignment.getAssignedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
     }
 
     @SchemaMapping(typeName = "Sip", field = "tenant")

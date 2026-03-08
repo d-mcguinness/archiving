@@ -265,9 +265,8 @@ export const GET_ALL_ARCHIVES: DocumentNode = gql`
       standard
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }
@@ -294,9 +293,8 @@ export const GET_ARCHIVE: DocumentNode = gql`
       standard
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }
@@ -316,9 +314,8 @@ export const GET_ARCHIVES_BY_USER: DocumentNode = gql`
       standard
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }
@@ -338,9 +335,8 @@ export const GET_ARCHIVES_BY_OWNER: DocumentNode = gql`
       standard
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }
@@ -374,9 +370,8 @@ export const GET_ALL_SIPS: DocumentNode = gql`
       }
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }
@@ -410,9 +405,8 @@ export const GET_SIPS_BY_TENANT: DocumentNode = gql`
       }
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }
@@ -433,9 +427,8 @@ export const GET_ARCHIVES_BY_TENANT: DocumentNode = gql`
       standard
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }
@@ -455,31 +448,8 @@ export const GET_ARCHIVES_BY_USER_ASSIGNMENT: DocumentNode = gql`
       standard
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
-      }
-    }
-  }
-`;
-
-export const GET_ARCHIVES_BY_USER_ROLE: DocumentNode = gql`
-  query GetArchivesByUserRole($userId: ID!, $role: UserRole!) {
-    getArchivesByUserRole(userId: $userId, role: $role) {
-      id
-      ownerId
-      title
-      description
-      content
-      createdAt
-      updatedAt
-      status
-      standard
-      assignedUsers {
-        id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }
@@ -499,9 +469,8 @@ export const CREATE_ARCHIVE: DocumentNode = gql`
       standard
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }
@@ -521,9 +490,8 @@ export const UPDATE_ARCHIVE_STATUS: DocumentNode = gql`
       standard
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }
@@ -543,9 +511,8 @@ export const ASSIGN_USER_TO_ARCHIVE: DocumentNode = gql`
       standard
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }
@@ -565,9 +532,8 @@ export const UNASSIGN_USER_FROM_ARCHIVE: DocumentNode = gql`
       standard
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }
@@ -602,9 +568,8 @@ export const GET_ALL_SIPS_V2: DocumentNode = gql`
       }
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }
@@ -638,9 +603,8 @@ export const GET_SIPS_BY_TENANT_V2: DocumentNode = gql`
       }
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }
@@ -676,9 +640,8 @@ export const GET_SIP: DocumentNode = gql`
       }
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }
@@ -712,9 +675,8 @@ export const CREATE_SIP: DocumentNode = gql`
       }
       assignedUsers {
         id
-        userId
-        role
-        assignedAt
+        name
+        email
       }
     }
   }

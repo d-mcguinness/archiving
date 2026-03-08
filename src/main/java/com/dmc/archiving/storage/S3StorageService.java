@@ -230,6 +230,26 @@ public class S3StorageService implements CloudStorageService {
         }
     }
 
+    @Override
+    public String uploadBytes(byte[] data, String key, String contentType) throws StorageException {
+        try {
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .contentType(contentType)
+                    .contentLength((long) data.length)
+                    .build();
+
+            s3Client.putObject(request, RequestBody.fromBytes(data));
+            log.info("Bytes uploaded to S3: {} ({} bytes)", key, data.length);
+
+            return getPresignedUrl(key, 60);
+        } catch (S3Exception e) {
+            log.error("S3 error during byte upload: {}", e.getMessage(), e);
+            throw new StorageException("Failed to upload bytes to S3", e);
+        }
+    }
+
     /**
      * Generate a unique file key (path) in S3
      */

@@ -369,8 +369,8 @@
                 <td class="assigned-cell">
                   {#if archive.assignedUsers && archive.assignedUsers.length > 0}
                     <div class="assigned-users-compact">
-                      {#each archive.assignedUsers.slice(0, 2) as assignment}
-                        <span class="user-badge">{getUserName(assignment.userId)}</span>
+                      {#each archive.assignedUsers.slice(0, 2) as user}
+                        <span class="user-badge">{user.name}</span>
                       {/each}
                       {#if archive.assignedUsers.length > 2}
                         <span class="more-badge">+{archive.assignedUsers.length - 2}</span>

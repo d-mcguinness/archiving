@@ -2,12 +2,13 @@ package com.dmc.archiving.archive.element;
 
 import com.dmc.archiving.archive.element.field.Field;
 import com.dmc.archiving.archive.model.Archive;
-import com.dmc.archiving.sip.model.Sip;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import org.springframework.modulith.NamedInterface;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.List;
  * Represents an actual instance of an element in an archive structure
  * (e.g., an actual "arkiv", "mappe", "registrering" instance)
  */
+@NamedInterface
 @Entity
 @Table(name = "elements")
 @Getter
@@ -32,10 +34,6 @@ public class Element {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "archive_id")
     private Archive archive;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sip_id")
-    private Sip sip;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_element_id")

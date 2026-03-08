@@ -46,13 +46,9 @@
 
   let assignUser: {
     userId: string;
-    role: string;
   } = {
-    userId: '',
-    role: 'VIEWER'
+    userId: ''
   };
-
-  const userRoles = ['OWNER', 'EDITOR', 'REVIEWER', 'VIEWER'];
 
   // Get archive ID from route parameter
   $: archiveId = $page.params.id;
@@ -78,9 +74,8 @@
             ownerId
             assignedUsers {
               id
-              userId
-              role
-              assignedAt
+              name
+              email
             }
           }
         }
@@ -218,7 +213,7 @@
 
   function closeAssignModal() {
     showAssignModal = false;
-    assignUser = { userId: '', role: 'VIEWER' };
+    assignUser = { userId: '' };
   }
 
   async function assignUserToArchive() {
@@ -230,8 +225,7 @@
         variables: {
           input: {
             archiveId: archive.id,
-            userId: assignUser.userId,
-            role: assignUser.role
+            userId: assignUser.userId
           }
         }
       });
@@ -240,7 +234,7 @@
         // Update the archive with new assignment
         archive = result.data.assignUserToArchive;
         showAssignModal = false;
-        assignUser = { userId: '', role: 'VIEWER' };
+        assignUser = { userId: '' };
       }
     } catch (e) {
       error = e instanceof Error ? e.message : 'An unknown error occurred';
@@ -775,15 +769,12 @@
 
         {#if archive.assignedUsers && archive.assignedUsers.length > 0}
           <div class="users-list">
-            {#each archive.assignedUsers as assignment}
+            {#each archive.assignedUsers as user}
               <div class="user-item">
                 <div class="user-info">
-                  <span class="user-name">{getUserName(assignment.userId)}</span>
-                  <span class="user-role">{assignment.role}</span>
+                  <span class="user-name">{user.name}</span>
+                  <span class="user-role">{user.email}</span>
                 </div>
-                <span class="assigned-date">
-                  Assigned: {new Date(assignment.assignedAt).toLocaleDateString()}
-                </span>
               </div>
             {/each}
           </div>
@@ -881,14 +872,6 @@
           </select>
         </div>
 
-        <div class="form-group">
-          <label for="assignRole">Role</label>
-          <select id="assignRole" bind:value={assignUser.role}>
-            {#each userRoles as role}
-              <option value={role}>{role}</option>
-            {/each}
-          </select>
-        </div>
       </div>
 
       <div class="modal-actions">
