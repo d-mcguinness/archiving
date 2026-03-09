@@ -145,16 +145,22 @@
     }
   }
 
-  async function handleDownload(document: any) {
+  async function handleDownload(doc: any) {
     try {
-      const response = await fetch(`http://localhost:2020/api/documents/${document.id}/download`);
-      const data = await response.json();
-
-      if (data.success && data.downloadUrl) {
-        window.open(data.downloadUrl, '_blank');
-      } else {
-        throw new Error(data.error || 'Failed to get download URL');
+      const response = await fetch(`http://localhost:2020/api/documents/${doc.id}/file`);
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.statusText}`);
       }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = doc.fileName || 'download';
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
     } catch (err: any) {
       console.error('Download error:', err);
       toasts.error(err.message || 'Failed to download document');

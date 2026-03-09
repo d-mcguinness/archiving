@@ -4,9 +4,7 @@
 
   function getArchivesPath() {
     const role = localStorage.getItem('auth_role');
-    const tenantId = localStorage.getItem('auth_tenantId');
-    if (role === 'ADMIN') return '/admin/archives';
-    if (role === 'TENANT' && tenantId) return `/tenants/${tenantId}/archives`;
+    if (role === 'ADMIN' || role === 'TENANT') return '/archives';
     return '/';
   }
 

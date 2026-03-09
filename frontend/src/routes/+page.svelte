@@ -275,7 +275,7 @@
           <div class="stat-card">
             <h3>Users</h3>
             <div class="stat-number">{stats.users}</div>
-            <a href="/admin/users" class="stat-link">Manage Users</a>
+            <a href="/users" class="stat-link">Manage Users</a>
           </div>
         {/if}
 
@@ -284,28 +284,16 @@
           <div class="stat-card">
             <h3>Tenants</h3>
             <div class="stat-number">{stats.tenants}</div>
-            <a href="/admin/tenants" class="stat-link">Manage Tenants</a>
+            <a href="/tenants" class="stat-link">Manage Tenants</a>
           </div>
         {/if}
 
         <!-- Show Archives for ADMIN and TENANT -->
-        {#if currentRole === 'ADMIN'}
+        {#if currentRole === 'ADMIN' || currentRole === 'TENANT'}
           <div class="stat-card">
             <h3>Archives</h3>
             <div class="stat-number">{stats.archives}</div>
-            <a href="/admin/archives" class="stat-link">Manage Archives</a>
-          </div>
-        {:else if currentRole === 'TENANT' && currentTenantId}
-          <div class="stat-card">
-            <h3>Archives</h3>
-            <div class="stat-number">{stats.archives}</div>
-            <a href="/tenants/{currentTenantId}/archives" class="stat-link">Manage Archives</a>
-          </div>
-        {:else if currentRole === 'ADMIN'}
-          <div class="stat-card">
-            <h3>Archives</h3>
-            <div class="stat-number">{stats.archives}</div>
-            <a href="/admin/archives" class="stat-link">Manage Archives</a>
+            <a href="/archives" class="stat-link">Manage Archives</a>
           </div>
         {/if}
       </div>
@@ -348,7 +336,7 @@
           <p>Add a new user to the system</p>
         </a>
 
-        <a href="/admin/tenants/create" class="action-card">
+        <a href="/tenants/create" class="action-card">
           <h4>Create Tenant</h4>
           <p>Set up a new tenant organization</p>
         </a>

@@ -175,7 +175,7 @@
     </div>
     <div class="header-actions">
       {#if currentRole === 'ADMIN'}
-        <a href="/admin/tenants" class="btn-back">← Back to Tenants</a>
+        <a href="/tenants" class="btn-back">← Back to Tenants</a>
       {:else if currentRole === 'TENANT'}
         <a href="/tenants/{data.tenantId}" class="btn-back">← Back to Tenant</a>
       {/if}

@@ -224,7 +224,7 @@
       <span class="empty-icon">🏢</span>
       <h3>Tenant Not Found</h3>
       <p>The requested tenant could not be found.</p>
-      <a href="/admin/tenants" class="btn-back">Back to Tenants</a>
+      <a href="/tenants" class="btn-back">Back to Tenants</a>
     </div>
   {/if}
 </div>

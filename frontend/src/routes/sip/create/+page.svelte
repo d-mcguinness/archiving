@@ -8,9 +8,7 @@
 
   function getSipsPath() {
     const role = localStorage.getItem('auth_role');
-    const tenantId = localStorage.getItem('auth_tenantId');
-    if (role === 'ADMIN') return '/admin/sips';
-    if (role === 'TENANT' && tenantId) return `/tenants/${tenantId}/sips`;
+    if (role === 'ADMIN' || role === 'TENANT') return '/sips';
     return '/';
   }
 

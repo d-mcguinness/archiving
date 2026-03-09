@@ -63,7 +63,7 @@
 
         // Redirect based on role
         if (result.role === 'ADMIN') {
-          goto('/admin');
+          goto('/');
         } else if (result.role === 'TENANT') {
           // Redirect TENANT to their tenant detail page
           if (result.tenantId) {

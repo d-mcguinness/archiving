@@ -2,13 +2,18 @@ package com.dmc.archiving.document;
 
 import com.dmc.archiving.document.model.Document;
 import com.dmc.archiving.document.model.DocumentStatus;
+import com.dmc.archiving.storage.CloudStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,9 +33,11 @@ public class DocumentController {
     private static final Logger log = LoggerFactory.getLogger(DocumentController.class);
 
     private final DocumentService documentService;
+    private final CloudStorageService cloudStorageService;
 
-    public DocumentController(DocumentService documentService) {
+    public DocumentController(DocumentService documentService, CloudStorageService cloudStorageService) {
         this.documentService = documentService;
+        this.cloudStorageService = cloudStorageService;
     }
 
     /**
@@ -242,6 +249,42 @@ public class DocumentController {
             return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("success", false, "error", "Failed to generate download URL"));
+        }
+    }
+
+    /**
+     * Stream document file directly to the browser
+     */
+    @GetMapping("/{id}/file")
+    public ResponseEntity<?> downloadFile(@PathVariable Long id) {
+        try {
+            Document document = documentService.getDocumentById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Document not found"));
+
+            InputStream inputStream = cloudStorageService.downloadFile(document.getFileKey());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentDispositionFormData("attachment", document.getFileName());
+            if (document.getFileSize() != null) {
+                headers.setContentLength(document.getFileSize());
+            }
+
+            MediaType mediaType = document.getContentType() != null
+                ? MediaType.parseMediaType(document.getContentType())
+                : MediaType.APPLICATION_OCTET_STREAM;
+
+            return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(mediaType)
+                .body(new InputStreamResource(inputStream));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("success", false, "error", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Error downloading document {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("success", false, "error", "Failed to download document"));
         }
     }
 
