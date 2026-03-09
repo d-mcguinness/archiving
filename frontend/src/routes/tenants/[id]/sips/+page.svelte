@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
   import { GET_SIPS_BY_TENANT_V2, GET_ALL_USERS, GET_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
+  import { auth } from '$lib/stores/authStore';
 
   interface PageData {
     tenantId: string;
@@ -27,9 +29,9 @@
   let extractError: string | null = null;
 
   onMount(async () => {
-    const role = localStorage.getItem('auth_role');
-    const tenantId = localStorage.getItem('auth_tenantId');
-    currentRole = role || '';
+    const authState = get(auth);
+    currentRole = authState.role;
+    const tenantId = authState.tenantId?.toString() ?? null;
 
     if (currentRole === 'ADMIN') {
       hasAccess = true;

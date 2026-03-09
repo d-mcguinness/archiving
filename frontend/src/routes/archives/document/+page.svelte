@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { page } from '$app/stores';
+  import { auth } from '$lib/stores/authStore';
 
   function getArchivesPath() {
-    const role = localStorage.getItem('auth_role');
+    const { role } = get(auth);
     if (role === 'ADMIN' || role === 'TENANT') return '/archives';
     return '/';
   }

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { client } from '$lib/apollo';
@@ -9,9 +10,10 @@
   import ElementFormModal from '../../ElementFormModal.svelte';
   import ArchiveCanvas from '../../ArchiveCanvas.svelte';
   import { toasts } from '$lib/stores/toastStore';
+  import { auth } from '$lib/stores/authStore';
 
   function getArchivesPath() {
-    const role = localStorage.getItem('auth_role');
+    const { role } = get(auth);
     if (role === 'ADMIN' || role === 'TENANT') return '/archives';
     return '/';
   }

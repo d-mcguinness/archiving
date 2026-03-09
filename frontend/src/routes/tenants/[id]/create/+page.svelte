@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
   import { GET_ALL_USERS, GET_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
+  import { auth } from '$lib/stores/authStore';
   import { gql } from '@apollo/client/core';
 
   interface PageData {
@@ -42,10 +44,9 @@
   ];
 
   onMount(async () => {
-    // Check authentication and role
-    const role = localStorage.getItem('auth_role');
-    const tenantId = localStorage.getItem('auth_tenantId');
-    currentRole = role || '';
+    const authState = get(auth);
+    currentRole = authState.role;
+    const tenantId = authState.tenantId?.toString() ?? null;
 
     // Check access - ADMIN can create for any tenant, TENANT can create for their own
     if (currentRole === 'ADMIN') {

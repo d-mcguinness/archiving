@@ -1,8 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { client } from '$lib/apollo';
   import { GET_DASHBOARD_STATS, GET_TENANT_DASHBOARD_STATS, GET_ALL_USERS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
+  import { auth } from '$lib/stores/authStore';
 
   let stats = {
     users: 0,
@@ -21,7 +23,7 @@
   let loading = true;
   let error: string | null = null;
 
-  // Get current user role
+  // Get current user role from auth store
   let currentRole = '';
   let currentUser: any = null;
   let currentTenantId: number | null = null;
@@ -36,18 +38,10 @@
   let loadingDocuments = false;
 
   onMount(() => {
-    // Check user role
-    const role = localStorage.getItem('auth_role');
-    const user = localStorage.getItem('auth_user');
-    const tenantId = localStorage.getItem('auth_tenantId');
-
-    currentRole = role || '';
-    if (user) {
-      currentUser = JSON.parse(user);
-    }
-    if (tenantId) {
-      currentTenantId = parseInt(tenantId, 10);
-    }
+    const { role, user, tenantId } = get(auth);
+    currentRole = role;
+    currentUser = user;
+    currentTenantId = tenantId;
 
     // Load stats based on role
     if (currentRole === 'ADMIN') {

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { toasts } from '$lib/stores/toastStore';
+  import { auth } from '$lib/stores/authStore';
 
   let username = '';
   let password = '';
@@ -49,15 +50,8 @@
         console.log('TenantId:', result.tenantId || '(none)');
         console.groupEnd();
 
-        // Store auth data in localStorage
-        localStorage.setItem('auth_token', result.token || '');
-        localStorage.setItem('auth_user', JSON.stringify(result.user));
-        localStorage.setItem('auth_role', result.role);
-
-        // Store tenantId if present (for TENANT and USER roles)
-        if (result.tenantId) {
-          localStorage.setItem('auth_tenantId', result.tenantId.toString());
-        }
+        // Store auth data
+        auth.login(result.token, result.user, result.role, result.tenantId);
 
         toasts.success(`Welcome back, ${result.user.name}!`);
 

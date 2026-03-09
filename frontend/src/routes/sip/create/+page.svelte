@@ -1,13 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { client } from '$lib/apollo';
   import { GET_ALL_USERS, CREATE_SIP, GET_ALL_SIPS_V2 } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
+  import { auth } from '$lib/stores/authStore';
 
   function getSipsPath() {
-    const role = localStorage.getItem('auth_role');
+    const { role } = get(auth);
     if (role === 'ADMIN' || role === 'TENANT') return '/sips';
     return '/';
   }

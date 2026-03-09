@@ -3,12 +3,14 @@
   import { GET_ALL_USERS, GET_ALL_ARCHIVES } from '$lib/graphql/queries';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { gql } from '@apollo/client/core';
   import ArchiveCanvas from '../ArchiveCanvas.svelte';
   import { toasts } from '$lib/stores/toastStore';
+  import { auth } from '$lib/stores/authStore';
 
   function getArchivesPath() {
-    const role = localStorage.getItem('auth_role');
+    const { role } = get(auth);
     if (role === 'ADMIN' || role === 'TENANT') return '/archives';
     return '/';
   }

@@ -1,7 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { toasts } from '$lib/stores/toastStore';
+  import { auth } from '$lib/stores/authStore';
 
   let documents: any[] = [];
   let loading = true;
@@ -17,30 +19,15 @@
   let uploading = false;
 
   onMount(async () => {
-    checkAuth();
-    await loadDocuments();
-  });
-
-  function checkAuth() {
-    if (typeof window === 'undefined') return;
-
-    const token = localStorage.getItem('auth_token');
-    const user = localStorage.getItem('auth_user');
-    const role = localStorage.getItem('auth_role');
-
-    if (!token || !user) {
+    const authState = get(auth);
+    if (!authState.isLoggedIn) {
       goto('/login');
       return;
     }
-
-    try {
-      currentUser = JSON.parse(user);
-      currentRole = role || '';
-    } catch (e) {
-      console.error('Error parsing user data:', e);
-      goto('/login');
-    }
-  }
+    currentUser = authState.user;
+    currentRole = authState.role;
+    await loadDocuments();
+  });
 
   async function loadDocuments() {
     loading = true;

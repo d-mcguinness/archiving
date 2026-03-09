@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
   import { GET_ALL_SIPS_V2, GET_SIPS_BY_TENANT_V2, GET_ALL_USERS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
+  import { auth } from '$lib/stores/authStore';
 
   let sips: any[] = [];
   let users: any[] = [];
@@ -20,10 +22,9 @@
   let extractError: string | null = null;
 
   onMount(async () => {
-    const role = localStorage.getItem('auth_role');
-    const tenantId = localStorage.getItem('auth_tenantId');
-    currentRole = role || '';
-    currentTenantId = tenantId ? parseInt(tenantId, 10) : null;
+    const authState = get(auth);
+    currentRole = authState.role;
+    currentTenantId = authState.tenantId;
 
     if (currentRole === 'ADMIN') {
       await Promise.all([loadAllSips(), loadUsers()]);

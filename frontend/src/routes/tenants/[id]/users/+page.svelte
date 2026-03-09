@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
   import { GET_TENANT, GET_ALL_USERS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
+  import { auth } from '$lib/stores/authStore';
 
   interface PageData {
     tenantId: string;
@@ -26,11 +28,10 @@
   let hasAccess = false;
 
   onMount(async () => {
-    // Check role first
-    const role = localStorage.getItem('auth_role');
-    const tenantId = localStorage.getItem('auth_tenantId');
-    const user = localStorage.getItem('auth_user');
-    currentRole = role || '';
+    const authState = get(auth);
+    currentRole = authState.role;
+    const tenantId = authState.tenantId?.toString() ?? null;
+    const authUser = authState.user;
 
     // Only ADMIN and TENANT can access tenant users page
     if (currentRole !== 'ADMIN' && currentRole !== 'TENANT') {
@@ -38,13 +39,8 @@
       loading = false;
 
       // Redirect USER to their documents page
-      if (currentRole === 'USER' && tenantId && user) {
-        try {
-          const userData = JSON.parse(user);
-          goto(`/tenants/${tenantId}/users/${userData.id}/documents`);
-        } catch (e) {
-          goto('/');
-        }
+      if (currentRole === 'USER' && tenantId && authUser) {
+        goto(`/tenants/${tenantId}/users/${authUser.id}/documents`);
       } else {
         goto('/');
       }

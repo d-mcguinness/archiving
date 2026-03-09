@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
   import { GET_ALL_TENANTS, UPDATE_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
+  import { auth } from '$lib/stores/authStore';
 
   let tenants: any[] = [];
   let loading: boolean = true;
@@ -27,10 +29,9 @@
   let hasAccess = false;
 
   onMount(async () => {
-    // Get user role and tenantId from localStorage
-    const role = localStorage.getItem('auth_role');
-    const tenantId = localStorage.getItem('auth_tenantId');
-    currentRole = role || '';
+    const authState = get(auth);
+    currentRole = authState.role;
+    const tenantId = authState.tenantId;
 
     // Only ADMIN can access the tenants list page
     if (currentRole !== 'ADMIN') {

@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
   import { GET_SIPS_BY_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
+  import { auth } from '$lib/stores/authStore';
 
   interface PageData {
     tenantId: string;
@@ -125,18 +127,9 @@
   }
 
   onMount(async () => {
-    // Check authentication
-    const role = localStorage.getItem('auth_role');
-    const user = localStorage.getItem('auth_user');
-    currentRole = role || '';
-
-    if (user) {
-      try {
-        currentUser = JSON.parse(user);
-      } catch (e) {
-        console.error('Error parsing user:', e);
-      }
-    }
+    const authState = get(auth);
+    currentRole = authState.role;
+    currentUser = authState.user;
 
     // Check access - USER can only access their own documents
     if (currentRole === 'USER') {

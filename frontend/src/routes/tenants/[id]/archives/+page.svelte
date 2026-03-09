@@ -1,10 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
   import { GET_ARCHIVES_BY_TENANT, GET_ALL_USERS, GET_TENANT } from '$lib/graphql/queries';
   import { gql } from '@apollo/client/core';
   import { toasts } from '$lib/stores/toastStore';
+  import { auth } from '$lib/stores/authStore';
 
   interface PageData {
     tenantId: string;
@@ -43,10 +45,9 @@
   const standards = ['NOARK5', 'OAIS', 'PREMIS', 'Dublin Core', 'METS', 'EAD', 'BagIt', 'ISAD(G)', 'MODS'];
 
   onMount(async () => {
-    // Check authentication and role
-    const role = localStorage.getItem('auth_role');
-    const tenantId = localStorage.getItem('auth_tenantId');
-    currentRole = role || '';
+    const authState = get(auth);
+    currentRole = authState.role;
+    const tenantId = authState.tenantId?.toString() ?? null;
 
     // Check access - ADMIN can view any tenant, TENANT can view their own
     if (currentRole === 'ADMIN') {

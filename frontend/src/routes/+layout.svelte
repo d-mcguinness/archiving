@@ -3,7 +3,7 @@
   import Toast from '$lib/components/Toast.svelte';
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
+  import { auth } from '$lib/stores/authStore';
 
   // Reactive declaration ensures this updates whenever the route changes
   $: currentPath = $page.url.pathname;
@@ -16,97 +16,9 @@
     return currentPath === path || currentPath.startsWith(path + '/');
   };
 
-  // Auth state
-  let isLoggedIn = false;
-  let currentUser: any = null;
-  let currentRole = '';
-  let currentTenantId: number | null = null;
-  let isBrowser = false;
-
-  // Check if we're in browser (not SSR)
-  $: isBrowser = typeof window !== 'undefined';
-
-  // Reactive statement to check auth on route changes (only in browser)
-  $: if (isBrowser) {
-    // Re-check auth status whenever the page changes
-    $page;
-    checkAuthStatus();
-  }
-
   onMount(() => {
-    checkAuthStatus();
-
-    // Listen for storage changes (e.g., login in another tab)
-    window.addEventListener('storage', checkAuthStatus);
-
-    return () => {
-      window.removeEventListener('storage', checkAuthStatus);
-    };
+    auth.init();
   });
-
-  function checkAuthStatus() {
-    // Only run in browser
-    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('auth_token');
-      const user = localStorage.getItem('auth_user');
-      const role = localStorage.getItem('auth_role');
-      const tenantId = localStorage.getItem('auth_tenantId');
-
-      if (token && user) {
-        isLoggedIn = true;
-        try {
-          currentUser = JSON.parse(user);
-        } catch (e) {
-          console.error('Error parsing user data:', e);
-          currentUser = null;
-          isLoggedIn = false;
-        }
-        currentRole = role || '';
-        currentTenantId = tenantId ? parseInt(tenantId, 10) : null;
-      } else {
-        isLoggedIn = false;
-        currentUser = null;
-        currentRole = '';
-        currentTenantId = null;
-      }
-    } catch (e) {
-      console.error('Error checking auth status:', e);
-      isLoggedIn = false;
-      currentUser = null;
-      currentRole = '';
-      currentTenantId = null;
-    }
-  }
-
-  function handleLogout() {
-    // Only run in browser
-    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-      return;
-    }
-
-    try {
-      // Clear auth data
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('auth_user');
-      localStorage.removeItem('auth_role');
-      localStorage.removeItem('auth_tenantId');
-
-      // Update state immediately
-      isLoggedIn = false;
-      currentUser = null;
-      currentRole = '';
-      currentTenantId = null;
-
-      // Redirect to login
-      goto('/login');
-    } catch (e) {
-      console.error('Error during logout:', e);
-    }
-  }
 </script>
 
 <div class="app">
@@ -121,7 +33,7 @@
 
         <ul class="nav-links">
 
-          {#if currentRole === 'ADMIN'}
+          {#if $auth.role === 'ADMIN'}
             <li>
               <a href="/tenants" class="tenants-link" class:active={isActive('/tenants')}>
                 🏢 Tenants
@@ -129,7 +41,7 @@
             </li>
           {/if}
 
-          {#if currentRole === 'ADMIN' || currentRole === 'TENANT'}
+          {#if $auth.role === 'ADMIN' || $auth.role === 'TENANT'}
             <li>
               <a href="/users" class="users-link" class:active={isActive('/users')}>
                 👥 Users
@@ -147,7 +59,7 @@
             </li>
           {/if}
 
-          {#if isLoggedIn}
+          {#if $auth.isLoggedIn}
             <li>
               <a href="/documents" class="documents-link" class:active={isActive('/documents')}>
                 📄 Documents
@@ -157,9 +69,9 @@
 
         </ul>
         <div class="auth-section">
-          {#if isLoggedIn && currentUser}
-            <span class="user-name-display">👤 {currentUser.name}</span>
-            <button class="logout-button" on:click={handleLogout}>
+          {#if $auth.isLoggedIn && $auth.user}
+            <span class="user-name-display">👤 {$auth.user.name}</span>
+            <button class="logout-button" on:click={auth.logout}>
               🚪 Logout
             </button>
           {:else}
