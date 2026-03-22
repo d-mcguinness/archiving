@@ -8,25 +8,13 @@
   import { gql } from '@apollo/client/core';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import { standardFileMap } from '$lib/standards';
 
   function getDipsPath() {
     const { role } = get(auth);
     if (role === 'ADMIN' || role === 'TENANT') return '/dip';
     return '/';
   }
-
-  const standardFileMap: Record<string, string> = {
-    NOARK5: 'noark5.json',
-    OAIS: 'oais.json',
-    PREMIS: 'premis.json',
-    DUBLIN_CORE: 'dublincore.json',
-    METS: 'mets.json',
-    EAD: 'ead.json',
-    BAGIT: 'bagit.json',
-    ISADG: 'isadg.json',
-    MODS: 'mods.json',
-    EARK: 'eark.json',
-  };
 
   const UPDATE_DIP_STATUS = gql`
     mutation UpdateDipStatus($dipId: ID!, $status: DipStatus!) {

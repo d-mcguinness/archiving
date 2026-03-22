@@ -7,6 +7,7 @@
   import { GET_ALL_USERS, CREATE_DIP, GET_ALL_DIPS, GET_ALL_AIPS, GET_AIPS_BY_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import { standards, graphqlToKey, type StandardDefinition } from '$lib/standards';
 
   function getDipsPath() {
     const { role } = get(auth);
@@ -14,26 +15,8 @@
     return '/';
   }
 
-  // Standard definitions with DIP mapping
-  const standards = [
-    { key: 'E-ARK', label: 'E-ARK', file: 'eark.json', graphql: 'EARK', dipEntity: 'Dissemination Information Package', dipLabel: 'Dissemination Information Package' },
-    { key: 'NOARK5', label: 'NOARK5', file: 'noark5.json', graphql: 'NOARK5', dipEntity: 'Archive', dipLabel: 'Archive (Arkiv)' },
-    { key: 'OAIS', label: 'OAIS', file: 'oais.json', graphql: 'OAIS', dipEntity: 'Archival Information Package', dipLabel: 'Dissemination Information Package' },
-    { key: 'PREMIS', label: 'PREMIS', file: 'premis.json', graphql: 'PREMIS', dipEntity: 'Object', dipLabel: 'Preservation Object' },
-    { key: 'Dublin Core', label: 'Dublin Core', file: 'dublincore.json', graphql: 'DUBLIN_CORE', dipEntity: 'Resource', dipLabel: 'Resource' },
-    { key: 'METS', label: 'METS', file: 'mets.json', graphql: 'METS', dipEntity: 'METS Document', dipLabel: 'METS Document' },
-    { key: 'EAD', label: 'EAD', file: 'ead.json', graphql: 'EAD', dipEntity: 'EAD', dipLabel: 'Finding Aid (EAD)' },
-    { key: 'BagIt', label: 'BagIt', file: 'bagit.json', graphql: 'BAGIT', dipEntity: 'Bag', dipLabel: 'Bag' },
-    { key: 'ISAD(G)', label: 'ISAD(G)', file: 'isadg.json', graphql: 'ISADG', dipEntity: 'Archival Description', dipLabel: 'Archival Description' },
-    { key: 'MODS', label: 'MODS', file: 'mods.json', graphql: 'MODS', dipEntity: 'MODS', dipLabel: 'MODS Record' },
-  ];
-
-  // Map GraphQL enum values back to display keys
-  const graphqlToKey: Record<string, string> = {};
-  standards.forEach(s => { graphqlToKey[s.graphql] = s.key; });
-
   let selectedStandardKey = '';
-  let selectedStandard: typeof standards[0] | null = null;
+  let selectedStandard: StandardDefinition | null = null;
   let schemaData: any = null;
   let dipEntityDef: any = null;
   let fieldValues: Record<string, string> = {};

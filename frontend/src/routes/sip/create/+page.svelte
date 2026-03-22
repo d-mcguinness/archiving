@@ -7,30 +7,13 @@
   import { GET_ALL_USERS, CREATE_SIP, GET_ALL_SIPS_V2, GET_ALL_ARCHIVES, GET_ARCHIVES_BY_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import { standards, graphqlToKey } from '$lib/standards';
 
   function getSipsPath() {
     const { role } = get(auth);
     if (role === 'ADMIN' || role === 'TENANT') return '/sip';
     return '/';
   }
-
-  // Standard definitions with SIP mapping
-  const standards = [
-    { key: 'NOARK5', label: 'NOARK5', file: 'noark5.json', graphql: 'NOARK5', sipEntity: 'Archive', sipLabel: 'Archive (Arkiv)' },
-    { key: 'OAIS', label: 'OAIS', file: 'oais.json', graphql: 'OAIS', sipEntity: 'Submission Information Package', sipLabel: 'Submission Information Package' },
-    { key: 'PREMIS', label: 'PREMIS', file: 'premis.json', graphql: 'PREMIS', sipEntity: 'Object', sipLabel: 'Preservation Object' },
-    { key: 'Dublin Core', label: 'Dublin Core', file: 'dublincore.json', graphql: 'DUBLIN_CORE', sipEntity: 'Resource', sipLabel: 'Resource' },
-    { key: 'METS', label: 'METS', file: 'mets.json', graphql: 'METS', sipEntity: 'METS Document', sipLabel: 'METS Document' },
-    { key: 'EAD', label: 'EAD', file: 'ead.json', graphql: 'EAD', sipEntity: 'EAD', sipLabel: 'Finding Aid (EAD)' },
-    { key: 'BagIt', label: 'BagIt', file: 'bagit.json', graphql: 'BAGIT', sipEntity: 'Bag', sipLabel: 'Bag' },
-    { key: 'ISAD(G)', label: 'ISAD(G)', file: 'isadg.json', graphql: 'ISADG', sipEntity: 'Archival Description', sipLabel: 'Archival Description' },
-    { key: 'MODS', label: 'MODS', file: 'mods.json', graphql: 'MODS', sipEntity: 'MODS', sipLabel: 'MODS Record' },
-    { key: 'E-ARK', label: 'E-ARK', file: 'eark.json', graphql: 'EARK', sipEntity: 'Archival Information Package', sipLabel: 'Archival Information Package' },
-  ];
-
-  // Map GraphQL enum values back to display keys
-  const graphqlToKey: Record<string, string> = {};
-  standards.forEach(s => { graphqlToKey[s.graphql] = s.key; });
 
   let selectedStandardKey = '';
   let selectedStandard: typeof standards[0] | null = null;
