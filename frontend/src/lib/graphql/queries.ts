@@ -637,6 +637,39 @@ export const GET_SIP: DocumentNode = gql`
           type
           value
         }
+        children {
+          id
+          elementIdentifier
+          entityName
+          entityType
+          title
+          description
+          status
+          createdAt
+          createdBy
+          fields {
+            id
+            name
+            label
+            type
+            value
+          }
+          children {
+            id
+            elementIdentifier
+            entityName
+            entityType
+            title
+            status
+            fields {
+              id
+              name
+              label
+              type
+              value
+            }
+          }
+        }
       }
       assignedUsers {
         id
@@ -685,5 +718,377 @@ export const CREATE_SIP: DocumentNode = gql`
 export const DELETE_SIP: DocumentNode = gql`
   mutation DeleteSipV2($id: ID!) {
     deleteSipV2(id: $id)
+  }
+`;
+
+// AIP Queries
+export const GET_ALL_AIPS: DocumentNode = gql`
+  query GetAllAips {
+    getAllAips {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      createdAt
+      updatedAt
+      status
+      standard
+      sourceSipId
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+      }
+      assignedUsers {
+        id
+        name
+        email
+      }
+    }
+  }
+`;
+
+export const GET_AIPS_BY_TENANT: DocumentNode = gql`
+  query GetAipsByTenant($tenantId: ID!) {
+    getAipsByTenant(tenantId: $tenantId) {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      createdAt
+      updatedAt
+      status
+      standard
+      sourceSipId
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+      }
+      assignedUsers {
+        id
+        name
+        email
+      }
+    }
+  }
+`;
+
+export const GET_AIP: DocumentNode = gql`
+  query GetAip($id: ID!) {
+    getAip(id: $id) {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      content
+      createdAt
+      updatedAt
+      status
+      standard
+      sourceSipId
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        description
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+        children {
+          id
+          elementIdentifier
+          entityName
+          entityType
+          title
+          description
+          status
+          createdAt
+          createdBy
+          fields {
+            id
+            name
+            label
+            type
+            value
+          }
+          children {
+            id
+            elementIdentifier
+            entityName
+            entityType
+            title
+            status
+            fields {
+              id
+              name
+              label
+              type
+              value
+            }
+          }
+        }
+      }
+      assignedUsers {
+        id
+        name
+        email
+      }
+    }
+  }
+`;
+
+export const CREATE_AIP: DocumentNode = gql`
+  mutation CreateAip($input: CreateAipInput!) {
+    createAip(input: $input) {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      createdAt
+      updatedAt
+      status
+      standard
+      sourceSipId
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+      }
+      assignedUsers {
+        id
+        name
+        email
+      }
+    }
+  }
+`;
+
+export const DELETE_AIP: DocumentNode = gql`
+  mutation DeleteAip($id: ID!) {
+    deleteAip(id: $id)
+  }
+`;
+
+// DIP Queries
+export const GET_ALL_DIPS: DocumentNode = gql`
+  query GetAllDips {
+    getAllDips {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      createdAt
+      updatedAt
+      status
+      standard
+      sourceAipId
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+      }
+      assignedUsers {
+        id
+        name
+        email
+      }
+    }
+  }
+`;
+
+export const GET_DIPS_BY_TENANT: DocumentNode = gql`
+  query GetDipsByTenant($tenantId: ID!) {
+    getDipsByTenant(tenantId: $tenantId) {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      createdAt
+      updatedAt
+      status
+      standard
+      sourceAipId
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+      }
+      assignedUsers {
+        id
+        name
+        email
+      }
+    }
+  }
+`;
+
+export const GET_DIP: DocumentNode = gql`
+  query GetDip($id: ID!) {
+    getDip(id: $id) {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      content
+      createdAt
+      updatedAt
+      status
+      standard
+      sourceAipId
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        description
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+        children {
+          id
+          elementIdentifier
+          entityName
+          entityType
+          title
+          description
+          status
+          createdAt
+          createdBy
+          fields {
+            id
+            name
+            label
+            type
+            value
+          }
+          children {
+            id
+            elementIdentifier
+            entityName
+            entityType
+            title
+            status
+            fields {
+              id
+              name
+              label
+              type
+              value
+            }
+          }
+        }
+      }
+      assignedUsers {
+        id
+        name
+        email
+      }
+    }
+  }
+`;
+
+export const CREATE_DIP: DocumentNode = gql`
+  mutation CreateDip($input: CreateDipInput!) {
+    createDip(input: $input) {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      createdAt
+      updatedAt
+      status
+      standard
+      sourceAipId
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+      }
+      assignedUsers {
+        id
+        name
+        email
+      }
+    }
+  }
+`;
+
+export const DELETE_DIP: DocumentNode = gql`
+  mutation DeleteDip($id: ID!) {
+    deleteDip(id: $id)
   }
 `;

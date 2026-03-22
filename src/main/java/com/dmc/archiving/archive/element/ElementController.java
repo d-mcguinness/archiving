@@ -2,7 +2,8 @@ package com.dmc.archiving.archive.element;
 
 import com.dmc.archiving.archive.repository.ArchiveRepository;
 import com.dmc.archiving.archive.model.Archive;
-import lombok.RequiredArgsConstructor;
+import com.dmc.archiving.common.BaseGraphQlController;
+import com.dmc.archiving.tenancy.service.TenancyService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -13,11 +14,16 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequiredArgsConstructor
-public class ElementController {
+public class ElementController extends BaseGraphQlController {
 
     private final ElementService elementService;
     private final ArchiveRepository archiveRepository;
+
+    public ElementController(ElementService elementService, ArchiveRepository archiveRepository, TenancyService tenancyService) {
+        super(tenancyService);
+        this.elementService = elementService;
+        this.archiveRepository = archiveRepository;
+    }
 
     // Queries
     @QueryMapping
@@ -71,6 +77,29 @@ public class ElementController {
     }
 
     // Mutations
+    @MutationMapping
+    public Element addChildElement(@Argument Long parentElementId, @Argument Map<String, Object> input) {
+        Element parent = elementService.getElement(parentElementId)
+            .orElseThrow(() -> new IllegalArgumentException("Parent element not found"));
+
+        String elementIdentifier = input.get("elementIdentifier").toString();
+        String entityName = input.get("entityName").toString();
+        String entityType = input.get("entityType").toString();
+        String norwegianName = input.get("norwegianName") != null ? input.get("norwegianName").toString() : null;
+        String englishName = input.get("englishName") != null ? input.get("englishName").toString() : null;
+        String title = input.get("title").toString();
+        String description = input.get("description") != null ? input.get("description").toString() : null;
+        String createdBy = input.get("createdBy").toString();
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> fieldsInput = input.get("fields") != null ?
+            (List<Map<String, Object>>) input.get("fields") : List.of();
+
+        return elementService.createElement(parent.getArchive(), parent,
+            elementIdentifier, entityName, entityType, norwegianName, englishName,
+            title, description, createdBy, fieldsInput);
+    }
+
     @MutationMapping
     public Element createElement(@Argument Map<String, Object> input) {
         Long archiveId = Long.parseLong(input.get("archiveId").toString());

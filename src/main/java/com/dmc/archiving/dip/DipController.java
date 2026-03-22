@@ -1,0 +1,124 @@
+package com.dmc.archiving.dip;
+
+import com.dmc.archiving.common.BaseGraphQlController;
+import com.dmc.archiving.dip.input.CreateDipInput;
+import com.dmc.archiving.dip.model.Dip;
+import com.dmc.archiving.dip.model.DipStatus;
+import com.dmc.archiving.tenancy.model.Tenant;
+import com.dmc.archiving.tenancy.service.TenancyService;
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
+import org.springframework.stereotype.Controller;
+
+import java.util.List;
+import java.util.Map;
+
+@Controller
+public class DipController extends BaseGraphQlController {
+
+    private final DipService dipService;
+
+    public DipController(DipService dipService, TenancyService tenancyService) {
+        super(tenancyService);
+        this.dipService = dipService;
+    }
+
+    // Queries
+    @QueryMapping
+    public List<Dip> getAllDips() {
+        return dipService.getAllDips();
+    }
+
+    @QueryMapping
+    public List<Dip> getDipsByTenant(@Argument Long tenantId) {
+        return dipService.getDipsByTenant(tenantId);
+    }
+
+    @QueryMapping
+    public Dip getDip(@Argument Long id) {
+        return dipService.getDip(id);
+    }
+
+    // Mutations
+    @MutationMapping
+    public Dip createDip(@Argument Map<String, Object> input) {
+        CreateDipInput dipInput = new CreateDipInput();
+
+        dipInput.setUserId(Long.parseLong(input.get("userId").toString()));
+        dipInput.setTitle(input.get("title").toString());
+        dipInput.setStandard(com.dmc.archiving.archive.model.ArchiveStandard.valueOf(input.get("standard").toString()));
+
+        if (input.get("tenantId") != null) {
+            dipInput.setTenantId(Long.parseLong(input.get("tenantId").toString()));
+        }
+        if (input.get("ownerId") != null) {
+            dipInput.setOwnerId(Long.parseLong(input.get("ownerId").toString()));
+        }
+        if (input.get("description") != null) {
+            dipInput.setDescription(input.get("description").toString());
+        }
+        if (input.get("content") != null) {
+            dipInput.setContent(input.get("content").toString());
+        }
+        if (input.get("sourceAipId") != null) {
+            dipInput.setSourceAipId(Long.parseLong(input.get("sourceAipId").toString()));
+        }
+
+        // Root element fields
+        dipInput.setElementIdentifier(input.get("elementIdentifier").toString());
+        dipInput.setEntityName(input.get("entityName").toString());
+        dipInput.setEntityType(input.get("entityType").toString());
+        dipInput.setElementTitle(input.get("elementTitle").toString());
+        dipInput.setCreatedBy(input.get("createdBy").toString());
+
+        if (input.get("norwegianName") != null) {
+            dipInput.setNorwegianName(input.get("norwegianName").toString());
+        }
+        if (input.get("englishName") != null) {
+            dipInput.setEnglishName(input.get("englishName").toString());
+        }
+        if (input.get("elementDescription") != null) {
+            dipInput.setElementDescription(input.get("elementDescription").toString());
+        }
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> fields = input.get("fields") != null ?
+            (List<Map<String, Object>>) input.get("fields") : null;
+        dipInput.setFields(fields);
+
+        return dipService.createDip(dipInput);
+    }
+
+    @MutationMapping
+    public String generateDip(@Argument Long dipId) {
+        return dipService.generateDip(dipId);
+    }
+
+    @MutationMapping
+    public Dip updateDipStatus(@Argument Long dipId, @Argument DipStatus status) {
+        return dipService.updateDipStatus(dipId, status);
+    }
+
+    @MutationMapping
+    public Boolean deleteDip(@Argument Long id) {
+        return dipService.deleteDip(id);
+    }
+
+    // Field resolvers for datetime-to-string conversion
+    @SchemaMapping(typeName = "Dip", field = "createdAt")
+    public String createdAt(Dip dip) {
+        return formatDateTime(dip.getCreatedAt());
+    }
+
+    @SchemaMapping(typeName = "Dip", field = "updatedAt")
+    public String updatedAt(Dip dip) {
+        return formatDateTime(dip.getUpdatedAt());
+    }
+
+    @SchemaMapping(typeName = "Dip", field = "tenant")
+    public Tenant tenant(Dip dip) {
+        return resolveTenant(dip.getTenantId(), dip.getId(), "dip");
+    }
+}

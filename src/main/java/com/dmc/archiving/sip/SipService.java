@@ -14,6 +14,8 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityManager;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +27,13 @@ public class SipService {
     private final SipRepository sipRepository;
     private final UserApi userApi;
     private final SipGeneratorFactory sipGeneratorFactory;
+    private final EntityManager entityManager;
 
-    public SipService(SipRepository sipRepository, UserApi userApi, SipGeneratorFactory sipGeneratorFactory) {
+    public SipService(SipRepository sipRepository, UserApi userApi, SipGeneratorFactory sipGeneratorFactory, EntityManager entityManager) {
         this.sipRepository = sipRepository;
         this.userApi = userApi;
         this.sipGeneratorFactory = sipGeneratorFactory;
+        this.entityManager = entityManager;
     }
 
     @Transactional
@@ -124,10 +128,18 @@ public class SipService {
 
     @Transactional
     public boolean deleteSip(Long id) {
-        if (!sipRepository.existsById(id)) {
-            throw new IllegalArgumentException("Sip with ID " + id + " does not exist");
-        }
-        sipRepository.deleteById(id);
+        Sip sip = sipRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Sip with ID " + id + " does not exist"));
+
+        // Clear join tables and orphans via native SQL to avoid FK ordering issues
+        entityManager.createNativeQuery("DELETE FROM sip_users WHERE sip_id = :sipId")
+                .setParameter("sipId", id).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM sip_user_assignments WHERE sip_id = :sipId")
+                .setParameter("sipId", id).executeUpdate();
+
+        sip.setRootElement(null);
+        sipRepository.saveAndFlush(sip);
+        sipRepository.delete(sip);
         return true;
     }
 }

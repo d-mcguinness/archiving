@@ -53,8 +53,18 @@
               </a>
             </li>
             <li>
-              <a href="/sips" class="sips-link" class:active={isActive('/sips')}>
+              <a href="/sip" class="sips-link" class:active={isActive('/sip')}>
                 📦 SIPs
+              </a>
+            </li>
+            <li>
+              <a href="/aip" class="aips-link" class:active={isActive('/aip')}>
+                🏗️ AIPs
+              </a>
+            </li>
+            <li>
+              <a href="/dip" class="dips-link" class:active={isActive('/dip')}>
+                📤 DIPs
               </a>
             </li>
           {/if}
@@ -219,6 +229,30 @@
 
   .nav-links a.sips-link.active {
     background: linear-gradient(135deg, #f472b6, #ec4899);
+  }
+
+  .nav-links a.aips-link {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+  }
+
+  .nav-links a.aips-link:hover:not(.active) {
+    background: linear-gradient(135deg, #4f46e5, #4338ca);
+  }
+
+  .nav-links a.aips-link.active {
+    background: linear-gradient(135deg, #818cf8, #6366f1);
+  }
+
+  .nav-links a.dips-link {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+  }
+
+  .nav-links a.dips-link:hover:not(.active) {
+    background: linear-gradient(135deg, #ea580c, #c2410c);
+  }
+
+  .nav-links a.dips-link.active {
+    background: linear-gradient(135deg, #fb923c, #f97316);
   }
 
   .nav-links a.documents-link {

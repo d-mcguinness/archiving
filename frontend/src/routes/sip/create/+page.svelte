@@ -4,13 +4,13 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { client } from '$lib/apollo';
-  import { GET_ALL_USERS, CREATE_SIP, GET_ALL_SIPS_V2 } from '$lib/graphql/queries';
+  import { GET_ALL_USERS, CREATE_SIP, GET_ALL_SIPS_V2, GET_ALL_ARCHIVES, GET_ARCHIVES_BY_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
 
   function getSipsPath() {
     const { role } = get(auth);
-    if (role === 'ADMIN' || role === 'TENANT') return '/sips';
+    if (role === 'ADMIN' || role === 'TENANT') return '/sip';
     return '/';
   }
 
@@ -25,6 +25,7 @@
     { key: 'BagIt', label: 'BagIt', file: 'bagit.json', graphql: 'BAGIT', sipEntity: 'Bag', sipLabel: 'Bag' },
     { key: 'ISAD(G)', label: 'ISAD(G)', file: 'isadg.json', graphql: 'ISADG', sipEntity: 'Archival Description', sipLabel: 'Archival Description' },
     { key: 'MODS', label: 'MODS', file: 'mods.json', graphql: 'MODS', sipEntity: 'MODS', sipLabel: 'MODS Record' },
+    { key: 'E-ARK', label: 'E-ARK', file: 'eark.json', graphql: 'EARK', sipEntity: 'Archival Information Package', sipLabel: 'Archival Information Package' },
   ];
 
   // Map GraphQL enum values back to display keys
@@ -37,7 +38,9 @@
   let sipEntityDef: any = null;
   let fieldValues: Record<string, string> = {};
   let users: any[] = [];
+  let archives: any[] = [];
   let selectedUserId = '';
+  let selectedArchiveId = '';
   let sipTitle = '';
   let sipDescription = '';
   let sourceArchiveId = '';
@@ -47,25 +50,75 @@
   let error: string | null = null;
   let showOptionalFields = false;
   let prefilled = false;
+  let pendingChildEntity: string | null = null;
 
   // Computed field groups
   $: requiredFields = sipEntityDef?.fields?.filter((f: any) => f.required) || [];
   $: optionalFields = sipEntityDef?.fields?.filter((f: any) => !f.required) || [];
 
+  async function onArchiveSelect() {
+    if (!selectedArchiveId) {
+      // Reset everything when clearing archive selection
+      sourceArchiveId = '';
+      selectedStandardKey = '';
+      selectedStandard = null;
+      sipEntityDef = null;
+      schemaData = null;
+      fieldValues = {};
+      sipTitle = '';
+      sipDescription = '';
+      selectedUserId = '';
+      prefilled = false;
+      return;
+    }
+    const archive = archives.find((a: any) => a.id === selectedArchiveId);
+    if (!archive) return;
+
+    sourceArchiveId = archive.id;
+    sipTitle = archive.title ? `SIP - ${archive.title}` : '';
+    sipDescription = archive.description || '';
+
+    // Derive standard from the archive
+    const matchedStandard = standards.find(s => s.graphql === archive.standard);
+    if (matchedStandard) {
+      selectedStandardKey = matchedStandard.key;
+      await onStandardChange();
+    }
+
+    // Set owner to archive owner if we have a matching user
+    if (archive.ownerId) {
+      const ownerMatch = users.find((u: any) => u.id === archive.ownerId);
+      if (ownerMatch) {
+        selectedUserId = ownerMatch.id;
+      }
+    }
+
+    prefilled = true;
+    applyAllDefaults();
+  }
+
   onMount(async () => {
     loading = true;
     try {
-      const result = await client.query({ query: GET_ALL_USERS });
-      users = result?.data?.getAllUsers || [];
+      const authState = get(auth);
+      const [usersResult, archivesResult] = await Promise.all([
+        client.query({ query: GET_ALL_USERS }),
+        authState.role === 'TENANT' && authState.tenantId
+          ? client.query({ query: GET_ARCHIVES_BY_TENANT, variables: { tenantId: authState.tenantId.toString() } })
+          : client.query({ query: GET_ALL_ARCHIVES })
+      ]);
+      users = usersResult?.data?.getAllUsers || [];
+      archives = (authState.role === 'TENANT' && authState.tenantId)
+        ? archivesResult?.data?.getArchivesByTenant || []
+        : archivesResult?.data?.getAllArchives || [];
     } catch (e) {
-      error = e instanceof Error ? e.message : 'Failed to load users';
+      error = e instanceof Error ? e.message : 'Failed to load data';
     } finally {
       loading = false;
     }
 
     // Read query params and pre-fill form
     const params = $page.url.searchParams;
-    const qStandard = params.get('standard');
     const qUserId = params.get('userId');
     const qTitle = params.get('title');
     const qDescription = params.get('description');
@@ -74,17 +127,13 @@
     if (qUserId) selectedUserId = qUserId;
     if (qTitle) sipTitle = qTitle;
     if (qDescription) sipDescription = qDescription;
-    if (qArchiveId) sourceArchiveId = qArchiveId;
 
-    if (qStandard) {
-      // Resolve key: could be a graphql enum (DUBLIN_CORE) or a display key (Dublin Core)
-      const resolvedKey = graphqlToKey[qStandard] || qStandard;
-      if (standards.find(s => s.key === resolvedKey)) {
-        selectedStandardKey = resolvedKey;
-        prefilled = true;
-        await onStandardChange();
-        // After schema loads, apply default values to fields
-        applyAllDefaults();
+    // Auto-select archive from query param
+    if (qArchiveId) {
+      const match = archives.find((a: any) => a.id === qArchiveId);
+      if (match) {
+        selectedArchiveId = qArchiveId;
+        await onArchiveSelect();
       }
     }
   });
@@ -208,6 +257,18 @@
         modsID: id,
         version: '3.8',
       },
+      'E-ARK': {
+        packageID: id,
+        title: title || 'New Archival Information Package',
+        description: description || '',
+        profile: 'https://earkcsip.dilcis.eu/profile/E-ARK-CSIP.xml',
+        contentInformationType: 'MIXED',
+        oaisPackageType: 'AIP',
+        creationDate: today,
+        creator: userName,
+        preservationLevel: 'full',
+        representationCount: '1',
+      },
     };
 
     return map[standardKey] || {};
@@ -247,8 +308,8 @@
   }
 
   function validateForm(): string | null {
+    if (!selectedArchiveId) return 'Please select an archive';
     if (!selectedUserId) return 'Please select an owner';
-    if (!selectedStandard) return 'Please select a standard';
     if (!sipTitle.trim()) return 'Please enter a title';
 
     // Validate required fields
@@ -291,7 +352,7 @@
       }));
 
       // Single mutation: creates Sip + root Element + Fields
-      await client.mutate({
+      const result = await client.mutate({
         mutation: CREATE_SIP,
         variables: {
           input: {
@@ -313,14 +374,27 @@
         awaitRefetchQueries: true
       });
 
+      const newSipId = result?.data?.createSipV2?.id;
       toasts.add(`SIP "${sipTitle}" created successfully using ${selectedStandard!.label}`, 'success');
-      goto(getSipsPath());
+
+      if (pendingChildEntity && newSipId) {
+        goto(`/sip/edit/${newSipId}?addChild=${encodeURIComponent(pendingChildEntity)}`);
+      } else if (newSipId) {
+        goto(`/sip/edit/${newSipId}`);
+      } else {
+        goto(getSipsPath());
+      }
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to create SIP';
       toasts.add(`Failed to create SIP: ${error}`, 'error');
     } finally {
       submitting = false;
     }
+  }
+
+  function handleCreateAndAddChild(childEntityName: string) {
+    pendingChildEntity = childEntityName;
+    handleSubmit();
   }
 
   function handleCancel() {
@@ -349,13 +423,6 @@
     </div>
   </div>
 
-  {#if prefilled && sourceArchiveId}
-    <div class="alert alert-info">
-      Pre-filled from Archive #{sourceArchiveId}. Fields have been defaulted for the {selectedStandard?.label} standard.
-      <button on:click={() => prefilled = false}>x</button>
-    </div>
-  {/if}
-
   {#if error}
     <div class="alert alert-error">
       {error}
@@ -371,22 +438,21 @@
   {:else}
     <form on:submit|preventDefault={handleSubmit}>
 
-      <!-- Section 1: Standard Selection -->
+      <!-- Section 1: Select Archive -->
       <section class="form-section">
-        <h2 class="section-title">1. Select Standard</h2>
+        <h2 class="section-title">1. Select Archive</h2>
 
-        <div class="standard-grid">
-          {#each standards as std}
-            <button
-              type="button"
-              class="standard-card"
-              class:selected={selectedStandardKey === std.key}
-              on:click={() => { selectedStandardKey = std.key; onStandardChange(); }}
-            >
-              <span class="standard-name">{std.label}</span>
-              <span class="standard-sip">{std.sipLabel}</span>
-            </button>
-          {/each}
+        <div class="form-group">
+          <label for="archiveSelect">Archive for Submission <span class="req">*</span></label>
+          <select id="archiveSelect" bind:value={selectedArchiveId} on:change={onArchiveSelect} required>
+            <option value="">-- Select an archive --</option>
+            {#each archives as archive}
+              <option value={archive.id}>
+                #{archive.id} - {archive.title} ({archive.standard})
+              </option>
+            {/each}
+          </select>
+          <span class="field-hint">The standard, title, and description will be derived from the selected archive.</span>
         </div>
 
         {#if selectedStandard && schemaData}
@@ -398,121 +464,67 @@
         {/if}
       </section>
 
-      <!-- Section 2: Basic Info -->
-      <section class="form-section">
-        <h2 class="section-title">2. Basic Information</h2>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="userId">Owner <span class="req">*</span></label>
-            <select id="userId" bind:value={selectedUserId} required>
-              <option value="">Select an owner</option>
-              {#each users as user}
-                <option value={user.id}>{user.name} ({user.email})</option>
-              {/each}
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="sipTitle">SIP Title <span class="req">*</span></label>
-            <input type="text" id="sipTitle" bind:value={sipTitle} required placeholder="Enter SIP title" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="sipDescription">Description</label>
-          <textarea id="sipDescription" bind:value={sipDescription} rows="3" placeholder="Brief description of this submission package..."></textarea>
-        </div>
-      </section>
-
-      <!-- Section 3: Standard-Specific Fields -->
-      {#if loadingSchema}
+      <!-- Section 2: Basic Info (only when archive selected) -->
+      {#if selectedArchiveId}
         <section class="form-section">
-          <div class="loading-state">
-            <div class="spinner"></div>
-            <p>Loading {selectedStandard?.label} schema...</p>
+          <h2 class="section-title">2. Basic Information</h2>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="userId">Owner <span class="req">*</span></label>
+              <select id="userId" bind:value={selectedUserId} required>
+                <option value="">Select an owner</option>
+                {#each users as user}
+                  <option value={user.id}>{user.name} ({user.email})</option>
+                {/each}
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="sipTitle">SIP Title <span class="req">*</span></label>
+              <input type="text" id="sipTitle" bind:value={sipTitle} required placeholder="Enter SIP title" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="sipDescription">Description</label>
+            <textarea id="sipDescription" bind:value={sipDescription} rows="3" placeholder="Brief description of this submission package..."></textarea>
           </div>
         </section>
-      {:else if sipEntityDef}
-        <section class="form-section">
-          <h2 class="section-title">
-            3. {selectedStandard?.sipLabel} Fields
-          </h2>
 
-          {#if sipEntityDef.description}
-            <p class="entity-description">{sipEntityDef.description}</p>
-          {/if}
-
-          {#if sipEntityDef.note}
-            <div class="entity-note">
-              {sipEntityDef.note}
+        <!-- Section 3: Standard-Specific Fields -->
+        {#if loadingSchema}
+          <section class="form-section">
+            <div class="loading-state">
+              <div class="spinner"></div>
+              <p>Loading {selectedStandard?.label} schema...</p>
             </div>
-          {/if}
+          </section>
+        {:else if sipEntityDef}
+          <section class="form-section">
+            <h2 class="section-title">
+              3. {selectedStandard?.sipLabel} Fields
+            </h2>
 
-          <!-- Required Fields -->
-          {#if requiredFields.length > 0}
-            <div class="fields-group">
-              <h3 class="fields-group-title">Required Fields</h3>
-              <div class="fields-grid">
-                {#each requiredFields as field}
-                  <div class="form-group" class:full-width={field.type === 'text'}>
-                    <label for={`field-${field.name}`}>
-                      {field.label}
-                      <span class="req">*</span>
-                      <span class="field-type-tag">{field.type}</span>
-                    </label>
-                    {#if field.type === 'date'}
-                      <input
-                        type="date"
-                        id={`field-${field.name}`}
-                        value={fieldValues[field.name] || ''}
-                        required
-                        on:input={(e) => updateField(field.name, e.currentTarget?.value || '')}
-                      />
-                    {:else if field.type === 'number'}
-                      <input
-                        type="number"
-                        id={`field-${field.name}`}
-                        value={fieldValues[field.name] || ''}
-                        required
-                        on:input={(e) => updateField(field.name, e.currentTarget?.value || '')}
-                        placeholder={`Enter ${field.label}`}
-                      />
-                    {:else}
-                      <input
-                        type="text"
-                        id={`field-${field.name}`}
-                        value={fieldValues[field.name] || ''}
-                        required
-                        on:input={(e) => updateField(field.name, e.currentTarget?.value || '')}
-                        placeholder={`Enter ${field.label}`}
-                      />
-                    {/if}
-                  </div>
-                {/each}
+            {#if sipEntityDef.description}
+              <p class="entity-description">{sipEntityDef.description}</p>
+            {/if}
+
+            {#if sipEntityDef.note}
+              <div class="entity-note">
+                {sipEntityDef.note}
               </div>
-            </div>
-          {/if}
+            {/if}
 
-          <!-- Optional Fields (collapsible) -->
-          {#if optionalFields.length > 0}
-            <div class="fields-group optional-group">
-              <button
-                type="button"
-                class="fields-group-toggle"
-                on:click={() => showOptionalFields = !showOptionalFields}
-              >
-                <h3 class="fields-group-title">
-                  Optional Fields ({optionalFields.length})
-                </h3>
-                <span class="toggle-icon">{showOptionalFields ? 'v' : '>'}</span>
-              </button>
-
-              {#if showOptionalFields}
+            <!-- Required Fields -->
+            {#if requiredFields.length > 0}
+              <div class="fields-group">
+                <h3 class="fields-group-title">Required Fields</h3>
                 <div class="fields-grid">
-                  {#each optionalFields as field}
+                  {#each requiredFields as field}
                     <div class="form-group" class:full-width={field.type === 'text'}>
                       <label for={`field-${field.name}`}>
                         {field.label}
+                        <span class="req">*</span>
                         <span class="field-type-tag">{field.type}</span>
                       </label>
                       {#if field.type === 'date'}
@@ -520,6 +532,7 @@
                           type="date"
                           id={`field-${field.name}`}
                           value={fieldValues[field.name] || ''}
+                          required
                           on:input={(e) => updateField(field.name, e.currentTarget?.value || '')}
                         />
                       {:else if field.type === 'number'}
@@ -527,6 +540,7 @@
                           type="number"
                           id={`field-${field.name}`}
                           value={fieldValues[field.name] || ''}
+                          required
                           on:input={(e) => updateField(field.name, e.currentTarget?.value || '')}
                           placeholder={`Enter ${field.label}`}
                         />
@@ -535,6 +549,7 @@
                           type="text"
                           id={`field-${field.name}`}
                           value={fieldValues[field.name] || ''}
+                          required
                           on:input={(e) => updateField(field.name, e.currentTarget?.value || '')}
                           placeholder={`Enter ${field.label}`}
                         />
@@ -542,27 +557,81 @@
                     </div>
                   {/each}
                 </div>
-              {/if}
-            </div>
-          {/if}
-
-          <!-- Children preview -->
-          {#if sipEntityDef.children && sipEntityDef.children.length > 0}
-            <div class="children-info">
-              <h3 class="fields-group-title">Available Child Entities</h3>
-              <p class="helper-text">After creating this SIP, you can add the following child elements:</p>
-              <div class="children-tags">
-                {#each sipEntityDef.children as child}
-                  <span class="child-tag">{child}</span>
-                {/each}
               </div>
-            </div>
-          {/if}
-        </section>
-      {:else if selectedStandardKey}
-        <section class="form-section">
-          <p class="empty-state">Select a standard above to see its SIP fields.</p>
-        </section>
+            {/if}
+
+            <!-- Optional Fields (collapsible) -->
+            {#if optionalFields.length > 0}
+              <div class="fields-group optional-group">
+                <button
+                  type="button"
+                  class="fields-group-toggle"
+                  on:click={() => showOptionalFields = !showOptionalFields}
+                >
+                  <h3 class="fields-group-title">
+                    Optional Fields ({optionalFields.length})
+                  </h3>
+                  <span class="toggle-icon">{showOptionalFields ? 'v' : '>'}</span>
+                </button>
+
+                {#if showOptionalFields}
+                  <div class="fields-grid">
+                    {#each optionalFields as field}
+                      <div class="form-group" class:full-width={field.type === 'text'}>
+                        <label for={`field-${field.name}`}>
+                          {field.label}
+                          <span class="field-type-tag">{field.type}</span>
+                        </label>
+                        {#if field.type === 'date'}
+                          <input
+                            type="date"
+                            id={`field-${field.name}`}
+                            value={fieldValues[field.name] || ''}
+                            on:input={(e) => updateField(field.name, e.currentTarget?.value || '')}
+                          />
+                        {:else if field.type === 'number'}
+                          <input
+                            type="number"
+                            id={`field-${field.name}`}
+                            value={fieldValues[field.name] || ''}
+                            on:input={(e) => updateField(field.name, e.currentTarget?.value || '')}
+                            placeholder={`Enter ${field.label}`}
+                          />
+                        {:else}
+                          <input
+                            type="text"
+                            id={`field-${field.name}`}
+                            value={fieldValues[field.name] || ''}
+                            on:input={(e) => updateField(field.name, e.currentTarget?.value || '')}
+                            placeholder={`Enter ${field.label}`}
+                          />
+                        {/if}
+                      </div>
+                    {/each}
+                  </div>
+                {/if}
+              </div>
+            {/if}
+
+            <!-- Children preview -->
+            {#if sipEntityDef.children && sipEntityDef.children.length > 0}
+              <div class="children-info">
+                <h3 class="fields-group-title">Available Child Entities</h3>
+                <p class="helper-text">Click to create SIP and add a child element:</p>
+                <div class="children-tags">
+                  {#each sipEntityDef.children as child}
+                    <button
+                      type="button"
+                      class="child-tag child-tag-clickable"
+                      on:click={() => handleCreateAndAddChild(child)}
+                      disabled={submitting}
+                    >{child}</button>
+                  {/each}
+                </div>
+              </div>
+            {/if}
+          </section>
+        {/if}
       {/if}
 
       <!-- Actions -->
@@ -573,7 +642,7 @@
         <button
           type="submit"
           class="btn btn-primary"
-          disabled={submitting || !selectedStandard || !sipEntityDef}
+          disabled={submitting || !selectedArchiveId || !sipEntityDef}
         >
           {submitting ? 'Creating SIP...' : 'Create SIP'}
         </button>
@@ -713,50 +782,6 @@
     cursor: not-allowed;
   }
 
-  /* Standard Selection Grid */
-  .standard-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-  }
-
-  .standard-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 1rem 0.75rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 0.5rem;
-    background: #f8fafc;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-  }
-
-  .standard-card:hover {
-    border-color: #93c5fd;
-    background: #eff6ff;
-  }
-
-  .standard-card.selected {
-    border-color: #3b82f6;
-    background: #eff6ff;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-  }
-
-  .standard-name {
-    font-weight: 600;
-    color: #1e293b;
-    font-size: 0.925rem;
-  }
-
-  .standard-sip {
-    font-size: 0.75rem;
-    color: #64748b;
-  }
-
   .standard-info {
     padding: 1rem;
     background: #f0f9ff;
@@ -810,6 +835,13 @@
   .req {
     color: #ef4444;
     font-weight: 600;
+  }
+
+  .field-hint {
+    display: block;
+    margin-top: 0.375rem;
+    color: #94a3b8;
+    font-size: 0.75rem;
   }
 
   .field-type-tag {
@@ -956,6 +988,23 @@
     font-weight: 500;
   }
 
+  .child-tag-clickable {
+    border: 1px solid #bae6fd;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .child-tag-clickable:hover:not(:disabled) {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+  }
+
+  .child-tag-clickable:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
   .empty-state {
     text-align: center;
     color: #94a3b8;
@@ -1013,18 +1062,8 @@
       padding: 1.5rem;
     }
 
-    .standard-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
     .form-row,
     .fields-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .standard-grid {
       grid-template-columns: 1fr;
     }
   }

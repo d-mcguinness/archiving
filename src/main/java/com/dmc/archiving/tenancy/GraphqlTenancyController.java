@@ -1,5 +1,6 @@
 package com.dmc.archiving.tenancy;
 
+import com.dmc.archiving.common.BaseGraphQlController;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.input.CreateTenantInput;
 import com.dmc.archiving.tenancy.input.UpdateTenantInput;
@@ -12,16 +13,13 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Controller
-public class GraphqlTenancyController implements TenancyApi {
-
-    private final TenancyService tenancyService;
+public class GraphqlTenancyController extends BaseGraphQlController implements TenancyApi {
 
     public GraphqlTenancyController(TenancyService tenancyService) {
-        this.tenancyService = tenancyService;
+        super(tenancyService);
     }
 
     // Query operations
@@ -100,14 +98,12 @@ public class GraphqlTenancyController implements TenancyApi {
     // Field resolvers for datetime-to-string conversion
     @SchemaMapping(typeName = "Tenant", field = "createdAt")
     public String createdAt(Tenant tenant) {
-        return tenant.getCreatedAt() != null ?
-            tenant.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
+        return formatDateTime(tenant.getCreatedAt());
     }
 
     @SchemaMapping(typeName = "Tenant", field = "updatedAt")
     public String updatedAt(Tenant tenant) {
-        return tenant.getUpdatedAt() != null ?
-            tenant.getUpdatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
+        return formatDateTime(tenant.getUpdatedAt());
     }
 
     // Map TenantSettings.maxStorageBytes (Long) to String for GraphQL schema

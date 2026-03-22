@@ -148,6 +148,7 @@ enum ArchiveStandard {
     BAGIT
     ISADG
     MODS
+    EARK
 }
 
 input CreateArchiveInput {
@@ -170,6 +171,18 @@ input UpdateArchiveInput {
 input CreateElementInput {
     archiveId: ID!
     parentElementId: ID
+    elementIdentifier: String!
+    entityName: String!
+    entityType: String!
+    norwegianName: String
+    englishName: String
+    title: String!
+    description: String
+    createdBy: String!
+    fields: [FieldInput!]
+}
+
+input AddChildElementInput {
     elementIdentifier: String!
     entityName: String!
     entityType: String!
@@ -237,6 +250,98 @@ input CreateSipInput {
     description: String
     content: String
     standard: ArchiveStandard!
+    elementIdentifier: String!
+    entityName: String!
+    entityType: String!
+    norwegianName: String
+    englishName: String
+    elementTitle: String!
+    elementDescription: String
+    createdBy: String!
+    fields: [FieldInput!]
+}
+
+# AIP Module Types
+type Aip {
+    id: ID!
+    tenantId: ID!
+    ownerId: ID!
+    tenant: Tenant
+    title: String!
+    description: String
+    content: String
+    createdAt: String!
+    updatedAt: String
+    status: AipStatus!
+    standard: ArchiveStandard!
+    sourceSipId: ID
+    rootElement: Element
+    assignedUsers: [User!]!
+}
+
+enum AipStatus {
+    DRAFT
+    BUILDING
+    VALIDATED
+    STORED
+    REJECTED
+}
+
+input CreateAipInput {
+    tenantId: ID
+    ownerId: ID
+    userId: ID!
+    title: String!
+    description: String
+    content: String
+    standard: ArchiveStandard!
+    sourceSipId: ID
+    elementIdentifier: String!
+    entityName: String!
+    entityType: String!
+    norwegianName: String
+    englishName: String
+    elementTitle: String!
+    elementDescription: String
+    createdBy: String!
+    fields: [FieldInput!]
+}
+
+# DIP Module Types
+type Dip {
+    id: ID!
+    tenantId: ID!
+    ownerId: ID!
+    tenant: Tenant
+    title: String!
+    description: String
+    content: String
+    createdAt: String!
+    updatedAt: String
+    status: DipStatus!
+    standard: ArchiveStandard!
+    sourceAipId: ID
+    rootElement: Element
+    assignedUsers: [User!]!
+}
+
+enum DipStatus {
+    DRAFT
+    PREPARED
+    DISSEMINATED
+    EXPIRED
+    REJECTED
+}
+
+input CreateDipInput {
+    tenantId: ID
+    ownerId: ID
+    userId: ID!
+    title: String!
+    description: String
+    content: String
+    standard: ArchiveStandard!
+    sourceAipId: ID
     elementIdentifier: String!
     entityName: String!
     entityType: String!
@@ -327,6 +432,16 @@ type Query {
     getSipsByTenantV2(tenantId: ID!): [Sip!]!
     getSip(id: ID!): Sip
 
+    # AIP Queries
+    getAllAips: [Aip!]!
+    getAipsByTenant(tenantId: ID!): [Aip!]!
+    getAip(id: ID!): Aip
+
+    # DIP Queries
+    getAllDips: [Dip!]!
+    getDipsByTenant(tenantId: ID!): [Dip!]!
+    getDip(id: ID!): Dip
+
     # Element Queries
     getElement(id: ID!): Element
     getElementsByArchive(archiveId: ID!): [Element!]!
@@ -371,8 +486,21 @@ type Mutation {
     updateSipStatusV2(sipId: ID!, status: SipStatus!): Sip
     deleteSipV2(id: ID!): Boolean!
 
+    # AIP Mutations
+    createAip(input: CreateAipInput!): Aip!
+    generateAip(aipId: ID!): String!
+    updateAipStatus(aipId: ID!, status: AipStatus!): Aip
+    deleteAip(id: ID!): Boolean!
+
+    # DIP Mutations
+    createDip(input: CreateDipInput!): Dip!
+    generateDip(dipId: ID!): String!
+    updateDipStatus(dipId: ID!, status: DipStatus!): Dip
+    deleteDip(id: ID!): Boolean!
+
     # Element Mutations
     createElement(input: CreateElementInput!): Element!
+    addChildElement(parentElementId: ID!, input: AddChildElementInput!): Element!
     updateElement(id: ID!, input: UpdateElementInput!, fields: [FieldInput!]): Element!
     updateElementStatus(id: ID!, status: String!, updatedBy: String!): Element!
     closeElement(id: ID!, closedBy: String!): Element!

@@ -3,11 +3,10 @@ package com.dmc.archiving.dashboard;
 import com.dmc.archiving.archive.ArchiveService;
 import com.dmc.archiving.archive.model.Archive;
 import com.dmc.archiving.archive.model.ArchiveStatus;
+import com.dmc.archiving.common.BaseGraphQlController;
 import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.tenancy.service.TenancyService;
 import com.dmc.archiving.user.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.http.ResponseEntity;
@@ -20,19 +19,16 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-public class DashboardController {
-
-    private static final Logger log = LoggerFactory.getLogger(DashboardController.class);
+public class DashboardController extends BaseGraphQlController {
 
     private final UserService userService;
-    private final TenancyService tenancyService;
     private final ArchiveService archiveService;
 
     public DashboardController(UserService userService,
                                TenancyService tenancyService,
                                ArchiveService archiveService) {
+        super(tenancyService);
         this.userService = userService;
-        this.tenancyService = tenancyService;
         this.archiveService = archiveService;
     }
 

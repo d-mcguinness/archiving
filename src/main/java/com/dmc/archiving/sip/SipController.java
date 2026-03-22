@@ -1,33 +1,28 @@
 package com.dmc.archiving.sip;
 
+import com.dmc.archiving.common.BaseGraphQlController;
 import com.dmc.archiving.sip.input.CreateSipInput;
 import com.dmc.archiving.sip.model.Sip;
 import com.dmc.archiving.sip.model.SipStatus;
 import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.tenancy.service.TenancyService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
 @Controller
-public class SipController {
-
-    private static final Logger log = LoggerFactory.getLogger(SipController.class);
+public class SipController extends BaseGraphQlController {
 
     private final SipService sipService;
-    private final TenancyService tenancyService;
 
     public SipController(SipService sipService, TenancyService tenancyService) {
+        super(tenancyService);
         this.sipService = sipService;
-        this.tenancyService = tenancyService;
     }
 
     // Queries
@@ -111,27 +106,16 @@ public class SipController {
     // Field resolvers for datetime-to-string conversion
     @SchemaMapping(typeName = "Sip", field = "createdAt")
     public String createdAt(Sip sip) {
-        return sip.getCreatedAt() != null ?
-            sip.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
+        return formatDateTime(sip.getCreatedAt());
     }
 
     @SchemaMapping(typeName = "Sip", field = "updatedAt")
     public String updatedAt(Sip sip) {
-        return sip.getUpdatedAt() != null ?
-            sip.getUpdatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
+        return formatDateTime(sip.getUpdatedAt());
     }
 
     @SchemaMapping(typeName = "Sip", field = "tenant")
     public Tenant tenant(Sip sip) {
-        if (sip.getTenantId() == null) {
-            return null;
-        }
-        try {
-            return tenancyService.getTenantById(sip.getTenantId());
-        } catch (Exception e) {
-            log.warn("Could not fetch tenant {} for sip {}: {}",
-                sip.getTenantId(), sip.getId(), e.getMessage());
-            return null;
-        }
+        return resolveTenant(sip.getTenantId(), sip.getId(), "sip");
     }
 }

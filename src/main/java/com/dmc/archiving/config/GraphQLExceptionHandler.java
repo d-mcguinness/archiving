@@ -1,5 +1,6 @@
 package com.dmc.archiving.config;
 
+import com.dmc.archiving.auth.AccessDeniedException;
 import graphql.GraphQLError;
 import graphql.GraphqlErrorBuilder;
 import graphql.schema.DataFetchingEnvironment;
@@ -25,6 +26,16 @@ public class GraphQLExceptionHandler extends DataFetcherExceptionResolverAdapter
     @Override
     protected GraphQLError resolveToSingleError(Throwable ex, DataFetchingEnvironment env) {
         log.error("GraphQL error occurred: {}", ex.getMessage(), ex);
+
+        // Handle access denied
+        if (ex instanceof AccessDeniedException) {
+            return GraphqlErrorBuilder.newError()
+                    .errorType(ErrorType.FORBIDDEN)
+                    .message(ex.getMessage())
+                    .path(env.getExecutionStepInfo().getPath())
+                    .location(env.getField().getSourceLocation())
+                    .build();
+        }
 
         // Handle validation errors
         if (ex instanceof ConstraintViolationException) {

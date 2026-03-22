@@ -12,6 +12,7 @@ public enum ArchiveStandard {
     EAD,
     BAGIT,
     ISADG,
-    MODS
+    MODS,
+    EARK
 }
 

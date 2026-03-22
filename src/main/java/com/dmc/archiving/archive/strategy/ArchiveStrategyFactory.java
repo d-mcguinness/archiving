@@ -26,6 +26,7 @@ public class ArchiveStrategyFactory {
             BagitStrategy bagitStrategy,
             IsadgStrategy isadgStrategy,
             ModsStrategy modsStrategy,
+            EarkStrategy earkStrategy,
             DefaultArchiveStrategy defaultStrategy) {
 
         this.strategies = new HashMap<>();
@@ -41,6 +42,7 @@ public class ArchiveStrategyFactory {
         strategies.put(ArchiveStandard.BAGIT, bagitStrategy);
         strategies.put(ArchiveStandard.ISADG, isadgStrategy);
         strategies.put(ArchiveStandard.MODS, modsStrategy);
+        strategies.put(ArchiveStandard.EARK, earkStrategy);
     }
 
     /**

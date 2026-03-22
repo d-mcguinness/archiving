@@ -64,7 +64,22 @@ const errorLink = onError(({ graphQLErrors, networkError, operation }: ErrorResp
   });
 });
 
-const link = ApolloLink.from([errorLink, httpLink]);
+const authLink = new ApolloLink((operation, forward) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      operation.setContext(({ headers = {} }: { headers?: Record<string, string> }) => ({
+        headers: {
+          ...headers,
+          Authorization: token
+        }
+      }));
+    }
+  }
+  return forward(operation);
+});
+
+const link = ApolloLink.from([errorLink, authLink, httpLink]);
 
 interface CacheTypePolicies {
   Query: {
@@ -119,11 +134,23 @@ const cache = new InMemoryCache({
             // This ensures the cache is updated correctly after mutations like delete
             return incoming;
           }
+        },
+        getAllAips: {
+          merge(existing: any[] = [], incoming: any[] = []): any[] {
+            return incoming;
+          }
+        },
+        getAllDips: {
+          merge(existing: any[] = [], incoming: any[] = []): any[] {
+            return incoming;
+          }
         }
       }
     },
     Tenant: { keyFields: ['id'] },
     Archive: { keyFields: ['id'] },
+    Aip: { keyFields: ['id'] },
+    Dip: { keyFields: ['id'] },
     User: { keyFields: ['id'] },
     Element: { keyFields: ['id'] },
     TenantSettings: { keyFields: false }

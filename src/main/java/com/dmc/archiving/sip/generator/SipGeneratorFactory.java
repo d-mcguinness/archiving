@@ -23,6 +23,7 @@ public class SipGeneratorFactory {
             BagitSipGenerator bagitSipGenerator,
             IsadgSipGenerator isadgSipGenerator,
             ModsSipGenerator modsSipGenerator,
+            EarkSipGenerator earkSipGenerator,
             DefaultSipGenerator defaultGenerator) {
 
         this.generators = new HashMap<>();
@@ -37,6 +38,7 @@ public class SipGeneratorFactory {
         generators.put(ArchiveStandard.BAGIT, bagitSipGenerator);
         generators.put(ArchiveStandard.ISADG, isadgSipGenerator);
         generators.put(ArchiveStandard.MODS, modsSipGenerator);
+        generators.put(ArchiveStandard.EARK, earkSipGenerator);
     }
 
     public SipGenerator getGenerator(ArchiveStandard standard) {

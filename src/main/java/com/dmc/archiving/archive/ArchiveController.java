@@ -9,11 +9,10 @@ import com.dmc.archiving.archive.model.ArchiveStatus;
 import com.dmc.archiving.archive.strategy.ArchiveStrategy;
 import com.dmc.archiving.archive.strategy.ArchiveStrategyFactory;
 import com.dmc.archiving.archive.strategy.ValidationResult;
+import com.dmc.archiving.common.BaseGraphQlController;
 import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.tenancy.service.TenancyService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -28,24 +27,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Controller
-public class ArchiveController {
-
-    private static final Logger log = LoggerFactory.getLogger(ArchiveController.class);
+public class ArchiveController extends BaseGraphQlController {
 
     private final ArchiveService archiveService;
     private final ArchiveStrategyFactory strategyFactory;
-    private final TenancyService tenancyService;
 
     public ArchiveController(ArchiveService archiveService, ArchiveStrategyFactory strategyFactory, TenancyService tenancyService) {
+        super(tenancyService);
         this.archiveService = archiveService;
         this.strategyFactory = strategyFactory;
-        this.tenancyService = tenancyService;
     }
 
     // ========== Legacy Query Methods (Non-paginated - use paginated versions for production) ==========
@@ -218,30 +213,19 @@ public class ArchiveController {
     // Field resolvers for datetime-to-string conversion
     @SchemaMapping(typeName = "Archive", field = "createdAt")
     public String createdAt(Archive archive) {
-        return archive.getCreatedAt() != null ?
-            archive.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
+        return formatDateTime(archive.getCreatedAt());
     }
 
     @SchemaMapping(typeName = "Archive", field = "updatedAt")
     public String updatedAt(Archive archive) {
-        return archive.getUpdatedAt() != null ?
-            archive.getUpdatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
+        return formatDateTime(archive.getUpdatedAt());
     }
 
     // Field resolver for tenant
     @SchemaMapping(typeName = "Archive", field = "tenant")
     @SuppressWarnings("ModuleDependency") // Tenant is in same Maven module, IntelliJ false positive
     public Tenant tenant(Archive archive) {
-        if (archive.getTenantId() == null) {
-            return null;
-        }
-        try {
-            return tenancyService.getTenantById(archive.getTenantId());
-        } catch (Exception e) {
-            log.warn("Could not fetch tenant {} for archive {}: {}",
-                archive.getTenantId(), archive.getId(), e.getMessage());
-            return null;
-        }
+        return resolveTenant(archive.getTenantId(), archive.getId(), "archive");
     }
 
     // REST Endpoint for Archive Extraction/Download

@@ -221,7 +221,7 @@
               <td class="owner-cell">{getUserName(sip.ownerId)}</td>
               <td class="date-cell">{new Date(sip.createdAt).toLocaleDateString()}</td>
               <td class="actions-cell">
-                <a href="/archives/update/{sip.id}" class="btn-action btn-edit">
+                <a href="/sip/edit/{sip.id}" class="btn-action btn-edit">
                   ✏️ Edit
                 </a>
                 <button class="btn-action btn-extract" on:click={() => openExtractDialog(sip)}>

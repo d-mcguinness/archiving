@@ -1,0 +1,115 @@
+{
+  "standard": "EARK",
+  "fullName": "E-ARK Common Specification for Information Packages",
+  "reference": "E-ARK CSIP 2.1.0",
+  "description": "European standard built on OAIS/METS/PREMIS that defines specific package structures for digital preservation. E-ARK CSIP provides a common specification for information packages used across European archives.",
+  "version": "2.1.0",
+  "xsdReference": "https://earkcsip.dilcis.eu/schema/",
+  "url": "https://dilcis.eu/specifications/csip",
+  "entities": [
+    {
+      "name": "Archival Information Package",
+      "type": "root",
+      "description": "An E-ARK Archival Information Package (AIP) following the Common Specification for Information Packages (CSIP). Contains preserved content with METS structural metadata, PREMIS preservation metadata, and descriptive metadata.",
+      "parent": null,
+      "children": ["Representation", "Descriptive Metadata", "Preservation Metadata", "Administrative Metadata"],
+      "note": "The AIP is the core preservation unit in E-ARK. It follows the OAIS reference model and uses METS as the structural metadata standard.",
+      "fields": [
+        { "name": "packageID", "type": "string", "label": "Package Identifier", "required": true },
+        { "name": "title", "type": "string", "label": "Title", "required": true },
+        { "name": "description", "type": "string", "label": "Description", "required": false },
+        { "name": "profile", "type": "string", "label": "CSIP Profile", "required": true },
+        { "name": "contentInformationType", "type": "string", "label": "Content Information Type", "required": true },
+        { "name": "oaisPackageType", "type": "string", "label": "OAIS Package Type", "required": true },
+        { "name": "creationDate", "type": "date", "label": "Creation Date", "required": true },
+        { "name": "creator", "type": "string", "label": "Creator", "required": true },
+        { "name": "preservationLevel", "type": "string", "label": "Preservation Level", "required": false },
+        { "name": "representationCount", "type": "number", "label": "Number of Representations", "required": false }
+      ]
+    },
+    {
+      "name": "Representation",
+      "type": "structural_unit",
+      "description": "A representation of the content information within the AIP. Each representation contains a specific version or format of the preserved content.",
+      "parent": "Archival Information Package",
+      "children": ["Content Information"],
+      "fields": [
+        { "name": "representationID", "type": "string", "label": "Representation Identifier", "required": true },
+        { "name": "type", "type": "string", "label": "Representation Type", "required": true },
+        { "name": "label", "type": "string", "label": "Label", "required": false },
+        { "name": "metsProfile", "type": "string", "label": "METS Profile", "required": false }
+      ]
+    },
+    {
+      "name": "Content Information",
+      "type": "metadata",
+      "description": "The actual digital content being preserved, along with its representation information needed to render and understand it.",
+      "parent": "Representation",
+      "children": [],
+      "fields": [
+        { "name": "contentID", "type": "string", "label": "Content Identifier", "required": true },
+        { "name": "format", "type": "string", "label": "File Format", "required": true },
+        { "name": "size", "type": "number", "label": "Size (bytes)", "required": false },
+        { "name": "checksum", "type": "string", "label": "Checksum", "required": false },
+        { "name": "checksumType", "type": "string", "label": "Checksum Algorithm", "required": false }
+      ]
+    },
+    {
+      "name": "Descriptive Metadata",
+      "type": "metadata",
+      "description": "Metadata describing the intellectual content of the AIP, typically using standards like EAD, Dublin Core, or MODS.",
+      "parent": "Archival Information Package",
+      "children": [],
+      "fields": [
+        { "name": "metadataType", "type": "string", "label": "Metadata Standard", "required": true },
+        { "name": "status", "type": "string", "label": "Status", "required": true },
+        { "name": "schemaLocation", "type": "string", "label": "Schema Location", "required": false }
+      ]
+    },
+    {
+      "name": "Preservation Metadata",
+      "type": "metadata",
+      "description": "PREMIS-based metadata documenting preservation actions, events, agents, and rights related to the AIP.",
+      "parent": "Archival Information Package",
+      "children": [],
+      "fields": [
+        { "name": "metadataType", "type": "string", "label": "Metadata Standard", "required": true },
+        { "name": "status", "type": "string", "label": "Status", "required": true },
+        { "name": "eventCount", "type": "number", "label": "Number of Events", "required": false }
+      ]
+    },
+    {
+      "name": "Administrative Metadata",
+      "type": "metadata",
+      "description": "Technical and administrative metadata about the AIP, including rights information, provenance, and technical characteristics.",
+      "parent": "Archival Information Package",
+      "children": [],
+      "fields": [
+        { "name": "metadataType", "type": "string", "label": "Metadata Standard", "required": true },
+        { "name": "status", "type": "string", "label": "Status", "required": true },
+        { "name": "rightsStatement", "type": "string", "label": "Rights Statement", "required": false }
+      ]
+    },
+    {
+      "name": "Dissemination Information Package",
+      "type": "root",
+      "description": "An E-ARK Dissemination Information Package (DIP) following the Common Specification for Information Packages (CSIP). Contains access copies of preserved content prepared for dissemination to consumers.",
+      "parent": null,
+      "children": ["Representation", "Descriptive Metadata", "Access Metadata"],
+      "note": "The DIP is the access/delivery unit in E-ARK. It follows the OAIS reference model and provides content formatted for end-user consumption.",
+      "fields": [
+        { "name": "packageID", "type": "string", "label": "Package Identifier", "required": true },
+        { "name": "title", "type": "string", "label": "Title", "required": true },
+        { "name": "description", "type": "string", "label": "Description", "required": false },
+        { "name": "profile", "type": "string", "label": "CSIP Profile", "required": true },
+        { "name": "contentInformationType", "type": "string", "label": "Content Information Type", "required": true },
+        { "name": "oaisPackageType", "type": "string", "label": "OAIS Package Type", "required": true },
+        { "name": "creationDate", "type": "date", "label": "Creation Date", "required": true },
+        { "name": "creator", "type": "string", "label": "Creator", "required": true },
+        { "name": "accessRights", "type": "string", "label": "Access Rights", "required": false },
+        { "name": "preservationLevel", "type": "string", "label": "Preservation Level", "required": false },
+        { "name": "representationCount", "type": "number", "label": "Number of Representations", "required": false }
+      ]
+    }
+  ]
+}
