@@ -101,24 +101,25 @@ public class DocumentController {
                 documents = documentService.getAllDocuments();
                 log.info("Fetching all documents for ADMIN");
             } else if ("TENANT".equals(role)) {
-                // Tenant sees all documents in ALL their tenants (using user_tenant association)
-                if (userId != null) {
-                    documents = documentService.getDocumentsByUserTenants(userId);
-                    log.info("Fetching documents for TENANT user {} from their tenant(s)", userId);
-                } else if (tenantId != null) {
-                    // If tenantId provided directly, use it
+                if (tenantId != null) {
                     documents = documentService.getDocumentsByTenant(tenantId);
                     log.info("Fetching documents for tenant {}", tenantId);
+                } else if (userId != null) {
+                    documents = documentService.getDocumentsByUserTenants(userId);
+                    log.info("Fetching documents for TENANT user {} from their tenant(s)", userId);
                 } else {
                     return ResponseEntity
                         .status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("success", false, "error", "Missing userId or tenantId for TENANT role"));
                 }
             } else if ("USER".equals(role) && userId != null) {
-                // USER role with user_assignments sees NO documents in the documents page
-                // They only see documents they personally uploaded
-                documents = documentService.getDocumentsByUser(userId);
-                log.info("Fetching documents for USER {}", userId);
+                if (tenantId != null) {
+                    documents = documentService.getDocumentsByUserAndTenant(userId, tenantId);
+                    log.info("Fetching documents for USER {} in tenant {}", userId, tenantId);
+                } else {
+                    documents = documentService.getDocumentsByUser(userId);
+                    log.info("Fetching documents for USER {}", userId);
+                }
             } else if (userId != null) {
                 // Default: user sees their own documents
                 documents = documentService.getDocumentsByUser(userId);

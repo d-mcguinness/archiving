@@ -78,6 +78,13 @@ public class DocumentService {
     }
 
     /**
+     * Get documents by user and tenant
+     */
+    public List<Document> getDocumentsByUserAndTenant(Long userId, Long tenantId) {
+        return documentRepository.findByUserIdAndTenantIdOrderByCreatedAtDesc(userId, tenantId);
+    }
+
+    /**
      * Get documents by tenant
      */
     public List<Document> getDocumentsByTenant(Long tenantId) {

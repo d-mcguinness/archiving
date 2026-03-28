@@ -33,6 +33,9 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     List<Document> findByStatusOrderByCreatedAtDesc(DocumentStatus status);
 
+    // Find by user and tenant
+    List<Document> findByUserIdAndTenantIdOrderByCreatedAtDesc(Long userId, Long tenantId);
+
     // Find by user and status
     List<Document> findByUserIdAndStatus(Long userId, DocumentStatus status);
 
