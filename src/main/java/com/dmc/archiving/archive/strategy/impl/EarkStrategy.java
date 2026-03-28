@@ -28,16 +28,8 @@ public class EarkStrategy extends AbstractArchiveStrategy {
 
     @Override
     protected void exportStandard(Archive archive, Map<String, Object> exportData) {
-        exportData.put("standardVersion", "E-ARK CSIP 2.1.0");
-        exportData.put("mets", Map.of(
-            "packageID", archive.getId(),
-            "title", archive.getTitle(),
-            "description", archive.getDescription() != null ? archive.getDescription() : "",
-            "contentInformationType", "MIXED",
-            "profile", "https://earkcsip.dilcis.eu/profile/E-ARK-CSIP.xml",
-            "oaisPackageType", "AIP",
-            "metsProfile", "https://earkcsip.dilcis.eu/profile/E-ARK-CSIP.xml"
-        ));
+        exportData.put("standardReference", "E-ARK CSIP 2.1.0");
+        exportData.put("standardName", "E-ARK Common Specification for Information Packages");
     }
 
     @Override

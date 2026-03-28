@@ -29,25 +29,8 @@ public class MetsStrategy extends AbstractArchiveStrategy {
 
     @Override
     protected void exportStandard(Archive archive, Map<String, Object> exportData) {
-        // METS structure with multiple sections
-        Map<String, Object> metsHeader = new HashMap<>();
-        metsHeader.put("createDate", archive.getCreatedAt());
-        metsHeader.put("lastModDate", archive.getUpdatedAt());
-
-        Map<String, Object> dmdSec = new HashMap<>();
-        dmdSec.put("id", "dmd" + archive.getId());
-        dmdSec.put("title", archive.getTitle());
-        dmdSec.put("description", archive.getDescription());
-
-        Map<String, Object> amdSec = new HashMap<>();
-        amdSec.put("id", "amd" + archive.getId());
-        amdSec.put("status", archive.getStatus());
-
-        exportData.put("metsHdr", metsHeader);
-        exportData.put("dmdSec", dmdSec);
-        exportData.put("amdSec", amdSec);
-        exportData.put("metsProfile", "http://www.loc.gov/METS/");
-        exportData.put("standardVersion", "METS 1.12");
+        exportData.put("standardReference", "METS 1.12");
+        exportData.put("standardName", "Metadata Encoding and Transmission Standard");
     }
 
     @Override

@@ -43,9 +43,7 @@ public class DefaultArchiveStrategy extends AbstractArchiveStrategy {
 
     @Override
     protected void exportStandard(Archive archive, Map<String, Object> exportData) {
-        // Generic export
         exportData.put("standardName", standardName);
-        exportData.put("content", archive.getContent());
     }
 
     @Override

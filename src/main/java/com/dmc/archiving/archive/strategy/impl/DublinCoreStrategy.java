@@ -29,17 +29,8 @@ public class DublinCoreStrategy extends AbstractArchiveStrategy {
 
     @Override
     protected void exportStandard(Archive archive, Map<String, Object> exportData) {
-        // Dublin Core metadata elements
-        Map<String, Object> dublinCore = new HashMap<>();
-        dublinCore.put("dc:title", archive.getTitle());
-        dublinCore.put("dc:description", archive.getDescription());
-        dublinCore.put("dc:identifier", archive.getId());
-        dublinCore.put("dc:date", archive.getCreatedAt());
-        dublinCore.put("dc:format", "application/json");
-        dublinCore.put("dc:type", "Archive");
-
-        exportData.put("dublinCore", dublinCore);
-        exportData.put("standardVersion", "ISO 15836-1:2017");
+        exportData.put("standardReference", "Dublin Core Metadata Element Set, Version 1.1");
+        exportData.put("standardName", "Dublin Core");
     }
 
     @Override

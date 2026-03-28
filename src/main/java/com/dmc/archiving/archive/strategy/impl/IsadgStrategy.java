@@ -35,34 +35,8 @@ public class IsadgStrategy extends AbstractArchiveStrategy {
 
     @Override
     protected void exportStandard(Archive archive, Map<String, Object> exportData) {
-        // ISAD(G) 26 elements organized in 7 areas
-
-        // Identity Statement Area
-        Map<String, Object> identityArea = new HashMap<>();
-        identityArea.put("referenceCode", archive.getId());
-        identityArea.put("title", archive.getTitle());
-        identityArea.put("date", archive.getCreatedAt());
-        identityArea.put("levelOfDescription", "Fonds");
-        identityArea.put("extentAndMedium", "Electronic records");
-
-        // Context Area
-        Map<String, Object> contextArea = new HashMap<>();
-        contextArea.put("nameOfCreator", archive.getOwnerId());
-        contextArea.put("administrativeHistory", archive.getDescription());
-
-        // Content and Structure Area
-        Map<String, Object> contentArea = new HashMap<>();
-        contentArea.put("scopeAndContent", archive.getDescription());
-
-        // Conditions of Access and Use Area
-        Map<String, Object> accessArea = new HashMap<>();
-        accessArea.put("conditionsGoverningAccess", "Restricted");
-
-        exportData.put("identityStatementArea", identityArea);
-        exportData.put("contextArea", contextArea);
-        exportData.put("contentAndStructureArea", contentArea);
-        exportData.put("conditionsOfAccessAndUseArea", accessArea);
-        exportData.put("standardVersion", "ISAD(G) 2nd Edition");
+        exportData.put("standardReference", "ISAD(G) Second Edition");
+        exportData.put("standardName", "General International Standard Archival Description");
     }
 
     @Override

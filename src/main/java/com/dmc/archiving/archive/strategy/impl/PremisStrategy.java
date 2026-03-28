@@ -29,17 +29,8 @@ public class PremisStrategy extends AbstractArchiveStrategy {
 
     @Override
     protected void exportStandard(Archive archive, Map<String, Object> exportData) {
-        // PREMIS export structure
-        Map<String, Object> premisObject = new HashMap<>();
-        premisObject.put("objectIdentifier", Map.of(
-            "objectIdentifierType", "internal",
-            "objectIdentifierValue", archive.getId()
-        ));
-        premisObject.put("objectCategory", "representation");
-        premisObject.put("preservationLevel", "full");
-
-        exportData.put("premisVersion", "3.0");
-        exportData.put("object", premisObject);
+        exportData.put("standardReference", "PREMIS 3.0");
+        exportData.put("standardName", "Preservation Metadata: Implementation Strategies");
     }
 
     @Override

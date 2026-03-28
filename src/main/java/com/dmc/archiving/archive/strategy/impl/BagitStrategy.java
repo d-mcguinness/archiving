@@ -29,22 +29,8 @@ public class BagitStrategy extends AbstractArchiveStrategy {
 
     @Override
     protected void exportStandard(Archive archive, Map<String, Object> exportData) {
-        // BagIt structure
-        Map<String, Object> bagInfo = new HashMap<>();
-        bagInfo.put("Source-Organization", "Archiving System");
-        bagInfo.put("Bagging-Date", archive.getCreatedAt());
-        bagInfo.put("Bag-Size", "To be calculated");
-        bagInfo.put("Payload-Oxum", "To be calculated");
-        bagInfo.put("External-Description", archive.getDescription());
-
-        Map<String, Object> bagit = new HashMap<>();
-        bagit.put("version", "1.0");
-        bagit.put("encoding", "UTF-8");
-
-        exportData.put("bagit.txt", bagit);
-        exportData.put("bag-info.txt", bagInfo);
-        exportData.put("payload", archive.getContent());
-        exportData.put("standardVersion", "RFC 8493");
+        exportData.put("standardReference", "BagIt 1.0 (RFC 8493)");
+        exportData.put("standardName", "BagIt File Packaging Format");
     }
 
     @Override

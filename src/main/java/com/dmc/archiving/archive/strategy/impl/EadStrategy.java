@@ -32,23 +32,8 @@ public class EadStrategy extends AbstractArchiveStrategy {
 
     @Override
     protected void exportStandard(Archive archive, Map<String, Object> exportData) {
-        // EAD structure for finding aids
-        Map<String, Object> eadHeader = new HashMap<>();
-        eadHeader.put("eadid", archive.getId());
-        eadHeader.put("filedesc", Map.of(
-            "titlestmt", Map.of("titleproper", archive.getTitle())
-        ));
-
-        Map<String, Object> archdesc = new HashMap<>();
-        archdesc.put("level", "collection");
-        archdesc.put("unittitle", archive.getTitle());
-        archdesc.put("unitdate", archive.getCreatedAt());
-        archdesc.put("physdesc", "Electronic records");
-        archdesc.put("scopecontent", archive.getDescription());
-
-        exportData.put("eadheader", eadHeader);
-        exportData.put("archdesc", archdesc);
-        exportData.put("standardVersion", "EAD3");
+        exportData.put("standardReference", "EAD3 1.1.1");
+        exportData.put("standardName", "Encoded Archival Description");
     }
 
     @Override

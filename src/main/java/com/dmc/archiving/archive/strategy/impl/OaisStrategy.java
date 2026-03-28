@@ -6,6 +6,7 @@ import com.dmc.archiving.archive.strategy.ValidationResult;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -21,53 +22,64 @@ public class OaisStrategy extends AbstractArchiveStrategy {
 
     @Override
     protected void validateStandard(Archive archive, ValidationResult result) {
-        // OAIS-specific validation
-        // OAIS requires specific information packages
-        if (archive.getContent() == null || archive.getContent().isEmpty()) {
-            result.addError("OAIS requires content information");
+        // OAIS requires either element tree or content
+        if (archive.getRootElement() == null &&
+            (archive.getContent() == null || archive.getContent().isEmpty())) {
+            result.addWarning("OAIS recommends defining an information package structure");
         }
     }
 
     @Override
     protected void exportStandard(Archive archive, Map<String, Object> exportData) {
-        // OAIS-specific export format (SIP/AIP/DIP structure)
-        Map<String, Object> informationPackage = new HashMap<>();
-        informationPackage.put("packageType", "AIP"); // Archival Information Package
-        informationPackage.put("contentInformation", archive.getContent());
-        informationPackage.put("preservationDescriptionInformation", Map.of(
-            "reference", Map.of("identifier", archive.getId()),
-            "context", Map.of("title", archive.getTitle()),
-            "provenance", Map.of("createdAt", archive.getCreatedAt())
-        ));
+        // Add OAIS-specific metadata
+        exportData.put("standardReference", "ISO 14721:2012");
+        exportData.put("standardName", "Open Archival Information System");
 
-        exportData.put("informationPackage", informationPackage);
-        exportData.put("standardVersion", "ISO 14721:2012");
+        // Determine package type from root element if available
+        String packageType = "AIP";
+        if (archive.getRootElement() != null) {
+            String entityName = archive.getRootElement().getEntityName();
+            if (entityName != null) {
+                if (entityName.contains("Submission")) {
+                    packageType = "SIP";
+                } else if (entityName.contains("Dissemination")) {
+                    packageType = "DIP";
+                }
+            }
+        }
+        exportData.put("packageType", packageType);
+
+        // The element tree is already exported by AbstractArchiveStrategy.export()
+        // under "rootElement" — no need to duplicate it here
     }
 
     @Override
     protected void addStandardSpecificFields(Archive archive, Map<String, Object> transformed) {
         transformed.put("packageType", "AIP");
-        transformed.put("contentDataObject", archive.getContent());
         transformed.put("preservationLevel", "full");
     }
 
     @Override
     public Archive importArchive(Map<String, Object> data) {
-        // OAIS-specific import logic
         Archive archive = new Archive();
-        // Implementation would parse OAIS information package
+        if (data.containsKey("title")) {
+            archive.setTitle(data.get("title").toString());
+        }
+        if (data.containsKey("description")) {
+            archive.setDescription(data.get("description").toString());
+        }
         return archive;
     }
 
     @Override
     public Map<String, String> getMetadataRequirements() {
-        Map<String, String> requirements = new HashMap<>();
-        requirements.put("identifier", "Unique identifier for the AIP");
+        Map<String, String> requirements = new LinkedHashMap<>();
+        requirements.put("identifier", "Unique identifier for the information package");
         requirements.put("title", "Title of the information package");
         requirements.put("contentInformation", "The actual content being preserved");
-        requirements.put("preservationDescriptionInformation", "PDI metadata");
+        requirements.put("preservationDescriptionInformation", "PDI metadata (provenance, context, reference, fixity, access rights)");
         requirements.put("packagingInformation", "How the package is structured");
-        requirements.put("descriptiveInformation", "Descriptive metadata");
+        requirements.put("descriptiveInformation", "Descriptive metadata for discovery");
         return requirements;
     }
 }

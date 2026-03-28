@@ -11,6 +11,7 @@
   import ArchiveCanvas from '../../ArchiveCanvas.svelte';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import { standardFileMap } from '$lib/standards';
 
   const devmode = import.meta.env.VITE_DEVMODE === 'true';
 
@@ -123,7 +124,12 @@
 
   async function loadSchemeDefinition(standard: string) {
     try {
-      const fileName = standard === 'NOARK5' ? 'noark5.json' : 'oais.json';
+      const fileName = standardFileMap[standard];
+      if (!fileName) {
+        console.warn(`No schema file mapped for standard: ${standard}`);
+        schemes = [];
+        return;
+      }
       const response = await fetch(`/schemeDefintions/${fileName}`);
       if (!response.ok) throw new Error(`Failed to fetch ${fileName}`);
       const data = await response.json();

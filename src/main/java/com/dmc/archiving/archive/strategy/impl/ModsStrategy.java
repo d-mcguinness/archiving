@@ -29,35 +29,8 @@ public class ModsStrategy extends AbstractArchiveStrategy {
 
     @Override
     protected void exportStandard(Archive archive, Map<String, Object> exportData) {
-        // MODS structure for bibliographic metadata
-        Map<String, Object> titleInfo = new HashMap<>();
-        titleInfo.put("title", archive.getTitle());
-
-        Map<String, Object> originInfo = new HashMap<>();
-        originInfo.put("dateCreated", archive.getCreatedAt());
-        originInfo.put("dateModified", archive.getUpdatedAt());
-
-        Map<String, Object> physicalDescription = new HashMap<>();
-        physicalDescription.put("form", "electronic");
-        physicalDescription.put("internetMediaType", "application/json");
-
-        Map<String, Object> abstractInfo = new HashMap<>();
-        abstractInfo.put("content", archive.getDescription());
-
-        Map<String, Object> identifier = new HashMap<>();
-        identifier.put("type", "local");
-        identifier.put("value", archive.getId());
-
-        Map<String, Object> typeOfResource = new HashMap<>();
-        typeOfResource.put("content", "mixed material");
-
-        exportData.put("titleInfo", titleInfo);
-        exportData.put("originInfo", originInfo);
-        exportData.put("physicalDescription", physicalDescription);
-        exportData.put("abstract", abstractInfo);
-        exportData.put("identifier", identifier);
-        exportData.put("typeOfResource", typeOfResource);
-        exportData.put("standardVersion", "MODS 3.7");
+        exportData.put("standardReference", "MODS 3.8");
+        exportData.put("standardName", "Metadata Object Description Schema");
     }
 
     @Override

@@ -40,8 +40,22 @@
 
   function getAvailableChildSchemes(): any[] {
     if (!selectedParent) {
-      // No parent - only show root elements
-      return schemes.filter(s => s.type === 'root');
+      // No parent - show root elements
+      const rootElements = schemes.filter(s => s.type === 'root');
+      if (rootElements.length > 0) return rootElements;
+
+      // Fallback: if no entity has type 'root', show entities that are not
+      // listed as children of any other entity (i.e. top-level entities)
+      const allChildNames = new Set<string>();
+      for (const s of schemes) {
+        if (s.children) {
+          for (const c of s.children) {
+            allChildNames.add(c);
+          }
+        }
+      }
+      const topLevel = schemes.filter(s => !allChildNames.has(s.name));
+      return topLevel.length > 0 ? topLevel : schemes;
     }
 
     // Find the parent's scheme definition to get allowed children

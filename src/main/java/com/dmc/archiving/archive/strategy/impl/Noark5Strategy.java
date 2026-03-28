@@ -30,13 +30,8 @@ public class Noark5Strategy extends AbstractArchiveStrategy {
 
     @Override
     protected void exportStandard(Archive archive, Map<String, Object> exportData) {
-        // NOARK5-specific export format
-        exportData.put("standardVersion", "5.0");
-        exportData.put("arkivdel", Map.of(
-            "systemID", archive.getId(),
-            "tittel", archive.getTitle(),
-            "beskrivelse", archive.getDescription() != null ? archive.getDescription() : ""
-        ));
+        exportData.put("standardReference", "NOARK5 v5.0");
+        exportData.put("standardName", "Norsk Arkivstandard 5");
     }
 
     @Override
