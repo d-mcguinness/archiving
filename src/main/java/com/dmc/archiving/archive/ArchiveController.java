@@ -248,8 +248,8 @@ public class ArchiveController extends BaseGraphQlController {
                     ));
             }
 
-            // Get the archive
-            Archive archive = archiveService.getArchiveById(archiveId);
+            // Get the archive with full element tree
+            Archive archive = archiveService.getArchiveForExport(archiveId);
             if (archive == null) {
                 return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)

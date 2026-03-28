@@ -131,6 +131,49 @@ public class ArchiveService {
         return archiveRepository.findByIdWithRelations(id);
     }
 
+    /**
+     * Get archive with fully initialized element tree for export.
+     * Uses @Transactional to keep the session open for lazy loading.
+     */
+    @Transactional(readOnly = true)
+    public Archive getArchiveForExport(Long id) {
+        Archive archive = archiveRepository.findById(id).orElse(null);
+        if (archive == null) return null;
+
+        // Initialize the element tree by traversing it
+        if (archive.getRootElement() != null) {
+            initializeElementTree(archive.getRootElement());
+        }
+
+        // Also initialize the flat elements set (fallback for archives without rootElement)
+        if (archive.getElements() != null) {
+            archive.getElements().size(); // force init
+            for (Element element : archive.getElements()) {
+                initializeElementTree(element);
+            }
+        }
+
+        // Initialize assigned users
+        if (archive.getAssignedUsers() != null) {
+            archive.getAssignedUsers().size();
+        }
+
+        return archive;
+    }
+
+    private void initializeElementTree(Element element) {
+        // Force initialization of lazy collections
+        if (element.getFields() != null) {
+            element.getFields().size();
+        }
+        if (element.getChildren() != null) {
+            element.getChildren().size();
+            for (Element child : element.getChildren()) {
+                initializeElementTree(child);
+            }
+        }
+    }
+
     // ========== Paginated Query Methods (Recommended for scalability) ==========
 
     public Page<Archive> getAllArchivesPaginated(Pageable pageable) {

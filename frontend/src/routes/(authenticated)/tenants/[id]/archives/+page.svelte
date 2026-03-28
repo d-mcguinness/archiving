@@ -388,13 +388,13 @@
                   <a href="/tenants/{data.tenantId}/archives/{archive.id}/update" class="btn-action btn-edit">
                     ✏️ Edit
                   </a>
-                  <button
+                  <a
+                    href="/tenants/{data.tenantId}/archives/{archive.id}/extract"
                     class="btn-action btn-extract"
-                    on:click={() => openExtractDialog(archive)}
                     title="Extract archive"
                   >
                     📥 Extract
-                  </button>
+                  </a>
                 </td>
               </tr>
             {/each}
