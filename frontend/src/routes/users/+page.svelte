@@ -1,780 +1,286 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { client } from '$lib/apollo';
-  import { GET_ALL_USERS, UPDATE_USER } from '$lib/graphql/queries';
-  import { toasts } from '$lib/stores/toastStore';
+  import { auth } from '$lib/stores/authStore';
+  import { goto } from '$app/navigation';
+  import { browser } from '$app/environment';
 
-  let users: any[] = [];
-  let loading = true;
-  let error: string | null = null;
-
-  // File upload state
-  let selectedFile: File | null = null;
-  let uploading = false;
-  let uploadMessage = '';
-  let uploadError = '';
-
-  // Edit modal state
-  let showEditModal = false;
-  let editingUser: any = null;
-  let editForm = {
-    name: '',
-    email: '',
-    age: null as number | null
-  };
-  let saving = false;
-
-  onMount(async () => {
-    await loadUsers();
-  });
-
-  async function loadUsers() {
-    try {
-      loading = true;
-      const result = await client.query({
-        query: GET_ALL_USERS,
-        fetchPolicy: 'network-only'
-      });
-      users = result?.data?.getAllUsers || [];
-      error = null;
-    } catch (e) {
-      error = e instanceof Error ? e.message : 'An unknown error occurred';
-      console.error('Load users error:', e);
-    } finally {
-      loading = false;
-    }
+  $: if (browser && $auth.isLoggedIn && $auth.role === 'ADMIN') {
+    goto('/admin');
   }
-
-  function handleFileSelect(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      selectedFile = input.files[0];
-      uploadMessage = '';
-      uploadError = '';
-    }
+  $: if (browser && $auth.isLoggedIn && $auth.role === 'TENANT' && $auth.tenantId) {
+    goto(`/tenants/${$auth.tenantId}/users`);
   }
-
-  async function handleUpload() {
-    if (!selectedFile) {
-      uploadError = 'Please select a file first';
-      return;
-    }
-
-    uploading = true;
-    uploadMessage = '';
-    uploadError = '';
-
-    try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-
-      const response = await fetch('http://localhost:2020/api/upload', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Upload failed: ${response.status}`);
-      }
-
-      const result = await response.json();
-      uploadMessage = result.message || 'File uploaded successfully!';
-      selectedFile = null;
-
-      // Reset file input
-      const fileInput = document.getElementById('file-upload') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
-
-      // Reload users list to show newly uploaded users
-      await loadUsers();
-    } catch (e) {
-      uploadError = e instanceof Error ? e.message : 'Failed to upload file';
-      console.error('Upload error:', e);
-    } finally {
-      uploading = false;
-    }
-  }
-
-  function openEditModal(user: any) {
-    editingUser = user;
-    editForm = {
-      name: user.name,
-      email: user.email,
-      age: user.age
-    };
-    showEditModal = true;
-  }
-
-  function closeEditModal() {
-    showEditModal = false;
-    editingUser = null;
-    editForm = {
-      name: '',
-      email: '',
-      age: null
-    };
-  }
-
-  async function handleSaveEdit() {
-    if (!editingUser) return;
-
-    // Validate
-    if (!editForm.name.trim()) {
-      toasts.error('Name is required');
-      return;
-    }
-    if (!editForm.email.trim()) {
-      toasts.error('Email is required');
-      return;
-    }
-
-    saving = true;
-    try {
-      const result = await client.mutate({
-        mutation: UPDATE_USER,
-        variables: {
-          id: editingUser.id,
-          input: {
-            name: editForm.name.trim(),
-            email: editForm.email.trim(),
-            age: editForm.age
-          }
-        }
-      });
-
-      if (result.data?.updateUser) {
-        toasts.success('User updated successfully');
-        closeEditModal();
-        await loadUsers(); // Reload the list
-      }
-    } catch (e) {
-      console.error('Update user error:', e);
-      toasts.error(e instanceof Error ? e.message : 'Failed to update user');
-    } finally {
-      saving = false;
-    }
+  $: if (browser && $auth.isLoggedIn && $auth.role === 'USER' && $auth.tenantId && $auth.user?.id) {
+    goto(`/tenants/${$auth.tenantId}/users/${$auth.user.id}`);
   }
 </script>
 
 <svelte:head>
-  <title>Users - Archiving System</title>
+  <title>User Management - Arcana</title>
 </svelte:head>
 
-<div class="users-page">
-  <div class="page-header">
-    <h1>Users</h1>
-    <a href="/users/create" class="add-user-btn">Add User</a>
-  </div>
-
-  <!-- File Upload Section -->
-  <div class="file-upload-section">
-    <h2>📤 Upload Users File</h2>
-    <div class="upload-card">
-      <div class="upload-area">
-        <input
-          type="file"
-          id="file-upload"
-          on:change={handleFileSelect}
-          disabled={uploading}
-          class="file-input"
-        />
-        <label for="file-upload" class="file-label">
-          <span class="upload-icon">📁</span>
-          <span class="upload-text">
-            {selectedFile ? selectedFile.name : 'Choose a file to upload'}
-          </span>
-        </label>
+{#if !$auth.isLoggedIn}
+  <div class="public-page">
+    <section class="hero">
+      <div class="hero-badge">Role-Based Access</div>
+      <h1>User Management</h1>
+      <p class="hero-subtitle">
+        Arcana provides a three-tier role system for managing access to archival resources.
+        Administrators, tenant managers, and contributors each have tailored permissions and workflows.
+      </p>
+      <div class="hero-actions">
+        <a href="/login" class="btn-cta">Sign In</a>
+        <a href="#roles" class="btn-outline">View Roles</a>
       </div>
+    </section>
 
-      {#if uploadMessage}
-        <div class="upload-success">
-          <span class="success-icon">✅</span>
-          <span>{uploadMessage}</span>
+    <section id="roles" class="roles-section">
+      <h2 class="section-title">Role Hierarchy</h2>
+      <div class="roles-grid">
+        <div class="role-card admin">
+          <div class="role-icon">👑</div>
+          <h3>Administrator</h3>
+          <p>Full system access. Manages all tenants, users, archives, and preservation workflows across the platform.</p>
+          <ul>
+            <li>Create and manage tenants</li>
+            <li>Assign users to tenants</li>
+            <li>Access all archives and packages</li>
+            <li>System-wide configuration</li>
+          </ul>
         </div>
-      {/if}
-
-      {#if uploadError}
-        <div class="upload-error">
-          <span class="error-icon">❌</span>
-          <span>{uploadError}</span>
+        <div class="role-card tenant">
+          <div class="role-icon">🏢</div>
+          <h3>Tenant Manager</h3>
+          <p>Organization-level management. Oversees users, archives, and packages within their tenant scope.</p>
+          <ul>
+            <li>Manage tenant users</li>
+            <li>Create and manage archives</li>
+            <li>Build SIPs, AIPs, and DIPs</li>
+            <li>Upload and manage documents</li>
+          </ul>
         </div>
-      {/if}
-
-      <button
-        class="upload-button"
-        on:click={handleUpload}
-        disabled={!selectedFile || uploading}
-      >
-        {uploading ? '⏳ Uploading...' : '📤 Upload File'}
-      </button>
-    </div>
-  </div>
-
-  {#if error}
-    <div class="error">
-      Error: {error}
-    </div>
-  {/if}
-
-  {#if loading}
-    <div class="loading">
-      <div class="spinner"></div>
-    </div>
-  {:else if users.length === 0}
-    <div class="empty-state">
-      <p>No users found. Create your first user to get started!</p>
-    </div>
-  {:else}
-    <div class="table-container">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>User</th>
-            <th>Age</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each users as user (user.id)}
-            <tr>
-              <td class="id-cell">{user.id}</td>
-              <td class="title-cell">
-                <div class="title-wrapper">
-                  <div class="user-title">{user.name}</div>
-                  <div class="user-email">{user.email}</div>
-                </div>
-              </td>
-              <td class="age-cell">{user.age || '-'}</td>
-              <td class="actions-cell">
-                <a href="/users/delete?userId={user.id}" class="btn-action btn-delete">
-                  🗑️ Delete
-                </a>
-                <button
-                  class="btn-action btn-edit"
-                  on:click={() => openEditModal(user)}
-                  title="Edit user"
-                >
-                  ✏️ Edit
-                </button>
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
-  {/if}
-</div>
-
-<!-- Edit Modal -->
-{#if showEditModal && editingUser}
-  <div class="modal-overlay" on:click={closeEditModal}>
-    <div class="modal-content" on:click|stopPropagation>
-      <div class="modal-header">
-        <h2>Edit User</h2>
-        <button class="modal-close" on:click={closeEditModal}>✕</button>
+        <div class="role-card user">
+          <div class="role-icon">👤</div>
+          <h3>Contributor</h3>
+          <p>Individual access. Upload documents and view assigned resources within their tenant.</p>
+          <ul>
+            <li>View personal profile</li>
+            <li>Upload documents</li>
+            <li>View assigned packages</li>
+            <li>Download files</li>
+          </ul>
+        </div>
       </div>
+    </section>
 
-      <form on:submit|preventDefault={handleSaveEdit}>
-        <div class="form-group">
-          <label for="edit-name">Name *</label>
-          <input
-            id="edit-name"
-            type="text"
-            bind:value={editForm.name}
-            placeholder="Enter name"
-            required
-            disabled={saving}
-          />
+    <section class="features-section">
+      <h2 class="section-title">Key Features</h2>
+      <div class="features-grid">
+        <div class="feature-item">
+          <span class="check">&#10003;</span>
+          <span>Role-based navigation and page access</span>
         </div>
+        <div class="feature-item">
+          <span class="check">&#10003;</span>
+          <span>Tenant-scoped data isolation</span>
+        </div>
+        <div class="feature-item">
+          <span class="check">&#10003;</span>
+          <span>User assignment to multiple tenants</span>
+        </div>
+        <div class="feature-item">
+          <span class="check">&#10003;</span>
+          <span>Admin impersonation for support</span>
+        </div>
+        <div class="feature-item">
+          <span class="check">&#10003;</span>
+          <span>Bulk user import via file upload</span>
+        </div>
+        <div class="feature-item">
+          <span class="check">&#10003;</span>
+          <span>Inline user profile editing</span>
+        </div>
+      </div>
+    </section>
 
-        <div class="form-group">
-          <label for="edit-email">Email *</label>
-          <input
-            id="edit-email"
-            type="email"
-            bind:value={editForm.email}
-            placeholder="Enter email"
-            required
-            disabled={saving}
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="edit-age">Age</label>
-          <input
-            id="edit-age"
-            type="number"
-            bind:value={editForm.age}
-            placeholder="Enter age"
-            min="0"
-            max="150"
-            disabled={saving}
-          />
-        </div>
-
-        <div class="modal-actions">
-          <button
-            type="button"
-            class="btn-secondary"
-            on:click={closeEditModal}
-            disabled={saving}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            class="btn-primary"
-            disabled={saving}
-          >
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
-        </div>
-      </form>
-    </div>
+    <section class="cta-section">
+      <h2>Ready to manage your team?</h2>
+      <p>Sign in to start managing users and permissions.</p>
+      <a href="/login" class="btn-cta-inv">Get Started</a>
+    </section>
   </div>
 {/if}
 
 <style>
-  .users-page {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
+  .public-page { text-align: center; }
 
-  .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-  }
+  .hero { padding: 4rem 2rem 3rem; }
 
-  .page-header h1 {
-    margin: 0;
-    color: #1e293b;
-    font-size: 2rem;
-  }
-
-  .add-user-btn {
-    background: #3b82f6;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.375rem;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.2s;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-
-  .add-user-btn:hover {
-    background: #2563eb;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  .error {
-    background: #fee;
-    color: #c00;
-    padding: 1rem;
-    border-radius: 0.375rem;
-    margin-bottom: 1rem;
-    border: 1px solid #fcc;
-  }
-
-  .loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 400px;
-  }
-
-  .spinner {
-    border: 4px solid #f3f4f6;
-    border-top: 4px solid #3b82f6;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    background: #f9fafb;
-    border-radius: 0.5rem;
-    color: #64748b;
-  }
-
-  /* File Upload Section */
-  .file-upload-section {
-    margin-bottom: 2rem;
-  }
-
-  .file-upload-section h2 {
-    margin-bottom: 1rem;
-    color: #1e293b;
-    font-size: 1.25rem;
-  }
-
-  .upload-card {
-    background: white;
-    padding: 2rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
-  }
-
-  .upload-area {
-    margin-bottom: 1.5rem;
-  }
-
-  .file-input {
-    display: none;
-  }
-
-  .file-label {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.5rem;
-    border: 2px dashed #cbd5e1;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: #f8fafc;
-  }
-
-  .file-label:hover {
-    border-color: #3b82f6;
-    background: #eff6ff;
-  }
-
-  .upload-icon {
-    font-size: 2rem;
-  }
-
-  .upload-text {
-    color: #475569;
-    font-weight: 500;
-  }
-
-  .upload-success {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: #dcfce7;
-    border: 1px solid #86efac;
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    color: #166534;
-  }
-
-  .success-icon {
-    font-size: 1.25rem;
-  }
-
-  .upload-error {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: #fee2e2;
-    border: 1px solid #fca5a5;
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    color: #991b1b;
-  }
-
-  .error-icon {
-    font-size: 1.25rem;
-  }
-
-  .upload-button {
-    width: 100%;
-    padding: 0.75rem 1.5rem;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .upload-button:hover:not(:disabled) {
-    background: #2563eb;
-  }
-
-  .upload-button:disabled {
-    background: #cbd5e1;
-    cursor: not-allowed;
-  }
-
-  /* Table Styles */
-  .table-container {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    overflow-x: auto;
-    border: 1px solid #e2e8f0;
-  }
-
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 800px;
-  }
-
-  .data-table thead {
-    background: #f8fafc;
-    border-bottom: 2px solid #e2e8f0;
-  }
-
-  .data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: #475569;
-    font-size: 0.875rem;
+  .hero-badge {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    background: #fef3c7;
+    color: #d97706;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    white-space: nowrap;
+    margin-bottom: 1.25rem;
   }
 
-  .data-table tbody tr {
-    border-bottom: 1px solid #e2e8f0;
-    transition: background-color 0.15s;
+  .hero h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 1rem;
+    letter-spacing: -0.03em;
   }
 
-  .data-table tbody tr:hover {
-    background: #f8fafc;
-  }
-
-  .data-table tbody tr:last-child {
-    border-bottom: none;
-  }
-
-  .data-table td {
-    padding: 1rem;
-    color: #1e293b;
-  }
-
-  .id-cell {
-    font-family: 'Monaco', 'Courier New', monospace;
-    color: #64748b;
-    font-size: 0.875rem;
-    width: 60px;
-  }
-
-  .title-cell {
-    min-width: 300px;
-    max-width: 400px;
-  }
-
-  .title-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .user-title {
-    font-weight: 500;
-    color: #1e293b;
-  }
-
-  .user-email {
-    font-size: 0.875rem;
-    color: #64748b;
-    line-height: 1.4;
-  }
-
-  .age-cell {
-    color: #64748b;
-    font-size: 0.875rem;
-    width: 100px;
-  }
-
-  .actions-cell {
-    text-align: right;
-    white-space: nowrap;
-    width: 200px;
-  }
-
-  .btn-action {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s;
-    margin-left: 0.5rem;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-  }
-
-
-  .btn-edit {
-    background: #3b82f6;
-    color: white;
-  }
-
-  .btn-edit:hover {
-    background: #2563eb;
-  }
-
-  .btn-delete {
-    background: #dc2626;
-    color: white;
-  }
-
-  .btn-delete:hover {
-    background: #b91c1c;
-  }
-
-  /* Modal Styles */
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 1rem;
-  }
-
-  .modal-content {
-    background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    max-width: 500px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
-  }
-
-  .modal-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-    color: #1e293b;
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #64748b;
-    cursor: pointer;
-    padding: 0.25rem;
-    line-height: 1;
-    transition: color 0.2s;
-  }
-
-  .modal-close:hover {
-    color: #1e293b;
-  }
-
-  .modal-content form {
-    padding: 1.5rem;
-  }
-
-  .form-group {
-    margin-bottom: 1.5rem;
-  }
-
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
+  .hero-subtitle {
+    font-size: 1.1rem;
     color: #475569;
-    font-size: 0.875rem;
+    max-width: 620px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
   }
 
-  .form-group input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #cbd5e1;
+  .hero-actions { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+
+  .btn-cta, .btn-cta-inv {
+    display: inline-block;
+    padding: 0.85rem 2rem;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
     border-radius: 0.5rem;
-    font-size: 1rem;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .btn-cta:hover, .btn-cta-inv:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.35);
+  }
+
+  .btn-outline {
+    display: inline-block;
+    padding: 0.85rem 2rem;
+    background: transparent;
+    color: #1e293b;
+    border: 2px solid #cbd5e1;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
     transition: border-color 0.2s;
   }
 
-  .form-group input:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  .btn-outline:hover { border-color: #64748b; }
+
+  .section-title { font-size: 1.75rem; font-weight: 800; color: #0f172a; margin: 0 0 2rem; }
+
+  .roles-section { margin-bottom: 4rem; }
+
+  .roles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    text-align: left;
   }
 
-  .form-group input:disabled {
-    background: #f1f5f9;
-    cursor: not-allowed;
+  .role-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 2rem 1.5rem;
+    border-top: 3px solid #e2e8f0;
+    transition: border-color 0.2s, box-shadow 0.2s;
   }
 
-  .modal-actions {
+  .role-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  }
+
+  .role-card.admin { border-top-color: #f59e0b; }
+  .role-card.admin:hover { border-color: #f59e0b; }
+  .role-card.tenant { border-top-color: #10b981; }
+  .role-card.tenant:hover { border-color: #10b981; }
+  .role-card.user { border-top-color: #8b5cf6; }
+  .role-card.user:hover { border-color: #8b5cf6; }
+
+  .role-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+
+  .role-card h3 { margin: 0 0 0.5rem; color: #0f172a; font-size: 1.15rem; }
+  .role-card p { margin: 0 0 1rem; color: #64748b; font-size: 0.875rem; line-height: 1.55; }
+
+  .role-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .role-card li {
+    padding: 0.3rem 0;
+    color: #475569;
+    font-size: 0.825rem;
+  }
+
+  .role-card li::before {
+    content: '→ ';
+    color: #94a3b8;
+  }
+
+  .features-section { margin-bottom: 4rem; }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    text-align: left;
+  }
+
+  .feature-item {
     display: flex;
     gap: 0.75rem;
-    justify-content: flex-end;
-    padding-top: 1rem;
-    border-top: 1px solid #e2e8f0;
-  }
-
-  .btn-primary,
-  .btn-secondary {
-    padding: 0.75rem 1.5rem;
+    align-items: center;
+    padding: 1rem;
+    background: white;
+    border: 1px solid #e2e8f0;
     border-radius: 0.5rem;
-    font-weight: 600;
     font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
+    color: #334155;
   }
 
-  .btn-primary {
-    background: #3b82f6;
+  .check {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    background: #dcfce7;
+    color: #16a34a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  .cta-section {
+    background: linear-gradient(135deg, #1e293b, #334155);
     color: white;
+    padding: 3.5rem 2rem;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
   }
 
-  .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-  }
+  .cta-section h2 { margin: 0 0 0.5rem; font-size: 1.75rem; font-weight: 800; }
+  .cta-section p { margin: 0 0 2rem; color: #94a3b8; font-size: 1.05rem; }
 
-  .btn-primary:disabled {
-    background: #94a3b8;
-    cursor: not-allowed;
-  }
+  .cta-section .btn-cta-inv { background: white; color: #1e293b; }
+  .cta-section .btn-cta-inv:hover { box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15); }
 
-  .btn-secondary {
-    background: #e2e8f0;
-    color: #475569;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    background: #cbd5e1;
-  }
-
-  .btn-secondary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 2.25rem; }
   }
 </style>
-
-

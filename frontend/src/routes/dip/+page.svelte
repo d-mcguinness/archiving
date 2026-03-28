@@ -1,380 +1,126 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { get } from 'svelte/store';
-  import { goto } from '$app/navigation';
-  import { client } from '$lib/apollo';
-  import { GET_ALL_DIPS, GET_DIPS_BY_TENANT, GET_ALL_USERS } from '$lib/graphql/queries';
-  import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import { goto } from '$app/navigation';
+  import { browser } from '$app/environment';
 
-  let dips: any[] = [];
-  let users: any[] = [];
-  let loading = true;
-  let error: string | null = null;
-  let currentRole = '';
-  let currentTenantId: number | null = null;
-
-  onMount(async () => {
-    const authState = get(auth);
-    currentRole = authState.role;
-    currentTenantId = authState.tenantId;
-
-    if (currentRole === 'ADMIN') {
-      await Promise.all([loadAllDips(), loadUsers()]);
-    } else if (currentRole === 'TENANT' && currentTenantId) {
-      await Promise.all([loadTenantDips(currentTenantId), loadUsers()]);
-    } else {
-      goto('/login', { replaceState: true });
-    }
-  });
-
-  async function loadAllDips() {
-    try {
-      loading = true;
-      const result = await client.query({
-        query: GET_ALL_DIPS,
-        fetchPolicy: 'network-only'
-      });
-      dips = result?.data?.getAllDips || [];
-      error = null;
-    } catch (e) {
-      error = e instanceof Error ? e.message : 'Failed to load DIPs';
-      toasts.error(`Failed to load DIPs: ${error}`);
-    } finally {
-      loading = false;
-    }
+  $: if (browser && $auth.isLoggedIn && $auth.role === 'ADMIN') {
+    goto('/admin/dip');
   }
-
-  async function loadTenantDips(tenantId: number) {
-    try {
-      loading = true;
-      const result = await client.query({
-        query: GET_DIPS_BY_TENANT,
-        variables: { tenantId: tenantId.toString() },
-        fetchPolicy: 'network-only'
-      });
-      dips = result?.data?.getDipsByTenant || [];
-      error = null;
-    } catch (e) {
-      error = e instanceof Error ? e.message : 'Failed to load DIPs';
-      toasts.error(`Failed to load DIPs: ${error}`);
-    } finally {
-      loading = false;
-    }
-  }
-
-  async function loadUsers() {
-    try {
-      const result = await client.query({ query: GET_ALL_USERS });
-      users = result?.data?.getAllUsers || [];
-    } catch (e) {
-      console.error('Failed to load users:', e);
-    }
-  }
-
-  function getUserName(userId: string) {
-    const user = users.find((u: any) => u.id === userId);
-    return user ? user.name : `User #${userId}`;
-  }
-
-  function getStatusClass(status: string) {
-    return 'status-' + status.toLowerCase();
+  $: if (browser && $auth.isLoggedIn && $auth.role === 'TENANT' && $auth.tenantId) {
+    goto(`/tenants/${$auth.tenantId}/dips`);
   }
 </script>
 
 <svelte:head>
-  <title>DIPs - Archiving System</title>
+  <title>DIPs - Arcana</title>
 </svelte:head>
 
-<div class="dips-page">
-  <div class="page-header">
-    <h1>📤 Dissemination Information Packages</h1>
-    <a href="/dip/create" class="btn-create">+ Create DIP</a>
+{#if !$auth.isLoggedIn}
+  <div class="public-page">
+    <section class="hero">
+      <div class="hero-badge">OAIS Deliver</div>
+      <h1>Dissemination Information Packages</h1>
+      <p class="hero-subtitle">
+        DIPs are the access format in the OAIS model. They package preserved content with tailored
+        metadata for end-user delivery, with granular access controls and multi-format export.
+      </p>
+      <div class="hero-actions">
+        <a href="/login" class="btn-cta">Sign In</a>
+        <a href="/deliver" class="btn-outline">View Standards</a>
+      </div>
+    </section>
+
+    <section class="features-section">
+      <h2 class="section-title">DIP Capabilities</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <span class="feature-icon">📤</span>
+          <h3>User-Tailored Access</h3>
+          <p>Produce packages customized for specific audiences with appropriate metadata and formats.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">🔐</span>
+          <h3>Access Controls</h3>
+          <p>Granular permissions ensure only authorized users can access disseminated content.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">📋</span>
+          <h3>Standard Metadata</h3>
+          <p>Compliant metadata across 10 archival standards for interoperability and discovery.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">📥</span>
+          <h3>Multi-Format Export</h3>
+          <p>Export packages in multiple formats for integration with external systems and tools.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <h2>Start delivering your archives</h2>
+      <p>Sign in to create and manage your DIPs.</p>
+      <a href="/login" class="btn-cta-inv">Get Started</a>
+    </section>
   </div>
-
-  {#if error}
-    <div class="error">
-      {error}
-    </div>
-  {/if}
-
-  {#if loading}
-    <div class="loading">
-      <div class="spinner"></div>
-      <p>Loading DIPs...</p>
-    </div>
-  {:else if dips.length === 0}
-    <div class="empty-state">
-      <span class="empty-icon">📤</span>
-      <h3>No DIPs found</h3>
-      <p>Create your first Dissemination Information Package to get started.</p>
-      <a href="/dip/create" class="btn-primary-link">Create DIP</a>
-    </div>
-  {:else}
-    <div class="dips-count">
-      <span class="count-label">Total DIPs:</span>
-      <span class="count-value">{dips.length}</span>
-    </div>
-
-    <div class="table-container">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Standard</th>
-            <th>Root Entity</th>
-            <th>Status</th>
-            <th>Owner</th>
-            <th>Created</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each dips as dip (dip.id)}
-            <tr>
-              <td class="id-cell">{dip.id}</td>
-              <td class="title-cell">
-                <div class="title-wrapper">
-                  <div class="dip-title">{dip.title}</div>
-                  {#if dip.description}
-                    <div class="dip-description">{dip.description}</div>
-                  {/if}
-                </div>
-              </td>
-              <td class="standard-cell">
-                <span class="badge standard-badge">{dip.standard}</span>
-              </td>
-              <td class="entity-cell">
-                {#if dip.rootElement}
-                  <div class="entity-info">
-                    <span class="entity-name">{dip.rootElement.entityName}</span>
-                    <span class="entity-type">({dip.rootElement.entityType})</span>
-                  </div>
-                  {#if dip.rootElement.fields && dip.rootElement.fields.length > 0}
-                    <div class="field-count">{dip.rootElement.fields.length} fields</div>
-                  {/if}
-                {:else}
-                  <span class="no-entity">-</span>
-                {/if}
-              </td>
-              <td class="status-cell">
-                <span class="badge {getStatusClass(dip.status)}">{dip.status}</span>
-              </td>
-              <td class="owner-cell">{getUserName(dip.ownerId)}</td>
-              <td class="date-cell">{new Date(dip.createdAt).toLocaleDateString()}</td>
-              <td class="actions-cell">
-                <a href="/dip/edit/{dip.id}" class="btn-action btn-edit">Edit</a>
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
-  {/if}
-</div>
+{/if}
 
 <style>
-  .dips-page {
-    max-width: 1600px;
-    margin: 0 auto;
-    padding: 2rem;
+  .public-page { text-align: center; }
+  .hero { padding: 4rem 2rem 3rem; }
+
+  .hero-badge {
+    display: inline-block; padding: 0.4rem 1rem;
+    background: #fff7ed; color: #ea580c;
+    border-radius: 2rem; font-size: 0.8rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.25rem;
   }
 
-  .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
+  .hero h1 { font-size: 3rem; font-weight: 800; color: #0f172a; margin: 0 0 1rem; letter-spacing: -0.03em; }
+  .hero-subtitle { font-size: 1.1rem; color: #475569; max-width: 620px; margin: 0 auto 2.5rem; line-height: 1.7; }
+  .hero-actions { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+
+  .btn-cta, .btn-cta-inv {
+    display: inline-block; padding: 0.85rem 2rem;
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: white; border-radius: 0.5rem; text-decoration: none;
+    font-weight: 700; font-size: 0.95rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-cta:hover, .btn-cta-inv:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(249, 115, 22, 0.35); }
+
+  .btn-outline {
+    display: inline-block; padding: 0.85rem 2rem;
+    background: transparent; color: #1e293b; border: 2px solid #cbd5e1;
+    border-radius: 0.5rem; text-decoration: none; font-weight: 700; font-size: 0.95rem;
+    transition: border-color 0.2s;
+  }
+  .btn-outline:hover { border-color: #64748b; }
+
+  .section-title { font-size: 1.75rem; font-weight: 800; color: #0f172a; margin: 0 0 2rem; }
+  .features-section { margin-bottom: 4rem; }
+
+  .features-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem; text-align: left;
   }
 
-  .page-header h1 {
-    margin: 0;
-    color: #1e293b;
-    font-size: 2rem;
+  .feature-card {
+    background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem;
+    padding: 1.5rem; transition: border-color 0.2s;
   }
+  .feature-card:hover { border-color: #f97316; }
+  .feature-icon { font-size: 2rem; display: block; margin-bottom: 0.75rem; }
+  .feature-card h3 { margin: 0 0 0.5rem; color: #0f172a; font-size: 1.05rem; }
+  .feature-card p { margin: 0; color: #64748b; font-size: 0.875rem; line-height: 1.55; }
 
-  .btn-create {
-    padding: 0.75rem 1.5rem;
-    background: #f97316;
-    color: white;
-    border-radius: 0.5rem;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.2s;
+  .cta-section {
+    background: linear-gradient(135deg, #1e293b, #334155); color: white;
+    padding: 3.5rem 2rem; border-radius: 1rem; margin-bottom: 2rem;
   }
+  .cta-section h2 { margin: 0 0 0.5rem; font-size: 1.75rem; font-weight: 800; }
+  .cta-section p { margin: 0 0 2rem; color: #94a3b8; font-size: 1.05rem; }
+  .cta-section .btn-cta-inv { background: white; color: #1e293b; }
+  .cta-section .btn-cta-inv:hover { box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15); }
 
-  .btn-create:hover {
-    background: #ea580c;
-  }
-
-  .error {
-    background: #fee2e2;
-    color: #991b1b;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid #fca5a5;
-    margin-bottom: 1.5rem;
-  }
-
-  .loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 400px;
-    gap: 1rem;
-  }
-
-  .spinner {
-    border: 4px solid #f3f4f6;
-    border-top: 4px solid #f97316;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-
-  .empty-icon { font-size: 5rem; display: block; margin-bottom: 1rem; }
-  .empty-state h3 { margin: 0 0 0.5rem 0; color: #1e293b; }
-  .empty-state p { margin: 0 0 1.5rem 0; color: #64748b; }
-
-  .btn-primary-link {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: #f97316;
-    color: white;
-    text-decoration: none;
-    border-radius: 0.5rem;
-    font-weight: 600;
-  }
-
-  .btn-primary-link:hover { background: #ea580c; }
-
-  .dips-count {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-    padding: 1rem 1.5rem;
-    background: #fff7ed;
-    border-radius: 0.5rem;
-    border: 1px solid #fed7aa;
-  }
-
-  .count-label {
-    color: #9a3412;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.875rem;
-    letter-spacing: 0.05em;
-  }
-
-  .count-value {
-    color: #7c2d12;
-    font-weight: 700;
-    font-size: 1.25rem;
-  }
-
-  .table-container {
-    background: white;
-    border-radius: 0.75rem;
-    overflow-x: auto;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
-  }
-
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 900px;
-  }
-
-  .data-table thead {
-    background: #fff7ed;
-    border-bottom: 2px solid #fed7aa;
-  }
-
-  .data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: #9a3412;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .data-table td {
-    padding: 1rem;
-    border-bottom: 1px solid #e2e8f0;
-  }
-
-  .data-table tbody tr:last-child td { border-bottom: none; }
-  .data-table tbody tr:hover { background: #fff7ed; }
-
-  .id-cell { color: #64748b; font-family: monospace; font-size: 0.875rem; width: 60px; }
-
-  .title-cell { min-width: 250px; }
-  .title-wrapper { display: flex; flex-direction: column; gap: 0.25rem; }
-  .dip-title { font-weight: 600; color: #1e293b; }
-  .dip-description { font-size: 0.875rem; color: #64748b; }
-
-  .badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 0.375rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-
-  .standard-badge { background: #ffedd5; color: #9a3412; }
-
-  .badge.status-draft { background: #fef3c7; color: #92400e; }
-  .badge.status-prepared { background: #dbeafe; color: #1e40af; }
-  .badge.status-disseminated { background: #dcfce7; color: #166534; }
-  .badge.status-expired { background: #f1f5f9; color: #475569; }
-  .badge.status-rejected { background: #fee2e2; color: #991b1b; }
-
-  .entity-cell { min-width: 150px; }
-  .entity-info { display: flex; gap: 0.25rem; align-items: baseline; }
-  .entity-name { font-weight: 600; color: #1e293b; font-size: 0.875rem; }
-  .entity-type { color: #64748b; font-size: 0.75rem; }
-  .field-count { color: #94a3b8; font-size: 0.75rem; margin-top: 0.125rem; }
-  .no-entity { color: #cbd5e1; }
-
-  .owner-cell { color: #64748b; font-size: 0.875rem; white-space: nowrap; }
-  .date-cell { color: #64748b; font-size: 0.875rem; white-space: nowrap; }
-  .actions-cell { white-space: nowrap; }
-
-  .btn-action {
-    display: inline-block;
-    padding: 0.375rem 0.75rem;
-    border: none;
-    border-radius: 0.375rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn-edit { background: #dbeafe; color: #1e40af; }
-  .btn-edit:hover { background: #bfdbfe; }
-
-  @media (max-width: 768px) {
-    .dips-page { padding: 1rem; }
-    .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-  }
+  @media (max-width: 640px) { .hero h1 { font-size: 2.25rem; } }
 </style>

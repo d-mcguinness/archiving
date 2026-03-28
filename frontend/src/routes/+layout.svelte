@@ -1,6 +1,7 @@
 <script lang="ts">
   import '../app.css';
   import Toast from '$lib/components/Toast.svelte';
+  import RoleGate from '$lib/components/RoleGate.svelte';
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { auth } from '$lib/stores/authStore';
@@ -28,65 +29,104 @@
     <nav>
       <div class="nav-container">
         <div class="brand-section">
-          <h1><a href="/">🏛️ Archiving System</a></h1>
+          <h1><a href="/">Arcana</a></h1>
         </div>
 
-        <ul class="nav-links">
+        {#if $auth.isLoggedIn}
+          <ul class="nav-links">
 
-          {#if $auth.role === 'ADMIN'}
-            <li>
-              <a href="/tenants" class="tenants-link" class:active={isActive('/tenants')}>
-                🏢 Tenants
-              </a>
-            </li>
-          {/if}
+            <RoleGate roles={['ADMIN']}>
+              <li>
+                <a href="/admin/tenants" class="tenants-link" class:active={isActive('/admin/tenants')}>
+                  🏢 Tenants
+                </a>
+              </li>
+            </RoleGate>
 
-          {#if $auth.role === 'ADMIN' || $auth.role === 'TENANT'}
-            <li>
-              <a href="/users" class="users-link" class:active={isActive('/users')}>
-                👥 Users
-              </a>
-            </li>
-            <li>
-              <a href="/archives" class="archives-link" class:active={isActive('/archives')}>
-                📁 Archives
-              </a>
-            </li>
-            <li>
-              <a href="/sip" class="sips-link" class:active={isActive('/sip')}>
-                📦 SIPs
-              </a>
-            </li>
-            <li>
-              <a href="/aip" class="aips-link" class:active={isActive('/aip')}>
-                🏗️ AIPs
-              </a>
-            </li>
-            <li>
-              <a href="/dip" class="dips-link" class:active={isActive('/dip')}>
-                📤 DIPs
-              </a>
-            </li>
-          {/if}
+            <RoleGate roles={['ADMIN', 'TENANT']}>
+              <li>
+                <a
+                  href={$auth.role === 'TENANT' && $auth.tenantId
+                    ? `/tenants/${$auth.tenantId}/users`
+                    : '/admin/users'}
+                  class="users-link"
+                  class:active={isActive('/admin/users') || isActive(`/tenants/${$auth.tenantId}/users`)}
+                >
+                  👥 Users
+                </a>
+              </li>
+              <li>
+                <a
+                  href={$auth.role === 'TENANT' && $auth.tenantId
+                    ? `/tenants/${$auth.tenantId}/archives`
+                    : '/admin/archives'}
+                  class="archives-link"
+                  class:active={isActive('/admin/archives') || isActive(`/tenants/${$auth.tenantId}/archives`)}
+                >
+                  📁 Archives
+                </a>
+              </li>
+              <li>
+                <a
+                  href={$auth.role === 'TENANT' && $auth.tenantId
+                    ? `/tenants/${$auth.tenantId}/sips`
+                    : '/admin/sip'}
+                  class="sips-link"
+                  class:active={isActive('/admin/sip') || isActive(`/tenants/${$auth.tenantId}/sips`)}
+                >
+                  📦 SIPs
+                </a>
+              </li>
+              <li>
+                <a
+                  href={$auth.role === 'TENANT' && $auth.tenantId
+                    ? `/tenants/${$auth.tenantId}/aips`
+                    : '/admin/aip'}
+                  class="aips-link"
+                  class:active={isActive('/admin/aip') || isActive(`/tenants/${$auth.tenantId}/aips`)}
+                >
+                  🏗️ AIPs
+                </a>
+              </li>
+              <li>
+                <a
+                  href={$auth.role === 'TENANT' && $auth.tenantId
+                    ? `/tenants/${$auth.tenantId}/dips`
+                    : '/admin/dip'}
+                  class="dips-link"
+                  class:active={isActive('/admin/dip') || isActive(`/tenants/${$auth.tenantId}/dips`)}
+                >
+                  📤 DIPs
+                </a>
+              </li>
+            </RoleGate>
 
-          {#if $auth.isLoggedIn}
             <li>
-              <a href="/documents" class="documents-link" class:active={isActive('/documents')}>
+              <a
+                href={$auth.role === 'USER' && $auth.tenantId && $auth.user?.id
+                  ? `/tenants/${$auth.tenantId}/users/${$auth.user.id}/documents`
+                  : $auth.role === 'TENANT' && $auth.tenantId
+                    ? `/tenants/${$auth.tenantId}/documents`
+                    : '/admin/documents'}
+                class="documents-link"
+                class:active={isActive('/admin/documents') || isActive(`/tenants/${$auth.tenantId}/documents`) || isActive(`/tenants/${$auth.tenantId}/users/${$auth.user?.id}/documents`)}
+              >
                 📄 Documents
               </a>
             </li>
-          {/if}
 
-        </ul>
+          </ul>
+        {/if}
+
         <div class="auth-section">
-          {#if $auth.isLoggedIn && $auth.user}
-            <span class="user-name-display">👤 {$auth.user.name}</span>
+          {#if $auth.isLoggedIn}
+            <span class="user-name-display">👤 {$auth.user?.name}</span>
             <button class="logout-button" on:click={auth.logout}>
-              🚪 Logout
+              Logout
             </button>
           {:else}
             <a href="/login" class="login-button">
-              🔐 Login
+              Sign In
             </a>
           {/if}
         </div>
@@ -99,7 +139,7 @@
   </main>
 
   <footer>
-    <p>&copy; 2025 Archiving System</p>
+    <p>&copy; 2026 Arcana</p>
   </footer>
 </div>
 

@@ -660,13 +660,31 @@ export const GET_SIP: DocumentNode = gql`
             entityName
             entityType
             title
+            description
             status
+            createdAt
+            createdBy
             fields {
               id
               name
               label
               type
               value
+            }
+            children {
+              id
+              elementIdentifier
+              entityName
+              entityType
+              title
+              status
+              fields {
+                id
+                name
+                label
+                type
+                value
+              }
             }
           }
         }

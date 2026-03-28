@@ -1,743 +1,582 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { get } from 'svelte/store';
-  import { client } from '$lib/apollo';
-  import { GET_DASHBOARD_STATS, GET_TENANT_DASHBOARD_STATS, GET_ALL_USERS } from '$lib/graphql/queries';
-  import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import RoleGate from '$lib/components/RoleGate.svelte';
 
-  let stats = {
-    users: 0,
-    tenants: 0,
-    archives: 0,
-    activeArchives: 0,
-    draftArchives: 0,
-    archivedArchives: 0
-  };
-  let tenantInfo = {
-    tenantId: null as number | null,
-    tenantName: '',
-    tenantStatus: '',
-    tenantPlan: ''
-  };
-  let loading = true;
-  let error: string | null = null;
+  $: currentRole = $auth.role;
+  $: currentUser = $auth.user;
 
-  // Get current user role from auth store
-  let currentRole = '';
-  let currentUser: any = null;
-  let currentTenantId: number | null = null;
-
-  // Users list for USER role
-  let allUsers: any[] = [];
-  let loadingUsers = false;
-
-
-  // User documents state for USER role
-  let userDocuments: any[] = [];
-  let loadingDocuments = false;
-
-  onMount(() => {
-    const { role, user, tenantId } = get(auth);
-    currentRole = role;
-    currentUser = user;
-    currentTenantId = tenantId;
-
-    // Load stats based on role
-    if (currentRole === 'ADMIN') {
-      loadAdminDashboardStats();
-    } else if (currentRole === 'TENANT' && currentTenantId) {
-      loadTenantDashboardStats(currentTenantId);
-    } else if (currentRole === 'USER') {
-      // Load user's documents for USER role
-      loadUserDocuments();
-    } else {
-      loading = false;
-    }
-  });
-
-  async function loadAdminDashboardStats() {
-    try {
-      loading = true;
-      // Fetch combined dashboard stats for ADMIN
-      const result = await client.query({
-        query: GET_DASHBOARD_STATS,
-        fetchPolicy: 'network-only'
-      });
-
-      const data = result?.data?.getDashboardStats;
-      if (data) {
-        stats = {
-          users: data.totalUsers || 0,
-          tenants: data.totalTenants || 0,
-          archives: data.totalArchives || 0,
-          activeArchives: data.activeArchives || 0,
-          draftArchives: data.draftArchives || 0,
-          archivedArchives: data.archivedArchives || 0
-        };
-      }
-    } catch (e) {
-      error = e instanceof Error ? e.message : 'An unknown error occurred';
-      console.error('Admin dashboard error:', e);
-    } finally {
-      loading = false;
-    }
-  }
-
-  async function loadTenantDashboardStats(tenantId: number) {
-    try {
-      loading = true;
-      // Fetch tenant-specific dashboard stats
-      const result = await client.query({
-        query: GET_TENANT_DASHBOARD_STATS,
-        variables: { tenantId: tenantId.toString() },
-        fetchPolicy: 'network-only'
-      });
-
-      const data = result?.data?.getTenantDashboardStats;
-      if (data) {
-        // Store tenant info
-        tenantInfo = {
-          tenantId: data.tenantId ? parseInt(data.tenantId, 10) : null,
-          tenantName: data.tenantName || '',
-          tenantStatus: data.tenantStatus || '',
-          tenantPlan: data.tenantPlan || ''
-        };
-
-        // Store stats (no tenants count for TENANT role)
-        stats = {
-          users: data.totalUsers || 0,
-          tenants: 0, // Not relevant for tenant role
-          archives: data.totalArchives || 0,
-          activeArchives: data.activeArchives || 0,
-          draftArchives: data.draftArchives || 0,
-          archivedArchives: data.archivedArchives || 0
-        };
-      }
-    } catch (e) {
-      error = e instanceof Error ? e.message : 'An unknown error occurred';
-      console.error('Tenant dashboard error:', e);
-    } finally {
-      loading = false;
-    }
-  }
-
-  async function loadUserDocuments() {
-    if (!currentUser?.id) return;
-
-    loadingDocuments = true;
-    try {
-      const params = new URLSearchParams();
-      params.append('role', 'USER');
-      params.append('userId', currentUser.id.toString());
-
-      const response = await fetch(`http://localhost:2020/api/documents?${params.toString()}`);
-
-      if (!response.ok) {
-        throw new Error('Failed to load documents');
-      }
-
-      const data = await response.json();
-      if (data.success) {
-        userDocuments = data.documents || [];
-      }
-    } catch (e) {
-      console.error('Error loading documents:', e);
-      toasts.error('Failed to load your documents');
-    } finally {
-      loadingDocuments = false;
-      loading = false;
-    }
-  }
-
-
-  function formatFileSize(bytes: number): string {
-    if (!bytes) return 'Unknown';
-    const mb = bytes / (1024 * 1024);
-    if (mb > 1) {
-      return `${mb.toFixed(2)} MB`;
-    }
-    const kb = bytes / 1024;
-    return `${kb.toFixed(2)} KB`;
-  }
-
-  function formatDate(dateString: string): string {
-    if (!dateString) return 'Unknown';
-    return new Date(dateString).toLocaleString();
-  }
+  const standards = ['NOARK5', 'OAIS', 'PREMIS', 'Dublin Core', 'METS', 'EAD', 'BagIt', 'ISAD(G)', 'MODS', 'E-ARK'];
 </script>
 
 <svelte:head>
-  <title>Dashboard - Archiving System</title>
+  <title>Arcana - Digital Preservation Platform</title>
 </svelte:head>
 
-<div class="dashboard">
-  <h1>Dashboard</h1>
-
-  {#if currentRole === 'USER'}
-    <!-- USER ROLE - My Documents (View Only) -->
-    <div class="user-dashboard">
-      <div class="welcome-message">
-        <h2>👤 Welcome, {currentUser?.name || 'User'}!</h2>
-        <p>View your submitted documents</p>
+{#if !currentRole}
+  <!-- ═══════════════════════════════════════ -->
+  <!--  PUBLIC LANDING PAGE                    -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="landing">
+    <section class="hero">
+      <div class="hero-badge">Open-Standard Archiving</div>
+      <h1>Digital Preservation,<br/><span class="gradient-text">Simplified.</span></h1>
+      <p class="hero-subtitle">
+        Enterprise-grade archival management built on international standards.
+        Ingest, preserve, and deliver your digital assets with confidence.
+      </p>
+      <div class="hero-actions">
+        <a href="/login" class="btn-cta">Get Started</a>
+        <a href="#how-it-works" class="btn-outline">How It Works</a>
       </div>
+    </section>
 
-      {#if loading || loadingDocuments}
-        <div class="loading">
-          <div class="spinner"></div>
-          <p>Loading your documents...</p>
-        </div>
-      {:else}
-        <!-- My Documents List -->
-        <div class="my-documents-section">
-          <div class="section-header">
-            <h2>📄 My Documents</h2>
-            <span class="document-count">{userDocuments.length} document{userDocuments.length !== 1 ? 's' : ''}</span>
-          </div>
+    <section class="stats-banner">
+      <div class="stat-item">
+        <span class="stat-num">10</span>
+        <span class="stat-label">Archival Standards</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num">3</span>
+        <span class="stat-label">OAIS Workflows</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num">100%</span>
+        <span class="stat-label">Compliance Ready</span>
+      </div>
+    </section>
 
-          {#if userDocuments.length === 0}
-            <div class="empty-state">
-              <span class="empty-icon">📭</span>
-              <h3>No documents yet</h3>
-              <p>You haven't uploaded any documents</p>
-            </div>
+    <section id="how-it-works" class="workflow-section">
+      <h2 class="section-title">The OAIS Workflow</h2>
+      <p class="section-desc">From submission to access, every step follows the Open Archival Information System reference model.</p>
+      <div class="workflow-grid">
+        <a href="/ingest" class="workflow-card ingest">
+          <div class="workflow-step">1</div>
+          <div class="workflow-icon">INGEST</div>
+          <h3>Submission Packages</h3>
+          <p>Create and validate SIPs across 10 archival standards including NOARK5, OAIS, E-ARK, and more.</p>
+          <span class="workflow-arrow">Explore &rarr;</span>
+        </a>
+        <a href="/preserve" class="workflow-card preserve">
+          <div class="workflow-step">2</div>
+          <div class="workflow-icon">PRESERVE</div>
+          <h3>Long-Term Storage</h3>
+          <p>Generate AIPs with full provenance tracking, integrity verification, and format migration support.</p>
+          <span class="workflow-arrow">Explore &rarr;</span>
+        </a>
+        <a href="/deliver" class="workflow-card deliver">
+          <div class="workflow-step">3</div>
+          <div class="workflow-icon">DELIVER</div>
+          <h3>Access Packages</h3>
+          <p>Produce DIPs tailored to your users with standard-compliant metadata and granular access controls.</p>
+          <span class="workflow-arrow">Explore &rarr;</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="standards-section">
+      <h2 class="section-title">Built on Standards You Trust</h2>
+      <p class="section-desc">Full compliance with international archival and preservation standards.</p>
+      <div class="standards-grid">
+        {#each standards as std}
+          <div class="standard-chip">{std}</div>
+        {/each}
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <h2>Ready to modernize your digital archive?</h2>
+      <p>Start managing your preservation workflows in minutes.</p>
+      <a href="/login" class="btn-cta">Sign In to Arcana</a>
+    </section>
+  </div>
+
+{:else}
+  <!-- ═══════════════════════════════════════ -->
+  <!--  LOGGED-IN HOME                         -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="home">
+    <div class="welcome-banner">
+      <div class="welcome-text">
+        <h1>Welcome back, {currentUser?.name || 'User'}</h1>
+        <p>
+          {#if currentRole === 'ADMIN'}
+            System Administrator
+          {:else if currentRole === 'TENANT'}
+            Tenant Manager
           {:else}
-            <div class="documents-grid">
-              {#each userDocuments as document}
-                <div class="document-card">
-                  <div class="document-icon">
-                    {#if document.contentType?.includes('pdf')}
-                      📄
-                    {:else if document.contentType?.includes('image')}
-                      🖼️
-                    {:else if document.contentType?.includes('video')}
-                      🎥
-                    {:else if document.contentType?.includes('word') || document.contentType?.includes('document')}
-                      📝
-                    {:else if document.contentType?.includes('spreadsheet') || document.contentType?.includes('excel')}
-                      📊
-                    {:else}
-                      📎
-                    {/if}
-                  </div>
-                  <div class="document-info">
-                    <h3 class="document-title">{document.title}</h3>
-                    {#if document.description}
-                      <p class="document-description">{document.description}</p>
-                    {/if}
-                    <div class="document-meta">
-                      <p><strong>File:</strong> {document.fileName}</p>
-                      <p><strong>Size:</strong> {formatFileSize(document.fileSize)}</p>
-                      <p><strong>Type:</strong> {document.contentType || 'Unknown'}</p>
-                      <p><strong>Uploaded:</strong> {formatDate(document.uploadedAt)}</p>
-                      <p><strong>Status:</strong> <span class="status status-{document.status.toLowerCase()}">{document.status}</span></p>
-                    </div>
-                  </div>
-                </div>
-              {/each}
-            </div>
+            Contributor
           {/if}
-        </div>
-      {/if}
-    </div>
-  {:else if currentRole === 'ADMIN' || currentRole === 'TENANT'}
-    <!-- ADMIN & TENANT ROLES - Full Dashboard -->
-    {#if currentRole === 'TENANT' && tenantInfo.tenantName}
-      <div class="tenant-info-banner">
-        <div class="tenant-banner-content">
-          <h2>🏢 {tenantInfo.tenantName}</h2>
-          <div class="tenant-badges">
-            <span class="badge-status badge-{tenantInfo.tenantStatus.toLowerCase()}">{tenantInfo.tenantStatus}</span>
-            <span class="badge-plan badge-{tenantInfo.tenantPlan.toLowerCase()}">{tenantInfo.tenantPlan}</span>
-          </div>
-        </div>
-      </div>
-    {/if}
-
-    {#if loading}
-      <div class="loading">
-        <div class="spinner"></div>
-      </div>
-    {:else if error}
-      <div class="error">
-        Error loading dashboard: {error}
-      </div>
-    {:else}
-      <div class="stats-grid">
-        <!-- Show Users stat for ADMIN and TENANT -->
-        {#if currentRole === 'ADMIN' || currentRole === 'TENANT'}
-          <div class="stat-card">
-            <h3>Users</h3>
-            <div class="stat-number">{stats.users}</div>
-            <a href="/users" class="stat-link">Manage Users</a>
-          </div>
-        {/if}
-
-        <!-- Show Tenants stat for ADMIN only -->
-        {#if currentRole === 'ADMIN'}
-          <div class="stat-card">
-            <h3>Tenants</h3>
-            <div class="stat-number">{stats.tenants}</div>
-            <a href="/tenants" class="stat-link">Manage Tenants</a>
-          </div>
-        {/if}
-
-        <!-- Show Archives for ADMIN and TENANT -->
-        {#if currentRole === 'ADMIN' || currentRole === 'TENANT'}
-          <div class="stat-card">
-            <h3>Archives</h3>
-            <div class="stat-number">{stats.archives}</div>
-            <a href="/archives" class="stat-link">Manage Archives</a>
-          </div>
-        {/if}
-      </div>
-
-      <div class="archive-breakdown">
-        <h2>Archive Status Breakdown</h2>
-        <div class="breakdown-grid">
-          <div class="breakdown-card active">
-            <div class="breakdown-icon">✅</div>
-            <div class="breakdown-content">
-              <div class="breakdown-label">Active</div>
-              <div class="breakdown-number">{stats.activeArchives}</div>
-            </div>
-          </div>
-
-          <div class="breakdown-card draft">
-            <div class="breakdown-icon">📝</div>
-            <div class="breakdown-content">
-              <div class="breakdown-label">Draft</div>
-              <div class="breakdown-number">{stats.draftArchives}</div>
-            </div>
-          </div>
-
-          <div class="breakdown-card archived">
-            <div class="breakdown-icon">📦</div>
-            <div class="breakdown-content">
-              <div class="breakdown-label">Archived</div>
-              <div class="breakdown-number">{stats.archivedArchives}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-    <div class="quick-actions">
-      <h2>Quick Actions</h2>
-      <div class="action-grid">
-        <a href="/users/create" class="action-card">
-          <h4>Create User</h4>
-          <p>Add a new user to the system</p>
-        </a>
-
-        <a href="/tenants/create" class="action-card">
-          <h4>Create Tenant</h4>
-          <p>Set up a new tenant organization</p>
-        </a>
-
-        <a href="/archives/create" class="action-card">
-          <h4>Create Archive</h4>
-          <p>Start a new archive document</p>
-        </a>
+        </p>
       </div>
     </div>
-    {/if}
-  {:else}
-    <!-- Not logged in or role not set -->
-    <div class="welcome-guest">
-      <h2>Welcome to Archiving System</h2>
-      <p>Please <a href="/login">login</a> to access the dashboard.</p>
+
+    <h2 class="nav-heading">Where would you like to go?</h2>
+
+    <div class="nav-grid">
+      <RoleGate roles={['ADMIN']}>
+        <a href="/tenants" class="nav-card tenants">
+          <span class="nav-icon">🏢</span>
+          <h3>Tenants</h3>
+          <p>Manage tenant organizations, plans, and access</p>
+        </a>
+      </RoleGate>
+
+      <RoleGate roles={['ADMIN', 'TENANT']}>
+        <a href="/users" class="nav-card users">
+          <span class="nav-icon">👥</span>
+          <h3>Users</h3>
+          <p>Manage user accounts and role assignments</p>
+        </a>
+        <a href="/archives" class="nav-card archives">
+          <span class="nav-icon">📁</span>
+          <h3>Archives</h3>
+          <p>Create and manage archival collections</p>
+        </a>
+        <a href="/sip" class="nav-card sips">
+          <span class="nav-icon">📦</span>
+          <h3>SIPs</h3>
+          <p>Build Submission Information Packages</p>
+        </a>
+        <a href="/aip" class="nav-card aips">
+          <span class="nav-icon">🏗️</span>
+          <h3>AIPs</h3>
+          <p>Manage Archival Information Packages</p>
+        </a>
+        <a href="/dip" class="nav-card dips">
+          <span class="nav-icon">📤</span>
+          <h3>DIPs</h3>
+          <p>Create Dissemination Information Packages</p>
+        </a>
+      </RoleGate>
+
+      <a href="/documents" class="nav-card documents">
+        <span class="nav-icon">📄</span>
+        <h3>Documents</h3>
+        <p>Upload, browse, and download files</p>
+      </a>
+
+      <RoleGate roles={['ADMIN', 'TENANT']}>
+        <a href="/ingest" class="nav-card ingest-nav">
+          <span class="nav-icon">INGEST</span>
+          <h3>Ingest Standards</h3>
+          <p>Explore supported ingest standards</p>
+        </a>
+        <a href="/preserve" class="nav-card preserve-nav">
+          <span class="nav-icon">PRESERVE</span>
+          <h3>Preservation Standards</h3>
+          <p>Explore supported preservation standards</p>
+        </a>
+        <a href="/deliver" class="nav-card deliver-nav">
+          <span class="nav-icon">DELIVER</span>
+          <h3>Delivery Standards</h3>
+          <p>Explore supported delivery standards</p>
+        </a>
+      </RoleGate>
     </div>
-  {/if}
-</div>
+  </div>
+{/if}
 
 <style>
-  .dashboard {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  h1 {
-    margin-bottom: 2rem;
-    color: #1e293b;
-  }
-
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 3rem;
-  }
-
-  .stat-card {
-    background: white;
-    padding: 2rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  /* ══════════════════════════════════════════
+     LANDING PAGE
+     ══════════════════════════════════════════ */
+  .landing {
     text-align: center;
-    border: 1px solid #e2e8f0;
   }
 
-  .stat-card h3 {
-    margin: 0 0 1rem 0;
-    color: #64748b;
-    font-size: 1rem;
-    font-weight: 500;
+  .hero {
+    padding: 5rem 2rem 3rem;
   }
 
-  .stat-number {
-    font-size: 3rem;
-    font-weight: bold;
-    color: #1e293b;
-    margin-bottom: 1rem;
+  .hero-badge {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    background: #eff6ff;
+    color: #2563eb;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
   }
 
-  .stat-link {
-    color: #3b82f6;
-    text-decoration: none;
-    font-weight: 500;
+  .hero h1 {
+    font-size: 3.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 1.25rem;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
   }
 
-  .stat-link:hover {
-    text-decoration: underline;
+  .gradient-text {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  /* Tenant Info Banner */
-  .tenant-info-banner {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 2rem;
-    border-radius: 0.75rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  .hero-subtitle {
+    font-size: 1.15rem;
+    color: #475569;
+    max-width: 560px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
   }
 
-  .tenant-banner-content h2 {
-    margin: 0 0 1rem 0;
-    font-size: 1.75rem;
-  }
-
-  .tenant-badges {
+  .hero-actions {
     display: flex;
-    gap: 0.75rem;
+    justify-content: center;
+    gap: 1rem;
     flex-wrap: wrap;
   }
 
-  .badge-status,
-  .badge-plan {
-    padding: 0.375rem 0.875rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
-  }
-
-  .badge-status {
-    background: rgba(255, 255, 255, 0.25);
+  .btn-cta {
+    display: inline-block;
+    padding: 0.9rem 2.25rem;
+    background: linear-gradient(135deg, #3b82f6, #7c3aed);
     color: white;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
   }
 
-  .badge-status.badge-active {
-    background: #10b981;
+  .btn-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
   }
 
-  .badge-status.badge-inactive {
-    background: #6b7280;
-  }
-
-  .badge-status.badge-suspended {
-    background: #ef4444;
-  }
-
-  .badge-status.badge-trial {
-    background: #3b82f6;
-  }
-
-  .badge-plan {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-  }
-
-  .badge-plan.badge-enterprise {
-    background: #8b5cf6;
-  }
-
-  .badge-plan.badge-professional {
-    background: #6366f1;
-  }
-
-  .badge-plan.badge-basic {
-    background: #3b82f6;
-  }
-
-  .badge-plan.badge-free {
-    background: #9ca3af;
-  }
-
-  .archive-breakdown {
-    margin-bottom: 3rem;
-  }
-
-  .archive-breakdown h2 {
-    margin-bottom: 1.5rem;
+  .btn-outline {
+    display: inline-block;
+    padding: 0.9rem 2.25rem;
+    background: transparent;
     color: #1e293b;
+    border: 2px solid #cbd5e1;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: border-color 0.2s;
   }
 
-  .breakdown-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
+  .btn-outline:hover {
+    border-color: #64748b;
   }
 
-  .breakdown-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
+  /* Stats banner */
+  .stats-banner {
     display: flex;
+    justify-content: center;
     align-items: center;
-    gap: 1rem;
+    gap: 2.5rem;
+    padding: 2rem;
+    margin: 0 auto 3rem;
+    max-width: 600px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
   }
 
-  .breakdown-card.active {
-    border-left: 4px solid #10b981;
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  .breakdown-card.draft {
-    border-left: 4px solid #f59e0b;
+  .stat-num {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #0f172a;
   }
 
-  .breakdown-card.archived {
-    border-left: 4px solid #64748b;
+  .stat-label {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 500;
+    margin-top: 0.15rem;
   }
 
-  .breakdown-icon {
-    margin-bottom: 1.5rem;
-    color: #1e293b;
+  .stat-divider {
+    width: 1px;
+    height: 2.5rem;
+    background: #e2e8f0;
   }
 
-  .action-grid {
+  /* Workflow section */
+  .workflow-section {
+    margin-bottom: 4rem;
+  }
+
+  .section-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 0.5rem;
+  }
+
+  .section-desc {
+    color: #64748b;
+    font-size: 1rem;
+    margin: 0 auto 2rem;
+    max-width: 520px;
+  }
+
+  .workflow-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.5rem;
+    text-align: left;
   }
 
-  .action-card {
+  .workflow-card {
+    position: relative;
     background: white;
-    padding: 1.5rem;
-    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 2rem 1.75rem 1.75rem;
     text-decoration: none;
     color: inherit;
-    border: 1px solid #e2e8f0;
-    transition: all 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    overflow: hidden;
   }
 
-  .action-card:hover {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-color: #3b82f6;
+  .workflow-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
   }
 
-  .action-card h4 {
-    margin: 0 0 0.5rem 0;
-    color: #1e293b;
+  .workflow-card.ingest { border-top: 3px solid #3b82f6; }
+  .workflow-card.ingest:hover { border-color: #3b82f6; }
+  .workflow-card.preserve { border-top: 3px solid #10b981; }
+  .workflow-card.preserve:hover { border-color: #10b981; }
+  .workflow-card.deliver { border-top: 3px solid #8b5cf6; }
+  .workflow-card.deliver:hover { border-color: #8b5cf6; }
+
+  .workflow-step {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.8rem;
   }
 
-  .action-card p {
-    margin: 0;
+  .workflow-icon {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
     color: #64748b;
-    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
   }
 
-  /* USER Role Specific Styles */
-  .user-dashboard {
-    max-width: 800px;
+  .workflow-card h3 {
+    margin: 0 0 0.5rem;
+    color: #0f172a;
+    font-size: 1.15rem;
+  }
+
+  .workflow-card p {
+    margin: 0 0 1rem;
+    color: #64748b;
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+
+  .workflow-arrow {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #3b82f6;
+  }
+
+  /* Standards */
+  .standards-section {
+    margin-bottom: 4rem;
+  }
+
+  .standards-grid {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    max-width: 600px;
     margin: 0 auto;
   }
 
-  .welcome-message {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 2rem;
-    border-radius: 0.75rem;
-    margin-bottom: 2rem;
-    text-align: center;
-  }
-
-  .welcome-message h2 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.75rem;
-  }
-
-  .welcome-message p {
-    margin: 0;
-    opacity: 0.9;
-    font-size: 1.125rem;
-  }
-
-
-  .welcome-guest {
-    text-align: center;
-    padding: 4rem 2rem;
+  .standard-chip {
+    padding: 0.45rem 1rem;
     background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-
-  .welcome-guest h2 {
-    margin: 0 0 1rem 0;
-    color: #1e293b;
-  }
-
-  .welcome-guest p {
-    margin: 0;
-    color: #64748b;
-  }
-
-  .welcome-guest a {
-    color: #3b82f6;
+    border: 1px solid #e2e8f0;
+    border-radius: 2rem;
+    font-size: 0.825rem;
     font-weight: 600;
-    text-decoration: none;
+    color: #334155;
+    transition: border-color 0.2s, background 0.2s;
   }
 
-  .welcome-guest a:hover {
-    text-decoration: underline;
-  }
-
-  /* User Documents Section */
-  .my-documents-section {
-    margin-top: 3rem;
-  }
-
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-  }
-
-  .section-header h2 {
-    margin: 0;
-    color: #1e293b;
-  }
-
-  .document-count {
+  .standard-chip:hover {
+    border-color: #3b82f6;
     background: #eff6ff;
     color: #1e40af;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    font-size: 0.875rem;
   }
 
-  .empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
+  /* CTA */
+  .cta-section {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    color: white;
+    padding: 3.5rem 2rem;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .cta-section h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.75rem;
+    font-weight: 800;
+  }
+
+  .cta-section p {
+    margin: 0 0 2rem;
+    color: #94a3b8;
+    font-size: 1.05rem;
+  }
+
+  .cta-section .btn-cta {
     background: white;
-    border-radius: 0.75rem;
-    border: 2px dashed #cbd5e1;
-  }
-
-  .empty-icon {
-    font-size: 4rem;
-    display: block;
-    margin-bottom: 1rem;
-  }
-
-  .empty-state h3 {
-    margin: 0 0 0.5rem 0;
     color: #1e293b;
   }
 
-  .empty-state p {
+  .cta-section .btn-cta:hover {
+    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15);
+  }
+
+  /* ══════════════════════════════════════════
+     LOGGED-IN HOME
+     ══════════════════════════════════════════ */
+  .home {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .welcome-banner {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    color: white;
+    padding: 2.5rem;
+    border-radius: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .welcome-text h1 {
+    margin: 0 0 0.35rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+  }
+
+  .welcome-text p {
     margin: 0;
+    color: #94a3b8;
+    font-size: 1rem;
+  }
+
+  .nav-heading {
+    font-size: 1.1rem;
+    font-weight: 600;
     color: #64748b;
+    margin: 0 0 1.25rem;
   }
 
-  .documents-grid {
+  .nav-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
   }
 
-  .document-card {
+  .nav-card {
+    display: flex;
+    flex-direction: column;
     background: white;
     border: 1px solid #e2e8f0;
     border-radius: 0.75rem;
     padding: 1.5rem;
-    transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
   }
 
-  .document-card:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+  .nav-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   }
 
-  .document-icon {
-    font-size: 3rem;
-    text-align: center;
-    margin-bottom: 1rem;
+  .nav-icon {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    line-height: 1;
   }
 
-  .document-info {
-    margin-bottom: 1rem;
-  }
-
-  .document-title {
-    margin: 0 0 0.5rem 0;
-    color: #1e293b;
-    font-size: 1.125rem;
-    font-weight: 600;
-  }
-
-  .document-description {
+  /* Text-style icons for standards cards */
+  .nav-card.ingest-nav .nav-icon,
+  .nav-card.preserve-nav .nav-icon,
+  .nav-card.deliver-nav .nav-icon {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
     color: #64748b;
-    margin: 0 0 1rem 0;
-    font-size: 0.875rem;
-    line-height: 1.5;
+    margin-bottom: 0.75rem;
   }
 
-  .document-meta {
-    font-size: 0.875rem;
+  .nav-card h3 {
+    margin: 0 0 0.35rem;
+    font-size: 1.05rem;
+    color: #0f172a;
+  }
+
+  .nav-card p {
+    margin: 0;
+    font-size: 0.85rem;
     color: #64748b;
+    line-height: 1.45;
   }
 
-  .document-meta p {
-    margin: 0.25rem 0;
-  }
+  /* Card accent colors */
+  .nav-card.tenants:hover    { border-color: #10b981; }
+  .nav-card.users:hover      { border-color: #f59e0b; }
+  .nav-card.archives:hover   { border-color: #06b6d4; }
+  .nav-card.sips:hover       { border-color: #ec4899; }
+  .nav-card.aips:hover       { border-color: #6366f1; }
+  .nav-card.dips:hover       { border-color: #f97316; }
+  .nav-card.documents:hover  { border-color: #8b5cf6; }
+  .nav-card.ingest-nav:hover   { border-color: #3b82f6; }
+  .nav-card.preserve-nav:hover { border-color: #10b981; }
+  .nav-card.deliver-nav:hover  { border-color: #8b5cf6; }
 
-  .status {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
+  /* ══════════════════════════════════════════
+     RESPONSIVE
+     ══════════════════════════════════════════ */
+  @media (max-width: 640px) {
+    .hero h1 {
+      font-size: 2.25rem;
+    }
 
-  .status-active {
-    background-color: #dcfce7;
-    color: #166534;
-  }
+    .stats-banner {
+      flex-direction: column;
+      gap: 1rem;
+    }
 
-  .status-archived {
-    background-color: #f3f4f6;
-    color: #4b5563;
-  }
-
-  .status-pending_review {
-    background-color: #fef3c7;
-    color: #92400e;
-  }
-
-  .status-approved {
-    background-color: #dbeafe;
-    color: #1e40af;
-  }
-
-  .status-rejected {
-    background-color: #fee2e2;
-    color: #991b1b;
+    .stat-divider {
+      width: 3rem;
+      height: 1px;
+    }
   }
 </style>

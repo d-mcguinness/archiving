@@ -237,6 +237,11 @@ INSERT INTO documents (id, title, description, file_name, file_key, file_url, fi
 SELECT 20, 'Q2 Strategy Deck', 'Strategic planning presentation for Q2 2026', 'q2-strategy-deck.pptx', 'tenants/3/users/4/q2-strategy-deck.pptx', 'https://s3.amazonaws.com/archiving-uploads/sample.pptx', 7340032, 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 4, 3, NULL, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1 FROM documents WHERE id = 20);
 
+-- Associate some documents with SIPs
+UPDATE documents SET sip_id = 1 WHERE id = 2 AND sip_id IS NULL;  -- Annual Report Draft -> NOARK5 Personnel Records SIP
+UPDATE documents SET sip_id = 3 WHERE id = 4 AND sip_id IS NULL;  -- Project Presentation -> PREMIS Software Artifacts SIP
+UPDATE documents SET sip_id = 7 WHERE id = 5 AND sip_id IS NULL;  -- Meeting Notes -> BagIt Source Code Package SIP
+
 -- Reset documents sequence
 SELECT setval('documents_id_seq', (SELECT COALESCE(MAX(id), 1) FROM documents), true);
 

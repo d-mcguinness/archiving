@@ -143,6 +143,37 @@ public class DocumentService {
     }
 
     /**
+     * Get documents by SIP
+     */
+    public List<Document> getDocumentsBySip(Long sipId) {
+        return documentRepository.findBySipId(sipId);
+    }
+
+    /**
+     * Associate document with SIP
+     */
+    @Transactional
+    public Document associateWithSip(Long documentId, Long sipId) {
+        Document document = documentRepository.findById(documentId)
+            .orElseThrow(() -> new IllegalArgumentException("Document not found with ID: " + documentId));
+
+        document.setSipId(sipId);
+        return documentRepository.save(document);
+    }
+
+    /**
+     * Disassociate document from SIP
+     */
+    @Transactional
+    public Document disassociateFromSip(Long documentId) {
+        Document document = documentRepository.findById(documentId)
+            .orElseThrow(() -> new IllegalArgumentException("Document not found with ID: " + documentId));
+
+        document.setSipId(null);
+        return documentRepository.save(document);
+    }
+
+    /**
      * Associate document with archive
      */
     @Transactional

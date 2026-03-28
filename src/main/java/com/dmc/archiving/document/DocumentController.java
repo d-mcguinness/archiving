@@ -3,6 +3,7 @@ package com.dmc.archiving.document;
 import com.dmc.archiving.document.model.Document;
 import com.dmc.archiving.document.model.DocumentStatus;
 import com.dmc.archiving.storage.CloudStorageService;
+import com.dmc.archiving.storage.StorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
@@ -85,13 +86,17 @@ public class DocumentController {
     public ResponseEntity<?> getDocuments(
             @RequestParam(value = "role", required = false) String role,
             @RequestParam(value = "userId", required = false) Long userId,
-            @RequestParam(value = "tenantId", required = false) Long tenantId) {
+            @RequestParam(value = "tenantId", required = false) Long tenantId,
+            @RequestParam(value = "sipId", required = false) Long sipId) {
 
         try {
             List<Document> documents;
 
-            // Role-based filtering
-            if ("ADMIN".equals(role)) {
+            // SIP-specific filtering
+            if (sipId != null) {
+                documents = documentService.getDocumentsBySip(sipId);
+                log.info("Fetching documents for SIP {}", sipId);
+            } else if ("ADMIN".equals(role)) {
                 // Admin sees all documents
                 documents = documentService.getAllDocuments();
                 log.info("Fetching all documents for ADMIN");
@@ -281,6 +286,10 @@ public class DocumentController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("success", false, "error", e.getMessage()));
+        } catch (StorageException e) {
+            log.warn("File not found in storage for document {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("success", false, "error", "File not found in storage. It may have been deleted or the storage was reset."));
         } catch (Exception e) {
             log.error("Error downloading document {}: {}", id, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -318,6 +327,61 @@ public class DocumentController {
     }
 
     /**
+     * Associate document with SIP
+     */
+    @PostMapping("/{id}/associate-sip")
+    public ResponseEntity<?> associateWithSip(
+            @PathVariable Long id,
+            @RequestParam Long sipId) {
+
+        try {
+            Document document = documentService.associateWithSip(id, sipId);
+
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Document associated with SIP successfully",
+                "document", convertToMap(document)
+            ));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(Map.of("success", false, "error", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Error associating document {} with SIP: {}", id, e.getMessage(), e);
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("success", false, "error", "Failed to associate document with SIP"));
+        }
+    }
+
+    /**
+     * Disassociate document from SIP
+     */
+    @PostMapping("/{id}/disassociate-sip")
+    public ResponseEntity<?> disassociateFromSip(@PathVariable Long id) {
+        try {
+            Document document = documentService.disassociateFromSip(id);
+
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Document disassociated from SIP successfully",
+                "document", convertToMap(document)
+            ));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(Map.of("success", false, "error", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Error disassociating document {} from SIP: {}", id, e.getMessage(), e);
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("success", false, "error", "Failed to disassociate document from SIP"));
+        }
+    }
+
+    /**
      * Convert Document entity to Map for JSON response
      */
     private Map<String, Object> convertToMap(Document document) {
@@ -331,6 +395,7 @@ public class DocumentController {
         map.put("userId", document.getUserId());
         map.put("tenantId", document.getTenantId());
         map.put("archiveId", document.getArchiveId());
+        map.put("sipId", document.getSipId());
         map.put("status", document.getStatus().name());
         map.put("createdAt", document.getCreatedAt().toString());
         map.put("updatedAt", document.getUpdatedAt() != null ? document.getUpdatedAt().toString() : null);

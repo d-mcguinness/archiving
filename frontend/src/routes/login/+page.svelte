@@ -3,10 +3,18 @@
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
 
+  const devmode = import.meta.env.VITE_DEVMODE === 'true';
+
   let username = '';
   let password = '';
   let loading = false;
   let error = '';
+
+  async function quickLogin(user: string, pass: string) {
+    username = user;
+    password = pass;
+    await handleLogin();
+  }
 
   async function handleLogin() {
     if (!username || !password) {
@@ -57,20 +65,18 @@
 
         // Redirect based on role
         if (result.role === 'ADMIN') {
-          goto('/');
+          goto('/admin');
         } else if (result.role === 'TENANT') {
-          // Redirect TENANT to their tenant detail page
           if (result.tenantId) {
             goto(`/tenants/${result.tenantId}`);
           } else {
-            goto('/tenants');
+            goto('/');
           }
         } else if (result.role === 'USER') {
-          // Redirect USER to their tenant's users page
-          if (result.tenantId) {
-            goto(`/tenants/${result.tenantId}/users`);
+          if (result.tenantId && result.user?.id) {
+            goto(`/tenants/${result.tenantId}/users/${result.user.id}`);
           } else {
-            goto('/users');
+            goto('/');
           }
         } else {
           goto('/');
@@ -101,20 +107,7 @@
     }
   }
 
-  function fillAdminCredentials() {
-    username = 'admin';
-    password = 'admin123';
-  }
 
-  function fillTenantCredentials() {
-    username = 'tenant';
-    password = 'tenant123';
-  }
-
-  function fillUserCredentials() {
-    username = 'user';
-    password = 'user123';
-  }
 </script>
 
 <svelte:head>
@@ -172,29 +165,23 @@
       </button>
     </form>
 
-    <div class="demo-credentials">
-      <p class="demo-title">Demo Credentials:</p>
-      <div class="demo-grid">
-        <div class="demo-card" on:click={fillAdminCredentials} role="button" tabindex="0" on:keypress={(e) => e.key === 'Enter' && fillAdminCredentials()}>
-          <div class="demo-role">👑 Admin</div>
-          <div class="demo-info">
-            <strong>admin</strong> / admin123
-          </div>
-        </div>
-        <div class="demo-card" on:click={fillTenantCredentials} role="button" tabindex="0" on:keypress={(e) => e.key === 'Enter' && fillTenantCredentials()}>
-          <div class="demo-role">🏢 Tenant</div>
-          <div class="demo-info">
-            <strong>tenant</strong> / tenant123
-          </div>
-        </div>
-        <div class="demo-card" on:click={fillUserCredentials} role="button" tabindex="0" on:keypress={(e) => e.key === 'Enter' && fillUserCredentials()}>
-          <div class="demo-role">👤 User</div>
-          <div class="demo-info">
-            <strong>user</strong> / user123
-          </div>
+    {#if devmode}
+      <div class="demo-credentials">
+        <p class="demo-title">Demo Accounts</p>
+        <div class="demo-grid">
+          <button class="demo-card" on:click={() => quickLogin('admin', 'admin123')} disabled={loading}>
+            <span class="demo-role">Admin</span>
+          </button>
+          <button class="demo-card" on:click={() => quickLogin('tenant', 'tenant123')} disabled={loading}>
+            <span class="demo-role">Tenant</span>
+          </button>
+          <button class="demo-card" on:click={() => quickLogin('user', 'user123')} disabled={loading}>
+            <span class="demo-role">User</span>
+          </button>
         </div>
       </div>
-    </div>
+    {/if}
+
   </div>
 </div>
 
@@ -329,57 +316,50 @@
   .demo-credentials {
     background: #f8fafc;
     border-radius: 0.5rem;
-    padding: 1.5rem;
+    padding: 1.25rem;
     border: 1px solid #e2e8f0;
   }
 
   .demo-title {
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.75rem 0;
     font-weight: 600;
     color: #475569;
     text-align: center;
+    font-size: 0.85rem;
   }
 
   .demo-grid {
-    display: grid;
-    gap: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
   }
 
   .demo-card {
+    flex: 1;
     background: white;
-    padding: 0.875rem;
+    padding: 0.625rem;
     border-radius: 0.375rem;
     border: 1px solid #e2e8f0;
     transition: all 0.2s;
     cursor: pointer;
-    user-select: none;
+    text-align: center;
+    font-family: inherit;
   }
 
-  .demo-card:hover {
+  .demo-card:hover:not(:disabled) {
     border-color: #667eea;
     box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
   }
 
-  .demo-card:active {
-    transform: translateY(0);
-    box-shadow: 0 1px 4px rgba(102, 126, 234, 0.2);
+  .demo-card:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 
   .demo-role {
-    font-size: 0.875rem;
-    color: #64748b;
-    margin-bottom: 0.25rem;
-  }
-
-  .demo-info {
-    color: #1e293b;
-    font-size: 0.875rem;
-  }
-
-  .demo-info strong {
-    color: #667eea;
-    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #334155;
   }
 
   @media (max-width: 640px) {

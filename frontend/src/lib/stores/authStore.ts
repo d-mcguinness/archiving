@@ -74,7 +74,7 @@ function createAuthStore() {
     localStorage.removeItem('auth_role');
     localStorage.removeItem('auth_tenantId');
     set(defaultState);
-    goto('/login');
+    goto('/');
   }
 
   return {
