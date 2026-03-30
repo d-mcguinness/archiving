@@ -6,6 +6,7 @@
   import { GET_TENANT, GET_ALL_USERS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   interface PageData {
     tenantId: string;
@@ -156,6 +157,10 @@
       <p class="redirect-message">Redirecting...</p>
     </div>
   {:else}
+    <Breadcrumb
+      context={{ tenantId: data.tenantId, tenantName: tenant?.displayName || tenant?.name }}
+      items={[{ label: 'Users' }]}
+    />
     <div class="header">
     <div>
       <h1>Tenant Users</h1>
@@ -170,11 +175,6 @@
       {/if}
     </div>
     <div class="header-actions">
-      {#if currentRole === 'ADMIN'}
-        <a href="/tenants" class="btn-back">← Back to Tenants</a>
-      {:else if currentRole === 'TENANT'}
-        <a href="/tenants/{data.tenantId}" class="btn-back">← Back to Tenant</a>
-      {/if}
       <button class="btn-primary" on:click={openAddUserDialog}>
         ➕ Add User to Tenant
       </button>

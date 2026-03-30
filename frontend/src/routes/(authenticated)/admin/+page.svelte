@@ -6,6 +6,7 @@
   import { GET_DASHBOARD_STATS, GET_ALL_TENANTS, GET_ALL_USERS, GET_ALL_SIPS_V2, GET_ALL_AIPS, GET_ALL_DIPS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   let loading = true;
   let stats = {
@@ -146,6 +147,7 @@
       <p>Loading dashboard...</p>
     </div>
   {:else}
+    <Breadcrumb items={[{ label: 'Dashboard' }]} />
     <div class="page-header">
       <h1>Admin Dashboard</h1>
       <p class="subtitle">System-wide overview and statistics</p>

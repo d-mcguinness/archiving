@@ -15,8 +15,37 @@ const defaultState: AuthState = {
   tenantId: null
 };
 
+function readFromLocalStorageStatic(): AuthState {
+  try {
+    const token = localStorage.getItem('auth_token');
+    const userJson = localStorage.getItem('auth_user');
+    const role = localStorage.getItem('auth_role');
+    const tenantId = localStorage.getItem('auth_tenantId');
+
+    if (token && userJson) {
+      let user = null;
+      try {
+        user = JSON.parse(userJson);
+      } catch {
+        return defaultState;
+      }
+      return {
+        isLoggedIn: true,
+        user,
+        role: role || '',
+        tenantId: tenantId ? parseInt(tenantId, 10) : null
+      };
+    }
+  } catch {
+    // SSR or localStorage unavailable
+  }
+  return defaultState;
+}
+
 function createAuthStore() {
-  const { subscribe, set } = writable<AuthState>(defaultState);
+  // Eagerly read from localStorage so the store has correct state on first render
+  const initialState = typeof window !== 'undefined' ? readFromLocalStorageStatic() : defaultState;
+  const { subscribe, set } = writable<AuthState>(initialState);
 
   function readFromLocalStorage(): AuthState {
     try {

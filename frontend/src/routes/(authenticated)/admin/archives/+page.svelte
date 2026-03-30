@@ -6,6 +6,7 @@
   import { GET_ALL_ARCHIVES, GET_ARCHIVES_BY_TENANT, GET_ALL_USERS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   let archives: any[] = [];
   let users: any[] = [];
@@ -163,6 +164,7 @@
 </svelte:head>
 
 <div class="archives-page">
+  <Breadcrumb items={[{ label: 'Admin', href: '/admin' }, { label: 'Archives' }]} />
   <div class="page-header">
     <h1>Archives Management</h1>
     <a href="/archives/create" class="add-archive-btn">+ Add Archive</a>

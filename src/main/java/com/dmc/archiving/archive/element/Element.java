@@ -1,6 +1,7 @@
 package com.dmc.archiving.archive.element;
 
 import com.dmc.archiving.archive.element.field.Field;
+import com.dmc.archiving.archive.element.link.ElementLink;
 import com.dmc.archiving.archive.model.Archive;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -44,6 +45,12 @@ public class Element {
 
     @OneToMany(mappedBy = "element", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Field> fields = new ArrayList<>();
+
+    @OneToMany(mappedBy = "sourceElement", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ElementLink> outgoingLinks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "targetElement")
+    private List<ElementLink> incomingLinks = new ArrayList<>();
 
     @Column(name = "element_identifier", nullable = false, length = 255)
     private String elementIdentifier;

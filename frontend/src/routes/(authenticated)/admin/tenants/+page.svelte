@@ -6,6 +6,7 @@
   import { GET_ALL_TENANTS, UPDATE_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   let tenants: any[] = [];
   let loading: boolean = true;
@@ -114,9 +115,8 @@
         mutation: UPDATE_TENANT,
         variables: {
           input: {
-            id: editingTenant.id,
+            tenantId: editingTenant.id,
             name: editForm.name.trim(),
-            domain: editForm.domain.trim(),
             displayName: editForm.displayName.trim() || null,
             description: editForm.description.trim() || null,
             status: editForm.status,
@@ -191,6 +191,7 @@
       <p class="redirect-message">Redirecting...</p>
     </div>
   {:else}
+    <Breadcrumb items={[{ label: 'Admin', href: '/admin' }, { label: 'Tenants' }]} />
     <div class="page-header">
       <h1>Tenants</h1>
       <a href="/tenants/create" class="add-tenant-btn">Add Tenant</a>

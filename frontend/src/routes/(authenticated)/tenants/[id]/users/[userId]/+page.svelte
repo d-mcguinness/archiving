@@ -6,6 +6,7 @@
   import { GET_USER, GET_TENANT, UPDATE_USER } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   interface PageData {
     tenantId: string;
@@ -198,13 +199,10 @@
   {:else if error}
     <div class="error">❌ {error}</div>
   {:else if user}
-    <div class="breadcrumb">
-      <a href="/tenants/{data.tenantId}">Tenant</a>
-      <span class="sep">/</span>
-      <a href="/tenants/{data.tenantId}/users">Users</a>
-      <span class="sep">/</span>
-      <span>{user.name}</span>
-    </div>
+    <Breadcrumb
+      context={{ tenantId: data.tenantId, tenantName: tenant?.displayName || tenant?.name, userId: data.userId, userName: user?.name }}
+      items={[]}
+    />
 
     <div class="page-header">
       <div class="header-content">
@@ -217,6 +215,7 @@
         {/if}
       </div>
       <div class="header-actions">
+        <a href="/tenants/{data.tenantId}/users/{data.userId}/edit" class="btn-edit-profile">✏️ Edit Profile</a>
         <button class="btn-mimic" on:click={mimicUser}>🎭 Mimic</button>
         <a href="/tenants/{data.tenantId}/users/{data.userId}/documents" class="btn-docs">📄 Documents</a>
       </div>
@@ -359,6 +358,13 @@
   }
 
   .header-actions { display: flex; gap: 0.5rem; }
+
+  .btn-edit-profile {
+    padding: 0.6rem 1.2rem; background: #f59e0b; color: white;
+    border-radius: 0.5rem; font-weight: 600; text-decoration: none;
+    transition: background 0.2s;
+  }
+  .btn-edit-profile:hover { background: #d97706; }
 
   .btn-mimic {
     padding: 0.6rem 1.2rem; background: #8b5cf6; color: white;

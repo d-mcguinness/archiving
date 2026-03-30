@@ -106,7 +106,7 @@
 
   const sipStatuses = ['DRAFT', 'SUBMITTED', 'VALIDATED', 'ACCEPTED', 'REJECTED'];
 
-  $: sipId = $page.params.id;
+  $: sipId = $page.params.id || $page.params.sipId;
 
   function buildElementContent(element: any): any {
     if (!element) return null;

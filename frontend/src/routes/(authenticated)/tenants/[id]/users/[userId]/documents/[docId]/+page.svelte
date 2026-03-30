@@ -4,6 +4,7 @@
   import { goto } from '$app/navigation';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   const STATUSES = ['ACTIVE', 'ARCHIVED', 'DELETED', 'PENDING_REVIEW', 'APPROVED', 'REJECTED'];
 
@@ -119,7 +120,16 @@
   async function handleDownload() {
     try {
       const response = await fetch(`http://localhost:2020/api/documents/${data.docId}/file`);
-      if (!response.ok) throw new Error('Download failed');
+      if (!response.ok) {
+        // Try to parse error body
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Download failed: ${response.statusText}`);
+        }
+        throw new Error(`Download failed: ${response.statusText}`);
+      }
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = window.document.createElement('a');
@@ -183,15 +193,10 @@
   {:else if error}
     <div class="error-msg">❌ {error}</div>
   {:else if doc}
-    <div class="breadcrumb">
-      <a href="/tenants/{data.tenantId}">Tenant</a>
-      <span class="sep">/</span>
-      <a href="/tenants/{data.tenantId}/users/{data.userId}">User</a>
-      <span class="sep">/</span>
-      <a href="/tenants/{data.tenantId}/users/{data.userId}/documents">Documents</a>
-      <span class="sep">/</span>
-      <span>{doc.title || doc.fileName}</span>
-    </div>
+    <Breadcrumb
+      context={{ tenantId: data.tenantId, userId: data.userId }}
+      items={[{ label: 'Documents', href: '/tenants/' + data.tenantId + '/users/' + data.userId + '/documents' }, { label: doc.title || doc.fileName }]}
+    />
 
     <div class="page-header">
       <div class="header-content">

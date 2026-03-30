@@ -4,6 +4,7 @@
   import { goto } from '$app/navigation';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   let documents: any[] = [];
   let loading = true;
@@ -199,6 +200,7 @@
 </svelte:head>
 
 <div class="documents-page">
+  <Breadcrumb items={[{ label: 'Admin', href: '/admin' }, { label: 'Documents' }]} />
   <div class="page-header">
     <h1>📄 Documents</h1>
     <button class="btn-primary" on:click={() => showUploadForm = !showUploadForm}>

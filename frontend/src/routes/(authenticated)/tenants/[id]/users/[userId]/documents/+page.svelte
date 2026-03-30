@@ -6,6 +6,7 @@
   import { GET_SIPS_BY_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   interface PageData {
     tenantId: string;
@@ -258,6 +259,10 @@
       uploadError = 'Please enter a title';
       return;
     }
+    if (!uploadSipId) {
+      uploadError = 'Please select a SIP to link this document to';
+      return;
+    }
 
     uploading = true;
     uploadError = null;
@@ -268,6 +273,7 @@
       formData.append('userId', data.userId);
       formData.append('tenantId', data.tenantId);
       formData.append('title', uploadTitle.trim());
+      formData.append('sipId', uploadSipId);
 
       // Build description from standard metadata if any fields were filled
       const filledMeta = Object.entries(metadata).filter(([_, v]) => v && v.trim());
@@ -289,18 +295,6 @@
 
       if (!result.success) {
         throw new Error(result.error || 'Upload failed');
-      }
-
-      // If a SIP was selected, associate the document with it
-      if (uploadSipId && result.document?.id) {
-        const assocResponse = await fetch(
-          `http://localhost:2020/api/documents/${result.document.id}/associate-archive?archiveId=${uploadSipId}`,
-          { method: 'POST' }
-        );
-        const assocResult = await assocResponse.json();
-        if (!assocResult.success) {
-          console.warn('Document uploaded but failed to associate with SIP:', assocResult.error);
-        }
       }
 
       toasts.success('Document uploaded successfully');
@@ -414,6 +408,10 @@
       <p class="redirect-message">Redirecting...</p>
     </div>
   {:else}
+    <Breadcrumb
+      context={{ tenantId: data.tenantId, userId: data.userId, userName: 'User' }}
+      items={[{ label: 'Documents' }]}
+    />
     <div class="page-header">
       <div>
         <h1>📄 My Documents</h1>
@@ -557,15 +555,18 @@
           />
         </div>
 
-        <!-- SIP selector (optional) -->
+        <!-- SIP selector (required) -->
         <div class="form-group">
-          <label for="uploadSip">Link to SIP <span class="optional">(optional)</span></label>
-          <select id="uploadSip" bind:value={uploadSipId} disabled={uploading}>
-            <option value="">None</option>
+          <label for="uploadSip">Link to SIP <span class="required-marker">*</span></label>
+          <select id="uploadSip" bind:value={uploadSipId} disabled={uploading} required>
+            <option value="">Select a SIP...</option>
             {#each sips as sip}
               <option value={sip.id}>{sip.title} ({sip.standard})</option>
             {/each}
           </select>
+          {#if sips.length === 0}
+            <p class="helper-text">No SIPs available. <a href="/sip/create">Create a SIP</a> first.</p>
+          {/if}
         </div>
 
         <!-- Standard-specific metadata (shown when a SIP is selected) -->
@@ -1087,6 +1088,26 @@
     color: #94a3b8;
     font-weight: 400;
     font-size: 0.8rem;
+  }
+
+  .required-marker {
+    color: #ef4444;
+    font-weight: 700;
+  }
+
+  .helper-text {
+    margin: 0.5rem 0 0;
+    font-size: 0.8rem;
+    color: #94a3b8;
+  }
+
+  .helper-text a {
+    color: #3b82f6;
+    text-decoration: none;
+  }
+
+  .helper-text a:hover {
+    text-decoration: underline;
   }
 
   .form-group input,

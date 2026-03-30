@@ -166,6 +166,9 @@ public class ArchiveService {
         if (element.getFields() != null) {
             element.getFields().size();
         }
+        if (element.getOutgoingLinks() != null) {
+            element.getOutgoingLinks().size();
+        }
         if (element.getChildren() != null) {
             element.getChildren().size();
             for (Element child : element.getChildren()) {

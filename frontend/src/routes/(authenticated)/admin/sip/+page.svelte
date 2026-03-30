@@ -6,6 +6,7 @@
   import { GET_ALL_SIPS_V2, GET_SIPS_BY_TENANT_V2, GET_ALL_USERS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   let sips: any[] = [];
   let users: any[] = [];
@@ -144,6 +145,7 @@
 </svelte:head>
 
 <div class="sips-page">
+  <Breadcrumb items={[{ label: 'Admin', href: '/admin' }, { label: 'SIPs' }]} />
   <div class="page-header">
     <h1>📦 Submission Information Packages</h1>
     <a href="/sip/create" class="btn-create">+ Create SIP</a>

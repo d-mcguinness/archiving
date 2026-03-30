@@ -63,6 +63,10 @@ public class DocumentService {
         }
     }
 
+    public Document saveDocument(Document document) {
+        return documentRepository.save(document);
+    }
+
     /**
      * Get all documents (ADMIN only)
      */

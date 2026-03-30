@@ -6,6 +6,7 @@
   import { GET_ALL_DIPS, GET_DIPS_BY_TENANT, GET_ALL_USERS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   let dips: any[] = [];
   let users: any[] = [];
@@ -87,6 +88,7 @@
 </svelte:head>
 
 <div class="dips-page">
+  <Breadcrumb items={[{ label: 'Admin', href: '/admin' }, { label: 'DIPs' }]} />
   <div class="page-header">
     <h1>📤 Dissemination Information Packages</h1>
     <a href="/dip/create" class="btn-create">+ Create DIP</a>

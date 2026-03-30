@@ -1,7 +1,6 @@
 <script lang="ts">
   import '../app.css';
   import Toast from '$lib/components/Toast.svelte';
-  import RoleGate from '$lib/components/RoleGate.svelte';
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { auth } from '$lib/stores/authStore';
@@ -32,88 +31,122 @@
           <h1><a href="/">Arcana</a></h1>
         </div>
 
-        {#if $auth.isLoggedIn}
+        {#if !$auth.isLoggedIn}
+          <ul class="nav-links">
+            <li>
+              <a href="/ingest" class="sips-link" class:active={isActive('/ingest')}>
+                Ingest
+              </a>
+            </li>
+            <li>
+              <a href="/preserve" class="aips-link" class:active={isActive('/preserve')}>
+                Preserve
+              </a>
+            </li>
+            <li>
+              <a href="/deliver" class="dips-link" class:active={isActive('/deliver')}>
+                Deliver
+              </a>
+            </li>
+          </ul>
+        {:else}
           <ul class="nav-links">
 
-            <RoleGate roles={['ADMIN']}>
+            {#if $auth.role === 'ADMIN'}
               <li>
-                <a href="/admin/tenants" class="tenants-link" class:active={isActive('/admin/tenants')}>
+                <a href="/admin" class="tenants-link" class:active={isActive('/admin') && !isActive('/admin/')}>
+                  Dashboard
+                </a>
+              </li>
+              <li>
+                <a href="/admin/tenants" class="tenants-link" class:active={isActive('/admin/tenants') || isActive('/tenants/')}>
                   🏢 Tenants
                 </a>
               </li>
-            </RoleGate>
-
-            <RoleGate roles={['ADMIN', 'TENANT']}>
               <li>
-                <a
-                  href={$auth.role === 'TENANT' && $auth.tenantId
-                    ? `/tenants/${$auth.tenantId}/users`
-                    : '/admin/users'}
-                  class="users-link"
-                  class:active={isActive('/admin/users') || isActive(`/tenants/${$auth.tenantId}/users`)}
-                >
-                  👥 Users
-                </a>
-              </li>
-              <li>
-                <a
-                  href={$auth.role === 'TENANT' && $auth.tenantId
-                    ? `/tenants/${$auth.tenantId}/archives`
-                    : '/admin/archives'}
-                  class="archives-link"
-                  class:active={isActive('/admin/archives') || isActive(`/tenants/${$auth.tenantId}/archives`)}
-                >
+                <a href="/admin/archives" class="archives-link" class:active={isActive('/admin/archives')}>
                   📁 Archives
                 </a>
               </li>
               <li>
-                <a
-                  href={$auth.role === 'TENANT' && $auth.tenantId
-                    ? `/tenants/${$auth.tenantId}/sips`
-                    : '/admin/sip'}
-                  class="sips-link"
-                  class:active={isActive('/admin/sip') || isActive(`/tenants/${$auth.tenantId}/sips`)}
-                >
+                <a href="/admin/sip" class="sips-link" class:active={isActive('/admin/sip')}>
                   📦 SIPs
                 </a>
               </li>
               <li>
-                <a
-                  href={$auth.role === 'TENANT' && $auth.tenantId
-                    ? `/tenants/${$auth.tenantId}/aips`
-                    : '/admin/aip'}
-                  class="aips-link"
-                  class:active={isActive('/admin/aip') || isActive(`/tenants/${$auth.tenantId}/aips`)}
-                >
+                <a href="/admin/aip" class="aips-link" class:active={isActive('/admin/aip')}>
                   🏗️ AIPs
                 </a>
               </li>
               <li>
-                <a
-                  href={$auth.role === 'TENANT' && $auth.tenantId
-                    ? `/tenants/${$auth.tenantId}/dips`
-                    : '/admin/dip'}
-                  class="dips-link"
-                  class:active={isActive('/admin/dip') || isActive(`/tenants/${$auth.tenantId}/dips`)}
-                >
+                <a href="/admin/dip" class="dips-link" class:active={isActive('/admin/dip')}>
                   📤 DIPs
                 </a>
               </li>
-            </RoleGate>
+              <li>
+                <a href="/admin/users" class="users-link" class:active={isActive('/admin/users')}>
+                  👥 Users
+                </a>
+              </li>
+              <li>
+                <a href="/admin/documents" class="documents-link" class:active={isActive('/admin/documents')}>
+                  📄 Documents
+                </a>
+              </li>
 
-            <li>
-              <a
-                href={$auth.role === 'USER' && $auth.tenantId && $auth.user?.id
-                  ? `/tenants/${$auth.tenantId}/users/${$auth.user.id}/documents`
-                  : $auth.role === 'TENANT' && $auth.tenantId
-                    ? `/tenants/${$auth.tenantId}/documents`
-                    : '/admin/documents'}
-                class="documents-link"
-                class:active={isActive('/admin/documents') || isActive(`/tenants/${$auth.tenantId}/documents`) || isActive(`/tenants/${$auth.tenantId}/users/${$auth.user?.id}/documents`)}
-              >
-                📄 Documents
-              </a>
-            </li>
+            {:else if $auth.role === 'TENANT'}
+              <li>
+                <a href="/tenants/{$auth.tenantId}/archives" class="archives-link" class:active={isActive(`/tenants/${$auth.tenantId}/archives`)}>
+                  📁 Archives
+                </a>
+              </li>
+              <li>
+                <a href="/tenants/{$auth.tenantId}/sips" class="sips-link" class:active={isActive(`/tenants/${$auth.tenantId}/sips`)}>
+                  📦 SIPs
+                </a>
+              </li>
+              <li>
+                <a href="/tenants/{$auth.tenantId}/aips" class="aips-link" class:active={isActive(`/tenants/${$auth.tenantId}/aips`)}>
+                  🏗️ AIPs
+                </a>
+              </li>
+              <li>
+                <a href="/tenants/{$auth.tenantId}/dips" class="dips-link" class:active={isActive(`/tenants/${$auth.tenantId}/dips`)}>
+                  📤 DIPs
+                </a>
+              </li>
+              <li>
+                <a href="/tenants/{$auth.tenantId}/users" class="users-link" class:active={isActive(`/tenants/${$auth.tenantId}/users`)}>
+                  👥 Users
+                </a>
+              </li>
+              <li>
+                <a href="/tenants/{$auth.tenantId}/documents" class="documents-link" class:active={isActive(`/tenants/${$auth.tenantId}/documents`)}>
+                  📄 Documents
+                </a>
+              </li>
+
+            {:else if $auth.role === 'USER'}
+              <!-- USER: Documents only -->
+              <li>
+                <a
+                  href={$auth.tenantId && $auth.user?.id ? `/tenants/${$auth.tenantId}/users/${$auth.user.id}/edit` : '/'}
+                  class="users-link"
+                  class:active={isActive(`/tenants/${$auth.tenantId}/users/${$auth.user?.id}`) && !isActive(`/tenants/${$auth.tenantId}/users/${$auth.user?.id}/documents`)}
+                >
+                  ✏️ Profile
+                </a>
+              </li>
+              <li>
+                <a
+                  href={$auth.tenantId && $auth.user?.id ? `/tenants/${$auth.tenantId}/users/${$auth.user.id}/documents` : '/documents'}
+                  class="documents-link"
+                  class:active={isActive(`/tenants/${$auth.tenantId}/users/${$auth.user?.id}/documents`)}
+                >
+                  📄 Documents
+                </a>
+              </li>
+            {/if}
 
           </ul>
         {/if}

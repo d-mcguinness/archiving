@@ -7,6 +7,7 @@
   import { gql } from '@apollo/client/core';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   interface PageData {
     tenantId: string;
@@ -28,6 +29,9 @@
   let extractPassword = '';
   let extracting = false;
   let extractError: string | null = null;
+
+  // Export package state
+  let exporting = false;
 
   // Create archive modal state
   let showCreateModal = false;
@@ -194,6 +198,39 @@
     }
   }
 
+  async function handleExportPackage(archive: any) {
+    exporting = true;
+    try {
+      const response = await fetch(`http://localhost:2020/api/archives/${archive.id}/export-package`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Export failed: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const contentDisposition = response.headers.get('Content-Disposition');
+      const filenameMatch = contentDisposition?.match(/filename="?(.+?)"?$/);
+      link.download = filenameMatch?.[1] || `archive_${archive.id}_package.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toasts.success('Package exported successfully');
+    } catch (e) {
+      toasts.error(e instanceof Error ? e.message : 'Failed to export package');
+    } finally {
+      exporting = false;
+    }
+  }
+
   function openCreateModal() {
     newArchive = { ownerId: '', userId: '', title: '', description: '', content: '', standard: 'NOARK5' };
     createError = null;
@@ -290,10 +327,10 @@
       <p class="redirect-message">Redirecting...</p>
     </div>
   {:else}
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-      <a href="/tenants/{data.tenantId}">← Back to Tenant</a>
-    </div>
+    <Breadcrumb
+      context={{ tenantId: data.tenantId, tenantName: tenant?.displayName || tenant?.name }}
+      items={[{ label: 'Archives' }]}
+    />
 
     <!-- Page Header -->
     <div class="page-header">
@@ -306,7 +343,9 @@
           </div>
         {/if}
       </div>
-      <button class="add-archive-btn" on:click={openCreateModal}>+ Create Archive</button>
+      <div class="header-buttons">
+        <button class="add-archive-btn" on:click={openCreateModal}>+ Create Archive</button>
+      </div>
     </div>
 
     {#if error}
@@ -349,11 +388,11 @@
           </thead>
           <tbody>
             {#each archives as archive (archive.id)}
-              <tr>
+              <tr class="clickable-row" on:click={() => goto(`/tenants/${data.tenantId}/archives/${archive.id}`)}>
                 <td class="id-cell">{archive.id}</td>
                 <td class="title-cell">
                   <div class="title-wrapper">
-                    <div class="archive-title">{archive.title}</div>
+                    <a href="/tenants/{data.tenantId}/archives/{archive.id}" class="archive-title-link">{archive.title}</a>
                     {#if archive.description}
                       <div class="archive-description">{archive.description}</div>
                     {/if}
@@ -382,19 +421,41 @@
                   {/if}
                 </td>
                 <td class="actions-cell">
-                  <a href="/archives/delete/{archive.id}" class="btn-action btn-delete">
-                    🗑️ Delete
-                  </a>
                   <a href="/tenants/{data.tenantId}/archives/{archive.id}/update" class="btn-action btn-edit">
                     ✏️ Edit
                   </a>
-                  <a
-                    href="/tenants/{data.tenantId}/archives/{archive.id}/extract"
-                    class="btn-action btn-extract"
-                    title="Extract archive"
-                  >
-                    📥 Extract
+                  <a href="/tenants/{data.tenantId}/sips" class="btn-action btn-sips">
+                    📦 SIPs
                   </a>
+                  <a href="/tenants/{data.tenantId}/aips" class="btn-action btn-aips">
+                    🏗️ AIPs
+                  </a>
+                  <a href="/tenants/{data.tenantId}/dips" class="btn-action btn-dips">
+                    📤 DIPs
+                  </a>
+                  <a href="/tenants/{data.tenantId}/users" class="btn-action btn-users">
+                    👥 Users
+                  </a>
+                  {#if currentRole === 'ADMIN'}
+                    <a href="/archives/delete/{archive.id}" class="btn-action btn-delete">
+                      🗑️ Delete
+                    </a>
+                    <a
+                      href="/tenants/{data.tenantId}/archives/{archive.id}/extract"
+                      class="btn-action btn-extract"
+                      title="Extract archive as JSON"
+                    >
+                      📥 Extract
+                    </a>
+                    <button
+                      class="btn-action btn-package"
+                      on:click={() => handleExportPackage(archive)}
+                      disabled={exporting}
+                      title="Export full package as ZIP"
+                    >
+                      {exporting ? '...' : '📦 Package'}
+                    </button>
+                  {/if}
                 </td>
               </tr>
             {/each}
@@ -587,7 +648,8 @@
 
   /* Breadcrumb */
   .breadcrumb {
-    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 1.5rem; font-size: 0.875rem;
   }
 
   .breadcrumb a {
@@ -599,6 +661,10 @@
 
   .breadcrumb a:hover {
     color: #2563eb;
+  }
+
+  .breadcrumb .sep { color: #94a3b8; }
+  .breadcrumb > span:last-child { color: #64748b; font-weight: 600;
   }
 
   /* Page Header */
@@ -932,6 +998,48 @@
   .btn-edit:hover {
     background: #bfdbfe;
   }
+
+  .header-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .btn-package {
+    background: #8b5cf6;
+    color: white;
+  }
+
+  .btn-package:hover:not(:disabled) {
+    background: #7c3aed;
+  }
+
+  .btn-package:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .clickable-row { cursor: pointer; }
+  .clickable-row:hover { background: #f1f5f9 !important; }
+
+  .archive-title-link {
+    color: #1e40af;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .archive-title-link:hover { text-decoration: underline; }
+
+  .btn-sips { background: #fce7f3; color: #9d174d; }
+  .btn-sips:hover { background: #fbcfe8; }
+
+  .btn-aips { background: #eef2ff; color: #3730a3; }
+  .btn-aips:hover { background: #c7d2fe; }
+
+  .btn-dips { background: #fff7ed; color: #9a3412; }
+  .btn-dips:hover { background: #fed7aa; }
+
+  .btn-users { background: #fef3c7; color: #92400e; }
+  .btn-users:hover { background: #fde68a; }
 
   .btn-extract {
     background: #dcfce7;

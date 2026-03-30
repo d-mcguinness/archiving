@@ -49,11 +49,12 @@ public class DocumentController {
             @RequestParam("file") MultipartFile file,
             @RequestParam("userId") Long userId,
             @RequestParam(value = "tenantId", required = false) Long tenantId,
+            @RequestParam(value = "sipId", required = false) Long sipId,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "description", required = false) String description) {
 
         try {
-            log.info("Uploading document for user {}, tenant {}", userId, tenantId);
+            log.info("Uploading document for user {}, tenant {}, sip {}", userId, tenantId, sipId);
 
             if (file.isEmpty()) {
                 return ResponseEntity
@@ -62,6 +63,12 @@ public class DocumentController {
             }
 
             Document document = documentService.uploadDocument(file, userId, tenantId, title, description);
+
+            // Associate with SIP if provided
+            if (sipId != null) {
+                document.setSipId(sipId);
+                document = documentService.saveDocument(document);
+            }
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -271,9 +278,8 @@ public class DocumentController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentDispositionFormData("attachment", document.getFileName());
-            if (document.getFileSize() != null) {
-                headers.setContentLength(document.getFileSize());
-            }
+            // Don't set Content-Length from DB — actual file size may differ
+            // (e.g., placeholder files in dev). Let the server stream without fixed length.
 
             MediaType mediaType = document.getContentType() != null
                 ? MediaType.parseMediaType(document.getContentType())

@@ -6,6 +6,7 @@
   import { GET_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   interface PageData {
     tenantId: string;
@@ -139,10 +140,10 @@
       <p class="redirect-message">Redirecting...</p>
     </div>
   {:else}
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-      <a href="/tenants/{data.tenantId}">← Back to Tenant</a>
-    </div>
+    <Breadcrumb
+      context={{ tenantId: data.tenantId, tenantName: tenant?.displayName || tenant?.name }}
+      items={[{ label: 'Documents' }]}
+    />
 
     <!-- Page Header -->
     <div class="page-header">

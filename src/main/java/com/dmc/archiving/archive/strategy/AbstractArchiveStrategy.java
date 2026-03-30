@@ -2,6 +2,7 @@ package com.dmc.archiving.archive.strategy;
 
 import com.dmc.archiving.archive.element.Element;
 import com.dmc.archiving.archive.element.field.Field;
+import com.dmc.archiving.archive.element.link.ElementLink;
 import com.dmc.archiving.archive.model.Archive;
 
 import java.util.ArrayList;
@@ -125,6 +126,23 @@ public abstract class AbstractArchiveStrategy implements ArchiveStrategy {
                 children.add(exportElement(child));
             }
             elementData.put("children", children);
+        }
+
+        // Export cross-reference links
+        if (element.getOutgoingLinks() != null && !element.getOutgoingLinks().isEmpty()) {
+            List<Map<String, Object>> links = new ArrayList<>();
+            for (ElementLink link : element.getOutgoingLinks()) {
+                Map<String, Object> linkData = new LinkedHashMap<>();
+                linkData.put("linkType", link.getLinkType());
+                linkData.put("targetElementId", link.getTargetElement().getId());
+                linkData.put("targetElementIdentifier", link.getTargetElement().getElementIdentifier());
+                linkData.put("targetEntityName", link.getTargetElement().getEntityName());
+                if (link.getLabel() != null) linkData.put("label", link.getLabel());
+                if (link.getDescription() != null) linkData.put("description", link.getDescription());
+                linkData.put("directional", link.getDirectional());
+                links.add(linkData);
+            }
+            elementData.put("links", links);
         }
 
         return elementData;

@@ -8,21 +8,23 @@
 
 <StandardsPage
   title="Preserve"
-  oaisStep="OAIS Step 2"
-  heroDescription="The preservation function ensures long-term storage and integrity of Archival Information Packages (AIPs), maintaining provenance, format migration support, and fixity verification."
+  oaisStep="Archival Packages"
+  heroDescription="The preservation workflow creates Archival Information Packages (AIPs) for long-term storage. Build AIPs using any of 10 archival standards with provenance tracking, integrity verification, and format migration support."
   packageType="aip"
   createPath="/aip/create"
   listPath="/aip"
   accentColor="#6366f1"
   steps={[
-    { title: 'Select Standard', description: 'Choose from 10 archival standards to define the structure of your Archival Information Package.' },
-    { title: 'Define Preservation Metadata', description: 'Capture provenance, rights, technical metadata, and preservation actions using standard-compliant schemas.' },
-    { title: 'Store & Verify', description: 'AIPs are stored with integrity checks, fixity verification, and full audit trails for long-term access.' },
+    { title: 'Select Standard', description: 'Choose the archival standard for your AIP. Each standard defines preservation metadata, provenance models, and structural requirements.' },
+    { title: 'Define Preservation Metadata', description: 'Capture provenance, rights, technical metadata, and preservation actions using standard-compliant entity schemas.' },
+    { title: 'Store & Verify', description: 'AIPs are structured with integrity checks and full audit trails, ready for long-term archival storage.' },
   ]}
   capabilities={[
+    'All 10 archival standards supported',
     'Provenance tracking and audit trails',
-    'Integrity verification and fixity checks',
-    'Format migration support',
-    'Standard-compliant preservation metadata',
+    'Integrity verification with fixity metadata',
+    'Format migration and representation support',
+    'Standard-specific preservation metadata',
+    'Multi-tenant with role-based access control',
   ]}
 />

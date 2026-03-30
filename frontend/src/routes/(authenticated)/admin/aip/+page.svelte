@@ -6,6 +6,7 @@
   import { GET_ALL_AIPS, GET_AIPS_BY_TENANT, GET_ALL_USERS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   let aips: any[] = [];
   let users: any[] = [];
@@ -144,6 +145,7 @@
 </svelte:head>
 
 <div class="aips-page">
+  <Breadcrumb items={[{ label: 'Admin', href: '/admin' }, { label: 'AIPs' }]} />
   <div class="page-header">
     <h1>🏗️ Archival Information Packages</h1>
     <a href="/aip/create" class="btn-create">+ Create AIP</a>

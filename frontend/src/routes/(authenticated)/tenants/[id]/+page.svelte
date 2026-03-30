@@ -4,6 +4,7 @@
   import { client } from '$lib/apollo';
   import { GET_TENANT, GET_TENANT_DASHBOARD_STATS, GET_SIPS_BY_TENANT_V2, GET_AIPS_BY_TENANT, GET_DIPS_BY_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   let tenant: any = null;
   let loading = true;
@@ -154,6 +155,10 @@
     </div>
   {:else if tenant}
     <div class="tenant-info">
+      <Breadcrumb
+        context={{ tenantId, tenantName: tenant?.displayName || tenant?.name }}
+        items={[]}
+      />
       <!-- Tenant Header Card -->
       <div class="tenant-header-card">
         <div class="tenant-icon">🏢</div>
@@ -358,7 +363,7 @@
       <span class="empty-icon">🏢</span>
       <h3>Tenant Not Found</h3>
       <p>The requested tenant could not be found.</p>
-      <a href="/tenants" class="btn-back">Back to Tenants</a>
+      <a href="/admin/tenants" class="btn-back">Back to Tenants</a>
     </div>
   {/if}
 </div>

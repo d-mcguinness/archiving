@@ -1110,3 +1110,262 @@ export const DELETE_DIP: DocumentNode = gql`
     deleteDip(id: $id)
   }
 `;
+
+// ═══════════════════════════════════════════════
+// Element Link Queries
+// ═══════════════════════════════════════════════
+
+export const GET_ELEMENT_LINKS: DocumentNode = gql`
+  query GetElementLinks($elementId: ID!) {
+    getElementLinks(elementId: $elementId) {
+      id
+      sourceElement { id elementIdentifier entityName title }
+      targetElement { id elementIdentifier entityName title }
+      linkType
+      label
+      description
+      directional
+      createdAt
+      createdBy
+    }
+  }
+`;
+
+export const CREATE_ELEMENT_LINK: DocumentNode = gql`
+  mutation CreateElementLink($input: CreateElementLinkInput!) {
+    createElementLink(input: $input) {
+      id
+      linkType
+      label
+      sourceElement { id elementIdentifier entityName title }
+      targetElement { id elementIdentifier entityName title }
+    }
+  }
+`;
+
+export const DELETE_ELEMENT_LINK: DocumentNode = gql`
+  mutation DeleteElementLink($id: ID!) {
+    deleteElementLink(id: $id)
+  }
+`;
+
+// ═══════════════════════════════════════════════
+// Unified Package Queries (SIP/AIP/DIP)
+// ═══════════════════════════════════════════════
+
+export const GET_ALL_PACKAGES: DocumentNode = gql`
+  query GetAllPackages($stage: PackageStage) {
+    getAllPackages(stage: $stage) {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      createdAt
+      updatedAt
+      stage
+      status
+      standard
+      sourceArchiveId
+      sourcePackageId
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+        children {
+          id
+          elementIdentifier
+          entityName
+          entityType
+          title
+          fields {
+            id
+            name
+            label
+            type
+            value
+          }
+        }
+      }
+      assignedUsers {
+        id
+        name
+        email
+      }
+    }
+  }
+`;
+
+export const GET_PACKAGES_BY_TENANT: DocumentNode = gql`
+  query GetPackagesByTenant($tenantId: ID!, $stage: PackageStage) {
+    getPackagesByTenant(tenantId: $tenantId, stage: $stage) {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      createdAt
+      updatedAt
+      stage
+      status
+      standard
+      sourceArchiveId
+      sourcePackageId
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+      }
+      assignedUsers {
+        id
+        name
+        email
+      }
+    }
+  }
+`;
+
+export const GET_PACKAGE: DocumentNode = gql`
+  query GetPackage($id: ID!) {
+    getPackage(id: $id) {
+      id
+      ownerId
+      tenantId
+      title
+      description
+      content
+      createdAt
+      updatedAt
+      stage
+      status
+      standard
+      sourceArchiveId
+      sourcePackageId
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+        entityType
+        title
+        description
+        fields {
+          id
+          name
+          label
+          type
+          value
+        }
+        children {
+          id
+          elementIdentifier
+          entityName
+          entityType
+          title
+          description
+          status
+          createdAt
+          createdBy
+          fields {
+            id
+            name
+            label
+            type
+            value
+          }
+          children {
+            id
+            elementIdentifier
+            entityName
+            entityType
+            title
+            description
+            status
+            createdAt
+            createdBy
+            fields {
+              id
+              name
+              label
+              type
+              value
+            }
+            children {
+              id
+              elementIdentifier
+              entityName
+              entityType
+              title
+              status
+              fields {
+                id
+                name
+                label
+                type
+                value
+              }
+            }
+          }
+        }
+      }
+      assignedUsers {
+        id
+        name
+        email
+      }
+    }
+  }
+`;
+
+export const CREATE_PACKAGE: DocumentNode = gql`
+  mutation CreatePackage($input: CreatePackageInput!) {
+    createPackage(input: $input) {
+      id
+      tenantId
+      ownerId
+      title
+      stage
+      status
+      standard
+      createdAt
+      rootElement {
+        id
+        elementIdentifier
+        entityName
+      }
+    }
+  }
+`;
+
+export const UPDATE_PACKAGE_STATUS: DocumentNode = gql`
+  mutation UpdatePackageStatus($packageId: ID!, $status: PackageStatus!) {
+    updatePackageStatus(packageId: $packageId, status: $status) {
+      id
+      status
+      updatedAt
+    }
+  }
+`;
+
+export const DELETE_PACKAGE: DocumentNode = gql`
+  mutation DeletePackage($id: ID!) {
+    deletePackage(id: $id)
+  }
+`;

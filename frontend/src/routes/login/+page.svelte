@@ -68,7 +68,7 @@
           goto('/admin');
         } else if (result.role === 'TENANT') {
           if (result.tenantId) {
-            goto(`/tenants/${result.tenantId}`);
+            goto(`/tenants/${result.tenantId}/archives`);
           } else {
             goto('/');
           }

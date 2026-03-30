@@ -8,21 +8,23 @@
 
 <StandardsPage
   title="Ingest"
-  oaisStep="OAIS Step 1"
-  heroDescription="The ingest function accepts Submission Information Packages (SIPs) from producers, validates them against archival standards, and prepares content for long-term preservation."
+  oaisStep="Submission Packages"
+  heroDescription="The ingest workflow accepts Submission Information Packages (SIPs) from producers. Choose from 10 archival standards — NOARK5, OAIS, PREMIS, Dublin Core, METS, EAD, BagIt, ISAD(G), MODS, and E-ARK — to create standard-compliant packages ready for preservation."
   packageType="sip"
   createPath="/sip/create"
   listPath="/sip"
   accentColor="#3b82f6"
   steps={[
-    { title: 'Select Standard', description: 'Choose from 10 international archival standards like NOARK5, OAIS, PREMIS, E-ARK, and more.' },
-    { title: 'Build Package', description: 'Define metadata elements, attach documents, and structure your submission package using standard-compliant schemas.' },
-    { title: 'Validate & Submit', description: 'Automated validation ensures compliance before submission. Packages are verified and queued for preservation.' },
+    { title: 'Select Standard', description: 'Choose the archival standard that fits your content. Each standard provides its own entity model, field definitions, and validation rules.' },
+    { title: 'Build Package', description: 'Define metadata elements using schema-driven forms. Create nested hierarchies, attach documents, and fill standard-specific fields.' },
+    { title: 'Validate & Submit', description: 'Required fields are validated per standard. Packages are structured and queued for archival storage.' },
   ]}
   capabilities={[
-    'Schema-driven forms with dynamic field generation',
-    'Document attachment and linking',
+    'All 10 archival standards supported',
+    'Schema-driven forms with per-standard field definitions',
+    'Document attachment and cloud storage linking',
     'Nested hierarchical element structures',
+    'Standard-specific validation and defaults',
     'Multi-tenant with role-based access control',
   ]}
 />

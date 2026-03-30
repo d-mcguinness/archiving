@@ -5,6 +5,7 @@
   import { GET_ALL_USERS, UPDATE_USER } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   let users: any[] = [];
   let loading = true;
@@ -179,6 +180,7 @@
 </svelte:head>
 
 <div class="users-page">
+  <Breadcrumb items={[{ label: 'Admin', href: '/admin' }, { label: 'Users' }]} />
   <div class="page-header">
     <h1>Users</h1>
     <a href="/users/create" class="add-user-btn">Add User</a>

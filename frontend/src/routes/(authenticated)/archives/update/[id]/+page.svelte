@@ -630,9 +630,14 @@
     }
 
     // Allow creating root elements (no parent) or child elements (with parent)
-    if (!selectedParent && scheme.type !== 'root') {
-      error = 'Only root-level elements can be added without a parent';
-      return;
+    // For standards without explicit 'root' type, the ElementFormModal already
+    // filters to show only valid top-level entities, so trust its selection.
+    if (!selectedParent) {
+      const hasRootType = schemes.some((s: any) => s.type === 'root');
+      if (hasRootType && scheme.type !== 'root') {
+        error = 'Only root-level elements can be added without a parent';
+        return;
+      }
     }
 
     try {

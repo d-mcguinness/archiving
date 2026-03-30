@@ -6,6 +6,7 @@
   import { GET_AIPS_BY_TENANT, GET_ALL_USERS, GET_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   interface PageData {
     tenantId: string;
@@ -162,9 +163,10 @@
       <p class="redirect-message">Redirecting...</p>
     </div>
   {:else}
-    <div class="breadcrumb">
-      <a href="/tenants/{data.tenantId}">← Back to Tenant</a>
-    </div>
+    <Breadcrumb
+      context={{ tenantId: data.tenantId, tenantName: tenant?.displayName || tenant?.name }}
+      items={[{ label: 'AIPs' }]}
+    />
 
     <div class="page-header">
       <div class="header-content">
@@ -334,14 +336,11 @@
     50% { opacity: 0.5; }
   }
 
-  .breadcrumb { margin-bottom: 1.5rem; }
-  .breadcrumb a {
-    color: #3b82f6;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s;
-  }
+  .breadcrumb { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; font-size: 0.875rem; }
+  .breadcrumb a { color: #3b82f6; text-decoration: none; font-weight: 500; transition: color 0.2s; }
   .breadcrumb a:hover { color: #2563eb; }
+  .breadcrumb .sep { color: #94a3b8; }
+  .breadcrumb > span:last-child { color: #64748b; font-weight: 600; }
 
   .page-header {
     display: flex;

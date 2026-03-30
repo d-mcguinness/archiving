@@ -7,6 +7,7 @@
   import { gql } from '@apollo/client/core';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   interface PageData {
     tenantId: string;
@@ -130,15 +131,10 @@
       <p>Loading archive...</p>
     </div>
   {:else if archive}
-    <div class="breadcrumb">
-      <a href="/tenants/{data.tenantId}">Tenant</a>
-      <span class="sep">/</span>
-      <a href="/tenants/{data.tenantId}/archives">Archives</a>
-      <span class="sep">/</span>
-      <span>{archive.title}</span>
-      <span class="sep">/</span>
-      <span>Extract</span>
-    </div>
+    <Breadcrumb
+      context={{ tenantId: data.tenantId, tenantName: tenant?.displayName || tenant?.name }}
+      items={[{ label: 'Archives', href: '/tenants/' + data.tenantId + '/archives' }, { label: archive.title, href: '/tenants/' + data.tenantId + '/archives/' + data.archiveId + '/update' }, { label: 'Extract' }]}
+    />
 
     <div class="extract-card">
       <div class="card-header">

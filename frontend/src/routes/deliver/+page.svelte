@@ -8,21 +8,23 @@
 
 <StandardsPage
   title="Deliver"
-  oaisStep="OAIS Step 3"
-  heroDescription="The delivery function produces Dissemination Information Packages (DIPs) tailored to end users, with standard-compliant metadata and granular access controls for secure distribution."
+  oaisStep="Dissemination Packages"
+  heroDescription="The delivery workflow produces Dissemination Information Packages (DIPs) for end-user access. Create DIPs using any of 10 archival standards with tailored metadata, access controls, and multi-format export."
   packageType="dip"
   createPath="/dip/create"
   listPath="/dip"
   accentColor="#f97316"
   steps={[
-    { title: 'Select Standard', description: 'Choose the archival standard that matches your dissemination requirements.' },
-    { title: 'Configure Access', description: 'Define access restrictions, user permissions, and delivery format for the target audience.' },
-    { title: 'Generate & Distribute', description: 'Produce DIPs with compliant metadata, ready for download or integration with external systems.' },
+    { title: 'Select Standard', description: 'Choose the archival standard that matches your dissemination requirements. Each standard defines its own access metadata and delivery structure.' },
+    { title: 'Configure Access', description: 'Define access restrictions, delivery format, and target audience using standard-compliant entity fields.' },
+    { title: 'Generate & Distribute', description: 'Produce DIPs with compliant metadata, ready for download, integration, or distribution to external systems.' },
   ]}
   capabilities={[
+    'All 10 archival standards supported',
     'User-tailored access packages',
     'Granular access controls and permissions',
     'Standard-compliant delivery metadata',
     'Multi-format export support',
+    'Multi-tenant with role-based access control',
   ]}
 />

@@ -97,6 +97,8 @@ type Element {
     parent: Element
     children: [Element!]!
     fields: [Field!]!
+    outgoingLinks: [ElementLink!]!
+    incomingLinks: [ElementLink!]!
     elementIdentifier: String!
     entityName: String!
     entityType: String!
@@ -117,7 +119,29 @@ type Element {
     path: String
     depth: Int
     isLeaf: Boolean
-    descendantsCount: Int
+}
+
+type ElementLink {
+    id: ID!
+    sourceElement: Element!
+    targetElement: Element!
+    linkType: String!
+    label: String
+    description: String
+    directional: Boolean!
+    metadata: String
+    createdAt: String!
+    createdBy: String
+}
+
+input CreateElementLinkInput {
+    sourceElementId: ID!
+    targetElementId: ID!
+    linkType: String!
+    label: String
+    description: String
+    directional: Boolean
+    createdBy: String
 }
 
 # Field Type - represents metadata fields for elements
@@ -394,6 +418,54 @@ type ArchivePage {
 }
 
 # Root Query Type
+# Unified Package Types
+enum PackageStage { SIP, AIP, DIP }
+
+enum PackageStatus {
+    DRAFT, SUBMITTED, VALIDATED, ACCEPTED, REJECTED,
+    BUILDING, STORED, PREPARED, DISSEMINATED, EXPIRED
+}
+
+type ArchivalPackage {
+    id: ID!
+    tenantId: ID!
+    ownerId: ID!
+    title: String!
+    description: String
+    content: String
+    createdAt: String!
+    updatedAt: String
+    stage: PackageStage!
+    status: PackageStatus!
+    standard: ArchiveStandard!
+    sourceArchiveId: ID
+    sourcePackageId: ID
+    rootElement: Element
+    assignedUsers: [User!]!
+}
+
+input CreatePackageInput {
+    tenantId: ID
+    ownerId: ID
+    userId: ID!
+    title: String!
+    description: String
+    content: String
+    stage: PackageStage!
+    standard: ArchiveStandard!
+    sourceArchiveId: ID
+    sourcePackageId: ID
+    elementIdentifier: String!
+    entityName: String!
+    entityType: String!
+    norwegianName: String
+    englishName: String
+    elementTitle: String!
+    elementDescription: String
+    createdBy: String!
+    fields: [FieldInput!]
+}
+
 type Query {
     # Dashboard Queries
     getDashboardStats: DashboardStats!
@@ -441,6 +513,16 @@ type Query {
     getAllDips: [Dip!]!
     getDipsByTenant(tenantId: ID!): [Dip!]!
     getDip(id: ID!): Dip
+
+    # Package Queries (unified SIP/AIP/DIP)
+    getAllPackages(stage: PackageStage): [ArchivalPackage!]!
+    getPackagesByTenant(tenantId: ID!, stage: PackageStage): [ArchivalPackage!]!
+    getPackage(id: ID!): ArchivalPackage
+
+    # Element Link Queries
+    getElementLinks(elementId: ID!): [ElementLink!]!
+    getOutgoingLinks(elementId: ID!): [ElementLink!]!
+    getIncomingLinks(elementId: ID!): [ElementLink!]!
 
     # Element Queries
     getElement(id: ID!): Element
@@ -497,6 +579,15 @@ type Mutation {
     generateDip(dipId: ID!): String!
     updateDipStatus(dipId: ID!, status: DipStatus!): Dip
     deleteDip(id: ID!): Boolean!
+
+    # Package Mutations (unified SIP/AIP/DIP)
+    createPackage(input: CreatePackageInput!): ArchivalPackage!
+    updatePackageStatus(packageId: ID!, status: PackageStatus!): ArchivalPackage
+    deletePackage(id: ID!): Boolean!
+
+    # Element Link Mutations
+    createElementLink(input: CreateElementLinkInput!): ElementLink!
+    deleteElementLink(id: ID!): Boolean!
 
     # Element Mutations
     createElement(input: CreateElementInput!): Element!
