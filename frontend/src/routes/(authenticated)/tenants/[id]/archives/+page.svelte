@@ -424,7 +424,7 @@
                   <a href="/tenants/{data.tenantId}/archives/{archive.id}/update" class="btn-action btn-edit">
                     ✏️ Edit
                   </a>
-                  <a href="/tenants/{data.tenantId}/sips" class="btn-action btn-sips">
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/sips" class="btn-action btn-sips">
                     📦 SIPs
                   </a>
                   <a href="/tenants/{data.tenantId}/aips" class="btn-action btn-aips">
