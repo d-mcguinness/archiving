@@ -427,10 +427,10 @@
                   <a href="/tenants/{data.tenantId}/archives/{archive.id}/sips" class="btn-action btn-sips">
                     📦 SIPs
                   </a>
-                  <a href="/tenants/{data.tenantId}/aips" class="btn-action btn-aips">
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/aips" class="btn-action btn-aips">
                     🏗️ AIPs
                   </a>
-                  <a href="/tenants/{data.tenantId}/dips" class="btn-action btn-dips">
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/dips" class="btn-action btn-dips">
                     📤 DIPs
                   </a>
                   <a href="/tenants/{data.tenantId}/users" class="btn-action btn-users">
