@@ -27,7 +27,8 @@ public abstract class AbstractSipGenerator implements SipGenerator {
     @Override
     public String generate(Sip sip) {
         try {
-            Map<String, Object> sipPackage = buildPackage(sip);
+            SipSnapshot snapshot = SipSnapshot.from(sip);
+            Map<String, Object> sipPackage = buildPackage(snapshot);
             byte[] jsonBytes = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(sipPackage);
             String fileKey = "sips/" + sip.getId() + "/" + getStandardName().toLowerCase() + "_sip.json";
             return cloudStorageService.uploadBytes(jsonBytes, fileKey, "application/json");

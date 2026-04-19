@@ -156,6 +156,7 @@
           </div>
         {/if}
       </div>
+      <a href="/tenants/{data.tenantId}/documents/create" class="btn-create">+ Upload Document</a>
     </div>
 
     {#if error}
@@ -300,14 +301,32 @@
 
   /* Page Header */
   .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     margin-bottom: 2rem;
+    gap: 1rem;
   }
 
   .header-content {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    flex: 1;
   }
+
+  .btn-create {
+    padding: 0.75rem 1.5rem;
+    background: #8b5cf6;
+    color: white;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-create:hover { background: #7c3aed; }
 
   .page-header h1 {
     margin: 0;

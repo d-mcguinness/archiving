@@ -3,9 +3,9 @@ package com.dmc.archiving.dashboard;
 import com.dmc.archiving.archive.ArchiveService;
 import com.dmc.archiving.archive.model.Archive;
 import com.dmc.archiving.archive.model.ArchiveStatus;
-import com.dmc.archiving.common.BaseGraphQlController;
+import com.dmc.archiving.web.BaseGraphQlController;
+import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
-import com.dmc.archiving.tenancy.service.TenancyService;
 import com.dmc.archiving.user.service.UserService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -25,9 +25,9 @@ public class DashboardController extends BaseGraphQlController {
     private final ArchiveService archiveService;
 
     public DashboardController(UserService userService,
-                               TenancyService tenancyService,
+                               TenancyApi tenancyApi,
                                ArchiveService archiveService) {
-        super(tenancyService);
+        super(tenancyApi);
         this.userService = userService;
         this.archiveService = archiveService;
     }
@@ -49,7 +49,7 @@ public class DashboardController extends BaseGraphQlController {
             }
 
             try {
-                stats.setTotalTenants(tenancyService.getAllTenants().size());
+                stats.setTotalTenants(tenancyApi.getAllTenants().size());
             } catch (Exception e) {
                 log.error("Error fetching tenants count: {}", e.getMessage());
                 stats.setTotalTenants(0);
@@ -92,7 +92,7 @@ public class DashboardController extends BaseGraphQlController {
 
             // Get tenant info
             try {
-                tenant = tenancyService.getTenantById(tenantId);
+                tenant = tenancyApi.getTenantById(tenantId);
                 if (tenant != null) {
                     stats.setTenantId(tenantId);
                     stats.setTenantName(tenant.getDisplayName() != null ? tenant.getDisplayName() : tenant.getName());
@@ -109,7 +109,7 @@ public class DashboardController extends BaseGraphQlController {
 
             // Get users count for this tenant
             try {
-                stats.setTotalUsers(tenant.getUsers().size());
+                stats.setTotalUsers((int) tenancyApi.countUsersInTenant(tenantId));
             } catch (Exception e) {
                 log.error("Error fetching tenant users count: {}", e.getMessage());
                 stats.setTotalUsers(0);
@@ -157,7 +157,7 @@ public class DashboardController extends BaseGraphQlController {
 
             // Get counts
             stats.put("totalUsers", userService.getAllUsers().size());
-            stats.put("totalTenants", tenancyService.getAllTenants().size());
+            stats.put("totalTenants", tenancyApi.getAllTenants().size());
             stats.put("totalArchives", archiveService.getAllArchives().size());
 
             // Get archive breakdown by status - use service methods
@@ -186,7 +186,7 @@ public class DashboardController extends BaseGraphQlController {
 
         try {
             health.put("usersAvailable", userService != null);
-            health.put("tenantsAvailable", tenancyService != null);
+            health.put("tenantsAvailable", tenancyApi != null);
             health.put("archivesAvailable", archiveService != null);
         } catch (Exception e) {
             health.put("error", e.getMessage());
@@ -201,7 +201,7 @@ public class DashboardController extends BaseGraphQlController {
         try {
             Map<String, Object> stats = new HashMap<>();
             stats.put("users", userService.getAllUsers().size());
-            stats.put("tenants", tenancyService.getAllTenants().size());
+            stats.put("tenants", tenancyApi.getAllTenants().size());
             stats.put("archives", archiveService.getAllArchives().size());
 
             return ResponseEntity.ok(stats);

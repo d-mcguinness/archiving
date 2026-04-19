@@ -175,6 +175,7 @@
       {/if}
     </div>
     <div class="header-actions">
+      <a href="/tenants/{data.tenantId}/users/create" class="btn-create">+ Create User</a>
       <button class="btn-primary" on:click={openAddUserDialog}>
         ➕ Add User to Tenant
       </button>
@@ -323,6 +324,18 @@
     gap: 1rem;
     flex-shrink: 0;
   }
+
+  .btn-create {
+    padding: 0.5rem 1rem;
+    background: #10b981;
+    color: white;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+
+  .btn-create:hover { background: #059669; }
 
   .btn-back {
     padding: 0.5rem 1rem;

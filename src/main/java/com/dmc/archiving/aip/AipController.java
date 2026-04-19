@@ -3,9 +3,9 @@ package com.dmc.archiving.aip;
 import com.dmc.archiving.aip.input.CreateAipInput;
 import com.dmc.archiving.aip.model.Aip;
 import com.dmc.archiving.aip.model.AipStatus;
-import com.dmc.archiving.common.BaseGraphQlController;
+import com.dmc.archiving.web.BaseGraphQlController;
+import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
-import com.dmc.archiving.tenancy.service.TenancyService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -20,8 +20,8 @@ public class AipController extends BaseGraphQlController {
 
     private final AipService aipService;
 
-    public AipController(AipService aipService, TenancyService tenancyService) {
-        super(tenancyService);
+    public AipController(AipService aipService, TenancyApi tenancyApi) {
+        super(tenancyApi);
         this.aipService = aipService;
     }
 

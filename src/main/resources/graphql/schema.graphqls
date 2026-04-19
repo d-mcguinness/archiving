@@ -246,6 +246,7 @@ type Sip {
     id: ID!
     tenantId: ID!
     ownerId: ID!
+    archiveId: ID
     tenant: Tenant
     title: String!
     description: String
@@ -269,6 +270,7 @@ enum SipStatus {
 input CreateSipInput {
     tenantId: ID
     ownerId: ID
+    archiveId: ID!
     userId: ID!
     title: String!
     description: String
@@ -466,6 +468,21 @@ input CreatePackageInput {
     fields: [FieldInput!]
 }
 
+input FileMetadataInput {
+    filename: String!
+    contentType: String!
+    fileSize: String!
+    checksum: String!
+    uploadedAt: String!
+    uploaderName: String!
+    fileCount: Int!
+}
+
+type PrefillField {
+    name: String!
+    value: String!
+}
+
 type Query {
     # Dashboard Queries
     getDashboardStats: DashboardStats!
@@ -503,6 +520,7 @@ type Query {
     getAllSipsV2: [Sip!]!
     getSipsByTenantV2(tenantId: ID!): [Sip!]!
     getSip(id: ID!): Sip
+    prefillSipFields(standard: ArchiveStandard!, fileMetadata: FileMetadataInput!): [PrefillField!]!
 
     # AIP Queries
     getAllAips: [Aip!]!

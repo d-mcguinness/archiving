@@ -4,14 +4,10 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.modulith.NamedInterface;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
-import java.util.Set;
 
-@NamedInterface
 @Entity
 @Table(name = "tenants")
 @Data
@@ -53,14 +49,6 @@ public class Tenant {
 
     @Embedded
     private TenantSettings settings;
-
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-        name = "user_tenant",
-        joinColumns = @JoinColumn(name = "tenant_id"),
-        inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private Set<com.dmc.archiving.user.model.User> users = new HashSet<>();
 
     @Transient
     public String getCreatedAtString() {

@@ -2,8 +2,8 @@ package com.dmc.archiving.archive.element;
 
 import com.dmc.archiving.archive.repository.ArchiveRepository;
 import com.dmc.archiving.archive.model.Archive;
-import com.dmc.archiving.common.BaseGraphQlController;
-import com.dmc.archiving.tenancy.service.TenancyService;
+import com.dmc.archiving.web.BaseGraphQlController;
+import com.dmc.archiving.tenancy.api.TenancyApi;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -19,8 +19,8 @@ public class ElementController extends BaseGraphQlController {
     private final ElementService elementService;
     private final ArchiveRepository archiveRepository;
 
-    public ElementController(ElementService elementService, ArchiveRepository archiveRepository, TenancyService tenancyService) {
-        super(tenancyService);
+    public ElementController(ElementService elementService, ArchiveRepository archiveRepository, TenancyApi tenancyApi) {
+        super(tenancyApi);
         this.elementService = elementService;
         this.archiveRepository = archiveRepository;
     }

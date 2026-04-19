@@ -20,17 +20,22 @@ public class CacheConfig {
     @Bean
     public CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager(
-                "archives",
-                "archiveWithRelations",
-                "users",
-                "elements",
-                "userAssignments"
+                "archives",             // Individual archives
+                "archiveWithRelations", // Archives with relationships
+                "archivesByTenant",     // Archives filtered by tenant
+                "archivesByOwner",      // Archives filtered by owner
+                "users",                // User details
+                "tenants",              // Tenant details
+                "elements",             // Archive elements
+                "userAssignments",      // User assignments
+                "archiveStatistics",    // Dashboard statistics
+                "documents"             // Documents
         );
 
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .maximumSize(1000)  // Maximum 1000 entries per cache
                 .expireAfterWrite(10, TimeUnit.MINUTES)  // Expire after 10 minutes
-                .recordStats());  // Enable cache statistics
+                .recordStats());  // Enable cache statistics for monitoring
 
         return cacheManager;
     }

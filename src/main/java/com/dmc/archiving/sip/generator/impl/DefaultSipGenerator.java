@@ -1,14 +1,11 @@
 package com.dmc.archiving.sip.generator.impl;
 
-import com.dmc.archiving.archive.element.Element;
-import com.dmc.archiving.archive.element.field.Field;
 import com.dmc.archiving.sip.generator.AbstractSipGenerator;
-import com.dmc.archiving.sip.model.Sip;
+import com.dmc.archiving.sip.generator.SipSnapshot;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -24,31 +21,25 @@ public class DefaultSipGenerator extends AbstractSipGenerator {
     }
 
     @Override
-    public Map<String, Object> buildPackage(Sip sip) {
+    public Map<String, Object> buildPackage(SipSnapshot s) {
         Map<String, Object> pkg = new LinkedHashMap<>();
-        pkg.put("standard", sip.getStandard() != null ? sip.getStandard().name() : "UNKNOWN");
-        pkg.put("sipId", sip.getId());
-        pkg.put("title", sip.getTitle());
-        pkg.put("description", sip.getDescription());
-        pkg.put("status", sip.getStatus().name());
-        pkg.put("createdAt", sip.getCreatedAtString());
+        pkg.put("standard", s.standard());
+        pkg.put("sipId", s.id());
+        pkg.put("title", s.title());
+        pkg.put("description", s.description());
+        pkg.put("status", s.status());
+        pkg.put("createdAt", s.createdAt());
 
-        Element root = sip.getRootElement();
-        if (root != null) {
+        if (s.hasRootElement()) {
             Map<String, Object> rootElement = new LinkedHashMap<>();
-            rootElement.put("elementIdentifier", root.getElementIdentifier());
-            rootElement.put("entityName", root.getEntityName());
-            rootElement.put("entityType", root.getEntityType());
-            rootElement.put("title", root.getTitle());
-            rootElement.put("description", root.getDescription());
+            rootElement.put("elementIdentifier", s.elementIdentifier());
+            rootElement.put("entityName", s.entityName());
+            rootElement.put("entityType", s.entityType());
+            rootElement.put("title", s.elementTitle());
+            rootElement.put("description", s.elementDescription());
 
-            List<Field> fields = root.getFields();
-            if (fields != null && !fields.isEmpty()) {
-                Map<String, String> fieldMap = new LinkedHashMap<>();
-                for (Field field : fields) {
-                    fieldMap.put(field.getName(), field.getValue());
-                }
-                rootElement.put("fields", fieldMap);
+            if (s.hasFields()) {
+                rootElement.put("fields", s.fields());
             }
 
             pkg.put("rootElement", rootElement);

@@ -9,9 +9,9 @@ import com.dmc.archiving.archive.model.ArchiveStatus;
 import com.dmc.archiving.archive.strategy.ArchiveStrategy;
 import com.dmc.archiving.archive.strategy.ArchiveStrategyFactory;
 import com.dmc.archiving.archive.strategy.ValidationResult;
-import com.dmc.archiving.common.BaseGraphQlController;
+import com.dmc.archiving.web.BaseGraphQlController;
+import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
-import com.dmc.archiving.tenancy.service.TenancyService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,8 +37,8 @@ public class ArchiveController extends BaseGraphQlController {
     private final ArchiveService archiveService;
     private final ArchiveStrategyFactory strategyFactory;
 
-    public ArchiveController(ArchiveService archiveService, ArchiveStrategyFactory strategyFactory, TenancyService tenancyService) {
-        super(tenancyService);
+    public ArchiveController(ArchiveService archiveService, ArchiveStrategyFactory strategyFactory, TenancyApi tenancyApi) {
+        super(tenancyApi);
         this.archiveService = archiveService;
         this.strategyFactory = strategyFactory;
     }

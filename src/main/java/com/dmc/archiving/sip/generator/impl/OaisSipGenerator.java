@@ -1,14 +1,11 @@
 package com.dmc.archiving.sip.generator.impl;
 
-import com.dmc.archiving.archive.element.Element;
-import com.dmc.archiving.archive.element.field.Field;
 import com.dmc.archiving.sip.generator.AbstractSipGenerator;
-import com.dmc.archiving.sip.model.Sip;
+import com.dmc.archiving.sip.generator.SipSnapshot;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -24,40 +21,34 @@ public class OaisSipGenerator extends AbstractSipGenerator {
     }
 
     @Override
-    public Map<String, Object> buildPackage(Sip sip) {
+    public Map<String, Object> buildPackage(SipSnapshot s) {
         Map<String, Object> pkg = new LinkedHashMap<>();
         pkg.put("standard", "OAIS");
-        pkg.put("sipId", sip.getId());
-        pkg.put("title", sip.getTitle());
-        pkg.put("status", sip.getStatus().name());
-        pkg.put("createdAt", sip.getCreatedAtString());
+        pkg.put("sipId", s.id());
+        pkg.put("title", s.title());
+        pkg.put("status", s.status());
+        pkg.put("createdAt", s.createdAt());
 
         Map<String, Object> informationPackage = new LinkedHashMap<>();
         informationPackage.put("type", "SIP");
-        informationPackage.put("title", sip.getTitle());
-        informationPackage.put("description", sip.getDescription());
+        informationPackage.put("title", s.title());
+        informationPackage.put("description", s.description());
 
         Map<String, Object> contentInformation = new LinkedHashMap<>();
         Map<String, Object> preservationDescription = new LinkedHashMap<>();
 
-        Element root = sip.getRootElement();
-        if (root != null) {
-            contentInformation.put("entityName", root.getEntityName());
-            contentInformation.put("entityType", root.getEntityType());
-            contentInformation.put("title", root.getTitle());
+        if (s.hasRootElement()) {
+            contentInformation.put("entityName", s.entityName());
+            contentInformation.put("entityType", s.entityType());
+            contentInformation.put("title", s.elementTitle());
 
-            List<Field> fields = root.getFields();
-            if (fields != null && !fields.isEmpty()) {
-                Map<String, String> fieldMap = new LinkedHashMap<>();
-                for (Field field : fields) {
-                    fieldMap.put(field.getName(), field.getValue());
-                }
-                contentInformation.put("dataObjects", fieldMap);
+            if (s.hasFields()) {
+                contentInformation.put("dataObjects", s.fields());
             }
 
-            preservationDescription.put("createdAt", root.getCreatedAt() != null ? root.getCreatedAt().toString() : null);
-            preservationDescription.put("createdBy", root.getCreatedBy());
-            preservationDescription.put("status", root.getStatus());
+            preservationDescription.put("createdAt", s.elementCreatedAt());
+            preservationDescription.put("createdBy", s.elementCreatedBy());
+            preservationDescription.put("status", s.elementStatus());
         }
 
         informationPackage.put("contentInformation", contentInformation);

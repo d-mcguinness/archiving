@@ -2,6 +2,8 @@
   import { auth } from '$lib/stores/authStore';
   import RoleGate from '$lib/components/RoleGate.svelte';
 
+  export let data: any;
+
   $: currentRole = $auth.role;
   $: currentUser = $auth.user;
 

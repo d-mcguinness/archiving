@@ -1,14 +1,11 @@
 package com.dmc.archiving.sip.generator.impl;
 
-import com.dmc.archiving.archive.element.Element;
-import com.dmc.archiving.archive.element.field.Field;
 import com.dmc.archiving.sip.generator.AbstractSipGenerator;
-import com.dmc.archiving.sip.model.Sip;
+import com.dmc.archiving.sip.generator.SipSnapshot;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -24,37 +21,31 @@ public class Noark5SipGenerator extends AbstractSipGenerator {
     }
 
     @Override
-    public Map<String, Object> buildPackage(Sip sip) {
+    public Map<String, Object> buildPackage(SipSnapshot s) {
         Map<String, Object> pkg = new LinkedHashMap<>();
         pkg.put("standard", "NOARK5");
         pkg.put("standardVersion", "5.0");
-        pkg.put("sipId", sip.getId());
-        pkg.put("title", sip.getTitle());
-        pkg.put("description", sip.getDescription());
-        pkg.put("status", sip.getStatus().name());
-        pkg.put("createdAt", sip.getCreatedAtString());
+        pkg.put("sipId", s.id());
+        pkg.put("title", s.title());
+        pkg.put("description", s.description());
+        pkg.put("status", s.status());
+        pkg.put("createdAt", s.createdAt());
 
         Map<String, Object> arkivdel = new LinkedHashMap<>();
-        arkivdel.put("systemID", sip.getId().toString());
-        arkivdel.put("tittel", sip.getTitle());
-        arkivdel.put("beskrivelse", sip.getDescription() != null ? sip.getDescription() : "");
+        arkivdel.put("systemID", s.id().toString());
+        arkivdel.put("tittel", s.title());
+        arkivdel.put("beskrivelse", s.description() != null ? s.description() : "");
         arkivdel.put("dokumentmedium", "Elektronisk arkiv");
 
-        Element root = sip.getRootElement();
-        if (root != null) {
-            arkivdel.put("elementIdentifier", root.getElementIdentifier());
-            arkivdel.put("entityName", root.getEntityName());
-            arkivdel.put("entityType", root.getEntityType());
-            arkivdel.put("norwegianName", root.getNorwegianName());
-            arkivdel.put("englishName", root.getEnglishName());
+        if (s.hasRootElement()) {
+            arkivdel.put("elementIdentifier", s.elementIdentifier());
+            arkivdel.put("entityName", s.entityName());
+            arkivdel.put("entityType", s.entityType());
+            arkivdel.put("norwegianName", s.norwegianName());
+            arkivdel.put("englishName", s.englishName());
 
-            List<Field> fields = root.getFields();
-            if (fields != null && !fields.isEmpty()) {
-                Map<String, String> fieldMap = new LinkedHashMap<>();
-                for (Field field : fields) {
-                    fieldMap.put(field.getName(), field.getValue());
-                }
-                arkivdel.put("fields", fieldMap);
+            if (s.hasFields()) {
+                arkivdel.put("fields", s.fields());
             }
         }
 

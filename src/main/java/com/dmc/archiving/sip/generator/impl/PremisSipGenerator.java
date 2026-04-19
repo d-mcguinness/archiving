@@ -1,14 +1,11 @@
 package com.dmc.archiving.sip.generator.impl;
 
-import com.dmc.archiving.archive.element.Element;
-import com.dmc.archiving.archive.element.field.Field;
 import com.dmc.archiving.sip.generator.AbstractSipGenerator;
-import com.dmc.archiving.sip.model.Sip;
+import com.dmc.archiving.sip.generator.SipSnapshot;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -24,41 +21,35 @@ public class PremisSipGenerator extends AbstractSipGenerator {
     }
 
     @Override
-    public Map<String, Object> buildPackage(Sip sip) {
+    public Map<String, Object> buildPackage(SipSnapshot s) {
         Map<String, Object> pkg = new LinkedHashMap<>();
         pkg.put("standard", "PREMIS");
-        pkg.put("sipId", sip.getId());
-        pkg.put("title", sip.getTitle());
-        pkg.put("status", sip.getStatus().name());
-        pkg.put("createdAt", sip.getCreatedAtString());
+        pkg.put("sipId", s.id());
+        pkg.put("title", s.title());
+        pkg.put("status", s.status());
+        pkg.put("createdAt", s.createdAt());
 
         Map<String, Object> premisObject = new LinkedHashMap<>();
-        premisObject.put("objectIdentifier", sip.getId().toString());
+        premisObject.put("objectIdentifier", s.id().toString());
         premisObject.put("objectCategory", "representation");
 
         Map<String, Object> premisEvent = new LinkedHashMap<>();
         premisEvent.put("eventType", "creation");
-        premisEvent.put("eventDateTime", sip.getCreatedAtString());
+        premisEvent.put("eventDateTime", s.createdAt());
 
         Map<String, Object> premisAgent = new LinkedHashMap<>();
         premisAgent.put("agentType", "software");
 
-        Element root = sip.getRootElement();
-        if (root != null) {
-            premisObject.put("entityName", root.getEntityName());
-            premisObject.put("entityType", root.getEntityType());
-            premisObject.put("title", root.getTitle());
+        if (s.hasRootElement()) {
+            premisObject.put("entityName", s.entityName());
+            premisObject.put("entityType", s.entityType());
+            premisObject.put("title", s.elementTitle());
 
-            List<Field> fields = root.getFields();
-            if (fields != null && !fields.isEmpty()) {
-                Map<String, String> fieldMap = new LinkedHashMap<>();
-                for (Field field : fields) {
-                    fieldMap.put(field.getName(), field.getValue());
-                }
-                premisObject.put("significantProperties", fieldMap);
+            if (s.hasFields()) {
+                premisObject.put("significantProperties", s.fields());
             }
 
-            premisAgent.put("agentIdentifier", root.getCreatedBy());
+            premisAgent.put("agentIdentifier", s.elementCreatedBy());
         }
 
         pkg.put("premis:object", premisObject);

@@ -539,6 +539,15 @@ export const UNASSIGN_USER_FROM_ARCHIVE: DocumentNode = gql`
   }
 `;
 
+export const PREFILL_SIP_FIELDS: DocumentNode = gql`
+  query PrefillSipFields($standard: ArchiveStandard!, $fileMetadata: FileMetadataInput!) {
+    prefillSipFields(standard: $standard, fileMetadata: $fileMetadata) {
+      name
+      value
+    }
+  }
+`;
+
 // SIP V2 Queries (dedicated Sip entity)
 export const GET_ALL_SIPS_V2: DocumentNode = gql`
   query GetAllSipsV2 {
@@ -546,6 +555,7 @@ export const GET_ALL_SIPS_V2: DocumentNode = gql`
       id
       ownerId
       tenantId
+      archiveId
       title
       description
       createdAt
@@ -581,6 +591,7 @@ export const GET_SIPS_BY_TENANT_V2: DocumentNode = gql`
       id
       ownerId
       tenantId
+      archiveId
       title
       description
       createdAt
@@ -704,6 +715,7 @@ export const CREATE_SIP: DocumentNode = gql`
       id
       ownerId
       tenantId
+      archiveId
       title
       description
       createdAt

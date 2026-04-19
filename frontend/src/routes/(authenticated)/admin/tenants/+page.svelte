@@ -273,6 +273,15 @@
                 <a href="/tenants/{tenant.id}/archives" class="btn-action btn-archives">
                   📁 Archives
                 </a>
+                <a href="/tenants/{tenant.id}/sips" class="btn-action btn-sips">
+                  📦 SIPs
+                </a>
+                <a href="/tenants/{tenant.id}/aips" class="btn-action btn-aips">
+                  🏗️ AIPs
+                </a>
+                <a href="/tenants/{tenant.id}/dips" class="btn-action btn-dips">
+                  📤 DIPs
+                </a>
               </td>
             </tr>
           {/each}
@@ -726,6 +735,33 @@
 
   .btn-archives:hover {
     background: #7c3aed;
+  }
+
+  .btn-sips {
+    background: #ec4899;
+    color: white;
+  }
+
+  .btn-sips:hover {
+    background: #db2777;
+  }
+
+  .btn-aips {
+    background: #6366f1;
+    color: white;
+  }
+
+  .btn-aips:hover {
+    background: #4f46e5;
+  }
+
+  .btn-dips {
+    background: #f59e0b;
+    color: white;
+  }
+
+  .btn-dips:hover {
+    background: #d97706;
   }
 
   .btn-delete {

@@ -57,6 +57,7 @@ public class SipService {
         Sip sip = new Sip();
         sip.setTenantId(tenantId);
         sip.setOwnerId(ownerId);
+        sip.setArchiveId(input.getArchiveId());
         sip.setTitle(input.getTitle());
         sip.setDescription(input.getDescription());
         sip.setContent(input.getContent());

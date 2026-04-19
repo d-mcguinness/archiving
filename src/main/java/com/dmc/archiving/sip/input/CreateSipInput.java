@@ -20,6 +20,9 @@ public class CreateSipInput {
 
     private Long ownerId;
 
+    @NotNull(message = "Archive ID is required")
+    private Long archiveId;
+
     @NotNull(message = "User ID is required")
     private Long userId;
 

@@ -53,13 +53,14 @@
     currentRole = authState.role;
     const tenantId = authState.tenantId?.toString() ?? null;
 
-    // Check access - ADMIN can view any tenant, TENANT can view their own
+    // Check access - ADMIN can view any tenant, TENANT/USER can view their own
     if (currentRole === 'ADMIN') {
       hasAccess = true;
     } else if (currentRole === 'TENANT' && tenantId === data.tenantId) {
       hasAccess = true;
+    } else if (currentRole === 'USER' && tenantId === data.tenantId) {
+      hasAccess = true;
     } else if (currentRole === 'USER') {
-      // USER should not access this page
       hasAccess = false;
       loading = false;
       toasts.error('You do not have permission to view this page');
@@ -433,7 +434,7 @@
                   <a href="/tenants/{data.tenantId}/archives/{archive.id}/dips" class="btn-action btn-dips">
                     📤 DIPs
                   </a>
-                  <a href="/tenants/{data.tenantId}/users" class="btn-action btn-users">
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/users" class="btn-action btn-users">
                     👥 Users
                   </a>
                   {#if currentRole === 'ADMIN'}

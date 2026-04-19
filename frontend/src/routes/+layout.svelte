@@ -5,6 +5,8 @@
   import { onMount } from 'svelte';
   import { auth } from '$lib/stores/authStore';
 
+  export let data: any;
+
   // Reactive declaration ensures this updates whenever the route changes
   $: currentPath = $page.url.pathname;
 
@@ -154,6 +156,11 @@
         <div class="auth-section">
           {#if $auth.isLoggedIn}
             <span class="user-name-display">👤 {$auth.user?.name}</span>
+            {#if auth.isMimicking()}
+              <button class="exit-mimic-button" on:click={auth.exitMimic}>
+                🎭 Exit Mimic
+              </button>
+            {/if}
             <button class="logout-button" on:click={auth.logout}>
               Logout
             </button>
@@ -386,6 +393,26 @@
   .logout-button:hover {
     background: rgba(239, 68, 68, 0.35);
     border-color: rgba(239, 68, 68, 0.7);
+  }
+
+  .exit-mimic-button {
+    padding: 0.625rem 1.25rem;
+    background: rgba(139, 92, 246, 0.35);
+    color: white;
+    border: 2px solid rgba(139, 92, 246, 0.6);
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .exit-mimic-button:hover {
+    background: rgba(139, 92, 246, 0.5);
+    border-color: rgba(139, 92, 246, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   }
 
   main {

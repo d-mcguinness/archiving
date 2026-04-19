@@ -1,7 +1,5 @@
 package com.dmc.archiving.user;
 
-import com.dmc.archiving.common.BaseGraphQlController;
-import com.dmc.archiving.tenancy.service.TenancyService;
 import com.dmc.archiving.user.input.CreateUserInput;
 import com.dmc.archiving.user.model.User;
 import com.dmc.archiving.user.service.UserService;
@@ -13,12 +11,11 @@ import org.springframework.stereotype.Controller;
 import java.util.List;
 
 @Controller
-public class UserController extends BaseGraphQlController {
+public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService, TenancyService tenancyService) {
-        super(tenancyService);
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 

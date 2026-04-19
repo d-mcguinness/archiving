@@ -178,7 +178,7 @@
           </div>
         {/if}
       </div>
-      <a href="/aip/create" class="btn-create">+ Create AIP</a>
+      <a href="/tenants/{data.tenantId}/aips/create" class="btn-create">+ Create AIP</a>
     </div>
 
     {#if error}
@@ -197,7 +197,7 @@
         <span class="empty-icon">🏗️</span>
         <h3>No AIPs found</h3>
         <p>This tenant doesn't have any Archival Information Packages yet.</p>
-        <a href="/aip/create" class="btn-primary-link">Create AIP</a>
+        <a href="/tenants/{data.tenantId}/aips/create" class="btn-primary-link">Create AIP</a>
       </div>
     {:else}
       <div class="aips-count">

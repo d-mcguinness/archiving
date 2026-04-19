@@ -13,9 +13,6 @@ import java.util.Optional;
 public interface TenancyRepository extends JpaRepository<Tenant, Long> {
     Optional<Tenant> findByDomain(String domain);
 
-    @Query("SELECT t FROM Tenant t JOIN t.users u WHERE u.id = :userId")
-    List<Tenant> findTenantsByUserId(@Param("userId") Long userId);
-
     @Query("SELECT t FROM Tenant t WHERE t.ownerId = :ownerId")
     List<Tenant> findByOwnerId(@Param("ownerId") String ownerId);
 }

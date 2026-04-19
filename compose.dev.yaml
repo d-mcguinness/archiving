@@ -19,3 +19,19 @@ services:
       # Let Spring Boot discover and auto-configure a DataSource
       org.springframework.boot.service-connection: postgresql
 
+  localstack:
+    image: localstack/localstack:3
+    container_name: archiving-localstack-dev
+    environment:
+      SERVICES: s3
+      DEFAULT_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    ports:
+      - "4566:4566"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+

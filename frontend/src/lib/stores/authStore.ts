@@ -83,11 +83,21 @@ function createAuthStore() {
   }
 
   function login(token: string, user: any, role: string, tenantId?: number | null) {
+    // Save original session before mimic
+    if (token.startsWith('Bearer_mimic_') && !localStorage.getItem('auth_original_token')) {
+      localStorage.setItem('auth_original_token', localStorage.getItem('auth_token') || '');
+      localStorage.setItem('auth_original_user', localStorage.getItem('auth_user') || '');
+      localStorage.setItem('auth_original_role', localStorage.getItem('auth_role') || '');
+      localStorage.setItem('auth_original_tenantId', localStorage.getItem('auth_tenantId') || '');
+    }
+
     localStorage.setItem('auth_token', token || '');
     localStorage.setItem('auth_user', JSON.stringify(user));
     localStorage.setItem('auth_role', role);
     if (tenantId) {
       localStorage.setItem('auth_tenantId', tenantId.toString());
+    } else {
+      localStorage.removeItem('auth_tenantId');
     }
     set({
       isLoggedIn: true,
@@ -95,6 +105,43 @@ function createAuthStore() {
       role,
       tenantId: tenantId ?? null
     });
+  }
+
+  function isMimicking(): boolean {
+    try {
+      const token = localStorage.getItem('auth_token');
+      return token?.startsWith('Bearer_mimic_') || false;
+    } catch {
+      return false;
+    }
+  }
+
+  function exitMimic() {
+    const originalToken = localStorage.getItem('auth_original_token');
+    const originalUser = localStorage.getItem('auth_original_user');
+    const originalRole = localStorage.getItem('auth_original_role');
+    const originalTenantId = localStorage.getItem('auth_original_tenantId');
+
+    if (originalToken && originalUser) {
+      localStorage.setItem('auth_token', originalToken);
+      localStorage.setItem('auth_user', originalUser);
+      localStorage.setItem('auth_role', originalRole || '');
+      if (originalTenantId) {
+        localStorage.setItem('auth_tenantId', originalTenantId);
+      } else {
+        localStorage.removeItem('auth_tenantId');
+      }
+
+      localStorage.removeItem('auth_original_token');
+      localStorage.removeItem('auth_original_user');
+      localStorage.removeItem('auth_original_role');
+      localStorage.removeItem('auth_original_tenantId');
+
+      set(readFromLocalStorage());
+      goto('/admin');
+    } else {
+      logout();
+    }
   }
 
   function logout() {
@@ -110,7 +157,9 @@ function createAuthStore() {
     subscribe,
     init,
     login,
-    logout
+    logout,
+    isMimicking,
+    exitMimic
   };
 }
 

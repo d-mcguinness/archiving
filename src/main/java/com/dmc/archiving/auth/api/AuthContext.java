@@ -1,4 +1,4 @@
-package com.dmc.archiving.auth;
+package com.dmc.archiving.auth.api;
 
 public record AuthContext(Long userId, String role, String username) {
 

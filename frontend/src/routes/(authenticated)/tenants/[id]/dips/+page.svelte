@@ -178,7 +178,7 @@
           </div>
         {/if}
       </div>
-      <a href="/dip/create" class="btn-create">+ Create DIP</a>
+      <a href="/tenants/{data.tenantId}/dips/create" class="btn-create">+ Create DIP</a>
     </div>
 
     {#if error}
@@ -197,7 +197,7 @@
         <span class="empty-icon">📤</span>
         <h3>No DIPs found</h3>
         <p>This tenant doesn't have any Dissemination Information Packages yet.</p>
-        <a href="/dip/create" class="btn-primary-link">Create DIP</a>
+        <a href="/tenants/{data.tenantId}/dips/create" class="btn-primary-link">Create DIP</a>
       </div>
     {:else}
       <div class="dips-count">

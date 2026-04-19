@@ -1,3 +1,4 @@
+
 <script lang="ts">
   import { onMount } from 'svelte';
   import { get } from 'svelte/store';
@@ -183,7 +184,7 @@
           </div>
         {/if}
       </div>
-      <a href="/sip/create" class="btn-create">+ Create SIP</a>
+      <a href="/tenants/{data.tenantId}/sips/create" class="btn-create">+ Create SIP</a>
     </div>
 
     {#if error}
@@ -202,7 +203,7 @@
         <span class="empty-icon">📦</span>
         <h3>No SIPs found</h3>
         <p>This tenant doesn't have any Submission Information Packages yet.</p>
-        <a href="/sip/create" class="btn-primary-link">Create SIP</a>
+        <a href="/tenants/{data.tenantId}/sips/create" class="btn-primary-link">Create SIP</a>
       </div>
     {:else}
       <div class="sips-count">
@@ -258,9 +259,15 @@
                 <td class="owner-cell">{getUserName(sip.ownerId)}</td>
                 <td class="date-cell">{new Date(sip.createdAt).toLocaleDateString()}</td>
                 <td class="actions-cell">
-                  <a href="/archives/update/{sip.id}" class="btn-action btn-edit">
-                    ✏️ Edit
-                  </a>
+                  {#if sip.archiveId}
+                    <a href="/tenants/{data.tenantId}/archives/{sip.archiveId}/sips" class="btn-action btn-edit">
+                      ✏️ Edit
+                    </a>
+                  {:else}
+                    <a href="/sip/edit/{sip.id}" class="btn-action btn-edit">
+                      ✏️ Edit
+                    </a>
+                  {/if}
                   <button class="btn-action btn-extract" on:click={() => openExtractDialog(sip)}>
                     📥 Extract
                   </button>

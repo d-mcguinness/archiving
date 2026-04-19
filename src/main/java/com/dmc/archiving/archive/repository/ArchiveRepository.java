@@ -5,6 +5,7 @@ import com.dmc.archiving.archive.model.ArchiveStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.repository.query.Param;
@@ -12,8 +13,12 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository for Archive entities
+ * Extends JpaSpecificationExecutor for dynamic query support
+ */
 @Repository
-public interface ArchiveRepository extends JpaRepository<Archive, Long> {
+public interface ArchiveRepository extends JpaRepository<Archive, Long>, JpaSpecificationExecutor<Archive> {
 
     // ========== Paginated Queries (Primary methods for scalability) ==========
 

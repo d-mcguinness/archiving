@@ -162,9 +162,9 @@
       email: user.email,
       role: 'USER',
     };
-    auth.login(token, mimicData, 'USER', null);
+    auth.login(token, mimicData, 'USER', parseInt(data.tenantId, 10));
     toasts.success(`Now viewing as ${user.name}`);
-    goto('/');
+    goto(`/tenants/${data.tenantId}/users/${user.id}`);
   }
 
   function formatFileSize(bytes: number): string {

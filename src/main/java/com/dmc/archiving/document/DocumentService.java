@@ -5,7 +5,7 @@ import com.dmc.archiving.document.model.DocumentStatus;
 import com.dmc.archiving.document.repository.DocumentRepository;
 import com.dmc.archiving.storage.CloudStorageService;
 import com.dmc.archiving.storage.UploadResult;
-import com.dmc.archiving.tenancy.service.TenancyService;
+import com.dmc.archiving.tenancy.api.TenancyApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -24,14 +24,14 @@ public class DocumentService {
 
     private final DocumentRepository documentRepository;
     private final CloudStorageService cloudStorageService;
-    private final TenancyService tenancyService;
+    private final TenancyApi tenancyApi;
 
     public DocumentService(DocumentRepository documentRepository,
                           CloudStorageService cloudStorageService,
-                          TenancyService tenancyService) {
+                          TenancyApi tenancyApi) {
         this.documentRepository = documentRepository;
         this.cloudStorageService = cloudStorageService;
-        this.tenancyService = tenancyService;
+        this.tenancyApi = tenancyApi;
     }
 
     /**
@@ -101,7 +101,7 @@ public class DocumentService {
      */
     public List<Document> getDocumentsByUserTenants(Long userId) {
         // Get all tenant IDs the user belongs to (using user_tenant table)
-        List<Long> tenantIds = tenancyService.getTenantIdsByUserId(userId);
+        List<Long> tenantIds = tenancyApi.getTenantIdsByUserId(userId);
 
         if (tenantIds.isEmpty()) {
             log.warn("User {} does not belong to any tenants", userId);

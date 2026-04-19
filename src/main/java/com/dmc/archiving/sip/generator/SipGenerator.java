@@ -7,5 +7,5 @@ import java.util.Map;
 public interface SipGenerator {
     String generate(Sip sip);
     String getStandardName();
-    Map<String, Object> buildPackage(Sip sip);
+    Map<String, Object> buildPackage(SipSnapshot snapshot);
 }

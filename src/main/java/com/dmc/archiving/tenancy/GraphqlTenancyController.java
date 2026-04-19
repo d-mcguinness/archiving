@@ -1,7 +1,5 @@
 package com.dmc.archiving.tenancy;
 
-import com.dmc.archiving.common.BaseGraphQlController;
-import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.input.CreateTenantInput;
 import com.dmc.archiving.tenancy.input.UpdateTenantInput;
 import com.dmc.archiving.tenancy.model.Tenant;
@@ -13,16 +11,19 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Controller
-public class GraphqlTenancyController extends BaseGraphQlController implements TenancyApi {
+public class GraphqlTenancyController {
+
+    private final TenancyService tenancyService;
 
     public GraphqlTenancyController(TenancyService tenancyService) {
-        super(tenancyService);
+        this.tenancyService = tenancyService;
     }
 
-    // Query operations
     @QueryMapping
     public List<Tenant> getAllTenants() {
         return tenancyService.getAllTenants();
@@ -43,23 +44,6 @@ public class GraphqlTenancyController extends BaseGraphQlController implements T
         return tenancyService.getTenantsByOwner(ownerId);
     }
 
-    @Override
-    public boolean isTenantActive(Long tenantId) {
-        return tenancyService.isTenantActive(tenantId);
-    }
-
-    @Override
-    public Tenant getTenantById(Long tenantId) {
-        return tenancyService.getTenantById(tenantId);
-    }
-
-    @Override
-    public boolean isUserInTenant(Long userId, Long tenantId) {
-        return tenancyService.isUserInTenant(userId, tenantId);
-    }
-
-
-    // Mutation operations
     @MutationMapping
     public Tenant createTenant(@Argument CreateTenantInput input) {
         return tenancyService.createTenant(input);
@@ -95,7 +79,6 @@ public class GraphqlTenancyController extends BaseGraphQlController implements T
         return tenancyService.deleteTenant(id);
     }
 
-    // Field resolvers for datetime-to-string conversion
     @SchemaMapping(typeName = "Tenant", field = "createdAt")
     public String createdAt(Tenant tenant) {
         return formatDateTime(tenant.getCreatedAt());
@@ -106,10 +89,13 @@ public class GraphqlTenancyController extends BaseGraphQlController implements T
         return formatDateTime(tenant.getUpdatedAt());
     }
 
-    // Map TenantSettings.maxStorageBytes (Long) to String for GraphQL schema
     @SchemaMapping(typeName = "TenantSettings", field = "maxStorageBytes")
     public String maxStorageBytes(com.dmc.archiving.tenancy.model.TenantSettings settings) {
         Long value = settings.getMaxStorageBytes();
         return value != null ? value.toString() : null;
+    }
+
+    private static String formatDateTime(LocalDateTime dt) {
+        return dt != null ? dt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
     }
 }

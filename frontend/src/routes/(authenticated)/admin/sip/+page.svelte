@@ -148,7 +148,7 @@
   <Breadcrumb items={[{ label: 'Admin', href: '/admin' }, { label: 'SIPs' }]} />
   <div class="page-header">
     <h1>📦 Submission Information Packages</h1>
-    <a href="/sip/create" class="btn-create">+ Create SIP</a>
+    <a href="/admin/sip/create" class="btn-create">+ Create SIP</a>
   </div>
 
   {#if error}
@@ -167,7 +167,7 @@
       <span class="empty-icon">📦</span>
       <h3>No SIPs found</h3>
       <p>Create your first Submission Information Package to get started.</p>
-      <a href="/sip/create" class="btn-primary-link">Create SIP</a>
+      <a href="/admin/sip/create" class="btn-primary-link">Create SIP</a>
     </div>
   {:else}
     <div class="sips-count">

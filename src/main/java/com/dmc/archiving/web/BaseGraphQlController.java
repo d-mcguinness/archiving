@@ -1,9 +1,9 @@
-package com.dmc.archiving.common;
+package com.dmc.archiving.web;
 
-import com.dmc.archiving.auth.AccessDeniedException;
-import com.dmc.archiving.auth.AuthContext;
+import com.dmc.archiving.auth.api.AccessDeniedException;
+import com.dmc.archiving.auth.api.AuthContext;
+import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
-import com.dmc.archiving.tenancy.service.TenancyService;
 import graphql.schema.DataFetchingEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,10 +15,10 @@ import java.util.Arrays;
 public abstract class BaseGraphQlController {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    protected final TenancyService tenancyService;
+    protected final TenancyApi tenancyApi;
 
-    protected BaseGraphQlController(TenancyService tenancyService) {
-        this.tenancyService = tenancyService;
+    protected BaseGraphQlController(TenancyApi tenancyApi) {
+        this.tenancyApi = tenancyApi;
     }
 
     protected Tenant resolveTenant(Long tenantId, Long entityId, String entityType) {
@@ -26,7 +26,7 @@ public abstract class BaseGraphQlController {
             return null;
         }
         try {
-            return tenancyService.getTenantById(tenantId);
+            return tenancyApi.getTenantById(tenantId);
         } catch (Exception e) {
             log.warn("Could not fetch tenant {} for {} {}: {}",
                 tenantId, entityType, entityId, e.getMessage());
@@ -37,8 +37,6 @@ public abstract class BaseGraphQlController {
     protected String formatDateTime(LocalDateTime dt) {
         return dt != null ? dt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null;
     }
-
-    // Auth helpers
 
     protected AuthContext getAuthContext(DataFetchingEnvironment env) {
         AuthContext ctx = env.getGraphQlContext().get("authContext");
@@ -69,10 +67,10 @@ public abstract class BaseGraphQlController {
             throw new AccessDeniedException("Authentication required");
         }
         if (ctx.isAdmin()) {
-            return; // Admins can access any tenant
+            return;
         }
         if (ctx.isTenant() || ctx.isUser()) {
-            if (!tenancyService.isUserInTenant(ctx.userId(), tenantId)) {
+            if (!tenancyApi.isUserInTenant(ctx.userId(), tenantId)) {
                 throw new AccessDeniedException("Access denied: user does not belong to tenant " + tenantId);
             }
         }

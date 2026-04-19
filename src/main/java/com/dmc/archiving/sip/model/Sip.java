@@ -24,7 +24,8 @@ import java.util.Objects;
     @Index(name = "idx_sip_created_at", columnList = "created_at"),
     @Index(name = "idx_sip_updated_at", columnList = "updated_at"),
     @Index(name = "idx_sip_tenant_status", columnList = "tenant_id, status"),
-    @Index(name = "idx_sip_owner_status", columnList = "owner_id, status")
+    @Index(name = "idx_sip_owner_status", columnList = "owner_id, status"),
+    @Index(name = "idx_sip_archive_id", columnList = "archive_id")
 })
 @Getter
 @Setter
@@ -40,6 +41,9 @@ public class Sip {
 
     @Column(name = "owner_id", nullable = false)
     private Long ownerId;
+
+    @Column(name = "archive_id")
+    private Long archiveId;
 
     @Column(name = "title", nullable = false, length = 255)
     private String title;

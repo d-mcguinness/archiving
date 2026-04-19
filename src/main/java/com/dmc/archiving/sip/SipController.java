@@ -1,11 +1,14 @@
 package com.dmc.archiving.sip;
 
-import com.dmc.archiving.common.BaseGraphQlController;
+import com.dmc.archiving.archive.model.ArchiveStandard;
+import com.dmc.archiving.web.BaseGraphQlController;
 import com.dmc.archiving.sip.input.CreateSipInput;
+import com.dmc.archiving.sip.input.FileMetadataInput;
 import com.dmc.archiving.sip.model.Sip;
 import com.dmc.archiving.sip.model.SipStatus;
+import com.dmc.archiving.sip.prefill.SipPrefillService;
+import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
-import com.dmc.archiving.tenancy.service.TenancyService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -14,15 +17,18 @@ import org.springframework.stereotype.Controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 public class SipController extends BaseGraphQlController {
 
     private final SipService sipService;
+    private final SipPrefillService sipPrefillService;
 
-    public SipController(SipService sipService, TenancyService tenancyService) {
-        super(tenancyService);
+    public SipController(SipService sipService, SipPrefillService sipPrefillService, TenancyApi tenancyApi) {
+        super(tenancyApi);
         this.sipService = sipService;
+        this.sipPrefillService = sipPrefillService;
     }
 
     // Queries
@@ -41,6 +47,23 @@ public class SipController extends BaseGraphQlController {
         return sipService.getSip(id);
     }
 
+    @QueryMapping
+    public List<Map<String, String>> prefillSipFields(@Argument ArchiveStandard standard, @Argument Map<String, Object> fileMetadata) {
+        FileMetadataInput meta = new FileMetadataInput();
+        meta.setFilename((String) fileMetadata.get("filename"));
+        meta.setContentType((String) fileMetadata.get("contentType"));
+        meta.setFileSize(Long.parseLong(fileMetadata.get("fileSize").toString()));
+        meta.setChecksum((String) fileMetadata.get("checksum"));
+        meta.setUploadedAt((String) fileMetadata.get("uploadedAt"));
+        meta.setUploaderName((String) fileMetadata.get("uploaderName"));
+        meta.setFileCount(Integer.parseInt(fileMetadata.get("fileCount").toString()));
+
+        Map<String, String> fields = sipPrefillService.prefillFields(standard, meta);
+        return fields.entrySet().stream()
+                .map(e -> Map.of("name", e.getKey(), "value", e.getValue()))
+                .collect(Collectors.toList());
+    }
+
     // Mutations
     @MutationMapping
     public Sip createSipV2(@Argument Map<String, Object> input) {
@@ -55,6 +78,9 @@ public class SipController extends BaseGraphQlController {
         }
         if (input.get("ownerId") != null) {
             sipInput.setOwnerId(Long.parseLong(input.get("ownerId").toString()));
+        }
+        if (input.get("archiveId") != null) {
+            sipInput.setArchiveId(Long.parseLong(input.get("archiveId").toString()));
         }
         if (input.get("description") != null) {
             sipInput.setDescription(input.get("description").toString());

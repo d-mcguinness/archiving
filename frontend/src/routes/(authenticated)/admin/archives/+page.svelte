@@ -266,11 +266,25 @@
               </td>
               <td class="actions-cell">
                 <a
-                  href="/sip/create?standard={encodeURIComponent(archive.standard)}&userId={archive.ownerId}&title={encodeURIComponent(archive.title)}&description={encodeURIComponent(archive.description || '')}&archiveId={archive.id}"
+                  href="/admin/archive/{archive.id}/sip/create"
                   class="btn-action btn-sip"
                   title="Create SIP from this archive"
                 >
                   📦 Create SIP
+                </a>
+                <a
+                  href="/admin/archive/{archive.id}/aip/create"
+                  class="btn-action btn-aip"
+                  title="Create AIP from this archive"
+                >
+                  🏗️ Create AIP
+                </a>
+                <a
+                  href="/admin/archive/{archive.id}/dip/create"
+                  class="btn-action btn-dip"
+                  title="Create DIP from this archive"
+                >
+                  📤 Create DIP
                 </a>
                 <a href="/archives/delete/{archive.id}" class="btn-action btn-delete">
                   🗑️ Delete
@@ -722,6 +736,24 @@
 
   .btn-sip:hover {
     background: #db2777;
+  }
+
+  .btn-aip {
+    background: #6366f1;
+    color: white;
+  }
+
+  .btn-aip:hover {
+    background: #4f46e5;
+  }
+
+  .btn-dip {
+    background: #f59e0b;
+    color: white;
+  }
+
+  .btn-dip:hover {
+    background: #d97706;
   }
 
   .btn-extract {

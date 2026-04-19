@@ -247,48 +247,48 @@ SELECT setval('documents_id_seq', (SELECT COALESCE(MAX(id), 1) FROM documents), 
 
 -- Insert SIPs (Submission Information Packages)
 -- SIP 1 - NOARK5, Tenant 1 (Acme Corp), Owner: John Doe (User 1)
-INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
-SELECT 1, 1, 1, 'NOARK5 Personnel Records SIP', 'Submission package for personnel records following NOARK5 standard', '{"sipType":"Archive (Arkiv)","standard":"NOARK5","entity":"Archive","fields":{"systemID":"SIP-NOARK5-001","title":"Personnel Records","archiveStatus":"Created","documentMedium":"Electronic archive"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'NOARK5'
+INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 1, 1, 1, 1, 'NOARK5 Personnel Records SIP', 'Submission package for personnel records following NOARK5 standard', '{"sipType":"Archive (Arkiv)","standard":"NOARK5","entity":"Archive","fields":{"systemID":"SIP-NOARK5-001","title":"Personnel Records","archiveStatus":"Created","documentMedium":"Electronic archive"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'NOARK5'
 WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 1);
 
 -- SIP 2 - OAIS, Tenant 1 (Acme Corp), Owner: Jane Smith (User 2)
-INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
-SELECT 2, 1, 2, 'OAIS Digital Preservation Package', 'OAIS-compliant submission information package for digital preservation', '{"sipType":"Submission Information Package","standard":"OAIS","entity":"Submission Information Package","fields":{"packageID":"SIP-OAIS-001","title":"Digital Preservation Package","packageType":"SIP","producer":"Jane Smith"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'SUBMITTED', 'OAIS'
+INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 2, 1, 2, 2, 'OAIS Digital Preservation Package', 'OAIS-compliant submission information package for digital preservation', '{"sipType":"Submission Information Package","standard":"OAIS","entity":"Submission Information Package","fields":{"packageID":"SIP-OAIS-001","title":"Digital Preservation Package","packageType":"SIP","producer":"Jane Smith"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'SUBMITTED', 'OAIS'
 WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 2);
 
 -- SIP 3 - PREMIS, Tenant 2 (Tech Innovations), Owner: Bob Johnson (User 3)
-INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
-SELECT 3, 2, 3, 'PREMIS Software Artifacts SIP', 'Preservation metadata package for software development artifacts', '{"sipType":"Preservation Object","standard":"PREMIS","entity":"Object","fields":{"objectIdentifierType":"local","objectIdentifierValue":"SIP-PREMIS-001","objectCategory":"Representation","originalName":"Software Artifacts"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'VALIDATED', 'PREMIS'
+INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 3, 2, 3, 3, 'PREMIS Software Artifacts SIP', 'Preservation metadata package for software development artifacts', '{"sipType":"Preservation Object","standard":"PREMIS","entity":"Object","fields":{"objectIdentifierType":"local","objectIdentifierValue":"SIP-PREMIS-001","objectCategory":"Representation","originalName":"Software Artifacts"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'VALIDATED', 'PREMIS'
 WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 3);
 
 -- SIP 4 - DUBLIN_CORE, Tenant 2 (Tech Innovations), Owner: Jane Smith (User 2)
-INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
-SELECT 4, 2, 2, 'Dublin Core Research Dataset', 'Research publications described using Dublin Core metadata', '{"sipType":"Resource","standard":"Dublin Core","entity":"Resource","fields":{"resourceIdentifier":"SIP-DC-001","resourceType":"Dataset"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'DUBLIN_CORE'
+INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 4, 2, 2, 4, 'Dublin Core Research Dataset', 'Research publications described using Dublin Core metadata', '{"sipType":"Resource","standard":"Dublin Core","entity":"Resource","fields":{"resourceIdentifier":"SIP-DC-001","resourceType":"Dataset"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'DUBLIN_CORE'
 WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 4);
 
 -- SIP 5 - METS, Tenant 3 (Global Services), Owner: Bob Johnson (User 3)
-INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
-SELECT 5, 3, 3, 'METS Digitized Documents Package', 'METS-encoded package of digitized historical documents', '{"sipType":"METS Document","standard":"METS","entity":"METS Document","fields":{"metsID":"SIP-METS-001","label":"Digitized Documents","type":"digital object"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'ACCEPTED', 'METS'
+INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 5, 3, 3, 5, 'METS Digitized Documents Package', 'METS-encoded package of digitized historical documents', '{"sipType":"METS Document","standard":"METS","entity":"METS Document","fields":{"metsID":"SIP-METS-001","label":"Digitized Documents","type":"digital object"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'ACCEPTED', 'METS'
 WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 5);
 
 -- SIP 6 - EAD, Tenant 3 (Global Services), Owner: Alice Williams (User 4)
-INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
-SELECT 6, 3, 4, 'EAD Finding Aid SIP', 'Encoded Archival Description finding aid submission', '{"sipType":"Finding Aid (EAD)","standard":"EAD","entity":"EAD","fields":{"eadID":"SIP-EAD-001","audience":"external","lang":"eng"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'EAD'
+INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 6, 3, 4, 6, 'EAD Finding Aid SIP', 'Encoded Archival Description finding aid submission', '{"sipType":"Finding Aid (EAD)","standard":"EAD","entity":"EAD","fields":{"eadID":"SIP-EAD-001","audience":"external","lang":"eng"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'EAD'
 WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 6);
 
 -- SIP 7 - BAGIT, Tenant 4 (Startup Labs), Owner: Alice Williams (User 4)
-INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
-SELECT 7, 4, 4, 'BagIt Source Code Package', 'BagIt-packaged source code and documentation', '{"sipType":"Bag","standard":"BagIt","entity":"Bag","fields":{"bagName":"source-code-bag","payloadOxum":"1024.5","bagSize":"1 GB","isComplete":"true","isValid":"true"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'SUBMITTED', 'BAGIT'
+INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 7, 4, 4, 7, 'BagIt Source Code Package', 'BagIt-packaged source code and documentation', '{"sipType":"Bag","standard":"BagIt","entity":"Bag","fields":{"bagName":"source-code-bag","payloadOxum":"1024.5","bagSize":"1 GB","isComplete":"true","isValid":"true"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'SUBMITTED', 'BAGIT'
 WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 7);
 
 -- SIP 8 - ISADG, Tenant 4 (Startup Labs), Owner: Charlie Brown (User 5)
-INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
-SELECT 8, 4, 5, 'ISAD(G) Founders Archive', 'Multi-level archival description of founders documents', '{"sipType":"Archival Description","standard":"ISAD(G)","entity":"Archival Description","fields":{"descriptionID":"SIP-ISADG-001","levelOfDescription":"Fonds"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'ISADG'
+INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 8, 4, 5, 8, 'ISAD(G) Founders Archive', 'Multi-level archival description of founders documents', '{"sipType":"Archival Description","standard":"ISAD(G)","entity":"Archival Description","fields":{"descriptionID":"SIP-ISADG-001","levelOfDescription":"Fonds"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'ISADG'
 WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 8);
 
 -- SIP 9 - MODS, Tenant 4 (Startup Labs), Owner: Charlie Brown (User 5)
-INSERT INTO sips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard)
-SELECT 9, 4, 5, 'MODS Technical Library SIP', 'Bibliographic records for technical reference library', '{"sipType":"MODS Record","standard":"MODS","entity":"MODS","fields":{"modsID":"SIP-MODS-001","version":"3.8"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'VALIDATED', 'MODS'
+INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+SELECT 9, 4, 5, 9, 'MODS Technical Library SIP', 'Bibliographic records for technical reference library', '{"sipType":"MODS Record","standard":"MODS","entity":"MODS","fields":{"modsID":"SIP-MODS-001","version":"3.8"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'VALIDATED', 'MODS'
 WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 9);
 
 -- Insert Elements for SIPs (root elements)
@@ -347,6 +347,35 @@ UPDATE sips SET root_element_id = 1005 WHERE id = 6 AND root_element_id IS NULL;
 UPDATE sips SET root_element_id = 1006 WHERE id = 7 AND root_element_id IS NULL;
 UPDATE sips SET root_element_id = 1007 WHERE id = 8 AND root_element_id IS NULL;
 UPDATE sips SET root_element_id = 1008 WHERE id = 9 AND root_element_id IS NULL;
+
+-- Backfill archive_id for existing SIPs (match by tenant + standard)
+UPDATE sips SET archive_id = 1 WHERE id = 1 AND archive_id IS NULL;
+UPDATE sips SET archive_id = 2 WHERE id = 2 AND archive_id IS NULL;
+UPDATE sips SET archive_id = 3 WHERE id = 3 AND archive_id IS NULL;
+UPDATE sips SET archive_id = 4 WHERE id = 4 AND archive_id IS NULL;
+UPDATE sips SET archive_id = 5 WHERE id = 5 AND archive_id IS NULL;
+UPDATE sips SET archive_id = 6 WHERE id = 6 AND archive_id IS NULL;
+UPDATE sips SET archive_id = 7 WHERE id = 7 AND archive_id IS NULL;
+UPDATE sips SET archive_id = 8 WHERE id = 8 AND archive_id IS NULL;
+UPDATE sips SET archive_id = 9 WHERE id = 9 AND archive_id IS NULL;
+
+-- Catch-all: assign any remaining SIPs with null archive_id to a matching archive (by tenant + standard)
+UPDATE sips s SET archive_id = (
+    SELECT a.id FROM archives a
+    WHERE a.tenant_id = s.tenant_id AND a.standard = s.standard
+    ORDER BY a.id LIMIT 1
+) WHERE s.archive_id IS NULL AND EXISTS (
+    SELECT 1 FROM archives a WHERE a.tenant_id = s.tenant_id AND a.standard = s.standard
+);
+
+-- For any SIPs still without archive_id (no matching archive), assign to the first archive in the same tenant
+UPDATE sips s SET archive_id = (
+    SELECT a.id FROM archives a
+    WHERE a.tenant_id = s.tenant_id
+    ORDER BY a.id LIMIT 1
+) WHERE s.archive_id IS NULL AND EXISTS (
+    SELECT 1 FROM archives a WHERE a.tenant_id = s.tenant_id
+);
 
 -- Insert Fields for SIP root elements
 -- Fields for SIP 1 (NOARK5)

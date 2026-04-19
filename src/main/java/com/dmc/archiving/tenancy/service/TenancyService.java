@@ -4,11 +4,9 @@ import com.dmc.archiving.tenancy.input.CreateTenantInput;
 import com.dmc.archiving.tenancy.input.UpdateTenantInput;
 import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.tenancy.model.TenantStatus;
-import org.springframework.modulith.NamedInterface;
 
 import java.util.List;
 
-@NamedInterface
 public interface TenancyService {
     Tenant createTenant(CreateTenantInput input);
     Tenant updateTenant(UpdateTenantInput input);
@@ -23,5 +21,6 @@ public interface TenancyService {
     List<Long> getTenantIdsByUserId(Long userId);  // Get tenant IDs for a user (exposed for other modules)
     void addUserToTenant(Long userId, Long tenantId);
     void removeUserFromTenant(Long userId);
+    long countUsersInTenant(Long tenantId);
 }
 

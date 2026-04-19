@@ -1,4 +1,4 @@
-package com.dmc.archiving.auth;
+package com.dmc.archiving.auth.api;
 
 public class AccessDeniedException extends RuntimeException {
 

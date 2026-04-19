@@ -1,14 +1,11 @@
 package com.dmc.archiving.sip.generator.impl;
 
-import com.dmc.archiving.archive.element.Element;
-import com.dmc.archiving.archive.element.field.Field;
 import com.dmc.archiving.sip.generator.AbstractSipGenerator;
-import com.dmc.archiving.sip.model.Sip;
+import com.dmc.archiving.sip.generator.SipSnapshot;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -24,41 +21,35 @@ public class MetsSipGenerator extends AbstractSipGenerator {
     }
 
     @Override
-    public Map<String, Object> buildPackage(Sip sip) {
+    public Map<String, Object> buildPackage(SipSnapshot s) {
         Map<String, Object> pkg = new LinkedHashMap<>();
         pkg.put("standard", "METS");
-        pkg.put("sipId", sip.getId());
-        pkg.put("status", sip.getStatus().name());
-        pkg.put("createdAt", sip.getCreatedAtString());
+        pkg.put("sipId", s.id());
+        pkg.put("status", s.status());
+        pkg.put("createdAt", s.createdAt());
 
         Map<String, Object> metsHeader = new LinkedHashMap<>();
-        metsHeader.put("createDate", sip.getCreatedAtString());
-        metsHeader.put("lastModDate", sip.getUpdatedAtString());
-        metsHeader.put("recordStatus", sip.getStatus().name());
+        metsHeader.put("createDate", s.createdAt());
+        metsHeader.put("lastModDate", s.updatedAt());
+        metsHeader.put("recordStatus", s.status());
 
         Map<String, Object> dmdSec = new LinkedHashMap<>();
-        dmdSec.put("title", sip.getTitle());
-        dmdSec.put("description", sip.getDescription());
+        dmdSec.put("title", s.title());
+        dmdSec.put("description", s.description());
 
         Map<String, Object> fileSec = new LinkedHashMap<>();
         Map<String, Object> structMap = new LinkedHashMap<>();
 
-        Element root = sip.getRootElement();
-        if (root != null) {
-            dmdSec.put("entityName", root.getEntityName());
-            dmdSec.put("entityType", root.getEntityType());
+        if (s.hasRootElement()) {
+            dmdSec.put("entityName", s.entityName());
+            dmdSec.put("entityType", s.entityType());
 
             structMap.put("type", "logical");
-            structMap.put("label", root.getTitle());
-            structMap.put("elementIdentifier", root.getElementIdentifier());
+            structMap.put("label", s.elementTitle());
+            structMap.put("elementIdentifier", s.elementIdentifier());
 
-            List<Field> fields = root.getFields();
-            if (fields != null && !fields.isEmpty()) {
-                Map<String, String> fieldMap = new LinkedHashMap<>();
-                for (Field field : fields) {
-                    fieldMap.put(field.getName(), field.getValue());
-                }
-                fileSec.put("fileGrp", fieldMap);
+            if (s.hasFields()) {
+                fileSec.put("fileGrp", s.fields());
             }
         }
 

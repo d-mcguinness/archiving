@@ -1,14 +1,11 @@
 package com.dmc.archiving.sip.generator.impl;
 
-import com.dmc.archiving.archive.element.Element;
-import com.dmc.archiving.archive.element.field.Field;
 import com.dmc.archiving.sip.generator.AbstractSipGenerator;
-import com.dmc.archiving.sip.model.Sip;
+import com.dmc.archiving.sip.generator.SipSnapshot;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -24,39 +21,33 @@ public class EadSipGenerator extends AbstractSipGenerator {
     }
 
     @Override
-    public Map<String, Object> buildPackage(Sip sip) {
+    public Map<String, Object> buildPackage(SipSnapshot s) {
         Map<String, Object> pkg = new LinkedHashMap<>();
         pkg.put("standard", "EAD");
-        pkg.put("sipId", sip.getId());
-        pkg.put("status", sip.getStatus().name());
-        pkg.put("createdAt", sip.getCreatedAtString());
+        pkg.put("sipId", s.id());
+        pkg.put("status", s.status());
+        pkg.put("createdAt", s.createdAt());
 
         Map<String, Object> eadHeader = new LinkedHashMap<>();
-        eadHeader.put("eadid", sip.getId().toString());
-        eadHeader.put("titleproper", sip.getTitle());
+        eadHeader.put("eadid", s.id().toString());
+        eadHeader.put("titleproper", s.title());
 
         Map<String, Object> archdesc = new LinkedHashMap<>();
         archdesc.put("level", "collection");
 
         Map<String, Object> did = new LinkedHashMap<>();
-        did.put("unittitle", sip.getTitle());
-        did.put("unitdate", sip.getCreatedAtString());
-        did.put("abstract", sip.getDescription());
+        did.put("unittitle", s.title());
+        did.put("unitdate", s.createdAt());
+        did.put("abstract", s.description());
 
-        Element root = sip.getRootElement();
-        if (root != null) {
-            did.put("unitid", root.getElementIdentifier());
-            did.put("origination", root.getCreatedBy());
-            archdesc.put("entityName", root.getEntityName());
-            archdesc.put("entityType", root.getEntityType());
+        if (s.hasRootElement()) {
+            did.put("unitid", s.elementIdentifier());
+            did.put("origination", s.elementCreatedBy());
+            archdesc.put("entityName", s.entityName());
+            archdesc.put("entityType", s.entityType());
 
-            List<Field> fields = root.getFields();
-            if (fields != null && !fields.isEmpty()) {
-                Map<String, String> fieldMap = new LinkedHashMap<>();
-                for (Field field : fields) {
-                    fieldMap.put(field.getName(), field.getValue());
-                }
-                did.put("fields", fieldMap);
+            if (s.hasFields()) {
+                did.put("fields", s.fields());
             }
         }
 

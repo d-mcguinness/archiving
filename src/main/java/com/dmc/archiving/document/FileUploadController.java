@@ -1,4 +1,4 @@
-package com.dmc.archiving;
+package com.dmc.archiving.document;
 
 import com.dmc.archiving.storage.CloudStorageService;
 import com.dmc.archiving.storage.StorageException;
@@ -30,13 +30,11 @@ public class FileUploadController {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            // Upload to cloud storage
             UploadResult result = cloudStorageService.uploadFile(file, null);
 
             log.info("File uploaded successfully to cloud: {} (original: {})",
                     result.getFileKey(), result.getOriginalFilename());
 
-            // Prepare success response
             response.put("success", true);
             response.put("message", "File uploaded successfully to cloud storage!");
             response.put("fileKey", result.getFileKey());
@@ -68,20 +66,17 @@ public class FileUploadController {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            // Validate userId
             if (userId == null || userId <= 0) {
                 response.put("success", false);
                 response.put("message", "Invalid user ID");
                 return ResponseEntity.badRequest().body(response);
             }
 
-            // Upload to cloud storage with user context
             UploadResult result = cloudStorageService.uploadFile(file, userId);
 
             log.info("File uploaded successfully to cloud for user {}: {} (original: {})",
                     userId, result.getFileKey(), result.getOriginalFilename());
 
-            // Prepare success response
             response.put("success", true);
             response.put("message", "File uploaded successfully to cloud storage!");
             response.put("fileKey", result.getFileKey());
@@ -107,13 +102,10 @@ public class FileUploadController {
         }
     }
 
-    /**
-     * Download file from cloud storage
-     */
     @GetMapping("/download/{fileKey}")
     public ResponseEntity<?> downloadFile(@PathVariable String fileKey) {
         try {
-            String presignedUrl = cloudStorageService.getPresignedUrl(fileKey, 60); // 1 hour expiry
+            String presignedUrl = cloudStorageService.getPresignedUrl(fileKey, 60);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -129,9 +121,6 @@ public class FileUploadController {
         }
     }
 
-    /**
-     * Get storage info endpoint
-     */
     @GetMapping("/upload/info")
     public ResponseEntity<?> getUploadInfo() {
         Map<String, Object> info = new HashMap<>();
@@ -146,4 +135,3 @@ public class FileUploadController {
         return ResponseEntity.ok(info);
     }
 }
-

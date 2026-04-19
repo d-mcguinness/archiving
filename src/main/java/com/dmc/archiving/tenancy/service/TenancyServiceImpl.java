@@ -3,35 +3,42 @@ package com.dmc.archiving.tenancy.service;
 import com.dmc.archiving.tenancy.input.CreateTenantInput;
 import com.dmc.archiving.tenancy.input.UpdateTenantInput;
 import com.dmc.archiving.tenancy.model.Tenant;
-import com.dmc.archiving.tenancy.model.TenantStatus;
+import com.dmc.archiving.tenancy.model.TenantMembership;
 import com.dmc.archiving.tenancy.model.TenantSettings;
+import com.dmc.archiving.tenancy.model.TenantStatus;
 import com.dmc.archiving.tenancy.repository.TenancyRepository;
+import com.dmc.archiving.tenancy.repository.TenantMembershipRepository;
 import com.dmc.archiving.user.api.UserApi;
-import com.dmc.archiving.user.model.User;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@AllArgsConstructor
 @Service
 public class TenancyServiceImpl implements TenancyService {
+
     private final TenancyRepository tenancyRepository;
+    private final TenantMembershipRepository membershipRepository;
     private final UserApi userApi;
+
+    public TenancyServiceImpl(TenancyRepository tenancyRepository,
+                              TenantMembershipRepository membershipRepository,
+                              UserApi userApi) {
+        this.tenancyRepository = tenancyRepository;
+        this.membershipRepository = membershipRepository;
+        this.userApi = userApi;
+    }
 
     @Override
     public Tenant createTenant(CreateTenantInput input) {
-        // Validate that owner exists - convert String to Long for userApi call
         Long ownerIdLong = Long.valueOf(input.getOwnerId());
         if (!userApi.userExists(ownerIdLong)) {
             throw new IllegalArgumentException("Owner user with ID " + input.getOwnerId() + " does not exist");
         }
 
-        // Validate domain uniqueness
         if (tenancyRepository.findByDomain(input.getDomain()).isPresent()) {
             throw new IllegalArgumentException("Tenant with domain " + input.getDomain() + " already exists");
         }
@@ -40,7 +47,7 @@ public class TenancyServiceImpl implements TenancyService {
         TenantSettings defaultSettings = createDefaultSettings(input.getPlan());
 
         Tenant tenant = new Tenant(
-            null, // Let JPA generate the ID
+            null,
             input.getName(),
             input.getDomain(),
             input.getDisplayName(),
@@ -49,9 +56,8 @@ public class TenancyServiceImpl implements TenancyService {
             input.getPlan(),
             now,
             now,
-            String.valueOf(input.getOwnerId()), // Convert ownerId to String
-            defaultSettings,
-            new HashSet<>() // Initialize empty users set
+            String.valueOf(input.getOwnerId()),
+            defaultSettings
         );
 
         return tenancyRepository.save(tenant);
@@ -76,14 +82,11 @@ public class TenancyServiceImpl implements TenancyService {
         }
         if (input.getPlan() != null) {
             tenant.setPlan(input.getPlan());
-            // Update settings based on new plan
             tenant.setSettings(createDefaultSettings(input.getPlan()));
         }
 
         tenant.setUpdatedAt(LocalDateTime.now());
-        tenancyRepository.save(tenant);
-
-        return tenant;
+        return tenancyRepository.save(tenant);
     }
 
     @Override
@@ -99,10 +102,7 @@ public class TenancyServiceImpl implements TenancyService {
 
     @Override
     public boolean isUserInTenant(Long userId, Long tenantId) {
-        return tenancyRepository.findById(tenantId)
-            .map(tenant -> tenant.getUsers().stream()
-                .anyMatch(user -> user.getId().equals(userId)))
-            .orElse(false);
+        return membershipRepository.existsByTenantIdAndUserId(tenantId, userId);
     }
 
     @Override
@@ -135,40 +135,41 @@ public class TenancyServiceImpl implements TenancyService {
 
     @Override
     public List<Tenant> getTenantsByUserId(Long userId) {
-        return tenancyRepository.findTenantsByUserId(userId);
+        List<Long> tenantIds = getTenantIdsByUserId(userId);
+        return tenancyRepository.findAllById(tenantIds);
     }
 
     @Override
     public List<Long> getTenantIdsByUserId(Long userId) {
-        return tenancyRepository.findTenantsByUserId(userId).stream()
-                .map(Tenant::getId)
+        return membershipRepository.findByUserId(userId).stream()
+                .map(TenantMembership::getTenantId)
                 .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional
     public void addUserToTenant(Long userId, Long tenantId) {
         if (!userApi.userExists(userId)) {
             throw new IllegalArgumentException("User with ID " + userId + " does not exist");
         }
-
-        Tenant tenant = tenancyRepository.findById(tenantId)
-            .orElseThrow(() -> new IllegalArgumentException("Tenant with ID " + tenantId + " does not exist"));
-
-        User user = userApi.getUserById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("User with ID " + userId + " does not exist"));
-
-        tenant.getUsers().add(user);
-        tenancyRepository.save(tenant);
+        if (!tenancyRepository.existsById(tenantId)) {
+            throw new IllegalArgumentException("Tenant with ID " + tenantId + " does not exist");
+        }
+        if (membershipRepository.existsByTenantIdAndUserId(tenantId, userId)) {
+            return;
+        }
+        membershipRepository.save(new TenantMembership(null, tenantId, userId, LocalDateTime.now()));
     }
 
     @Override
+    @Transactional
     public void removeUserFromTenant(Long userId) {
-        // Find all tenants and remove the user from them
-        List<Tenant> allTenants = tenancyRepository.findAll();
-        for (Tenant tenant : allTenants) {
-            tenant.getUsers().removeIf(user -> user.getId().equals(userId));
-            tenancyRepository.save(tenant);
-        }
+        membershipRepository.deleteByUserId(userId);
+    }
+
+    @Override
+    public long countUsersInTenant(Long tenantId) {
+        return membershipRepository.countByTenantId(tenantId);
     }
 
     private TenantSettings createDefaultSettings(com.dmc.archiving.tenancy.model.TenantPlan plan) {

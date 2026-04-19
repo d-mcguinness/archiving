@@ -1,14 +1,11 @@
 package com.dmc.archiving.sip.generator.impl;
 
-import com.dmc.archiving.archive.element.Element;
-import com.dmc.archiving.archive.element.field.Field;
 import com.dmc.archiving.sip.generator.AbstractSipGenerator;
-import com.dmc.archiving.sip.model.Sip;
+import com.dmc.archiving.sip.generator.SipSnapshot;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -24,40 +21,34 @@ public class ModsSipGenerator extends AbstractSipGenerator {
     }
 
     @Override
-    public Map<String, Object> buildPackage(Sip sip) {
+    public Map<String, Object> buildPackage(SipSnapshot s) {
         Map<String, Object> pkg = new LinkedHashMap<>();
         pkg.put("standard", "MODS");
-        pkg.put("sipId", sip.getId());
-        pkg.put("status", sip.getStatus().name());
-        pkg.put("createdAt", sip.getCreatedAtString());
+        pkg.put("sipId", s.id());
+        pkg.put("status", s.status());
+        pkg.put("createdAt", s.createdAt());
 
         Map<String, Object> titleInfo = new LinkedHashMap<>();
-        titleInfo.put("title", sip.getTitle());
-        titleInfo.put("subTitle", sip.getDescription());
+        titleInfo.put("title", s.title());
+        titleInfo.put("subTitle", s.description());
 
         Map<String, Object> name = new LinkedHashMap<>();
         Map<String, Object> originInfo = new LinkedHashMap<>();
-        originInfo.put("dateCreated", sip.getCreatedAtString());
+        originInfo.put("dateCreated", s.createdAt());
 
-        Element root = sip.getRootElement();
-        if (root != null) {
-            name.put("namePart", root.getCreatedBy());
+        if (s.hasRootElement()) {
+            name.put("namePart", s.elementCreatedBy());
             name.put("role", "creator");
 
-            originInfo.put("publisher", root.getEntityName());
+            originInfo.put("publisher", s.entityName());
 
             Map<String, Object> subject = new LinkedHashMap<>();
-            subject.put("entityType", root.getEntityType());
-            subject.put("identifier", root.getElementIdentifier());
+            subject.put("entityType", s.entityType());
+            subject.put("identifier", s.elementIdentifier());
             pkg.put("mods:subject", subject);
 
-            List<Field> fields = root.getFields();
-            if (fields != null && !fields.isEmpty()) {
-                Map<String, String> fieldMap = new LinkedHashMap<>();
-                for (Field field : fields) {
-                    fieldMap.put(field.getName(), field.getValue());
-                }
-                pkg.put("mods:extension", fieldMap);
+            if (s.hasFields()) {
+                pkg.put("mods:extension", s.fields());
             }
         }
 

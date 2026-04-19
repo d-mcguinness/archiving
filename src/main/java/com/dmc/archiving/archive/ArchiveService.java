@@ -9,13 +9,23 @@ import com.dmc.archiving.archive.input.UnassignUserInput;
 import com.dmc.archiving.archive.model.Archive;
 import com.dmc.archiving.archive.model.ArchiveStatus;
 import com.dmc.archiving.archive.repository.ArchiveRepository;
+import com.dmc.archiving.archive.specification.ArchiveSearchCriteria;
+import com.dmc.archiving.archive.specification.ArchiveSpecifications;
+import com.dmc.archiving.common.exception.ResourceNotFoundException;
 import com.dmc.archiving.user.api.UserApi;
 import com.dmc.archiving.user.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +35,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Service for managing archives
+ * All query methods are marked @Transactional(readOnly = true) for performance
+ * All write methods are marked @Transactional for ACID guarantees
+ * Caching is enabled for frequently accessed data
+ */
 @Service
 @Transactional(readOnly = true)
+@CacheConfig(cacheNames = "archives")
 public class ArchiveService {
+
+    private static final Logger log = LoggerFactory.getLogger(ArchiveService.class);
 
     private final ArchiveRepository archiveRepository;
     private final UserApi userApi;
@@ -39,10 +58,17 @@ public class ArchiveService {
         this.elementRepository = elementRepository;
     }
 
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "archives", allEntries = true),
+            @CacheEvict(cacheNames = "archivesByTenant", allEntries = true),
+            @CacheEvict(cacheNames = "archivesByOwner", allEntries = true)
+    })
     @Transactional
     public Archive createArchive(CreateArchiveInput input) {
+        log.info("Creating archive with title: {} for user: {}", input.getTitle(), input.getUserId());
+
         User user = userApi.getUserById(input.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("User with ID " + input.getUserId() + " does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", input.getUserId()));
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -111,10 +137,6 @@ public class ArchiveService {
         return archiveRepository.findByOwnerId(ownerId);
     }
 
-    public List<Archive> getArchivesByTenant(Long tenantId) {
-        return archiveRepository.findByTenantId(tenantId);
-    }
-
     public List<Archive> getAllSips() {
         return archiveRepository.findByRootElementIsNotNull();
     }
@@ -123,10 +145,18 @@ public class ArchiveService {
         return archiveRepository.findSipsByTenantId(tenantId);
     }
 
-    public Archive getArchiveById(Long id) {
-        return archiveRepository.findById(id).orElse(null);
+    @Cacheable(key = "#tenantId", cacheNames = "archivesByTenant")
+    public List<Archive> getArchivesByTenant(Long tenantId) {
+        return archiveRepository.findByTenantId(tenantId);
     }
 
+    @Cacheable(key = "#id")
+    public Archive getArchiveById(Long id) {
+        return archiveRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Archive", id));
+    }
+
+    @Cacheable(key = "#id", cacheNames = "archiveWithRelations")
     public Archive getArchiveByIdWithRelations(Long id) {
         return archiveRepository.findByIdWithRelations(id);
     }
@@ -137,8 +167,8 @@ public class ArchiveService {
      */
     @Transactional(readOnly = true)
     public Archive getArchiveForExport(Long id) {
-        Archive archive = archiveRepository.findById(id).orElse(null);
-        if (archive == null) return null;
+        Archive archive = archiveRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Archive", id));
 
         // Initialize the element tree by traversing it
         if (archive.getRootElement() != null) {
@@ -183,6 +213,35 @@ public class ArchiveService {
         return archiveRepository.findAll(pageable);
     }
 
+    /**
+     * Advanced search using dynamic specifications
+     * Allows combining multiple filter criteria
+     */
+    public Page<Archive> searchArchives(ArchiveSearchCriteria criteria, Pageable pageable) {
+        log.debug("Searching archives with criteria: {}", criteria);
+
+        Specification<Archive> spec = Specification.where(
+                ArchiveSpecifications.hasTenantId(criteria.getTenantId()))
+                .and(ArchiveSpecifications.hasOwnerId(criteria.getOwnerId()))
+                .and(ArchiveSpecifications.hasStatus(criteria.getStatus()))
+                .and(ArchiveSpecifications.hasStandard(criteria.getStandard()))
+                .and(ArchiveSpecifications.searchByKeyword(criteria.getKeyword()))
+                .and(ArchiveSpecifications.createdAfter(criteria.getFromDate()))
+                .and(ArchiveSpecifications.createdBefore(criteria.getToDate()))
+                .and(ArchiveSpecifications.updatedAfter(criteria.getUpdatedAfter()));
+
+        // Handle array filters
+        if (criteria.getStatuses() != null && criteria.getStatuses().length > 0) {
+            spec = spec.and(ArchiveSpecifications.hasStatusIn(criteria.getStatuses()));
+        }
+
+        if (criteria.getStandards() != null && criteria.getStandards().length > 0) {
+            spec = spec.and(ArchiveSpecifications.hasStandardIn(criteria.getStandards()));
+        }
+
+        return archiveRepository.findAll(spec, pageable);
+    }
+
     public Page<Archive> getArchivesByUserIdPaginated(Long userId, Pageable pageable) {
         return archiveRepository.findByOwnerId(userId, pageable);
     }
@@ -215,21 +274,36 @@ public class ArchiveService {
         return archiveRepository.findByOwnerId(userId);
     }
 
+    @Caching(evict = {
+            @CacheEvict(key = "#id"),
+            @CacheEvict(key = "#id", cacheNames = "archiveWithRelations"),
+            @CacheEvict(cacheNames = "archivesByTenant", allEntries = true),
+            @CacheEvict(cacheNames = "archivesByOwner", allEntries = true)
+    })
     @Transactional
     public Archive updateArchiveStatus(Long archiveId, ArchiveStatus status) {
-        Archive archive = archiveRepository.findById(archiveId).orElse(null);
-        if (archive != null) {
-            archive.setStatus(status);
-            archive.setUpdatedAt(LocalDateTime.now());
-            return archiveRepository.save(archive);
-        }
-        return null;
+        log.info("Updating archive {} status to {}", archiveId, status);
+
+        Archive archive = archiveRepository.findById(archiveId)
+                .orElseThrow(() -> new ResourceNotFoundException("Archive", archiveId));
+
+        archive.setStatus(status);
+        archive.setUpdatedAt(LocalDateTime.now());
+        return archiveRepository.save(archive);
     }
 
+    @Caching(evict = {
+            @CacheEvict(key = "#id"),
+            @CacheEvict(key = "#id", cacheNames = "archiveWithRelations"),
+            @CacheEvict(cacheNames = "archivesByTenant", allEntries = true),
+            @CacheEvict(cacheNames = "archivesByOwner", allEntries = true)
+    })
     @Transactional
     public Archive updateArchive(Long id, UpdateArchiveInput input) {
+        log.info("Updating archive {}", id);
+
         Archive archive = archiveRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Archive with ID " + id + " does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("Archive", id));
 
         archive.setTitle(input.getTitle());
         archive.setDescription(input.getDescription());
@@ -243,10 +317,10 @@ public class ArchiveService {
     @Transactional
     public Archive setArchiveRootElement(Long archiveId, Long rootElementId) {
         Archive archive = archiveRepository.findById(archiveId)
-                .orElseThrow(() -> new IllegalArgumentException("Archive with ID " + archiveId + " does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("Archive", archiveId));
 
         Element rootElement = elementRepository.findById(rootElementId)
-                .orElseThrow(() -> new IllegalArgumentException("Element with ID " + rootElementId + " does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("Element", rootElementId));
 
         // Verify the element belongs to this archive
         if (!rootElement.getArchive().getId().equals(archiveId)) {
@@ -260,10 +334,19 @@ public class ArchiveService {
         return archiveRepository.save(archive);
     }
 
+    @Caching(evict = {
+            @CacheEvict(key = "#id"),
+            @CacheEvict(key = "#id", cacheNames = "archiveWithRelations"),
+            @CacheEvict(cacheNames = "archives", allEntries = true),
+            @CacheEvict(cacheNames = "archivesByTenant", allEntries = true),
+            @CacheEvict(cacheNames = "archivesByOwner", allEntries = true)
+    })
     @Transactional
     public Boolean deleteArchive(Long id) {
+        log.warn("Deleting archive {}", id);
+
         Archive archive = archiveRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Archive with ID " + id + " does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("Archive", id));
 
         // Delete the archive
         // JPA will automatically cascade delete all associated elements, fields, and user assignments

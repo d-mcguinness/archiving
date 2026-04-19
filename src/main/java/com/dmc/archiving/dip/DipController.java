@@ -1,11 +1,11 @@
 package com.dmc.archiving.dip;
 
-import com.dmc.archiving.common.BaseGraphQlController;
+import com.dmc.archiving.web.BaseGraphQlController;
 import com.dmc.archiving.dip.input.CreateDipInput;
 import com.dmc.archiving.dip.model.Dip;
 import com.dmc.archiving.dip.model.DipStatus;
+import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
-import com.dmc.archiving.tenancy.service.TenancyService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -20,8 +20,8 @@ public class DipController extends BaseGraphQlController {
 
     private final DipService dipService;
 
-    public DipController(DipService dipService, TenancyService tenancyService) {
-        super(tenancyService);
+    public DipController(DipService dipService, TenancyApi tenancyApi) {
+        super(tenancyApi);
         this.dipService = dipService;
     }
 
