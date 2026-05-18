@@ -1,44 +1,34 @@
 package com.dmc.archiving.sip.generator;
 
+import com.dmc.archiving.pkg.generator.AbstractPackageGenerator;
 import com.dmc.archiving.sip.input.FileMetadataInput;
 import com.dmc.archiving.sip.model.Sip;
 import com.dmc.archiving.storage.CloudStorageService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 
-public abstract class AbstractSipGenerator implements SipGenerator {
-
-    private static final Logger log = LoggerFactory.getLogger(AbstractSipGenerator.class);
-
-    protected final CloudStorageService cloudStorageService;
-    protected final ObjectMapper objectMapper;
+public abstract class AbstractSipGenerator
+        extends AbstractPackageGenerator<Sip, SipSnapshot>
+        implements SipGenerator {
 
     protected AbstractSipGenerator(CloudStorageService cloudStorageService) {
-        this.cloudStorageService = cloudStorageService;
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule());
-        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        super(cloudStorageService);
     }
 
     @Override
-    public String generate(Sip sip) {
-        try {
-            SipSnapshot snapshot = SipSnapshot.from(sip);
-            Map<String, Object> sipPackage = buildPackage(snapshot);
-            byte[] jsonBytes = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(sipPackage);
-            String fileKey = "sips/" + sip.getId() + "/" + getStandardName().toLowerCase() + "_sip.json";
-            return cloudStorageService.uploadBytes(jsonBytes, fileKey, "application/json");
-        } catch (Exception e) {
-            log.error("Failed to generate SIP package for SIP {}: {}", sip.getId(), e.getMessage(), e);
-            throw new RuntimeException("Failed to generate SIP package", e);
-        }
+    protected String packageType() {
+        return "sip";
+    }
+
+    @Override
+    protected Long packageId(Sip sip) {
+        return sip.getId();
+    }
+
+    @Override
+    protected SipSnapshot toSnapshot(Sip sip) {
+        return SipSnapshot.from(sip);
     }
 
     protected record PrefillContext(
