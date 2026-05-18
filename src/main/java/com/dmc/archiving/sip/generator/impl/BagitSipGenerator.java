@@ -2,6 +2,7 @@ package com.dmc.archiving.sip.generator.impl;
 
 import com.dmc.archiving.sip.generator.AbstractSipGenerator;
 import com.dmc.archiving.sip.generator.SipSnapshot;
+import com.dmc.archiving.sip.input.FileMetadataInput;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
 
@@ -55,5 +56,19 @@ public class BagitSipGenerator extends AbstractSipGenerator {
         pkg.put("tag-manifest", tagManifest);
         pkg.put("data", dataReferences);
         return pkg;
+    }
+
+    @Override
+    public Map<String, String> prefillFields(FileMetadataInput meta) {
+        PrefillContext c = prefillContext(meta);
+        String bagName = c.name().toLowerCase().replaceAll("[^a-z0-9]+", "-");
+        long size = c.fileSizeBytes() != null ? c.fileSizeBytes() : 0L;
+        Map<String, String> m = new LinkedHashMap<>();
+        m.put("bagName", bagName);
+        m.put("payloadOxum", size + "." + c.count());
+        m.put("bagSize", humanReadableSize(size));
+        m.put("isComplete", "true");
+        m.put("isValid", "true");
+        return m;
     }
 }

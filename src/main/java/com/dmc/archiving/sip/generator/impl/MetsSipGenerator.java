@@ -2,6 +2,7 @@ package com.dmc.archiving.sip.generator.impl;
 
 import com.dmc.archiving.sip.generator.AbstractSipGenerator;
 import com.dmc.archiving.sip.generator.SipSnapshot;
+import com.dmc.archiving.sip.input.FileMetadataInput;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
 
@@ -58,5 +59,17 @@ public class MetsSipGenerator extends AbstractSipGenerator {
         pkg.put("mets:fileSec", fileSec);
         pkg.put("mets:structMap", structMap);
         return pkg;
+    }
+
+    @Override
+    public Map<String, String> prefillFields(FileMetadataInput meta) {
+        PrefillContext c = prefillContext(meta);
+        Map<String, String> m = new LinkedHashMap<>();
+        m.put("metsID", c.id());
+        m.put("objID", "OBJ-" + c.id());
+        m.put("label", c.name());
+        m.put("type", "digital object");
+        m.put("profile", "http://www.loc.gov/standards/mets/profiles");
+        return m;
     }
 }

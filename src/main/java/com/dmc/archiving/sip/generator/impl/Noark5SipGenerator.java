@@ -2,6 +2,7 @@ package com.dmc.archiving.sip.generator.impl;
 
 import com.dmc.archiving.sip.generator.AbstractSipGenerator;
 import com.dmc.archiving.sip.generator.SipSnapshot;
+import com.dmc.archiving.sip.input.FileMetadataInput;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
 
@@ -51,5 +52,22 @@ public class Noark5SipGenerator extends AbstractSipGenerator {
 
         pkg.put("arkivdel", arkivdel);
         return pkg;
+    }
+
+    @Override
+    public Map<String, String> prefillFields(FileMetadataInput meta) {
+        PrefillContext c = prefillContext(meta);
+        Map<String, String> m = new LinkedHashMap<>();
+        m.put("systemID", c.id());
+        m.put("title", c.name());
+        m.put("description", "");
+        m.put("archiveStatus", "Created");
+        m.put("documentMedium", "Electronic archive");
+        m.put("storageLocation", "Default storage");
+        m.put("createdDate", c.date());
+        m.put("createdBy", c.user());
+        m.put("closedDate", c.date());
+        m.put("closedBy", c.user());
+        return m;
     }
 }

@@ -2,6 +2,7 @@ package com.dmc.archiving.sip.generator.impl;
 
 import com.dmc.archiving.sip.generator.AbstractSipGenerator;
 import com.dmc.archiving.sip.generator.SipSnapshot;
+import com.dmc.archiving.sip.input.FileMetadataInput;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
 
@@ -55,5 +56,18 @@ public class EadSipGenerator extends AbstractSipGenerator {
         pkg.put("ead:archdesc", archdesc);
         pkg.put("ead:did", did);
         return pkg;
+    }
+
+    @Override
+    public Map<String, String> prefillFields(FileMetadataInput meta) {
+        PrefillContext c = prefillContext(meta);
+        Map<String, String> m = new LinkedHashMap<>();
+        m.put("eadID", c.id());
+        m.put("audience", "external");
+        m.put("relatedEncoding", "Dublin Core");
+        m.put("lang", "eng");
+        m.put("script", "Latn");
+        m.put("base", "");
+        return m;
     }
 }

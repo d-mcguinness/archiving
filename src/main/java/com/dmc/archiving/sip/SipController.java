@@ -6,7 +6,7 @@ import com.dmc.archiving.sip.input.CreateSipInput;
 import com.dmc.archiving.sip.input.FileMetadataInput;
 import com.dmc.archiving.sip.model.Sip;
 import com.dmc.archiving.sip.model.SipStatus;
-import com.dmc.archiving.sip.prefill.SipPrefillService;
+import com.dmc.archiving.sip.generator.SipGeneratorFactory;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -23,12 +23,12 @@ import java.util.stream.Collectors;
 public class SipController extends BaseGraphQlController {
 
     private final SipService sipService;
-    private final SipPrefillService sipPrefillService;
+    private final SipGeneratorFactory sipGeneratorFactory;
 
-    public SipController(SipService sipService, SipPrefillService sipPrefillService, TenancyApi tenancyApi) {
+    public SipController(SipService sipService, SipGeneratorFactory sipGeneratorFactory, TenancyApi tenancyApi) {
         super(tenancyApi);
         this.sipService = sipService;
-        this.sipPrefillService = sipPrefillService;
+        this.sipGeneratorFactory = sipGeneratorFactory;
     }
 
     // Queries
@@ -58,7 +58,7 @@ public class SipController extends BaseGraphQlController {
         meta.setUploaderName((String) fileMetadata.get("uploaderName"));
         meta.setFileCount(Integer.parseInt(fileMetadata.get("fileCount").toString()));
 
-        Map<String, String> fields = sipPrefillService.prefillFields(standard, meta);
+        Map<String, String> fields = sipGeneratorFactory.getGenerator(standard).prefillFields(meta);
         return fields.entrySet().stream()
                 .map(e -> Map.of("name", e.getKey(), "value", e.getValue()))
                 .collect(Collectors.toList());
