@@ -15,12 +15,14 @@ public class AipGeneratorFactory {
 
     public AipGeneratorFactory(
             EarkAipGenerator earkAipGenerator,
+            Noark5AipGenerator noark5AipGenerator,
             DefaultAipGenerator defaultGenerator) {
 
         this.generators = new HashMap<>();
         this.defaultGenerator = defaultGenerator;
 
         generators.put(ArchiveStandard.EARK, earkAipGenerator);
+        generators.put(ArchiveStandard.NOARK5, noark5AipGenerator);
     }
 
     public AipGenerator getGenerator(ArchiveStandard standard) {

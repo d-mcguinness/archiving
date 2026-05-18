@@ -8,6 +8,5 @@ import java.util.Map;
 public interface SipGenerator {
     String generate(Sip sip);
     String getStandardName();
-    Map<String, Object> buildPackage(SipSnapshot snapshot);
     Map<String, String> prefillFields(FileMetadataInput meta);
 }

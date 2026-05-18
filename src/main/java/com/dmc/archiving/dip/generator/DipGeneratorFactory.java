@@ -15,12 +15,14 @@ public class DipGeneratorFactory {
 
     public DipGeneratorFactory(
             EarkDipGenerator earkDipGenerator,
+            Noark5DipGenerator noark5DipGenerator,
             DefaultDipGenerator defaultGenerator) {
 
         this.generators = new HashMap<>();
         this.defaultGenerator = defaultGenerator;
 
         generators.put(ArchiveStandard.EARK, earkDipGenerator);
+        generators.put(ArchiveStandard.NOARK5, noark5DipGenerator);
     }
 
     public DipGenerator getGenerator(ArchiveStandard standard) {
