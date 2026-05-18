@@ -504,3 +504,42 @@ SELECT setval('sips_id_seq', (SELECT COALESCE(MAX(id), 1) FROM sips), true);
 SELECT setval('elements_id_seq', (SELECT COALESCE(MAX(id), 1) FROM elements), true);
 SELECT setval('fields_id_seq', (SELECT COALESCE(MAX(id), 1) FROM fields), true);
 
+-- Insert AIPs (Archival Information Packages)
+-- AIP 1 - NOARK5, derived from SIP 1. Demonstrates the SIP -> AIP step in the
+-- archival lifecycle for the Noark 5 chain (matched by the Noark5 arkivuttrekk
+-- XML generators).
+INSERT INTO aips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard, source_sip_id)
+SELECT 1, 1, 1, 'NOARK5 Personnel AIP', 'Preserved personnel records derived from SIP 1', '{"aipType":"Archival Information Package","standard":"NOARK5","sourceSipId":1}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'STORED', 'NOARK5', 1
+WHERE NOT EXISTS (SELECT 1 FROM aips WHERE id = 1);
+
+-- Element for AIP 1 (NOARK5)
+INSERT INTO elements (id, element_identifier, entity_name, entity_type, norwegian_name, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1100, 'AIP-NOARK5-001', 'Personnel', 'Arkivdel', 'Arkiv', 'Archive', 'Personnel Records', 'Preserved personnel records', CURRENT_TIMESTAMP, 'david', 'Bevart', true
+WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1100);
+
+UPDATE aips SET root_element_id = 1100 WHERE id = 1 AND root_element_id IS NULL;
+
+-- AIP-User assignments
+INSERT INTO aip_users (aip_id, user_id) VALUES (1, 1) ON CONFLICT DO NOTHING;
+
+-- Insert DIPs (Dissemination Information Packages)
+-- DIP 1 - NOARK5, derived from AIP 1. Completes the SIP -> AIP -> DIP chain.
+INSERT INTO dips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard, source_aip_id)
+SELECT 1, 1, 1, 'NOARK5 Personnel DIP', 'Delivered personnel records derived from AIP 1', '{"dipType":"Dissemination Information Package","standard":"NOARK5","sourceAipId":1}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DISSEMINATED', 'NOARK5', 1
+WHERE NOT EXISTS (SELECT 1 FROM dips WHERE id = 1);
+
+-- Element for DIP 1 (NOARK5)
+INSERT INTO elements (id, element_identifier, entity_name, entity_type, norwegian_name, english_name, title, description, created_at, created_by, status, is_root)
+SELECT 1200, 'DIP-NOARK5-001', 'Personnel', 'Arkivdel', 'Arkiv', 'Archive', 'Personnel Records', 'Delivered to consumer', CURRENT_TIMESTAMP, 'david', 'Avlevert', true
+WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1200);
+
+UPDATE dips SET root_element_id = 1200 WHERE id = 1 AND root_element_id IS NULL;
+
+-- DIP-User assignments
+INSERT INTO dip_users (dip_id, user_id) VALUES (1, 1) ON CONFLICT DO NOTHING;
+
+-- Reset AIP/DIP sequences
+SELECT setval('aips_id_seq', (SELECT COALESCE(MAX(id), 1) FROM aips), true);
+SELECT setval('dips_id_seq', (SELECT COALESCE(MAX(id), 1) FROM dips), true);
+SELECT setval('elements_id_seq', (SELECT COALESCE(MAX(id), 1) FROM elements), true);
+
