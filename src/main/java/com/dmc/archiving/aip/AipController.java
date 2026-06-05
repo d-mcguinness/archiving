@@ -7,6 +7,7 @@ import com.dmc.archiving.web.BaseGraphQlController;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
 import org.springframework.graphql.data.method.annotation.Argument;
+import graphql.schema.DataFetchingEnvironment;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
@@ -43,7 +44,8 @@ public class AipController extends BaseGraphQlController {
 
     // Mutations
     @MutationMapping
-    public Aip createAip(@Argument Map<String, Object> input) {
+    public Aip createAip(@Argument Map<String, Object> input, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         CreateAipInput aipInput = new CreateAipInput();
 
         aipInput.setUserId(Long.parseLong(input.get("userId").toString()));
@@ -92,17 +94,20 @@ public class AipController extends BaseGraphQlController {
     }
 
     @MutationMapping
-    public String generateAip(@Argument Long aipId) {
+    public String generateAip(@Argument Long aipId, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         return aipService.generateAip(aipId);
     }
 
     @MutationMapping
-    public Aip updateAipStatus(@Argument Long aipId, @Argument AipStatus status) {
+    public Aip updateAipStatus(@Argument Long aipId, @Argument AipStatus status, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         return aipService.updateAipStatus(aipId, status);
     }
 
     @MutationMapping
-    public Boolean deleteAip(@Argument Long id) {
+    public Boolean deleteAip(@Argument Long id, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         return aipService.deleteAip(id);
     }
 

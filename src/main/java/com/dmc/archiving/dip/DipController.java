@@ -7,6 +7,7 @@ import com.dmc.archiving.dip.model.DipStatus;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
 import org.springframework.graphql.data.method.annotation.Argument;
+import graphql.schema.DataFetchingEnvironment;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
@@ -43,7 +44,8 @@ public class DipController extends BaseGraphQlController {
 
     // Mutations
     @MutationMapping
-    public Dip createDip(@Argument Map<String, Object> input) {
+    public Dip createDip(@Argument Map<String, Object> input, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         CreateDipInput dipInput = new CreateDipInput();
 
         dipInput.setUserId(Long.parseLong(input.get("userId").toString()));
@@ -92,17 +94,20 @@ public class DipController extends BaseGraphQlController {
     }
 
     @MutationMapping
-    public String generateDip(@Argument Long dipId) {
+    public String generateDip(@Argument Long dipId, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         return dipService.generateDip(dipId);
     }
 
     @MutationMapping
-    public Dip updateDipStatus(@Argument Long dipId, @Argument DipStatus status) {
+    public Dip updateDipStatus(@Argument Long dipId, @Argument DipStatus status, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         return dipService.updateDipStatus(dipId, status);
     }
 
     @MutationMapping
-    public Boolean deleteDip(@Argument Long id) {
+    public Boolean deleteDip(@Argument Long id, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         return dipService.deleteDip(id);
     }
 

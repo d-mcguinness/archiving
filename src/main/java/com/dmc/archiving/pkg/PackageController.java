@@ -1,9 +1,11 @@
 package com.dmc.archiving.pkg;
 
+import com.dmc.archiving.auth.api.AuthGuard;
 import com.dmc.archiving.pkg.input.CreatePackageInput;
 import com.dmc.archiving.pkg.model.ArchivalPackage;
 import com.dmc.archiving.pkg.model.PackageStage;
 import com.dmc.archiving.pkg.model.PackageStatus;
+import graphql.schema.DataFetchingEnvironment;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -44,12 +46,14 @@ public class PackageController {
     }
 
     @MutationMapping
-    public ArchivalPackage createPackage(@Argument CreatePackageInput input) {
+    public ArchivalPackage createPackage(@Argument CreatePackageInput input, DataFetchingEnvironment env) {
+        AuthGuard.requireRole(env, "TENANT", "ADMIN");
         return packageService.createPackage(input);
     }
 
     @MutationMapping
-    public ArchivalPackage updatePackageStatus(@Argument String packageId, @Argument String status) {
+    public ArchivalPackage updatePackageStatus(@Argument String packageId, @Argument String status, DataFetchingEnvironment env) {
+        AuthGuard.requireRole(env, "TENANT", "ADMIN");
         return packageService.updatePackageStatus(
                 Long.parseLong(packageId),
                 PackageStatus.valueOf(status)
@@ -57,7 +61,8 @@ public class PackageController {
     }
 
     @MutationMapping
-    public boolean deletePackage(@Argument String id) {
+    public boolean deletePackage(@Argument String id, DataFetchingEnvironment env) {
+        AuthGuard.requireRole(env, "TENANT", "ADMIN");
         return packageService.deletePackage(Long.parseLong(id));
     }
 

@@ -2,6 +2,7 @@ package com.dmc.archiving.web;
 
 import com.dmc.archiving.auth.api.AccessDeniedException;
 import com.dmc.archiving.auth.api.AuthContext;
+import com.dmc.archiving.auth.api.AuthGuard;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
 import graphql.schema.DataFetchingEnvironment;
@@ -10,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 
 public abstract class BaseGraphQlController {
 
@@ -44,21 +44,11 @@ public abstract class BaseGraphQlController {
     }
 
     protected void requireAuthenticated(DataFetchingEnvironment env) {
-        if (!getAuthContext(env).isAuthenticated()) {
-            throw new AccessDeniedException("Authentication required");
-        }
+        AuthGuard.requireAuthenticated(env);
     }
 
     protected void requireRole(DataFetchingEnvironment env, String... roles) {
-        AuthContext ctx = getAuthContext(env);
-        if (!ctx.isAuthenticated()) {
-            throw new AccessDeniedException("Authentication required");
-        }
-        String userRole = ctx.role();
-        boolean match = Arrays.stream(roles).anyMatch(r -> r.equalsIgnoreCase(userRole));
-        if (!match) {
-            throw new AccessDeniedException("Access denied: required role " + Arrays.toString(roles));
-        }
+        AuthGuard.requireRole(env, roles);
     }
 
     protected void requireTenantAccess(DataFetchingEnvironment env, Long tenantId) {

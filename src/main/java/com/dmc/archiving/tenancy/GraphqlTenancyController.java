@@ -1,10 +1,12 @@
 package com.dmc.archiving.tenancy;
 
+import com.dmc.archiving.auth.api.AuthGuard;
 import com.dmc.archiving.tenancy.input.CreateTenantInput;
 import com.dmc.archiving.tenancy.input.UpdateTenantInput;
 import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.tenancy.model.TenantStatus;
 import com.dmc.archiving.tenancy.service.TenancyService;
+import graphql.schema.DataFetchingEnvironment;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -45,17 +47,20 @@ public class GraphqlTenancyController {
     }
 
     @MutationMapping
-    public Tenant createTenant(@Argument CreateTenantInput input) {
+    public Tenant createTenant(@Argument CreateTenantInput input, DataFetchingEnvironment env) {
+        AuthGuard.requireRole(env, "ADMIN");
         return tenancyService.createTenant(input);
     }
 
     @MutationMapping
-    public Tenant updateTenant(@Argument UpdateTenantInput input) {
+    public Tenant updateTenant(@Argument UpdateTenantInput input, DataFetchingEnvironment env) {
+        AuthGuard.requireRole(env, "ADMIN");
         return tenancyService.updateTenant(input);
     }
 
     @MutationMapping
-    public Boolean addUserToTenant(@Argument Long userId, @Argument Long tenantId) {
+    public Boolean addUserToTenant(@Argument Long userId, @Argument Long tenantId, DataFetchingEnvironment env) {
+        AuthGuard.requireRole(env, "ADMIN");
         try {
             tenancyService.addUserToTenant(userId, tenantId);
             return true;
@@ -65,7 +70,8 @@ public class GraphqlTenancyController {
     }
 
     @MutationMapping
-    public Boolean removeUserFromTenant(@Argument Long userId) {
+    public Boolean removeUserFromTenant(@Argument Long userId, DataFetchingEnvironment env) {
+        AuthGuard.requireRole(env, "ADMIN");
         try {
             tenancyService.removeUserFromTenant(userId);
             return true;
@@ -75,7 +81,8 @@ public class GraphqlTenancyController {
     }
 
     @MutationMapping
-    public boolean deleteTenant(@Argument Long id) {
+    public boolean deleteTenant(@Argument Long id, DataFetchingEnvironment env) {
+        AuthGuard.requireRole(env, "ADMIN");
         return tenancyService.deleteTenant(id);
     }
 

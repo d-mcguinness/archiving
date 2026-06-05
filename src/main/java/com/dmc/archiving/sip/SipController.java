@@ -10,6 +10,7 @@ import com.dmc.archiving.sip.generator.SipGeneratorFactory;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
 import org.springframework.graphql.data.method.annotation.Argument;
+import graphql.schema.DataFetchingEnvironment;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
@@ -66,7 +67,8 @@ public class SipController extends BaseGraphQlController {
 
     // Mutations
     @MutationMapping
-    public Sip createSipV2(@Argument Map<String, Object> input) {
+    public Sip createSipV2(@Argument Map<String, Object> input, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         CreateSipInput sipInput = new CreateSipInput();
 
         sipInput.setUserId(Long.parseLong(input.get("userId").toString()));
@@ -115,17 +117,20 @@ public class SipController extends BaseGraphQlController {
     }
 
     @MutationMapping
-    public String generateSip(@Argument Long sipId) {
+    public String generateSip(@Argument Long sipId, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         return sipService.generateSip(sipId);
     }
 
     @MutationMapping
-    public Sip updateSipStatusV2(@Argument Long sipId, @Argument SipStatus status) {
+    public Sip updateSipStatusV2(@Argument Long sipId, @Argument SipStatus status, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         return sipService.updateSipStatus(sipId, status);
     }
 
     @MutationMapping
-    public Boolean deleteSipV2(@Argument Long id) {
+    public Boolean deleteSipV2(@Argument Long id, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         return sipService.deleteSip(id);
     }
 

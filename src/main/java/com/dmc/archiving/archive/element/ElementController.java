@@ -5,6 +5,7 @@ import com.dmc.archiving.archive.model.Archive;
 import com.dmc.archiving.web.BaseGraphQlController;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import org.springframework.graphql.data.method.annotation.Argument;
+import graphql.schema.DataFetchingEnvironment;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
@@ -78,7 +79,8 @@ public class ElementController extends BaseGraphQlController {
 
     // Mutations
     @MutationMapping
-    public Element addChildElement(@Argument Long parentElementId, @Argument Map<String, Object> input) {
+    public Element addChildElement(@Argument Long parentElementId, @Argument Map<String, Object> input, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         Element parent = elementService.getElement(parentElementId)
             .orElseThrow(() -> new IllegalArgumentException("Parent element not found"));
 
@@ -101,7 +103,8 @@ public class ElementController extends BaseGraphQlController {
     }
 
     @MutationMapping
-    public Element createElement(@Argument Map<String, Object> input) {
+    public Element createElement(@Argument Map<String, Object> input, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         Long archiveId = Long.parseLong(input.get("archiveId").toString());
         Long parentElementId = input.get("parentElementId") != null ?
             Long.parseLong(input.get("parentElementId").toString()) : null;
@@ -129,7 +132,8 @@ public class ElementController extends BaseGraphQlController {
     }
 
     @MutationMapping
-    public Element updateElement(@Argument Long id, @Argument Map<String, Object> input, @Argument List<Map<String, Object>> fields) {
+    public Element updateElement(@Argument Long id, @Argument Map<String, Object> input, @Argument List<Map<String, Object>> fields, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         String title = input.get("title").toString();
         String description = input.get("description") != null ? input.get("description").toString() : null;
         String updatedBy = input.get("updatedBy").toString();
@@ -138,23 +142,27 @@ public class ElementController extends BaseGraphQlController {
     }
 
     @MutationMapping
-    public Element updateElementStatus(@Argument Long id, @Argument String status, @Argument String updatedBy) {
+    public Element updateElementStatus(@Argument Long id, @Argument String status, @Argument String updatedBy, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         return elementService.updateStatus(id, status, updatedBy);
     }
 
     @MutationMapping
-    public Element closeElement(@Argument Long id, @Argument String closedBy) {
+    public Element closeElement(@Argument Long id, @Argument String closedBy, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         return elementService.closeElement(id, closedBy);
     }
 
     @MutationMapping
-    public Boolean deleteElement(@Argument Long id) {
+    public Boolean deleteElement(@Argument Long id, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         elementService.deleteElement(id);
         return true;
     }
 
     @MutationMapping
-    public Element moveElement(@Argument Long elementId, @Argument Long newParentId, @Argument String updatedBy) {
+    public Element moveElement(@Argument Long elementId, @Argument Long newParentId, @Argument String updatedBy, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         return elementService.moveElement(elementId, newParentId, updatedBy);
     }
 

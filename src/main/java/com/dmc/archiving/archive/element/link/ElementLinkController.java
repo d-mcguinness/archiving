@@ -1,5 +1,7 @@
 package com.dmc.archiving.archive.element.link;
 
+import com.dmc.archiving.auth.api.AuthGuard;
+import graphql.schema.DataFetchingEnvironment;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -35,7 +37,8 @@ public class ElementLinkController {
     }
 
     @MutationMapping
-    public ElementLink createElementLink(@Argument Map<String, Object> input) {
+    public ElementLink createElementLink(@Argument Map<String, Object> input, DataFetchingEnvironment env) {
+        AuthGuard.requireRole(env, "TENANT", "ADMIN");
         return linkService.createLink(
                 Long.parseLong(input.get("sourceElementId").toString()),
                 Long.parseLong(input.get("targetElementId").toString()),
@@ -48,7 +51,8 @@ public class ElementLinkController {
     }
 
     @MutationMapping
-    public boolean deleteElementLink(@Argument String id) {
+    public boolean deleteElementLink(@Argument String id, DataFetchingEnvironment env) {
+        AuthGuard.requireRole(env, "TENANT", "ADMIN");
         return linkService.deleteLink(Long.parseLong(id));
     }
 
