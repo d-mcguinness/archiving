@@ -249,5 +249,12 @@ public class DocumentService {
     public long countByTenant(Long tenantId) {
         return documentRepository.countByTenantId(tenantId);
     }
+
+    /**
+     * Total stored bytes for a tenant (SQL aggregate, for usage metering).
+     */
+    public long getStorageBytesByTenant(Long tenantId) {
+        return documentRepository.sumFileSizeByTenantId(tenantId);
+    }
 }
 

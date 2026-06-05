@@ -131,4 +131,13 @@ public class AipService {
         aipRepository.deleteById(id);
         return true;
     }
+
+    /**
+     * Count AIPs for a tenant whose standard is in the given set
+     * (SQL aggregate, for usage metering).
+     */
+    public long countByTenantAndStandards(Long tenantId,
+                                          java.util.Collection<com.dmc.archiving.archive.model.ArchiveStandard> standards) {
+        return aipRepository.countByTenantIdAndStandardIn(tenantId, standards);
+    }
 }

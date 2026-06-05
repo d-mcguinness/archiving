@@ -53,5 +53,9 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     // Count documents by tenant
     long countByTenantId(Long tenantId);
+
+    // Sum of stored bytes for a tenant (SQL aggregate, for usage metering)
+    @Query("SELECT COALESCE(SUM(d.fileSize), 0) FROM Document d WHERE d.tenantId = :tenantId")
+    long sumFileSizeByTenantId(@Param("tenantId") Long tenantId);
 }
 
