@@ -7,6 +7,7 @@ import com.dmc.archiving.sip.input.FileMetadataInput;
 import com.dmc.archiving.sip.model.Sip;
 import com.dmc.archiving.sip.model.SipStatus;
 import com.dmc.archiving.sip.generator.SipGeneratorFactory;
+import com.dmc.archiving.tenancy.api.BillingTenantResolver;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -25,11 +26,14 @@ public class SipController extends BaseGraphQlController {
 
     private final SipService sipService;
     private final SipGeneratorFactory sipGeneratorFactory;
+    private final BillingTenantResolver billingTenantResolver;
 
-    public SipController(SipService sipService, SipGeneratorFactory sipGeneratorFactory, TenancyApi tenancyApi) {
+    public SipController(SipService sipService, SipGeneratorFactory sipGeneratorFactory,
+                         TenancyApi tenancyApi, BillingTenantResolver billingTenantResolver) {
         super(tenancyApi);
         this.sipService = sipService;
         this.sipGeneratorFactory = sipGeneratorFactory;
+        this.billingTenantResolver = billingTenantResolver;
     }
 
     // Queries
@@ -75,9 +79,9 @@ public class SipController extends BaseGraphQlController {
         sipInput.setTitle(input.get("title").toString());
         sipInput.setStandard(com.dmc.archiving.archive.model.ArchiveStandard.valueOf(input.get("standard").toString()));
 
-        if (input.get("tenantId") != null) {
-            sipInput.setTenantId(Long.parseLong(input.get("tenantId").toString()));
-        }
+        Long claimedTenantId = input.get("tenantId") != null
+                ? Long.parseLong(input.get("tenantId").toString()) : null;
+        sipInput.setTenantId(billingTenantResolver.resolve(getAuthContext(env), claimedTenantId));
         if (input.get("ownerId") != null) {
             sipInput.setOwnerId(Long.parseLong(input.get("ownerId").toString()));
         }

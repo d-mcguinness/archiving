@@ -4,6 +4,7 @@ import com.dmc.archiving.aip.input.CreateAipInput;
 import com.dmc.archiving.aip.model.Aip;
 import com.dmc.archiving.aip.model.AipStatus;
 import com.dmc.archiving.web.BaseGraphQlController;
+import com.dmc.archiving.tenancy.api.BillingTenantResolver;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -20,10 +21,13 @@ import java.util.Map;
 public class AipController extends BaseGraphQlController {
 
     private final AipService aipService;
+    private final BillingTenantResolver billingTenantResolver;
 
-    public AipController(AipService aipService, TenancyApi tenancyApi) {
+    public AipController(AipService aipService, TenancyApi tenancyApi,
+                         BillingTenantResolver billingTenantResolver) {
         super(tenancyApi);
         this.aipService = aipService;
+        this.billingTenantResolver = billingTenantResolver;
     }
 
     // Queries
@@ -52,9 +56,9 @@ public class AipController extends BaseGraphQlController {
         aipInput.setTitle(input.get("title").toString());
         aipInput.setStandard(com.dmc.archiving.archive.model.ArchiveStandard.valueOf(input.get("standard").toString()));
 
-        if (input.get("tenantId") != null) {
-            aipInput.setTenantId(Long.parseLong(input.get("tenantId").toString()));
-        }
+        Long claimedTenantId = input.get("tenantId") != null
+                ? Long.parseLong(input.get("tenantId").toString()) : null;
+        aipInput.setTenantId(billingTenantResolver.resolve(getAuthContext(env), claimedTenantId));
         if (input.get("ownerId") != null) {
             aipInput.setOwnerId(Long.parseLong(input.get("ownerId").toString()));
         }

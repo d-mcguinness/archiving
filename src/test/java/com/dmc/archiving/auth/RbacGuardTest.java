@@ -8,6 +8,7 @@ import com.dmc.archiving.archive.strategy.ArchiveStrategyFactory;
 import com.dmc.archiving.auth.api.AccessDeniedException;
 import com.dmc.archiving.auth.api.AuthContext;
 import com.dmc.archiving.auth.api.AuthGuard;
+import com.dmc.archiving.tenancy.api.BillingTenantResolver;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import graphql.GraphQLContext;
 import graphql.schema.DataFetchingEnvironment;
@@ -66,7 +67,8 @@ class RbacGuardTest {
     void createArchive_deniesUser_andNeverCallsService() {
         ArchiveService service = mock(ArchiveService.class);
         ArchiveController controller = new ArchiveController(
-                service, mock(ArchiveStrategyFactory.class), mock(TenancyApi.class));
+                service, mock(ArchiveStrategyFactory.class), mock(TenancyApi.class),
+                mock(BillingTenantResolver.class));
 
         assertThatThrownBy(() ->
                 controller.createArchive(new CreateArchiveInput(), envWithRole("USER")))
@@ -82,8 +84,12 @@ class RbacGuardTest {
         Archive expected = new Archive();
         when(service.createArchive(input)).thenReturn(expected);
 
+        BillingTenantResolver resolver = mock(BillingTenantResolver.class);
+        when(resolver.resolve(org.mockito.ArgumentMatchers.any(),
+                org.mockito.ArgumentMatchers.any())).thenReturn(100L);
+
         ArchiveController controller = new ArchiveController(
-                service, mock(ArchiveStrategyFactory.class), mock(TenancyApi.class));
+                service, mock(ArchiveStrategyFactory.class), mock(TenancyApi.class), resolver);
 
         Archive result = controller.createArchive(input, envWithRole("TENANT"));
 

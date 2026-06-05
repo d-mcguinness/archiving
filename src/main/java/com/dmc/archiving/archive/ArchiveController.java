@@ -10,6 +10,7 @@ import com.dmc.archiving.archive.strategy.ArchiveStrategy;
 import com.dmc.archiving.archive.strategy.ArchiveStrategyFactory;
 import com.dmc.archiving.archive.strategy.ValidationResult;
 import com.dmc.archiving.web.BaseGraphQlController;
+import com.dmc.archiving.tenancy.api.BillingTenantResolver;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,11 +38,14 @@ public class ArchiveController extends BaseGraphQlController {
 
     private final ArchiveService archiveService;
     private final ArchiveStrategyFactory strategyFactory;
+    private final BillingTenantResolver billingTenantResolver;
 
-    public ArchiveController(ArchiveService archiveService, ArchiveStrategyFactory strategyFactory, TenancyApi tenancyApi) {
+    public ArchiveController(ArchiveService archiveService, ArchiveStrategyFactory strategyFactory,
+                             TenancyApi tenancyApi, BillingTenantResolver billingTenantResolver) {
         super(tenancyApi);
         this.archiveService = archiveService;
         this.strategyFactory = strategyFactory;
+        this.billingTenantResolver = billingTenantResolver;
     }
 
     // ========== Legacy Query Methods (Non-paginated - use paginated versions for production) ==========
@@ -178,6 +182,7 @@ public class ArchiveController extends BaseGraphQlController {
     @MutationMapping
     public Archive createArchive(@Argument CreateArchiveInput input, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        input.setTenantId(billingTenantResolver.resolve(getAuthContext(env), input.getTenantId()));
         return archiveService.createArchive(input);
     }
 

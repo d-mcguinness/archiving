@@ -2,6 +2,7 @@ package com.dmc.archiving.pkg;
 
 import com.dmc.archiving.auth.api.AuthGuard;
 import com.dmc.archiving.pkg.input.CreatePackageInput;
+import com.dmc.archiving.tenancy.api.BillingTenantResolver;
 import com.dmc.archiving.pkg.model.ArchivalPackage;
 import com.dmc.archiving.pkg.model.PackageStage;
 import com.dmc.archiving.pkg.model.PackageStatus;
@@ -18,9 +19,11 @@ import java.util.List;
 public class PackageController {
 
     private final PackageService packageService;
+    private final BillingTenantResolver billingTenantResolver;
 
-    public PackageController(PackageService packageService) {
+    public PackageController(PackageService packageService, BillingTenantResolver billingTenantResolver) {
         this.packageService = packageService;
+        this.billingTenantResolver = billingTenantResolver;
     }
 
     @QueryMapping
@@ -48,6 +51,10 @@ public class PackageController {
     @MutationMapping
     public ArchivalPackage createPackage(@Argument CreatePackageInput input, DataFetchingEnvironment env) {
         AuthGuard.requireRole(env, "TENANT", "ADMIN");
+        Long claimedTenantId = input.getTenantId() != null && !input.getTenantId().isBlank()
+                ? Long.parseLong(input.getTenantId()) : null;
+        Long resolved = billingTenantResolver.resolve(AuthGuard.context(env), claimedTenantId);
+        input.setTenantId(resolved.toString());
         return packageService.createPackage(input);
     }
 
