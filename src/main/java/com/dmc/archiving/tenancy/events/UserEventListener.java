@@ -28,6 +28,6 @@ public class UserEventListener {
     @Transactional
     public void handleUserDeleted(UserDeletedEvent event) {
         // Remove user from all tenants to prevent FK constraint violation
-        tenancyService.removeUserFromTenant(event.getUserId());
+        tenancyService.removeUserFromAllTenants(event.getUserId());
     }
 }

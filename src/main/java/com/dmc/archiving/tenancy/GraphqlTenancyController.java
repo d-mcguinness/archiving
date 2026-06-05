@@ -70,10 +70,10 @@ public class GraphqlTenancyController {
     }
 
     @MutationMapping
-    public Boolean removeUserFromTenant(@Argument Long userId, DataFetchingEnvironment env) {
+    public Boolean removeUserFromTenant(@Argument Long tenantId, @Argument Long userId, DataFetchingEnvironment env) {
         AuthGuard.requireRole(env, "ADMIN");
         try {
-            tenancyService.removeUserFromTenant(userId);
+            tenancyService.removeUserFromTenant(tenantId, userId);
             return true;
         } catch (Exception e) {
             return false;

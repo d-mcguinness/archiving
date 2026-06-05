@@ -566,7 +566,7 @@ type Mutation {
     createTenant(input: CreateTenantInput!): Tenant!
     updateTenant(input: UpdateTenantInput!): Tenant!
     addUserToTenant(userId: ID!, tenantId: ID!): Boolean!
-    removeUserFromTenant(userId: ID!): Boolean!
+    removeUserFromTenant(tenantId: ID!, userId: ID!): Boolean!
     deleteTenant(id: ID!): Boolean!
 
     # Archive Mutations

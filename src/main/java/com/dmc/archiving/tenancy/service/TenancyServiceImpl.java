@@ -163,7 +163,13 @@ public class TenancyServiceImpl implements TenancyService {
 
     @Override
     @Transactional
-    public void removeUserFromTenant(Long userId) {
+    public void removeUserFromTenant(Long tenantId, Long userId) {
+        membershipRepository.deleteByTenantIdAndUserId(tenantId, userId);
+    }
+
+    @Override
+    @Transactional
+    public void removeUserFromAllTenants(Long userId) {
         membershipRepository.deleteByUserId(userId);
     }
 
