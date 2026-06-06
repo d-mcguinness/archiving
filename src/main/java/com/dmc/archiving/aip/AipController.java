@@ -59,6 +59,8 @@ public class AipController extends BaseGraphQlController {
         Long claimedTenantId = input.get("tenantId") != null
                 ? Long.parseLong(input.get("tenantId").toString()) : null;
         aipInput.setTenantId(billingTenantResolver.resolve(getAuthContext(env), claimedTenantId));
+        // ADMIN/operator-created packages are not billed to the tenant.
+        aipInput.setBillable(!getAuthContext(env).isAdmin());
         if (input.get("ownerId") != null) {
             aipInput.setOwnerId(Long.parseLong(input.get("ownerId").toString()));
         }

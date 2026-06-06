@@ -61,6 +61,7 @@ public class AipService {
         aip.setStatus(AipStatus.DRAFT);
         aip.setStandard(input.getStandard());
         aip.setSourceSipId(input.getSourceSipId());
+        aip.setBillable(input.isBillable());
 
         // Assign creator
         aip.assignUser(user);
@@ -138,6 +139,6 @@ public class AipService {
      */
     public long countByTenantAndStandards(Long tenantId,
                                           java.util.Collection<com.dmc.archiving.archive.model.ArchiveStandard> standards) {
-        return aipRepository.countByTenantIdAndStandardIn(tenantId, standards);
+        return aipRepository.countByTenantIdAndStandardInAndBillableTrue(tenantId, standards);
     }
 }

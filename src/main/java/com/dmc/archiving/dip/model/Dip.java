@@ -4,6 +4,7 @@ import com.dmc.archiving.archive.element.Element;
 import com.dmc.archiving.archive.model.ArchiveStandard;
 import com.dmc.archiving.user.model.User;
 import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -66,6 +67,11 @@ public class Dip {
 
     @Column(name = "source_aip_id")
     private Long sourceAipId;
+
+    /** False when created by an ADMIN operator; such rows are excluded from tenant billing. */
+    @Column(name = "billable", nullable = false)
+    @ColumnDefault("true")
+    private boolean billable = true;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "root_element_id")

@@ -61,6 +61,7 @@ public class DipService {
         dip.setStatus(DipStatus.DRAFT);
         dip.setStandard(input.getStandard());
         dip.setSourceAipId(input.getSourceAipId());
+        dip.setBillable(input.isBillable());
 
         // Assign creator
         dip.assignUser(user);
@@ -138,6 +139,6 @@ public class DipService {
      */
     public long countByTenantAndStandards(Long tenantId,
                                           java.util.Collection<com.dmc.archiving.archive.model.ArchiveStandard> standards) {
-        return dipRepository.countByTenantIdAndStandardIn(tenantId, standards);
+        return dipRepository.countByTenantIdAndStandardInAndBillableTrue(tenantId, standards);
     }
 }

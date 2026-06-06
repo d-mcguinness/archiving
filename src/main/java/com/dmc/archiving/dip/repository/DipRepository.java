@@ -15,7 +15,7 @@ public interface DipRepository extends JpaRepository<Dip, Long> {
 
     List<Dip> findByOwnerId(Long ownerId);
 
-    // SQL aggregate: count DIPs for a tenant whose standard is in the given set
-    // (used to meter premium-standard package generation).
-    long countByTenantIdAndStandardIn(Long tenantId, Collection<ArchiveStandard> standards);
+    // SQL aggregate: count billable DIPs for a tenant whose standard is in the
+    // given set (premium-standard metering). Excludes ADMIN-created rows.
+    long countByTenantIdAndStandardInAndBillableTrue(Long tenantId, Collection<ArchiveStandard> standards);
 }

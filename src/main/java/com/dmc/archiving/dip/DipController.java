@@ -59,6 +59,8 @@ public class DipController extends BaseGraphQlController {
         Long claimedTenantId = input.get("tenantId") != null
                 ? Long.parseLong(input.get("tenantId").toString()) : null;
         dipInput.setTenantId(billingTenantResolver.resolve(getAuthContext(env), claimedTenantId));
+        // ADMIN/operator-created packages are not billed to the tenant.
+        dipInput.setBillable(!getAuthContext(env).isAdmin());
         if (input.get("ownerId") != null) {
             dipInput.setOwnerId(Long.parseLong(input.get("ownerId").toString()));
         }

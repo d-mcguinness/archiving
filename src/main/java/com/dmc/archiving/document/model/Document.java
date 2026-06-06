@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.modulith.NamedInterface;
 
 import java.time.LocalDateTime;
@@ -65,6 +66,11 @@ public class Document {
 
     @Column(name = "sip_id")
     private Long sipId;  // Optional: associated SIP
+
+    /** False when uploaded by an ADMIN operator; such documents are excluded from tenant billing. */
+    @Column(name = "billable", nullable = false)
+    @ColumnDefault("true")
+    private boolean billable = true;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
