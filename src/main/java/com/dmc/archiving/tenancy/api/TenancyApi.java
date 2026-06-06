@@ -29,6 +29,16 @@ public interface TenancyApi {
     int getArchiveLimit(Long tenantId);
 
     /**
+     * Soft spend cap: max billable storage overage beyond the plan allotment, in
+     * bytes; -1 means unlimited. Uses the tenant's configured budget if present,
+     * otherwise a plan default.
+     */
+    long getStorageOverageLimitBytes(Long tenantId);
+
+    /** Whether the tenant has opted in to keep accruing past their spend cap. */
+    boolean isOverageOptIn(Long tenantId);
+
+    /**
      * Whether the tenant's plan permits quota overage (paid plans) rather than a
      * hard stop at the allotment (FREE). Applies to storage, archives and seats.
      */

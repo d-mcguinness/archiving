@@ -47,7 +47,7 @@ class DocumentStorageQuotaTest {
     @Test
     void freePlanHardStopsBeforeWritingToStorage() throws Exception {
         when(tenancyApi.getStorageLimitBytes(TENANT)).thenReturn(1000L);
-        when(tenancyApi.isStorageOverageAllowed(TENANT)).thenReturn(false); // FREE
+        when(tenancyApi.isOverageAllowed(TENANT)).thenReturn(false); // FREE
         when(repo.sumFileSizeByTenantId(TENANT)).thenReturn(900L);
 
         assertThatThrownBy(() ->
@@ -63,7 +63,8 @@ class DocumentStorageQuotaTest {
     @Test
     void paidPlanAllowsBilledOverage() throws Exception {
         when(tenancyApi.getStorageLimitBytes(TENANT)).thenReturn(1000L);
-        when(tenancyApi.isStorageOverageAllowed(TENANT)).thenReturn(true); // paid
+        when(tenancyApi.isOverageAllowed(TENANT)).thenReturn(true); // paid
+        when(tenancyApi.getStorageOverageLimitBytes(TENANT)).thenReturn(1_000_000L); // ample cap
         when(repo.sumFileSizeByTenantId(TENANT)).thenReturn(900L);
         stubSuccessfulUpload();
 

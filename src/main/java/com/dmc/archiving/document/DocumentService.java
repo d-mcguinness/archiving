@@ -284,15 +284,43 @@ public class DocumentService {
         if (projected <= limit) {
             return; // within allotment
         }
-        if (tenancyApi.isStorageOverageAllowed(tenantId)) {
-            log.warn("Tenant {} over storage allotment ({} + {} = {} > {}); recording billable overage",
-                    tenantId, current, incomingBytes, projected, limit);
+        // Over the plan allotment.
+        if (!tenancyApi.isOverageAllowed(tenantId)) {
+            // FREE: hard stop at the allotment.
+            throw new StorageQuotaExceededException(
+                    "Storage limit exceeded for tenant " + tenantId + ": "
+                            + projected + " bytes would exceed the plan allotment of " + limit
+                            + " bytes. Upgrade the plan or free up space.");
+        }
+        // Paid: allowed to incur overage up to the configured spend cap.
+        long overage = projected - limit;
+        long budget = tenancyApi.getStorageOverageLimitBytes(tenantId);
+        if (budget < 0) {
+            log.warn("Tenant {} over storage allotment by {} bytes (unlimited overage); recording billable overage",
+                    tenantId, overage);
             return;
         }
-        throw new StorageQuotaExceededException(
-                "Storage limit exceeded for tenant " + tenantId + ": "
-                        + projected + " bytes would exceed the plan allotment of " + limit
-                        + " bytes. Upgrade the plan or free up space.");
+        if (overage > budget && !tenancyApi.isOverageOptIn(tenantId)) {
+            throw new SpendCapExceededException(
+                    "Overage spend cap reached for tenant " + tenantId + ": projected overage of "
+                            + overage + " bytes exceeds the cap of " + budget
+                            + " bytes. Raise the cap, opt in to keep accruing, or free up space.");
+        }
+        alertOverage(tenantId, overage, budget);
+    }
+
+    /** Emit a threshold alert as the tenant consumes its overage budget. */
+    private void alertOverage(Long tenantId, long overage, long budget) {
+        if (overage > budget) {
+            log.warn("Tenant {} ACCRUING PAST overage cap (opted in): {} / {} bytes", tenantId, overage, budget);
+            return;
+        }
+        long pct = budget == 0 ? 100 : (overage * 100 / budget);
+        int band = pct >= 100 ? 100 : pct >= 80 ? 80 : pct >= 50 ? 50 : 0;
+        if (band > 0) {
+            log.warn("Tenant {} storage overage at {}% of spend cap ({} / {} bytes)",
+                    tenantId, band, overage, budget);
+        }
     }
 }
 

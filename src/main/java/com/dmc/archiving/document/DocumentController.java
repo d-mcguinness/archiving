@@ -97,6 +97,10 @@ public class DocumentController {
                 return ResponseEntity
                     .status(HttpStatus.INSUFFICIENT_STORAGE)
                     .body(Map.of("success", false, "error", e.getMessage()));
+            } catch (SpendCapExceededException e) {
+                return ResponseEntity
+                    .status(HttpStatus.PAYMENT_REQUIRED)
+                    .body(Map.of("success", false, "error", e.getMessage()));
             }
 
             // Associate with SIP if provided
