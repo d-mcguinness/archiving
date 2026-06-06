@@ -93,4 +93,7 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long>, JpaSpec
     long countByOwnerId(Long ownerId);
     long countByStatus(ArchiveStatus status);
     long countByOwnerIdAndStatus(Long ownerId, ArchiveStatus status);
+
+    // Count archives in a tenant (for plan quota enforcement)
+    long countByTenantId(Long tenantId);
 }

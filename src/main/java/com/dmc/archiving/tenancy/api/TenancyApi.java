@@ -25,6 +25,18 @@ public interface TenancyApi {
     /** Storage allotment for the tenant's plan in bytes; -1 means unlimited. */
     long getStorageLimitBytes(Long tenantId);
 
-    /** Whether the tenant's plan permits storage overage (paid plans) vs. a hard stop (FREE). */
-    boolean isStorageOverageAllowed(Long tenantId);
+    /** Max number of archives for the tenant's plan; -1 means unlimited. */
+    int getArchiveLimit(Long tenantId);
+
+    /**
+     * Whether the tenant's plan permits quota overage (paid plans) rather than a
+     * hard stop at the allotment (FREE). Applies to storage, archives and seats.
+     */
+    boolean isOverageAllowed(Long tenantId);
+
+    /** @deprecated use {@link #isOverageAllowed(Long)} — kept for the storage call site. */
+    @Deprecated
+    default boolean isStorageOverageAllowed(Long tenantId) {
+        return isOverageAllowed(tenantId);
+    }
 }

@@ -57,7 +57,17 @@ class TenancyApiImpl implements TenancyApi {
     }
 
     @Override
-    public boolean isStorageOverageAllowed(Long tenantId) {
+    public int getArchiveLimit(Long tenantId) {
+        Tenant tenant = tenancyService.getTenantById(tenantId);
+        if (tenant == null || tenant.getSettings() == null
+                || tenant.getSettings().getMaxArchives() == null) {
+            return -1; // unknown settings -> treat as unlimited rather than block
+        }
+        return tenant.getSettings().getMaxArchives();
+    }
+
+    @Override
+    public boolean isOverageAllowed(Long tenantId) {
         Tenant tenant = tenancyService.getTenantById(tenantId);
         // FREE hard-stops at its allotment; every paid plan permits (billed) overage.
         return tenant != null && tenant.getPlan() != TenantPlan.FREE;

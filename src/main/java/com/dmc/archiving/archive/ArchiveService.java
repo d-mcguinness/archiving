@@ -12,6 +12,7 @@ import com.dmc.archiving.archive.repository.ArchiveRepository;
 import com.dmc.archiving.archive.specification.ArchiveSearchCriteria;
 import com.dmc.archiving.archive.specification.ArchiveSpecifications;
 import com.dmc.archiving.common.exception.ResourceNotFoundException;
+import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.user.api.UserApi;
 import com.dmc.archiving.user.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,11 +52,14 @@ public class ArchiveService {
     private final ArchiveRepository archiveRepository;
     private final UserApi userApi;
     private final ElementRepository elementRepository;
+    private final TenancyApi tenancyApi;
 
-    public ArchiveService(ArchiveRepository archiveRepository, UserApi userApi, ElementRepository elementRepository) {
+    public ArchiveService(ArchiveRepository archiveRepository, UserApi userApi,
+                          ElementRepository elementRepository, TenancyApi tenancyApi) {
         this.archiveRepository = archiveRepository;
         this.userApi = userApi;
         this.elementRepository = elementRepository;
+        this.tenancyApi = tenancyApi;
     }
 
     @Caching(evict = {
@@ -77,6 +81,8 @@ public class ArchiveService {
         // Use tenantId if provided, otherwise default to ownerId as a placeholder
         Long tenantId = input.getTenantId() != null ? input.getTenantId() : ownerId;
 
+        enforceArchiveQuota(tenantId);
+
         Archive archive = new Archive(
             null, // Let JPA generate the ID
             tenantId,             // Set tenantId (organization)
@@ -94,6 +100,32 @@ public class ArchiveService {
         archive.assignUser(user);
 
         return archiveRepository.save(archive);
+    }
+
+    /**
+     * Reject (FREE) or allow-with-overage (paid) archive creation against the
+     * tenant's archive allotment. -1 limit means unlimited.
+     */
+    private void enforceArchiveQuota(Long tenantId) {
+        if (tenantId == null) {
+            return;
+        }
+        int limit = tenancyApi.getArchiveLimit(tenantId);
+        if (limit < 0) {
+            return; // unlimited
+        }
+        long current = archiveRepository.countByTenantId(tenantId);
+        if (current < limit) {
+            return; // within allotment
+        }
+        if (tenancyApi.isOverageAllowed(tenantId)) {
+            log.warn("Tenant {} over archive allotment ({} >= {}); recording billable overage",
+                    tenantId, current, limit);
+            return;
+        }
+        throw new ArchiveQuotaExceededException(
+                "Archive limit reached for tenant " + tenantId + " (" + limit
+                        + "). Upgrade the plan to create more archives.");
     }
 
     @Transactional
