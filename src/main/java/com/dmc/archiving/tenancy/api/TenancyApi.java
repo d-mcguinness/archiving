@@ -21,4 +21,10 @@ public interface TenancyApi {
     List<Tenant> getAllTenants();
 
     long countUsersInTenant(Long tenantId);
+
+    /** Storage allotment for the tenant's plan in bytes; -1 means unlimited. */
+    long getStorageLimitBytes(Long tenantId);
+
+    /** Whether the tenant's plan permits storage overage (paid plans) vs. a hard stop (FREE). */
+    boolean isStorageOverageAllowed(Long tenantId);
 }

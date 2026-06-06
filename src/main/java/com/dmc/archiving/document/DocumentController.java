@@ -89,8 +89,15 @@ public class DocumentController {
             }
 
             // ADMIN/operator uploads are not billed to the tenant.
-            Document document = documentService.uploadDocument(
-                    file, ctx.userId(), resolvedTenantId, title, description, !ctx.isAdmin());
+            Document document;
+            try {
+                document = documentService.uploadDocument(
+                        file, ctx.userId(), resolvedTenantId, title, description, !ctx.isAdmin());
+            } catch (StorageQuotaExceededException e) {
+                return ResponseEntity
+                    .status(HttpStatus.INSUFFICIENT_STORAGE)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+            }
 
             // Associate with SIP if provided
             if (sipId != null) {

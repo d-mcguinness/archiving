@@ -1,6 +1,7 @@
 package com.dmc.archiving.tenancy.api;
 
 import com.dmc.archiving.tenancy.model.Tenant;
+import com.dmc.archiving.tenancy.model.TenantPlan;
 import com.dmc.archiving.tenancy.service.TenancyService;
 import org.springframework.stereotype.Service;
 
@@ -43,5 +44,22 @@ class TenancyApiImpl implements TenancyApi {
     @Override
     public long countUsersInTenant(Long tenantId) {
         return tenancyService.countUsersInTenant(tenantId);
+    }
+
+    @Override
+    public long getStorageLimitBytes(Long tenantId) {
+        Tenant tenant = tenancyService.getTenantById(tenantId);
+        if (tenant == null || tenant.getSettings() == null
+                || tenant.getSettings().getMaxStorageBytes() == null) {
+            return -1L; // unknown settings -> treat as unlimited rather than block
+        }
+        return tenant.getSettings().getMaxStorageBytes();
+    }
+
+    @Override
+    public boolean isStorageOverageAllowed(Long tenantId) {
+        Tenant tenant = tenancyService.getTenantById(tenantId);
+        // FREE hard-stops at its allotment; every paid plan permits (billed) overage.
+        return tenant != null && tenant.getPlan() != TenantPlan.FREE;
     }
 }

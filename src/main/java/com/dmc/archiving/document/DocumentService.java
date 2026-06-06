@@ -45,6 +45,12 @@ public class DocumentService {
     @Transactional
     public Document uploadDocument(MultipartFile file, Long userId, Long tenantId, String title,
                                    String description, boolean billable) {
+        // Enforce the tenant's storage allotment before writing anything to S3.
+        // Only billable uploads count against the meter; operator (non-billable)
+        // uploads bypass the quota, consistent with not being billed.
+        if (billable && tenantId != null) {
+            enforceStorageQuota(tenantId, file.getSize());
+        }
         try {
             // Upload file to cloud storage
             UploadResult uploadResult = cloudStorageService.uploadFile(file, userId);
@@ -262,6 +268,31 @@ public class DocumentService {
      */
     public long getStorageBytesByTenant(Long tenantId) {
         return documentRepository.sumFileSizeByTenantId(tenantId);
+    }
+
+    /**
+     * Reject (FREE) or allow-with-overage (paid) a billable upload against the
+     * tenant's storage allotment. -1 limit means unlimited.
+     */
+    private void enforceStorageQuota(Long tenantId, long incomingBytes) {
+        long limit = tenancyApi.getStorageLimitBytes(tenantId);
+        if (limit < 0) {
+            return; // unlimited
+        }
+        long current = documentRepository.sumFileSizeByTenantId(tenantId);
+        long projected = current + incomingBytes;
+        if (projected <= limit) {
+            return; // within allotment
+        }
+        if (tenancyApi.isStorageOverageAllowed(tenantId)) {
+            log.warn("Tenant {} over storage allotment ({} + {} = {} > {}); recording billable overage",
+                    tenantId, current, incomingBytes, projected, limit);
+            return;
+        }
+        throw new StorageQuotaExceededException(
+                "Storage limit exceeded for tenant " + tenantId + ": "
+                        + projected + " bytes would exceed the plan allotment of " + limit
+                        + " bytes. Upgrade the plan or free up space.");
     }
 }
 
