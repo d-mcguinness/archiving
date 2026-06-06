@@ -84,11 +84,14 @@
       formData.append('file', selectedFile);
       formData.append('title', title);
       formData.append('description', description || '');
-      formData.append('userId', selectedUserId);
+      // tenantId is a claim; the server validates it against the caller's membership.
       formData.append('tenantId', data.tenantId);
 
+      // Identity is taken from the auth token, not request params.
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const response = await fetch('http://localhost:2020/api/documents/upload', {
         method: 'POST',
+        headers: token ? { Authorization: token } : {},
         body: formData
       });
 

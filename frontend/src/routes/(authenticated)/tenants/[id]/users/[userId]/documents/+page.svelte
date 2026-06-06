@@ -286,8 +286,10 @@
         formData.append('description', description);
       }
 
+      const uploadToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const response = await fetch('http://localhost:2020/api/documents/upload', {
         method: 'POST',
+        headers: uploadToken ? { Authorization: uploadToken } : {},
         body: formData
       });
 

@@ -1,9 +1,13 @@
 package com.dmc.archiving.document;
 
+import com.dmc.archiving.auth.api.AccessDeniedException;
+import com.dmc.archiving.auth.api.AuthContext;
+import com.dmc.archiving.auth.api.AuthTokens;
 import com.dmc.archiving.document.model.Document;
 import com.dmc.archiving.document.model.DocumentStatus;
 import com.dmc.archiving.storage.CloudStorageService;
 import com.dmc.archiving.storage.StorageException;
+import com.dmc.archiving.tenancy.api.BillingTenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
@@ -35,10 +39,13 @@ public class DocumentController {
 
     private final DocumentService documentService;
     private final CloudStorageService cloudStorageService;
+    private final BillingTenantResolver billingTenantResolver;
 
-    public DocumentController(DocumentService documentService, CloudStorageService cloudStorageService) {
+    public DocumentController(DocumentService documentService, CloudStorageService cloudStorageService,
+                             BillingTenantResolver billingTenantResolver) {
         this.documentService = documentService;
         this.cloudStorageService = cloudStorageService;
+        this.billingTenantResolver = billingTenantResolver;
     }
 
     /**
@@ -47,14 +54,33 @@ public class DocumentController {
     @PostMapping("/upload")
     public ResponseEntity<?> uploadDocument(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("userId") Long userId,
-            @RequestParam(value = "tenantId", required = false) Long tenantId,
+            @RequestParam(value = "tenantId", required = false) Long tenantId,   // treated as a claim, validated against membership
             @RequestParam(value = "sipId", required = false) Long sipId,
             @RequestParam(value = "title", required = false) String title,
-            @RequestParam(value = "description", required = false) String description) {
+            @RequestParam(value = "description", required = false) String description,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
+
+        // Identity is derived from the token, never from request params, so a
+        // caller cannot forge the uploader or the owning (billed) tenant.
+        AuthContext ctx = AuthTokens.parse(authorization);
+        if (!ctx.isAuthenticated()) {
+            return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("success", false, "error", "Authentication required"));
+        }
+
+        Long resolvedTenantId;
+        try {
+            resolvedTenantId = billingTenantResolver.resolve(ctx, tenantId);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(Map.of("success", false, "error", e.getMessage()));
+        }
 
         try {
-            log.info("Uploading document for user {}, tenant {}, sip {}", userId, tenantId, sipId);
+            log.info("Uploading document for authenticated user {}, tenant {}, sip {}",
+                    ctx.userId(), resolvedTenantId, sipId);
 
             if (file.isEmpty()) {
                 return ResponseEntity
@@ -62,7 +88,9 @@ public class DocumentController {
                     .body(Map.of("success", false, "error", "File is empty"));
             }
 
-            Document document = documentService.uploadDocument(file, userId, tenantId, title, description);
+            // ADMIN/operator uploads are not billed to the tenant.
+            Document document = documentService.uploadDocument(
+                    file, ctx.userId(), resolvedTenantId, title, description, !ctx.isAdmin());
 
             // Associate with SIP if provided
             if (sipId != null) {

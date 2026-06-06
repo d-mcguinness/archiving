@@ -39,6 +39,12 @@ public class DocumentService {
      */
     @Transactional
     public Document uploadDocument(MultipartFile file, Long userId, Long tenantId, String title, String description) {
+        return uploadDocument(file, userId, tenantId, title, description, true);
+    }
+
+    @Transactional
+    public Document uploadDocument(MultipartFile file, Long userId, Long tenantId, String title,
+                                   String description, boolean billable) {
         try {
             // Upload file to cloud storage
             UploadResult uploadResult = cloudStorageService.uploadFile(file, userId);
@@ -55,6 +61,7 @@ public class DocumentService {
             document.setUserId(userId);
             document.setTenantId(tenantId);
             document.setStatus(DocumentStatus.ACTIVE);
+            document.setBillable(billable);
 
             return documentRepository.save(document);
         } catch (Exception e) {
