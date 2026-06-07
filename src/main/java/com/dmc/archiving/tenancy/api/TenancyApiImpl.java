@@ -99,6 +99,11 @@ class TenancyApiImpl implements TenancyApi {
     }
 
     @Override
+    public void lockTenantForUpdate(Long tenantId) {
+        tenancyService.lockTenantForUpdate(tenantId);
+    }
+
+    @Override
     public long getMaxUploadFileSizeBytes(Long tenantId) {
         Tenant tenant = tenancyService.getTenantById(tenantId);
         TenantPlan plan = tenant != null ? tenant.getPlan() : null;

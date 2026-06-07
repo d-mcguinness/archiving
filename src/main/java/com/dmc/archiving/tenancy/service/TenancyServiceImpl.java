@@ -172,7 +172,9 @@ public class TenancyServiceImpl implements TenancyService {
      * maxUsers allotment. -1 (or absent) means unlimited.
      */
     private void enforceSeatQuota(Long tenantId) {
-        Tenant tenant = tenancyRepository.findById(tenantId).orElse(null);
+        // Lock the tenant row so concurrent addUserToTenant calls serialize and
+        // cannot both pass the seat cap (check-then-act race).
+        Tenant tenant = tenancyRepository.findByIdForUpdate(tenantId).orElse(null);
         if (tenant == null || tenant.getSettings() == null
                 || tenant.getSettings().getMaxUsers() == null
                 || tenant.getSettings().getMaxUsers() < 0) {
@@ -208,6 +210,13 @@ public class TenancyServiceImpl implements TenancyService {
     @Override
     public long countUsersInTenant(Long tenantId) {
         return membershipRepository.countByTenantId(tenantId);
+    }
+
+    @Override
+    public void lockTenantForUpdate(Long tenantId) {
+        // Joins the caller's transaction (no @Transactional here) and holds a
+        // SELECT ... FOR UPDATE on the tenant row until that tx commits.
+        tenancyRepository.findByIdForUpdate(tenantId);
     }
 
     private TenantSettings createDefaultSettings(com.dmc.archiving.tenancy.model.TenantPlan plan) {

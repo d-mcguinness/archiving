@@ -11,8 +11,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.mockito.InOrder;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -113,5 +116,20 @@ class DocumentStorageQuotaTest {
 
         verify(storage).uploadFile(any(), anyLong());
         verify(tenancyApi, never()).getStorageLimitBytes(anyLong());
+    }
+
+    @Test
+    void acquiresPerTenantLockBeforeReadingUsage() throws Exception {
+        // The lock must be taken before the usage SUM so the read+write are
+        // serialized per tenant (closes the check-then-act race).
+        when(tenancyApi.getStorageLimitBytes(TENANT)).thenReturn(1000L);
+        when(repo.sumFileSizeByTenantId(TENANT)).thenReturn(100L);
+        stubSuccessfulUpload();
+
+        service.uploadDocument(fileOf(200L), 2L, TENANT, "t", "d", true);
+
+        InOrder order = inOrder(tenancyApi, repo);
+        order.verify(tenancyApi).lockTenantForUpdate(TENANT);
+        order.verify(repo).sumFileSizeByTenantId(TENANT);
     }
 }

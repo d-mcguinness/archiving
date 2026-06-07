@@ -39,6 +39,14 @@ public interface TenancyApi {
     boolean isOverageOptIn(Long tenantId);
 
     /**
+     * Acquire a pessimistic per-tenant lock for the duration of the caller's
+     * transaction. Call before reading usage in a quota check so the read and
+     * the subsequent write are serialized per tenant (closes check-then-act
+     * races). Must be invoked from within an active (@Transactional) write.
+     */
+    void lockTenantForUpdate(Long tenantId);
+
+    /**
      * Max size of a single uploaded file in bytes for the tenant's plan.
      * Standard plans get the default; ENTERPRISE/CUSTOM get the raised
      * large-file ceiling (single-PUT limit).

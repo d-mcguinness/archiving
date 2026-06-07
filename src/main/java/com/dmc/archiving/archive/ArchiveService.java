@@ -114,6 +114,9 @@ public class ArchiveService {
         if (limit < 0) {
             return; // unlimited
         }
+        // Serialize concurrent archive creates for this tenant so the count
+        // read and the subsequent insert cannot both pass the cap.
+        tenancyApi.lockTenantForUpdate(tenantId);
         long current = archiveRepository.countByTenantId(tenantId);
         if (current < limit) {
             return; // within allotment

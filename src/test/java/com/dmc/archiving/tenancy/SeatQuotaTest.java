@@ -55,7 +55,7 @@ class SeatQuotaTest {
     @Test
     void freePlanHardStopsAtSeatLimit() {
         commonStubs();
-        when(tenancyRepo.findById(TENANT)).thenReturn(Optional.of(tenant(TenantPlan.FREE, 5)));
+        when(tenancyRepo.findByIdForUpdate(TENANT)).thenReturn(Optional.of(tenant(TenantPlan.FREE, 5)));
         when(memberships.countByTenantId(TENANT)).thenReturn(5L);
 
         assertThatThrownBy(() -> service.addUserToTenant(USER, TENANT))
@@ -68,7 +68,7 @@ class SeatQuotaTest {
     @Test
     void paidPlanAllowsBilledSeatOverage() {
         commonStubs();
-        when(tenancyRepo.findById(TENANT)).thenReturn(Optional.of(tenant(TenantPlan.BASIC, 5)));
+        when(tenancyRepo.findByIdForUpdate(TENANT)).thenReturn(Optional.of(tenant(TenantPlan.BASIC, 5)));
         when(memberships.countByTenantId(TENANT)).thenReturn(5L);
 
         service.addUserToTenant(USER, TENANT);
@@ -79,7 +79,7 @@ class SeatQuotaTest {
     @Test
     void withinSeatAllotmentProceeds() {
         commonStubs();
-        when(tenancyRepo.findById(TENANT)).thenReturn(Optional.of(tenant(TenantPlan.FREE, 5)));
+        when(tenancyRepo.findByIdForUpdate(TENANT)).thenReturn(Optional.of(tenant(TenantPlan.FREE, 5)));
         when(memberships.countByTenantId(TENANT)).thenReturn(2L);
 
         service.addUserToTenant(USER, TENANT);
@@ -90,7 +90,7 @@ class SeatQuotaTest {
     @Test
     void unlimitedSeatsProceed() {
         commonStubs();
-        when(tenancyRepo.findById(TENANT)).thenReturn(Optional.of(tenant(TenantPlan.ENTERPRISE, -1)));
+        when(tenancyRepo.findByIdForUpdate(TENANT)).thenReturn(Optional.of(tenant(TenantPlan.ENTERPRISE, -1)));
 
         service.addUserToTenant(USER, TENANT);
 

@@ -23,5 +23,6 @@ public interface TenancyService {
     void removeUserFromTenant(Long tenantId, Long userId);  // Remove a single membership (tenant-scoped)
     void removeUserFromAllTenants(Long userId);             // Remove every membership (e.g. user account deleted)
     long countUsersInTenant(Long tenantId);
+    void lockTenantForUpdate(Long tenantId);  // pessimistic per-tenant lock for quota enforcement
 }
 

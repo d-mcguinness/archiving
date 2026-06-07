@@ -300,6 +300,9 @@ public class DocumentService {
         if (limit < 0) {
             return; // unlimited
         }
+        // Serialize concurrent billable uploads for this tenant so the usage
+        // read and the subsequent write cannot both pass the cap.
+        tenancyApi.lockTenantForUpdate(tenantId);
         long current = documentRepository.sumFileSizeByTenantId(tenantId);
         long projected = current + incomingBytes;
         if (projected <= limit) {
