@@ -42,9 +42,15 @@ public class DocumentService {
         return uploadDocument(file, userId, tenantId, title, description, true);
     }
 
+    /** Per-file cap when the tenant/plan is unknown. */
+    private static final long DEFAULT_MAX_UPLOAD_BYTES = 50L * 1024 * 1024;
+
     @Transactional
     public Document uploadDocument(MultipartFile file, Long userId, Long tenantId, String title,
                                    String description, boolean billable) {
+        // Per-file size cap for the tenant's plan (a technical limit; applies to
+        // every upload, billable or not).
+        enforceFileSizeLimit(tenantId, file.getSize());
         // Enforce the tenant's storage allotment before writing anything to S3.
         // Only billable uploads count against the meter; operator (non-billable)
         // uploads bypass the quota, consistent with not being billed.
@@ -268,6 +274,21 @@ public class DocumentService {
      */
     public long getStorageBytesByTenant(Long tenantId) {
         return documentRepository.sumFileSizeByTenantId(tenantId);
+    }
+
+    /**
+     * Reject an upload whose single-file size exceeds the tenant plan's cap.
+     * ENTERPRISE/CUSTOM get a raised large-file ceiling; others get the default.
+     */
+    private void enforceFileSizeLimit(Long tenantId, long size) {
+        long max = tenantId != null
+                ? tenancyApi.getMaxUploadFileSizeBytes(tenantId)
+                : DEFAULT_MAX_UPLOAD_BYTES;
+        if (size > max) {
+            throw new FileTooLargeException(
+                    "File of " + size + " bytes exceeds the per-file limit of " + max
+                            + " bytes for this plan. Upgrade to a plan with the large-file add-on.");
+        }
     }
 
     /**

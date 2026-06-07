@@ -39,6 +39,13 @@ public interface TenancyApi {
     boolean isOverageOptIn(Long tenantId);
 
     /**
+     * Max size of a single uploaded file in bytes for the tenant's plan.
+     * Standard plans get the default; ENTERPRISE/CUSTOM get the raised
+     * large-file ceiling (single-PUT limit).
+     */
+    long getMaxUploadFileSizeBytes(Long tenantId);
+
+    /**
      * Whether the tenant's plan permits quota overage (paid plans) rather than a
      * hard stop at the allotment (FREE). Applies to storage, archives and seats.
      */

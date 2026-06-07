@@ -93,6 +93,10 @@ public class DocumentController {
             try {
                 document = documentService.uploadDocument(
                         file, ctx.userId(), resolvedTenantId, title, description, !ctx.isAdmin());
+            } catch (FileTooLargeException e) {
+                return ResponseEntity
+                    .status(HttpStatus.PAYLOAD_TOO_LARGE)
+                    .body(Map.of("success", false, "error", e.getMessage()));
             } catch (StorageQuotaExceededException e) {
                 return ResponseEntity
                     .status(HttpStatus.INSUFFICIENT_STORAGE)

@@ -12,6 +12,11 @@ import java.util.List;
 class TenancyApiImpl implements TenancyApi {
 
     private static final long GB = 1024L * 1024 * 1024;
+    private static final long MB = 1024L * 1024;
+    /** Default per-file upload cap for standard plans. */
+    private static final long DEFAULT_MAX_UPLOAD = 50 * MB;
+    /** Raised large-file ceiling for ENTERPRISE/CUSTOM: the S3 single-PUT limit. */
+    private static final long LARGE_FILE_MAX_UPLOAD = 5 * GB;
 
     private final TenancyService tenancyService;
     private final TenantOverageBudgetRepository overageBudgetRepository;
@@ -91,6 +96,16 @@ class TenancyApiImpl implements TenancyApi {
         return overageBudgetRepository.findByTenantId(tenantId)
                 .map(b -> b.isOverageOptIn())
                 .orElse(false);
+    }
+
+    @Override
+    public long getMaxUploadFileSizeBytes(Long tenantId) {
+        Tenant tenant = tenancyService.getTenantById(tenantId);
+        TenantPlan plan = tenant != null ? tenant.getPlan() : null;
+        if (plan == TenantPlan.ENTERPRISE || plan == TenantPlan.CUSTOM) {
+            return LARGE_FILE_MAX_UPLOAD;
+        }
+        return DEFAULT_MAX_UPLOAD;
     }
 
     /** Plan-default spend cap when the tenant has not configured one. */

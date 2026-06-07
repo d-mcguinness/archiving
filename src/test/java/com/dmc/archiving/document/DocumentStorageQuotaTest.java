@@ -5,6 +5,7 @@ import com.dmc.archiving.document.repository.DocumentRepository;
 import com.dmc.archiving.storage.CloudStorageService;
 import com.dmc.archiving.storage.UploadResult;
 import com.dmc.archiving.tenancy.api.TenancyApi;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +31,12 @@ class DocumentStorageQuotaTest {
     private final CloudStorageService storage = mock(CloudStorageService.class);
     private final TenancyApi tenancyApi = mock(TenancyApi.class);
     private final DocumentService service = new DocumentService(repo, storage, tenancyApi);
+
+    @BeforeEach
+    void allowLargeFiles() {
+        // This suite exercises storage-allotment logic, not the per-file cap.
+        when(tenancyApi.getMaxUploadFileSizeBytes(anyLong())).thenReturn(Long.MAX_VALUE);
+    }
 
     private static MultipartFile fileOf(long size) {
         MultipartFile f = mock(MultipartFile.class);
