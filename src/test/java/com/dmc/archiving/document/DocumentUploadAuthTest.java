@@ -1,10 +1,13 @@
 package com.dmc.archiving.document;
 
 import com.dmc.archiving.auth.api.AccessDeniedException;
+import com.dmc.archiving.auth.api.AuthContext;
 import com.dmc.archiving.document.model.Document;
 import com.dmc.archiving.document.model.DocumentStatus;
 import com.dmc.archiving.storage.CloudStorageService;
 import com.dmc.archiving.tenancy.api.BillingTenantResolver;
+import com.dmc.archiving.tenancy.api.TenancyApi;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,25 +26,30 @@ import static org.mockito.Mockito.when;
 
 /**
  * Verifies REST document-upload identity + attribution (Risk 2a-REST):
- * identity comes from the token, the tenant is resolved (not forged via
- * params), unauthenticated is rejected, and ADMIN uploads are non-billable.
+ * identity comes from the authenticated context (stashed by the interceptor),
+ * the tenant is resolved (not forged via params), and ADMIN uploads are
+ * non-billable. Unauthenticated rejection is the interceptor's job
+ * (see RestAuthInterceptorTest).
  */
 class DocumentUploadAuthTest {
 
-    // Bearer_{username}_{role}_{uuid}
-    private static final String TENANT_TOKEN = "Bearer_tenant_TENANT_xyz"; // -> userId 2
-    private static final String ADMIN_TOKEN = "Bearer_admin_ADMIN_xyz";    // -> userId 1
-    private static final String USER_TOKEN = "Bearer_user_USER_xyz";       // -> userId 3
-
     private final DocumentService service = mock(DocumentService.class);
     private final BillingTenantResolver resolver = mock(BillingTenantResolver.class);
+    private final TenancyApi tenancyApi = mock(TenancyApi.class);
     private final DocumentController controller =
-            new DocumentController(service, mock(CloudStorageService.class), resolver);
+            new DocumentController(service, mock(CloudStorageService.class), resolver, tenancyApi);
 
     private static MultipartFile nonEmptyFile() {
         MultipartFile f = mock(MultipartFile.class);
         when(f.isEmpty()).thenReturn(false);
         return f;
+    }
+
+    private static HttpServletRequest reqAs(Long userId, String role) {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        when(req.getAttribute(RestAuthInterceptor.AUTH_CONTEXT))
+                .thenReturn(new AuthContext(userId, role, role.toLowerCase()));
+        return req;
     }
 
     private static Document savedDoc() {
@@ -53,21 +61,12 @@ class DocumentUploadAuthTest {
     }
 
     @Test
-    void rejectsUnauthenticatedUpload() {
-        ResponseEntity<?> resp = controller.uploadDocument(
-                nonEmptyFile(), 100L, null, null, null, /* Authorization */ null);
-
-        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        verify(service, never()).uploadDocument(any(), any(), any(), any(), any(), anyBoolean());
-    }
-
-    @Test
     void rejectsClaimToTenantTheCallerIsNotAMemberOf() {
         when(resolver.resolve(any(), eq(999L)))
                 .thenThrow(new AccessDeniedException("not a member of tenant 999"));
 
         ResponseEntity<?> resp = controller.uploadDocument(
-                nonEmptyFile(), 999L, null, null, null, USER_TOKEN);
+                nonEmptyFile(), 999L, null, null, null, reqAs(3L, "USER"));
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         verify(service, never()).uploadDocument(any(), any(), any(), any(), any(), anyBoolean());
@@ -80,7 +79,7 @@ class DocumentUploadAuthTest {
                 .thenReturn(savedDoc());
 
         ResponseEntity<?> resp = controller.uploadDocument(
-                nonEmptyFile(), 100L, null, "title", "desc", TENANT_TOKEN);
+                nonEmptyFile(), 100L, null, "title", "desc", reqAs(2L, "TENANT"));
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
         // userId 2 from the token (not a request param), tenant 100, billable.
@@ -94,7 +93,7 @@ class DocumentUploadAuthTest {
                 .thenReturn(savedDoc());
 
         ResponseEntity<?> resp = controller.uploadDocument(
-                nonEmptyFile(), 100L, null, "title", "desc", ADMIN_TOKEN);
+                nonEmptyFile(), 100L, null, "title", "desc", reqAs(1L, "ADMIN"));
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
         verify(service).uploadDocument(any(), eq(1L), eq(100L), any(), any(), eq(false));

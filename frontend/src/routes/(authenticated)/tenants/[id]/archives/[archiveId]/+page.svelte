@@ -6,6 +6,7 @@
   import { gql } from '@apollo/client/core';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import { authHeaders } from '$lib/api';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   interface PageData {
@@ -91,7 +92,7 @@
   async function loadDocuments() {
     try {
       const params = new URLSearchParams({ role: 'TENANT', tenantId: data.tenantId });
-      const response = await fetch(`http://localhost:2020/api/documents?${params}`);
+      const response = await fetch(`http://localhost:2020/api/documents?${params}`, { headers: { ...authHeaders() } });
       if (response.ok) {
         const result = await response.json();
         if (result.success) documents = result.documents || [];

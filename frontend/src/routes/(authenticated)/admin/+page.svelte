@@ -3,6 +3,7 @@
   import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
+  import { authHeaders } from '$lib/api';
   import { GET_DASHBOARD_STATS, GET_ALL_TENANTS, GET_ALL_USERS, GET_ALL_SIPS_V2, GET_ALL_AIPS, GET_ALL_DIPS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
@@ -53,7 +54,7 @@
         client.query({ query: GET_ALL_SIPS_V2, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAllSipsV2: [] } })),
         client.query({ query: GET_ALL_AIPS, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAllAips: [] } })),
         client.query({ query: GET_ALL_DIPS, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAllDips: [] } })),
-        fetch('http://localhost:2020/api/documents?role=ADMIN').then(r => r.json()).catch(() => ({ documents: [] })),
+        fetch('http://localhost:2020/api/documents?role=ADMIN', { headers: { ...authHeaders() } }).then(r => r.json()).catch(() => ({ documents: [] })),
       ]);
 
       const s = statsResult?.data?.getDashboardStats;
