@@ -5,6 +5,7 @@ import com.dmc.archiving.aip.model.Aip;
 import com.dmc.archiving.aip.model.AipStatus;
 import com.dmc.archiving.web.BaseGraphQlController;
 import com.dmc.archiving.tenancy.api.BillingTenantResolver;
+import com.dmc.archiving.tenancy.api.PremiumOverageGuard;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -22,12 +23,15 @@ public class AipController extends BaseGraphQlController {
 
     private final AipService aipService;
     private final BillingTenantResolver billingTenantResolver;
+    private final PremiumOverageGuard premiumOverageGuard;
 
     public AipController(AipService aipService, TenancyApi tenancyApi,
-                         BillingTenantResolver billingTenantResolver) {
+                         BillingTenantResolver billingTenantResolver,
+                         PremiumOverageGuard premiumOverageGuard) {
         super(tenancyApi);
         this.aipService = aipService;
         this.billingTenantResolver = billingTenantResolver;
+        this.premiumOverageGuard = premiumOverageGuard;
     }
 
     // Queries
@@ -61,6 +65,10 @@ public class AipController extends BaseGraphQlController {
         aipInput.setTenantId(billingTenantResolver.resolve(getAuthContext(env), claimedTenantId));
         // ADMIN/operator-created packages are not billed to the tenant.
         aipInput.setBillable(!getAuthContext(env).isAdmin());
+        // Enforce the premium-package spend cap for billable premium generations.
+        if (aipInput.isBillable() && premiumOverageGuard.isPremiumStandard(input.get("standard").toString())) {
+            premiumOverageGuard.checkCanCreatePremiumPackage(aipInput.getTenantId());
+        }
         if (input.get("ownerId") != null) {
             aipInput.setOwnerId(Long.parseLong(input.get("ownerId").toString()));
         }
