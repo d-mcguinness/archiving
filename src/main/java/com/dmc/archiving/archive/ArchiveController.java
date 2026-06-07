@@ -189,24 +189,28 @@ public class ArchiveController extends BaseGraphQlController {
     @MutationMapping
     public Archive updateArchive(@Argument Long id, @Argument UpdateArchiveInput input, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, id);
         return archiveService.updateArchive(id, input);
     }
 
     @MutationMapping
     public Archive updateArchiveStatus(@Argument Long archiveId, @Argument ArchiveStatus status, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, archiveId);
         return archiveService.updateArchiveStatus(archiveId, status);
     }
 
     @MutationMapping
     public Archive setArchiveRootElement(@Argument Long archiveId, @Argument Long rootElementId, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, archiveId);
         return archiveService.setArchiveRootElement(archiveId, rootElementId);
     }
 
     @MutationMapping
     public Boolean deleteArchive(@Argument Long id, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, id);
         return archiveService.deleteArchive(id);
     }
 
@@ -214,13 +218,22 @@ public class ArchiveController extends BaseGraphQlController {
     @MutationMapping
     public Archive assignUserToArchive(@Argument AssignUserInput input, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, input.getArchiveId());
         return archiveService.assignUserToArchive(input);
     }
 
     @MutationMapping
     public Archive unassignUserFromArchive(@Argument UnassignUserInput input, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, input.getArchiveId());
         return archiveService.unassignUserFromArchive(input);
+    }
+
+    /** A TENANT/USER may only touch an archive in a tenant they belong to (ADMIN bypasses).
+     *  getArchiveById throws ResourceNotFoundException when the archive is missing. */
+    private void requireOwnership(DataFetchingEnvironment env, Long archiveId) {
+        Archive archive = archiveService.getArchiveById(archiveId);
+        requireTenantAccess(env, archive.getTenantId());
     }
 
     // Field resolvers for datetime-to-string conversion

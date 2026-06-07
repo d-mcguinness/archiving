@@ -1,6 +1,7 @@
 package com.dmc.archiving.sip;
 
 import com.dmc.archiving.archive.model.ArchiveStandard;
+import com.dmc.archiving.common.exception.ResourceNotFoundException;
 import com.dmc.archiving.web.BaseGraphQlController;
 import com.dmc.archiving.sip.input.CreateSipInput;
 import com.dmc.archiving.sip.input.FileMetadataInput;
@@ -123,19 +124,31 @@ public class SipController extends BaseGraphQlController {
     @MutationMapping
     public String generateSip(@Argument Long sipId, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, sipId);
         return sipService.generateSip(sipId);
     }
 
     @MutationMapping
     public Sip updateSipStatusV2(@Argument Long sipId, @Argument SipStatus status, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, sipId);
         return sipService.updateSipStatus(sipId, status);
     }
 
     @MutationMapping
     public Boolean deleteSipV2(@Argument Long id, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, id);
         return sipService.deleteSip(id);
+    }
+
+    /** A TENANT/USER may only touch a SIP in a tenant they belong to (ADMIN bypasses). */
+    private void requireOwnership(DataFetchingEnvironment env, Long sipId) {
+        Sip sip = sipService.getSip(sipId);
+        if (sip == null) {
+            throw new ResourceNotFoundException("Sip", sipId);
+        }
+        requireTenantAccess(env, sip.getTenantId());
     }
 
     // Field resolvers for datetime-to-string conversion

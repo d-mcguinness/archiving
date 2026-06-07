@@ -3,6 +3,7 @@ package com.dmc.archiving.aip;
 import com.dmc.archiving.aip.input.CreateAipInput;
 import com.dmc.archiving.aip.model.Aip;
 import com.dmc.archiving.aip.model.AipStatus;
+import com.dmc.archiving.common.exception.ResourceNotFoundException;
 import com.dmc.archiving.web.BaseGraphQlController;
 import com.dmc.archiving.tenancy.api.BillingTenantResolver;
 import com.dmc.archiving.tenancy.api.PremiumOverageGuard;
@@ -110,19 +111,31 @@ public class AipController extends BaseGraphQlController {
     @MutationMapping
     public String generateAip(@Argument Long aipId, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, aipId);
         return aipService.generateAip(aipId);
     }
 
     @MutationMapping
     public Aip updateAipStatus(@Argument Long aipId, @Argument AipStatus status, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, aipId);
         return aipService.updateAipStatus(aipId, status);
     }
 
     @MutationMapping
     public Boolean deleteAip(@Argument Long id, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, id);
         return aipService.deleteAip(id);
+    }
+
+    /** A TENANT/USER may only touch an AIP in a tenant they belong to (ADMIN bypasses). */
+    private void requireOwnership(DataFetchingEnvironment env, Long aipId) {
+        Aip aip = aipService.getAip(aipId);
+        if (aip == null) {
+            throw new ResourceNotFoundException("Aip", aipId);
+        }
+        requireTenantAccess(env, aip.getTenantId());
     }
 
     // Field resolvers for datetime-to-string conversion
