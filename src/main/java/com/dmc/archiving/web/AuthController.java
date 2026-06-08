@@ -1,6 +1,7 @@
 package com.dmc.archiving.web;
 
 import com.dmc.archiving.auth.LoginRequest;
+import com.dmc.archiving.auth.api.TokenSigner;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Authentication Controller
@@ -25,9 +25,11 @@ public class AuthController {
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final TenancyApi tenancyApi;
+    private final TokenSigner tokenSigner;
 
-    public AuthController(TenancyApi tenancyApi) {
+    public AuthController(TenancyApi tenancyApi, TokenSigner tokenSigner) {
         this.tenancyApi = tenancyApi;
+        this.tokenSigner = tokenSigner;
     }
 
     private static final Map<String, AuthCredentials> DEFAULT_CREDENTIALS = new HashMap<>();
@@ -125,7 +127,7 @@ public class AuthController {
     }
 
     private String generateToken(String username, String role) {
-        return "Bearer_" + username + "_" + role + "_" + UUID.randomUUID().toString();
+        return tokenSigner.issue(username, role);
     }
 
     private Long getDefaultUserId(String username) {
