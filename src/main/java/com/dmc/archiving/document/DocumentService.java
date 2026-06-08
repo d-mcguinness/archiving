@@ -39,6 +39,24 @@ public class DocumentService {
      */
     @Transactional
     public Document uploadDocument(MultipartFile file, Long userId, Long tenantId, String title, String description) {
+        return uploadDocument(file, userId, tenantId, title, description, true);
+    }
+
+    /** Per-file cap when the tenant/plan is unknown. */
+    private static final long DEFAULT_MAX_UPLOAD_BYTES = 50L * 1024 * 1024;
+
+    @Transactional
+    public Document uploadDocument(MultipartFile file, Long userId, Long tenantId, String title,
+                                   String description, boolean billable) {
+        // Per-file size cap for the tenant's plan (a technical limit; applies to
+        // every upload, billable or not).
+        enforceFileSizeLimit(tenantId, file.getSize());
+        // Enforce the tenant's storage allotment before writing anything to S3.
+        // Only billable uploads count against the meter; operator (non-billable)
+        // uploads bypass the quota, consistent with not being billed.
+        if (billable && tenantId != null) {
+            enforceStorageQuota(tenantId, file.getSize());
+        }
         try {
             // Upload file to cloud storage
             UploadResult uploadResult = cloudStorageService.uploadFile(file, userId);
@@ -55,6 +73,7 @@ public class DocumentService {
             document.setUserId(userId);
             document.setTenantId(tenantId);
             document.setStatus(DocumentStatus.ACTIVE);
+            document.setBillable(billable);
 
             return documentRepository.save(document);
         } catch (Exception e) {
@@ -248,6 +267,84 @@ public class DocumentService {
      */
     public long countByTenant(Long tenantId) {
         return documentRepository.countByTenantId(tenantId);
+    }
+
+    /**
+     * Total stored bytes for a tenant (SQL aggregate, for usage metering).
+     */
+    public long getStorageBytesByTenant(Long tenantId) {
+        return documentRepository.sumFileSizeByTenantId(tenantId);
+    }
+
+    /**
+     * Reject an upload whose single-file size exceeds the tenant plan's cap.
+     * ENTERPRISE/CUSTOM get a raised large-file ceiling; others get the default.
+     */
+    private void enforceFileSizeLimit(Long tenantId, long size) {
+        long max = tenantId != null
+                ? tenancyApi.getMaxUploadFileSizeBytes(tenantId)
+                : DEFAULT_MAX_UPLOAD_BYTES;
+        if (size > max) {
+            throw new FileTooLargeException(
+                    "File of " + size + " bytes exceeds the per-file limit of " + max
+                            + " bytes for this plan. Upgrade to a plan with the large-file add-on.");
+        }
+    }
+
+    /**
+     * Reject (FREE) or allow-with-overage (paid) a billable upload against the
+     * tenant's storage allotment. -1 limit means unlimited.
+     */
+    private void enforceStorageQuota(Long tenantId, long incomingBytes) {
+        long limit = tenancyApi.getStorageLimitBytes(tenantId);
+        if (limit < 0) {
+            return; // unlimited
+        }
+        // Serialize concurrent billable uploads for this tenant so the usage
+        // read and the subsequent write cannot both pass the cap.
+        tenancyApi.lockTenantForUpdate(tenantId);
+        long current = documentRepository.sumFileSizeByTenantId(tenantId);
+        long projected = current + incomingBytes;
+        if (projected <= limit) {
+            return; // within allotment
+        }
+        // Over the plan allotment.
+        if (!tenancyApi.isOverageAllowed(tenantId)) {
+            // FREE: hard stop at the allotment.
+            throw new StorageQuotaExceededException(
+                    "Storage limit exceeded for tenant " + tenantId + ": "
+                            + projected + " bytes would exceed the plan allotment of " + limit
+                            + " bytes. Upgrade the plan or free up space.");
+        }
+        // Paid: allowed to incur overage up to the configured spend cap.
+        long overage = projected - limit;
+        long budget = tenancyApi.getStorageOverageLimitBytes(tenantId);
+        if (budget < 0) {
+            log.warn("Tenant {} over storage allotment by {} bytes (unlimited overage); recording billable overage",
+                    tenantId, overage);
+            return;
+        }
+        if (overage > budget && !tenancyApi.isOverageOptIn(tenantId)) {
+            throw new SpendCapExceededException(
+                    "Overage spend cap reached for tenant " + tenantId + ": projected overage of "
+                            + overage + " bytes exceeds the cap of " + budget
+                            + " bytes. Raise the cap, opt in to keep accruing, or free up space.");
+        }
+        alertOverage(tenantId, overage, budget);
+    }
+
+    /** Emit a threshold alert as the tenant consumes its overage budget. */
+    private void alertOverage(Long tenantId, long overage, long budget) {
+        if (overage > budget) {
+            log.warn("Tenant {} ACCRUING PAST overage cap (opted in): {} / {} bytes", tenantId, overage, budget);
+            return;
+        }
+        long pct = budget == 0 ? 100 : (overage * 100 / budget);
+        int band = pct >= 100 ? 100 : pct >= 80 ? 80 : pct >= 50 ? 50 : 0;
+        if (band > 0) {
+            log.warn("Tenant {} storage overage at {}% of spend cap ({} / {} bytes)",
+                    tenantId, band, overage, budget);
+        }
     }
 }
 

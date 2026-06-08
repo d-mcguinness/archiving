@@ -83,3 +83,8 @@ jspm_packages/
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
+
+# Local run/debug artifacts
+logs/
+.run/
+.DS_Store

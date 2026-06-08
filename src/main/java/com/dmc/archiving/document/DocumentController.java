@@ -1,9 +1,14 @@
 package com.dmc.archiving.document;
 
+import com.dmc.archiving.auth.api.AccessDeniedException;
+import com.dmc.archiving.auth.api.AuthContext;
 import com.dmc.archiving.document.model.Document;
 import com.dmc.archiving.document.model.DocumentStatus;
 import com.dmc.archiving.storage.CloudStorageService;
 import com.dmc.archiving.storage.StorageException;
+import com.dmc.archiving.tenancy.api.BillingTenantResolver;
+import com.dmc.archiving.tenancy.api.TenancyApi;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
@@ -35,10 +40,38 @@ public class DocumentController {
 
     private final DocumentService documentService;
     private final CloudStorageService cloudStorageService;
+    private final BillingTenantResolver billingTenantResolver;
+    private final TenancyApi tenancyApi;
 
-    public DocumentController(DocumentService documentService, CloudStorageService cloudStorageService) {
+    public DocumentController(DocumentService documentService, CloudStorageService cloudStorageService,
+                             BillingTenantResolver billingTenantResolver, TenancyApi tenancyApi) {
         this.documentService = documentService;
         this.cloudStorageService = cloudStorageService;
+        this.billingTenantResolver = billingTenantResolver;
+        this.tenancyApi = tenancyApi;
+    }
+
+    // ---- auth helpers (authentication is enforced by RestAuthInterceptor) ----
+
+    /** The authenticated caller, stashed by RestAuthInterceptor. */
+    private AuthContext caller(HttpServletRequest request) {
+        AuthContext ctx = (AuthContext) request.getAttribute(RestAuthInterceptor.AUTH_CONTEXT);
+        return ctx != null ? ctx : AuthContext.ANONYMOUS;
+    }
+
+    /** ADMIN may access any tenant; others must be a member of the resource's tenant. */
+    private boolean canAccess(AuthContext ctx, Long tenantId) {
+        return ctx.isAdmin() || (tenantId != null && tenancyApi.isUserInTenant(ctx.userId(), tenantId));
+    }
+
+    private ResponseEntity<?> forbidden() {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("success", false, "error", "Access denied: not a member of the document's tenant"));
+    }
+
+    private ResponseEntity<?> notFound() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("success", false, "error", "Document not found"));
     }
 
     /**
@@ -47,14 +80,29 @@ public class DocumentController {
     @PostMapping("/upload")
     public ResponseEntity<?> uploadDocument(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("userId") Long userId,
-            @RequestParam(value = "tenantId", required = false) Long tenantId,
+            @RequestParam(value = "tenantId", required = false) Long tenantId,   // treated as a claim, validated against membership
             @RequestParam(value = "sipId", required = false) Long sipId,
             @RequestParam(value = "title", required = false) String title,
-            @RequestParam(value = "description", required = false) String description) {
+            @RequestParam(value = "description", required = false) String description,
+            HttpServletRequest request) {
+
+        // Identity is derived from the token (via RestAuthInterceptor), never
+        // from request params, so a caller cannot forge the uploader or the
+        // owning (billed) tenant.
+        AuthContext ctx = caller(request);
+
+        Long resolvedTenantId;
+        try {
+            resolvedTenantId = billingTenantResolver.resolve(ctx, tenantId);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(Map.of("success", false, "error", e.getMessage()));
+        }
 
         try {
-            log.info("Uploading document for user {}, tenant {}, sip {}", userId, tenantId, sipId);
+            log.info("Uploading document for authenticated user {}, tenant {}, sip {}",
+                    ctx.userId(), resolvedTenantId, sipId);
 
             if (file.isEmpty()) {
                 return ResponseEntity
@@ -62,7 +110,24 @@ public class DocumentController {
                     .body(Map.of("success", false, "error", "File is empty"));
             }
 
-            Document document = documentService.uploadDocument(file, userId, tenantId, title, description);
+            // ADMIN/operator uploads are not billed to the tenant.
+            Document document;
+            try {
+                document = documentService.uploadDocument(
+                        file, ctx.userId(), resolvedTenantId, title, description, !ctx.isAdmin());
+            } catch (FileTooLargeException e) {
+                return ResponseEntity
+                    .status(HttpStatus.PAYLOAD_TOO_LARGE)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+            } catch (StorageQuotaExceededException e) {
+                return ResponseEntity
+                    .status(HttpStatus.INSUFFICIENT_STORAGE)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+            } catch (SpendCapExceededException e) {
+                return ResponseEntity
+                    .status(HttpStatus.PAYMENT_REQUIRED)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+            }
 
             // Associate with SIP if provided
             if (sipId != null) {
@@ -91,50 +156,32 @@ public class DocumentController {
      */
     @GetMapping
     public ResponseEntity<?> getDocuments(
-            @RequestParam(value = "role", required = false) String role,
-            @RequestParam(value = "userId", required = false) Long userId,
             @RequestParam(value = "tenantId", required = false) Long tenantId,
-            @RequestParam(value = "sipId", required = false) Long sipId) {
+            @RequestParam(value = "sipId", required = false) Long sipId,
+            HttpServletRequest request) {
 
         try {
+            // Scope is derived from the authenticated caller, never from a
+            // client-supplied role: ADMIN sees all (optionally narrowed by a
+            // tenantId param); everyone else sees only their own tenants' docs.
+            AuthContext ctx = caller(request);
             List<Document> documents;
 
-            // SIP-specific filtering
-            if (sipId != null) {
-                documents = documentService.getDocumentsBySip(sipId);
-                log.info("Fetching documents for SIP {}", sipId);
-            } else if ("ADMIN".equals(role)) {
-                // Admin sees all documents
-                documents = documentService.getAllDocuments();
-                log.info("Fetching all documents for ADMIN");
-            } else if ("TENANT".equals(role)) {
+            if (ctx.isAdmin()) {
                 if (tenantId != null) {
                     documents = documentService.getDocumentsByTenant(tenantId);
-                    log.info("Fetching documents for tenant {}", tenantId);
-                } else if (userId != null) {
-                    documents = documentService.getDocumentsByUserTenants(userId);
-                    log.info("Fetching documents for TENANT user {} from their tenant(s)", userId);
                 } else {
-                    return ResponseEntity
-                        .status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("success", false, "error", "Missing userId or tenantId for TENANT role"));
+                    documents = documentService.getAllDocuments();
                 }
-            } else if ("USER".equals(role) && userId != null) {
-                if (tenantId != null) {
-                    documents = documentService.getDocumentsByUserAndTenant(userId, tenantId);
-                    log.info("Fetching documents for USER {} in tenant {}", userId, tenantId);
-                } else {
-                    documents = documentService.getDocumentsByUser(userId);
-                    log.info("Fetching documents for USER {}", userId);
-                }
-            } else if (userId != null) {
-                // Default: user sees their own documents
-                documents = documentService.getDocumentsByUser(userId);
-                log.info("Fetching documents for user {}", userId);
             } else {
-                return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("success", false, "error", "Missing required parameters"));
+                documents = documentService.getDocumentsByUserTenants(ctx.userId());
+            }
+
+            // Optional SIP narrowing, applied within the caller's visible set.
+            if (sipId != null) {
+                documents = documents.stream()
+                        .filter(d -> sipId.equals(d.getSipId()))
+                        .toList();
             }
 
             List<Map<String, Object>> documentMaps = documents.stream()
@@ -159,16 +206,12 @@ public class DocumentController {
      * Get document by ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<?> getDocument(@PathVariable Long id) {
+    public ResponseEntity<?> getDocument(@PathVariable Long id, HttpServletRequest request) {
         try {
-            return documentService.getDocumentById(id)
-                .map(document -> ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "document", convertToMap(document)
-                )))
-                .orElse(ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("success", false, "error", "Document not found")));
+            Document document = documentService.getDocumentById(id).orElse(null);
+            if (document == null) return notFound();
+            if (!canAccess(caller(request), document.getTenantId())) return forbidden();
+            return ResponseEntity.ok(Map.of("success", true, "document", convertToMap(document)));
         } catch (Exception e) {
             log.error("Error fetching document {}: {}", id, e.getMessage(), e);
             return ResponseEntity
@@ -183,9 +226,14 @@ public class DocumentController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateDocument(
             @PathVariable Long id,
-            @RequestBody Map<String, Object> updates) {
+            @RequestBody Map<String, Object> updates,
+            HttpServletRequest request) {
 
         try {
+            Document existing = documentService.getDocumentById(id).orElse(null);
+            if (existing == null) return notFound();
+            if (!canAccess(caller(request), existing.getTenantId())) return forbidden();
+
             String title = (String) updates.get("title");
             String description = (String) updates.get("description");
             DocumentStatus status = updates.get("status") != null
@@ -216,8 +264,12 @@ public class DocumentController {
      * Delete document
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteDocument(@PathVariable Long id) {
+    public ResponseEntity<?> deleteDocument(@PathVariable Long id, HttpServletRequest request) {
         try {
+            Document existing = documentService.getDocumentById(id).orElse(null);
+            if (existing == null) return notFound();
+            if (!canAccess(caller(request), existing.getTenantId())) return forbidden();
+
             boolean deleted = documentService.deleteDocument(id);
 
             if (deleted) {
@@ -243,8 +295,12 @@ public class DocumentController {
      * Get download URL for document
      */
     @GetMapping("/{id}/download")
-    public ResponseEntity<?> getDownloadUrl(@PathVariable Long id) {
+    public ResponseEntity<?> getDownloadUrl(@PathVariable Long id, HttpServletRequest request) {
         try {
+            Document existing = documentService.getDocumentById(id).orElse(null);
+            if (existing == null) return notFound();
+            if (!canAccess(caller(request), existing.getTenantId())) return forbidden();
+
             String downloadUrl = documentService.getDownloadUrl(id);
 
             return ResponseEntity.ok(Map.of(
@@ -269,10 +325,11 @@ public class DocumentController {
      * Stream document file directly to the browser
      */
     @GetMapping("/{id}/file")
-    public ResponseEntity<?> downloadFile(@PathVariable Long id) {
+    public ResponseEntity<?> downloadFile(@PathVariable Long id, HttpServletRequest request) {
         try {
             Document document = documentService.getDocumentById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Document not found"));
+            if (!canAccess(caller(request), document.getTenantId())) return forbidden();
 
             InputStream inputStream = cloudStorageService.downloadFile(document.getFileKey());
 
@@ -310,9 +367,14 @@ public class DocumentController {
     @PostMapping("/{id}/associate-archive")
     public ResponseEntity<?> associateWithArchive(
             @PathVariable Long id,
-            @RequestParam Long archiveId) {
+            @RequestParam Long archiveId,
+            HttpServletRequest request) {
 
         try {
+            Document existing = documentService.getDocumentById(id).orElse(null);
+            if (existing == null) return notFound();
+            if (!canAccess(caller(request), existing.getTenantId())) return forbidden();
+
             Document document = documentService.associateWithArchive(id, archiveId);
 
             return ResponseEntity.ok(Map.of(
@@ -339,9 +401,14 @@ public class DocumentController {
     @PostMapping("/{id}/associate-sip")
     public ResponseEntity<?> associateWithSip(
             @PathVariable Long id,
-            @RequestParam Long sipId) {
+            @RequestParam Long sipId,
+            HttpServletRequest request) {
 
         try {
+            Document existing = documentService.getDocumentById(id).orElse(null);
+            if (existing == null) return notFound();
+            if (!canAccess(caller(request), existing.getTenantId())) return forbidden();
+
             Document document = documentService.associateWithSip(id, sipId);
 
             return ResponseEntity.ok(Map.of(
@@ -366,8 +433,12 @@ public class DocumentController {
      * Disassociate document from SIP
      */
     @PostMapping("/{id}/disassociate-sip")
-    public ResponseEntity<?> disassociateFromSip(@PathVariable Long id) {
+    public ResponseEntity<?> disassociateFromSip(@PathVariable Long id, HttpServletRequest request) {
         try {
+            Document existing = documentService.getDocumentById(id).orElse(null);
+            if (existing == null) return notFound();
+            if (!canAccess(caller(request), existing.getTenantId())) return forbidden();
+
             Document document = documentService.disassociateFromSip(id);
 
             return ResponseEntity.ok(Map.of(

@@ -2,6 +2,7 @@ package com.dmc.archiving.sip.generator.impl;
 
 import com.dmc.archiving.sip.generator.AbstractSipGenerator;
 import com.dmc.archiving.sip.generator.SipSnapshot;
+import com.dmc.archiving.sip.input.FileMetadataInput;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
 
@@ -70,5 +71,22 @@ public class EarkSipGenerator extends AbstractSipGenerator {
         ));
 
         return pkg;
+    }
+
+    @Override
+    public Map<String, String> prefillFields(FileMetadataInput meta) {
+        PrefillContext c = prefillContext(meta);
+        Map<String, String> m = new LinkedHashMap<>();
+        m.put("packageID", c.id());
+        m.put("title", c.name());
+        m.put("description", "");
+        m.put("profile", "https://earkcsip.dilcis.eu/profile/E-ARK-CSIP.xml");
+        m.put("contentInformationType", mapContentType(c.type()));
+        m.put("oaisPackageType", "SIP");
+        m.put("creationDate", c.date());
+        m.put("creator", c.user());
+        m.put("preservationLevel", "full");
+        m.put("representationCount", String.valueOf(c.count()));
+        return m;
     }
 }

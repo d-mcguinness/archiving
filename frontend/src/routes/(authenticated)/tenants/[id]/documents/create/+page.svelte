@@ -6,6 +6,7 @@
   import { GET_TENANT, GET_ALL_USERS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import { authHeaders } from '$lib/api';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   interface PageData { tenantId: string; }
@@ -84,11 +85,13 @@
       formData.append('file', selectedFile);
       formData.append('title', title);
       formData.append('description', description || '');
-      formData.append('userId', selectedUserId);
+      // tenantId is a claim; the server validates it against the caller's membership.
       formData.append('tenantId', data.tenantId);
 
+      // Identity is taken from the auth token, not request params.
       const response = await fetch('http://localhost:2020/api/documents/upload', {
         method: 'POST',
+        headers: { ...authHeaders() },
         body: formData
       });
 

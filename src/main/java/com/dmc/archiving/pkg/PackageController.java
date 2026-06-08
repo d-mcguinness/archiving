@@ -1,9 +1,15 @@
 package com.dmc.archiving.pkg;
 
+import com.dmc.archiving.auth.api.AccessDeniedException;
+import com.dmc.archiving.auth.api.AuthContext;
+import com.dmc.archiving.auth.api.AuthGuard;
 import com.dmc.archiving.pkg.input.CreatePackageInput;
+import com.dmc.archiving.tenancy.api.BillingTenantResolver;
+import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.pkg.model.ArchivalPackage;
 import com.dmc.archiving.pkg.model.PackageStage;
 import com.dmc.archiving.pkg.model.PackageStatus;
+import graphql.schema.DataFetchingEnvironment;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -16,9 +22,14 @@ import java.util.List;
 public class PackageController {
 
     private final PackageService packageService;
+    private final BillingTenantResolver billingTenantResolver;
+    private final TenancyApi tenancyApi;
 
-    public PackageController(PackageService packageService) {
+    public PackageController(PackageService packageService, BillingTenantResolver billingTenantResolver,
+                             TenancyApi tenancyApi) {
         this.packageService = packageService;
+        this.billingTenantResolver = billingTenantResolver;
+        this.tenancyApi = tenancyApi;
     }
 
     @QueryMapping
@@ -44,12 +55,19 @@ public class PackageController {
     }
 
     @MutationMapping
-    public ArchivalPackage createPackage(@Argument CreatePackageInput input) {
+    public ArchivalPackage createPackage(@Argument CreatePackageInput input, DataFetchingEnvironment env) {
+        AuthGuard.requireRole(env, "TENANT", "ADMIN");
+        Long claimedTenantId = input.getTenantId() != null && !input.getTenantId().isBlank()
+                ? Long.parseLong(input.getTenantId()) : null;
+        Long resolved = billingTenantResolver.resolve(AuthGuard.context(env), claimedTenantId);
+        input.setTenantId(resolved.toString());
         return packageService.createPackage(input);
     }
 
     @MutationMapping
-    public ArchivalPackage updatePackageStatus(@Argument String packageId, @Argument String status) {
+    public ArchivalPackage updatePackageStatus(@Argument String packageId, @Argument String status, DataFetchingEnvironment env) {
+        AuthGuard.requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, Long.parseLong(packageId));
         return packageService.updatePackageStatus(
                 Long.parseLong(packageId),
                 PackageStatus.valueOf(status)
@@ -57,8 +75,26 @@ public class PackageController {
     }
 
     @MutationMapping
-    public boolean deletePackage(@Argument String id) {
+    public boolean deletePackage(@Argument String id, DataFetchingEnvironment env) {
+        AuthGuard.requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, Long.parseLong(id));
         return packageService.deletePackage(Long.parseLong(id));
+    }
+
+    /** A TENANT/USER may only touch a package in a tenant they belong to (ADMIN bypasses). */
+    private void requireOwnership(DataFetchingEnvironment env, Long packageId) {
+        ArchivalPackage pkg = packageService.getPackage(packageId);
+        if (pkg == null) {
+            throw new IllegalArgumentException("Package not found: " + packageId);
+        }
+        AuthContext ctx = AuthGuard.context(env);
+        if (ctx.isAdmin()) {
+            return;
+        }
+        if (pkg.getTenantId() == null || !tenancyApi.isUserInTenant(ctx.userId(), pkg.getTenantId())) {
+            throw new AccessDeniedException(
+                    "Access denied: not a member of tenant " + pkg.getTenantId());
+        }
     }
 
     // Schema mappings for ArchivalPackage type

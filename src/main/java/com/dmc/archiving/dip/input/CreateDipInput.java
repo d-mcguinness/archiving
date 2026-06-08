@@ -37,6 +37,10 @@ public class CreateDipInput {
 
     private Long sourceAipId;
 
+    // Server-set: false when created by an ADMIN operator (excluded from billing).
+    // Not part of the GraphQL input; defaults to billable.
+    private boolean billable = true;
+
     // Inline root element fields
     @NotBlank(message = "Element identifier is required")
     private String elementIdentifier;

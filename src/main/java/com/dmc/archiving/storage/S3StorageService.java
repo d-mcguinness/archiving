@@ -29,7 +29,10 @@ import java.time.format.DateTimeFormatter;
 public class S3StorageService implements CloudStorageService {
 
     private static final Logger log = LoggerFactory.getLogger(S3StorageService.class);
-    private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+    // Hard backstop: the S3 single-PUT limit (5 GB). Per-plan/per-tenant caps are
+    // enforced upstream (see DocumentService); beyond this, multipart upload is
+    // required, which this single-PUT path does not implement.
+    private static final long MAX_FILE_SIZE = 5L * 1024 * 1024 * 1024; // 5GB
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
@@ -97,7 +100,8 @@ public class S3StorageService implements CloudStorageService {
             }
 
             if (file.getSize() > MAX_FILE_SIZE) {
-                throw new StorageException("File size exceeds maximum limit of 50MB");
+                throw new StorageException(
+                        "File exceeds the 5GB single-upload limit; multipart upload is required for larger files");
             }
 
             String originalFilename = file.getOriginalFilename();

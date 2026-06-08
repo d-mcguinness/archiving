@@ -4,6 +4,7 @@
   import { goto } from '$app/navigation';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import { authHeaders } from '$lib/api';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   let documents: any[] = [];
@@ -50,7 +51,9 @@
       }
       // ADMIN doesn't need extra params - will get all documents
 
-      const response = await fetch(`http://localhost:2020/api/documents?${params.toString()}`);
+      const response = await fetch(`http://localhost:2020/api/documents?${params.toString()}`, {
+        headers: { ...authHeaders() }
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -108,8 +111,10 @@
         formData.append('description', uploadDescription);
       }
 
+      const uploadToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const response = await fetch('http://localhost:2020/api/documents/upload', {
         method: 'POST',
+        headers: { ...authHeaders(), ...(uploadToken ? { Authorization: uploadToken } : {}) },
         body: formData
       });
 
@@ -135,7 +140,9 @@
 
   async function handleDownload(doc: any) {
     try {
-      const response = await fetch(`http://localhost:2020/api/documents/${doc.id}/file`);
+      const response = await fetch(`http://localhost:2020/api/documents/${doc.id}/file`, {
+        headers: { ...authHeaders() }
+      });
       if (!response.ok) {
         throw new Error(`Download failed: ${response.statusText}`);
       }
@@ -162,7 +169,8 @@
 
     try {
       const response = await fetch(`http://localhost:2020/api/documents/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { ...authHeaders() }
       });
 
       const data = await response.json();

@@ -10,6 +10,7 @@
   import { auth } from '$lib/stores/authStore';
   import { standardFileMap, graphqlToKey } from '$lib/standards';
   import ElementTree from '$lib/components/ElementTree.svelte';
+  import { authHeaders } from '$lib/api';
 
   function getSipsPath() {
     const { role } = get(auth);
@@ -411,7 +412,7 @@
     if (!sipId) return;
     loadingDocuments = true;
     try {
-      const response = await fetch(`http://localhost:2020/api/documents?sipId=${sipId}`);
+      const response = await fetch(`http://localhost:2020/api/documents?sipId=${sipId}`, { headers: { ...authHeaders() } });
       const result = await response.json();
       if (result.success) {
         sipDocuments = result.documents || [];
@@ -435,7 +436,7 @@
       } else if (authState.userId) {
         params.set('userId', authState.userId.toString());
       }
-      const response = await fetch(`http://localhost:2020/api/documents?${params.toString()}`);
+      const response = await fetch(`http://localhost:2020/api/documents?${params.toString()}`, { headers: { ...authHeaders() } });
       const result = await response.json();
       if (result.success) {
         unassociatedDocuments = (result.documents || []).filter((d: any) => !d.sipId && !d.archiveId);
@@ -487,6 +488,7 @@
 
       const uploadResponse = await fetch('http://localhost:2020/api/documents/upload', {
         method: 'POST',
+        headers: { ...authHeaders() },
         body: formData
       });
       const uploadResult = await uploadResponse.json();
@@ -494,7 +496,7 @@
       if (uploadResult.success && uploadResult.document?.id) {
         await fetch(
           `http://localhost:2020/api/documents/${uploadResult.document.id}/associate-sip?sipId=${sipId}`,
-          { method: 'POST' }
+          { method: 'POST', headers: { ...authHeaders() } }
         );
         toasts.success('Document uploaded and associated with SIP');
         closeDocumentModal();
@@ -515,7 +517,7 @@
     try {
       const response = await fetch(
         `http://localhost:2020/api/documents/${selectedDocumentId}/associate-sip?sipId=${sipId}`,
-        { method: 'POST' }
+        { method: 'POST', headers: { ...authHeaders() } }
       );
       const result = await response.json();
       if (result.success) {
@@ -537,7 +539,7 @@
     try {
       const response = await fetch(
         `http://localhost:2020/api/documents/${docId}/disassociate-sip`,
-        { method: 'POST' }
+        { method: 'POST', headers: { ...authHeaders() } }
       );
       const result = await response.json();
       if (result.success) {
@@ -553,7 +555,7 @@
 
   async function handleDownloadDocument(docId: string, fileName: string) {
     try {
-      const response = await fetch(`http://localhost:2020/api/documents/${docId}/file`);
+      const response = await fetch(`http://localhost:2020/api/documents/${docId}/file`, { headers: { ...authHeaders() } });
       if (!response.ok) throw new Error('Download failed');
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);

@@ -1,15 +1,18 @@
 package com.dmc.archiving.sip;
 
 import com.dmc.archiving.archive.model.ArchiveStandard;
+import com.dmc.archiving.common.exception.ResourceNotFoundException;
 import com.dmc.archiving.web.BaseGraphQlController;
 import com.dmc.archiving.sip.input.CreateSipInput;
 import com.dmc.archiving.sip.input.FileMetadataInput;
 import com.dmc.archiving.sip.model.Sip;
 import com.dmc.archiving.sip.model.SipStatus;
-import com.dmc.archiving.sip.prefill.SipPrefillService;
+import com.dmc.archiving.sip.generator.SipGeneratorFactory;
+import com.dmc.archiving.tenancy.api.BillingTenantResolver;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
 import org.springframework.graphql.data.method.annotation.Argument;
+import graphql.schema.DataFetchingEnvironment;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
@@ -23,12 +26,15 @@ import java.util.stream.Collectors;
 public class SipController extends BaseGraphQlController {
 
     private final SipService sipService;
-    private final SipPrefillService sipPrefillService;
+    private final SipGeneratorFactory sipGeneratorFactory;
+    private final BillingTenantResolver billingTenantResolver;
 
-    public SipController(SipService sipService, SipPrefillService sipPrefillService, TenancyApi tenancyApi) {
+    public SipController(SipService sipService, SipGeneratorFactory sipGeneratorFactory,
+                         TenancyApi tenancyApi, BillingTenantResolver billingTenantResolver) {
         super(tenancyApi);
         this.sipService = sipService;
-        this.sipPrefillService = sipPrefillService;
+        this.sipGeneratorFactory = sipGeneratorFactory;
+        this.billingTenantResolver = billingTenantResolver;
     }
 
     // Queries
@@ -58,7 +64,7 @@ public class SipController extends BaseGraphQlController {
         meta.setUploaderName((String) fileMetadata.get("uploaderName"));
         meta.setFileCount(Integer.parseInt(fileMetadata.get("fileCount").toString()));
 
-        Map<String, String> fields = sipPrefillService.prefillFields(standard, meta);
+        Map<String, String> fields = sipGeneratorFactory.getGenerator(standard).prefillFields(meta);
         return fields.entrySet().stream()
                 .map(e -> Map.of("name", e.getKey(), "value", e.getValue()))
                 .collect(Collectors.toList());
@@ -66,16 +72,17 @@ public class SipController extends BaseGraphQlController {
 
     // Mutations
     @MutationMapping
-    public Sip createSipV2(@Argument Map<String, Object> input) {
+    public Sip createSipV2(@Argument Map<String, Object> input, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
         CreateSipInput sipInput = new CreateSipInput();
 
         sipInput.setUserId(Long.parseLong(input.get("userId").toString()));
         sipInput.setTitle(input.get("title").toString());
         sipInput.setStandard(com.dmc.archiving.archive.model.ArchiveStandard.valueOf(input.get("standard").toString()));
 
-        if (input.get("tenantId") != null) {
-            sipInput.setTenantId(Long.parseLong(input.get("tenantId").toString()));
-        }
+        Long claimedTenantId = input.get("tenantId") != null
+                ? Long.parseLong(input.get("tenantId").toString()) : null;
+        sipInput.setTenantId(billingTenantResolver.resolve(getAuthContext(env), claimedTenantId));
         if (input.get("ownerId") != null) {
             sipInput.setOwnerId(Long.parseLong(input.get("ownerId").toString()));
         }
@@ -115,18 +122,33 @@ public class SipController extends BaseGraphQlController {
     }
 
     @MutationMapping
-    public String generateSip(@Argument Long sipId) {
+    public String generateSip(@Argument Long sipId, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, sipId);
         return sipService.generateSip(sipId);
     }
 
     @MutationMapping
-    public Sip updateSipStatusV2(@Argument Long sipId, @Argument SipStatus status) {
+    public Sip updateSipStatusV2(@Argument Long sipId, @Argument SipStatus status, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, sipId);
         return sipService.updateSipStatus(sipId, status);
     }
 
     @MutationMapping
-    public Boolean deleteSipV2(@Argument Long id) {
+    public Boolean deleteSipV2(@Argument Long id, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, id);
         return sipService.deleteSip(id);
+    }
+
+    /** A TENANT/USER may only touch a SIP in a tenant they belong to (ADMIN bypasses). */
+    private void requireOwnership(DataFetchingEnvironment env, Long sipId) {
+        Sip sip = sipService.getSip(sipId);
+        if (sip == null) {
+            throw new ResourceNotFoundException("Sip", sipId);
+        }
+        requireTenantAccess(env, sip.getTenantId());
     }
 
     // Field resolvers for datetime-to-string conversion

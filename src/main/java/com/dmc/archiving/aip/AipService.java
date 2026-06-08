@@ -61,6 +61,7 @@ public class AipService {
         aip.setStatus(AipStatus.DRAFT);
         aip.setStandard(input.getStandard());
         aip.setSourceSipId(input.getSourceSipId());
+        aip.setBillable(input.isBillable());
 
         // Assign creator
         aip.assignUser(user);
@@ -130,5 +131,14 @@ public class AipService {
         }
         aipRepository.deleteById(id);
         return true;
+    }
+
+    /**
+     * Count AIPs for a tenant whose standard is in the given set
+     * (SQL aggregate, for usage metering).
+     */
+    public long countByTenantAndStandards(Long tenantId,
+                                          java.util.Collection<com.dmc.archiving.archive.model.ArchiveStandard> standards) {
+        return aipRepository.countByTenantIdAndStandardInAndBillableTrue(tenantId, standards);
     }
 }

@@ -238,8 +238,8 @@ export const ADD_USER_TO_TENANT: DocumentNode = gql`
 `;
 
 export const REMOVE_USER_FROM_TENANT: DocumentNode = gql`
-  mutation RemoveUserFromTenant($userId: ID!) {
-    removeUserFromTenant(userId: $userId)
+  mutation RemoveUserFromTenant($tenantId: ID!, $userId: ID!) {
+    removeUserFromTenant(tenantId: $tenantId, userId: $userId)
   }
 `;
 

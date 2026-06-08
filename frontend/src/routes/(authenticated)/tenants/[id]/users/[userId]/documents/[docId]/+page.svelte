@@ -4,6 +4,7 @@
   import { goto } from '$app/navigation';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import { authHeaders } from '$lib/api';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   const STATUSES = ['ACTIVE', 'ARCHIVED', 'DELETED', 'PENDING_REVIEW', 'APPROVED', 'REJECTED'];
@@ -57,7 +58,9 @@
   async function loadDocument() {
     loading = true;
     try {
-      const response = await fetch(`http://localhost:2020/api/documents/${data.docId}`);
+      const response = await fetch(`http://localhost:2020/api/documents/${data.docId}`, {
+        headers: { ...authHeaders() }
+      });
       if (!response.ok) throw new Error('Failed to fetch document');
       const result = await response.json();
       if (result.success) {
@@ -95,7 +98,7 @@
     try {
       const response = await fetch(`http://localhost:2020/api/documents/${data.docId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: editForm.title,
           description: editForm.description,
@@ -119,7 +122,9 @@
 
   async function handleDownload() {
     try {
-      const response = await fetch(`http://localhost:2020/api/documents/${data.docId}/file`);
+      const response = await fetch(`http://localhost:2020/api/documents/${data.docId}/file`, {
+        headers: { ...authHeaders() }
+      });
       if (!response.ok) {
         // Try to parse error body
         const contentType = response.headers.get('content-type') || '';
@@ -148,7 +153,8 @@
     if (!confirm('Are you sure you want to delete this document?')) return;
     try {
       const response = await fetch(`http://localhost:2020/api/documents/${data.docId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { ...authHeaders() }
       });
       const result = await response.json();
       if (result.success) {

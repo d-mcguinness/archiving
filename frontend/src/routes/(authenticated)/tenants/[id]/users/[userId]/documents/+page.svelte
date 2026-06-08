@@ -3,6 +3,7 @@
   import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
+  import { authHeaders } from '$lib/api';
   import { GET_SIPS_BY_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
@@ -163,7 +164,9 @@
       params.append('userId', data.userId);
       params.append('tenantId', data.tenantId);
 
-      const response = await fetch(`http://localhost:2020/api/documents?${params.toString()}`);
+      const response = await fetch(`http://localhost:2020/api/documents?${params.toString()}`, {
+        headers: { ...authHeaders() }
+      });
 
       if (!response.ok) {
         throw new Error('Failed to load documents');
@@ -286,8 +289,10 @@
         formData.append('description', description);
       }
 
+      const uploadToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const response = await fetch('http://localhost:2020/api/documents/upload', {
         method: 'POST',
+        headers: { ...authHeaders(), ...(uploadToken ? { Authorization: uploadToken } : {}) },
         body: formData
       });
 

@@ -4,8 +4,11 @@ import com.dmc.archiving.tenancy.input.CreateTenantInput;
 import com.dmc.archiving.tenancy.input.UpdateTenantInput;
 import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.tenancy.model.TenantMembership;
+import com.dmc.archiving.tenancy.model.TenantPlan;
 import com.dmc.archiving.tenancy.model.TenantSettings;
 import com.dmc.archiving.tenancy.model.TenantStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.dmc.archiving.tenancy.repository.TenancyRepository;
 import com.dmc.archiving.tenancy.repository.TenantMembershipRepository;
 import com.dmc.archiving.user.api.UserApi;
@@ -19,6 +22,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class TenancyServiceImpl implements TenancyService {
+
+    private static final Logger log = LoggerFactory.getLogger(TenancyServiceImpl.class);
 
     private final TenancyRepository tenancyRepository;
     private final TenantMembershipRepository membershipRepository;
@@ -156,20 +161,62 @@ public class TenancyServiceImpl implements TenancyService {
             throw new IllegalArgumentException("Tenant with ID " + tenantId + " does not exist");
         }
         if (membershipRepository.existsByTenantIdAndUserId(tenantId, userId)) {
+            return; // already a member; no new seat consumed
+        }
+        enforceSeatQuota(tenantId);
+        membershipRepository.save(new TenantMembership(null, tenantId, userId, LocalDateTime.now()));
+    }
+
+    /**
+     * Reject (FREE) or allow-with-overage (paid) a new seat against the tenant's
+     * maxUsers allotment. -1 (or absent) means unlimited.
+     */
+    private void enforceSeatQuota(Long tenantId) {
+        // Lock the tenant row so concurrent addUserToTenant calls serialize and
+        // cannot both pass the seat cap (check-then-act race).
+        Tenant tenant = tenancyRepository.findByIdForUpdate(tenantId).orElse(null);
+        if (tenant == null || tenant.getSettings() == null
+                || tenant.getSettings().getMaxUsers() == null
+                || tenant.getSettings().getMaxUsers() < 0) {
+            return; // unknown/unlimited
+        }
+        int limit = tenant.getSettings().getMaxUsers();
+        long current = membershipRepository.countByTenantId(tenantId);
+        if (current < limit) {
+            return; // within allotment
+        }
+        if (tenant.getPlan() != TenantPlan.FREE) {
+            log.warn("Tenant {} over seat allotment ({} >= {}); recording billable seat overage",
+                    tenantId, current, limit);
             return;
         }
-        membershipRepository.save(new TenantMembership(null, tenantId, userId, LocalDateTime.now()));
+        throw new IllegalStateException(
+                "Seat limit reached for tenant " + tenantId + " (" + limit
+                        + "). Upgrade the plan to add more users.");
     }
 
     @Override
     @Transactional
-    public void removeUserFromTenant(Long userId) {
+    public void removeUserFromTenant(Long tenantId, Long userId) {
+        membershipRepository.deleteByTenantIdAndUserId(tenantId, userId);
+    }
+
+    @Override
+    @Transactional
+    public void removeUserFromAllTenants(Long userId) {
         membershipRepository.deleteByUserId(userId);
     }
 
     @Override
     public long countUsersInTenant(Long tenantId) {
         return membershipRepository.countByTenantId(tenantId);
+    }
+
+    @Override
+    public void lockTenantForUpdate(Long tenantId) {
+        // Joins the caller's transaction (no @Transactional here) and holds a
+        // SELECT ... FOR UPDATE on the tenant row until that tx commits.
+        tenancyRepository.findByIdForUpdate(tenantId);
     }
 
     private TenantSettings createDefaultSettings(com.dmc.archiving.tenancy.model.TenantPlan plan) {

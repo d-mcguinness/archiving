@@ -10,9 +10,11 @@ import com.dmc.archiving.archive.strategy.ArchiveStrategy;
 import com.dmc.archiving.archive.strategy.ArchiveStrategyFactory;
 import com.dmc.archiving.archive.strategy.ValidationResult;
 import com.dmc.archiving.web.BaseGraphQlController;
+import com.dmc.archiving.tenancy.api.BillingTenantResolver;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import graphql.schema.DataFetchingEnvironment;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -36,11 +38,14 @@ public class ArchiveController extends BaseGraphQlController {
 
     private final ArchiveService archiveService;
     private final ArchiveStrategyFactory strategyFactory;
+    private final BillingTenantResolver billingTenantResolver;
 
-    public ArchiveController(ArchiveService archiveService, ArchiveStrategyFactory strategyFactory, TenancyApi tenancyApi) {
+    public ArchiveController(ArchiveService archiveService, ArchiveStrategyFactory strategyFactory,
+                             TenancyApi tenancyApi, BillingTenantResolver billingTenantResolver) {
         super(tenancyApi);
         this.archiveService = archiveService;
         this.strategyFactory = strategyFactory;
+        this.billingTenantResolver = billingTenantResolver;
     }
 
     // ========== Legacy Query Methods (Non-paginated - use paginated versions for production) ==========
@@ -175,39 +180,60 @@ public class ArchiveController extends BaseGraphQlController {
 
     // Existing mutation methods
     @MutationMapping
-    public Archive createArchive(@Argument CreateArchiveInput input) {
+    public Archive createArchive(@Argument CreateArchiveInput input, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
+        input.setTenantId(billingTenantResolver.resolve(getAuthContext(env), input.getTenantId()));
         return archiveService.createArchive(input);
     }
 
     @MutationMapping
-    public Archive updateArchive(@Argument Long id, @Argument UpdateArchiveInput input) {
+    public Archive updateArchive(@Argument Long id, @Argument UpdateArchiveInput input, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, id);
         return archiveService.updateArchive(id, input);
     }
 
     @MutationMapping
-    public Archive updateArchiveStatus(@Argument Long archiveId, @Argument ArchiveStatus status) {
+    public Archive updateArchiveStatus(@Argument Long archiveId, @Argument ArchiveStatus status, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, archiveId);
         return archiveService.updateArchiveStatus(archiveId, status);
     }
 
     @MutationMapping
-    public Archive setArchiveRootElement(@Argument Long archiveId, @Argument Long rootElementId) {
+    public Archive setArchiveRootElement(@Argument Long archiveId, @Argument Long rootElementId, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, archiveId);
         return archiveService.setArchiveRootElement(archiveId, rootElementId);
     }
 
     @MutationMapping
-    public Boolean deleteArchive(@Argument Long id) {
+    public Boolean deleteArchive(@Argument Long id, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, id);
         return archiveService.deleteArchive(id);
     }
 
     // New mutation methods for user assignment
     @MutationMapping
-    public Archive assignUserToArchive(@Argument AssignUserInput input) {
+    public Archive assignUserToArchive(@Argument AssignUserInput input, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, input.getArchiveId());
         return archiveService.assignUserToArchive(input);
     }
 
     @MutationMapping
-    public Archive unassignUserFromArchive(@Argument UnassignUserInput input) {
+    public Archive unassignUserFromArchive(@Argument UnassignUserInput input, DataFetchingEnvironment env) {
+        requireRole(env, "TENANT", "ADMIN");
+        requireOwnership(env, input.getArchiveId());
         return archiveService.unassignUserFromArchive(input);
+    }
+
+    /** A TENANT/USER may only touch an archive in a tenant they belong to (ADMIN bypasses).
+     *  getArchiveById throws ResourceNotFoundException when the archive is missing. */
+    private void requireOwnership(DataFetchingEnvironment env, Long archiveId) {
+        Archive archive = archiveService.getArchiveById(archiveId);
+        requireTenantAccess(env, archive.getTenantId());
     }
 
     // Field resolvers for datetime-to-string conversion

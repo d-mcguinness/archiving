@@ -2,6 +2,7 @@ package com.dmc.archiving.sip.generator.impl;
 
 import com.dmc.archiving.sip.generator.AbstractSipGenerator;
 import com.dmc.archiving.sip.generator.SipSnapshot;
+import com.dmc.archiving.sip.input.FileMetadataInput;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
 
@@ -56,5 +57,23 @@ public class PremisSipGenerator extends AbstractSipGenerator {
         pkg.put("premis:event", premisEvent);
         pkg.put("premis:agent", premisAgent);
         return pkg;
+    }
+
+    @Override
+    public Map<String, String> prefillFields(FileMetadataInput meta) {
+        PrefillContext c = prefillContext(meta);
+        Map<String, String> m = new LinkedHashMap<>();
+        m.put("objectIdentifierType", "SHA-256");
+        m.put("objectIdentifierValue", c.checksum() != null ? c.checksum() : c.id());
+        m.put("objectCategory", "File");
+        m.put("preservationLevelType", "full");
+        m.put("preservationLevelValue", "full preservation");
+        m.put("preservationLevelRole", "requirement");
+        m.put("preservationLevelRationale", "Default preservation policy");
+        m.put("preservationLevelDateAssigned", c.date());
+        m.put("significantPropertiesType", "content");
+        m.put("significantPropertiesValue", "All content preserved");
+        m.put("originalName", c.name());
+        return m;
     }
 }
