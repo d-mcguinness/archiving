@@ -9,8 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 /**
  * Live soft spend cap for the premium-package overage rail (NOARK5/E-ARK
  * AIP + DIP). Mirrors the storage spend cap, but the count is the COMBINED
@@ -26,9 +24,6 @@ public class PremiumOverageGuard {
 
     private static final Logger log = LoggerFactory.getLogger(PremiumOverageGuard.class);
 
-    /** Premium standards (stored as enum-string) whose generation is metered. */
-    static final List<String> PREMIUM_STANDARDS = List.of("NOARK5", "EARK");
-
     private final PremiumPackageUsageRepository usageRepository;
     private final TenantOverageBudgetRepository budgetRepository;
     private final TenancyService tenancyService;
@@ -43,7 +38,7 @@ public class PremiumOverageGuard {
 
     /** True if the standard (by name) is a metered premium standard. */
     public boolean isPremiumStandard(String standardName) {
-        return PREMIUM_STANDARDS.contains(standardName);
+        return PremiumStandards.contains(standardName);
     }
 
     /**
@@ -67,8 +62,8 @@ public class PremiumOverageGuard {
         // Serialize concurrent premium creates for this tenant before counting.
         tenancyService.lockTenantForUpdate(tenantId);
 
-        long current = usageRepository.countBillablePremiumAips(tenantId, PREMIUM_STANDARDS)
-                + usageRepository.countBillablePremiumDips(tenantId, PREMIUM_STANDARDS);
+        long current = usageRepository.countBillablePremiumAips(tenantId, PremiumStandards.NAMES)
+                + usageRepository.countBillablePremiumDips(tenantId, PremiumStandards.NAMES);
         long projected = current + 1;
         if (projected <= included) {
             return; // within the included bundle

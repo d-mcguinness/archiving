@@ -2,6 +2,7 @@ package com.dmc.archiving.tenancy.api;
 
 import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.tenancy.model.TenantPlan;
+import com.dmc.archiving.tenancy.model.TenantSettings;
 import com.dmc.archiving.tenancy.repository.TenantOverageBudgetRepository;
 import com.dmc.archiving.tenancy.service.TenancyService;
 import org.springframework.stereotype.Service;
@@ -60,9 +61,13 @@ class TenancyApiImpl implements TenancyApi {
     @Override
     public long getStorageLimitBytes(Long tenantId) {
         Tenant tenant = tenancyService.getTenantById(tenantId);
-        if (tenant == null || tenant.getSettings() == null
-                || tenant.getSettings().getMaxStorageBytes() == null) {
-            return -1L; // unknown settings -> treat as unlimited rather than block
+        if (tenant == null) {
+            return -1L; // unknown tenant — defensive; the billing-tenant resolver guarantees existence upstream
+        }
+        if (tenant.getSettings() == null || tenant.getSettings().getMaxStorageBytes() == null) {
+            // Fail closed: missing settings fall back to the plan default allotment
+            // (ENTERPRISE stays unlimited) rather than granting unlimited storage.
+            return planDefaults(tenant.getPlan()).getMaxStorageBytes();
         }
         return tenant.getSettings().getMaxStorageBytes();
     }
@@ -70,11 +75,19 @@ class TenancyApiImpl implements TenancyApi {
     @Override
     public int getArchiveLimit(Long tenantId) {
         Tenant tenant = tenancyService.getTenantById(tenantId);
-        if (tenant == null || tenant.getSettings() == null
-                || tenant.getSettings().getMaxArchives() == null) {
-            return -1; // unknown settings -> treat as unlimited rather than block
+        if (tenant == null) {
+            return -1; // unknown tenant — defensive (see getStorageLimitBytes)
+        }
+        if (tenant.getSettings() == null || tenant.getSettings().getMaxArchives() == null) {
+            // Fail closed: missing settings fall back to the plan default.
+            return planDefaults(tenant.getPlan()).getMaxArchives();
         }
         return tenant.getSettings().getMaxArchives();
+    }
+
+    /** Plan-default settings (FREE if the plan is somehow unset) for fail-closed limit fallbacks. */
+    private TenantSettings planDefaults(TenantPlan plan) {
+        return TenantSettings.defaultsFor(plan != null ? plan : TenantPlan.FREE);
     }
 
     @Override

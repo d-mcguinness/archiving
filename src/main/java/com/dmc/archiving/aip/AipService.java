@@ -49,7 +49,13 @@ public class AipService {
                 .orElseThrow(() -> new IllegalArgumentException("User with ID " + input.getUserId() + " does not exist"));
 
         Long ownerId = input.getOwnerId() != null ? input.getOwnerId() : input.getUserId();
-        Long tenantId = input.getTenantId() != null ? input.getTenantId() : ownerId;
+        if (input.getTenantId() == null) {
+            // Billing attribution must be unambiguous: never fall back to the owner
+            // as the billing tenant. The tenant is resolved before the package is
+            // created, so a null here is a programming error, not a billable event.
+            throw new IllegalArgumentException("createAip requires a resolved tenantId for billing attribution");
+        }
+        Long tenantId = input.getTenantId();
 
         // Premium-package spend cap, enforced inside this (write) transaction so
         // the count and the insert are atomic under a per-tenant lock.
