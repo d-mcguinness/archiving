@@ -81,6 +81,7 @@ public class ElementController extends BaseGraphQlController {
     @MutationMapping
     public Element addChildElement(@Argument Long parentElementId, @Argument Map<String, Object> input, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireElementTenant(env, parentElementId);
         Element parent = elementService.getElement(parentElementId)
             .orElseThrow(() -> new IllegalArgumentException("Parent element not found"));
 
@@ -106,6 +107,7 @@ public class ElementController extends BaseGraphQlController {
     public Element createElement(@Argument Map<String, Object> input, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
         Long archiveId = Long.parseLong(input.get("archiveId").toString());
+        requireArchiveTenant(env, archiveId);
         Long parentElementId = input.get("parentElementId") != null ?
             Long.parseLong(input.get("parentElementId").toString()) : null;
         String elementIdentifier = input.get("elementIdentifier").toString();
@@ -134,6 +136,7 @@ public class ElementController extends BaseGraphQlController {
     @MutationMapping
     public Element updateElement(@Argument Long id, @Argument Map<String, Object> input, @Argument List<Map<String, Object>> fields, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireElementTenant(env, id);
         String title = input.get("title").toString();
         String description = input.get("description") != null ? input.get("description").toString() : null;
         String updatedBy = input.get("updatedBy").toString();
@@ -144,18 +147,21 @@ public class ElementController extends BaseGraphQlController {
     @MutationMapping
     public Element updateElementStatus(@Argument Long id, @Argument String status, @Argument String updatedBy, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireElementTenant(env, id);
         return elementService.updateStatus(id, status, updatedBy);
     }
 
     @MutationMapping
     public Element closeElement(@Argument Long id, @Argument String closedBy, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireElementTenant(env, id);
         return elementService.closeElement(id, closedBy);
     }
 
     @MutationMapping
     public Boolean deleteElement(@Argument Long id, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        requireElementTenant(env, id);
         elementService.deleteElement(id);
         return true;
     }
@@ -163,7 +169,24 @@ public class ElementController extends BaseGraphQlController {
     @MutationMapping
     public Element moveElement(@Argument Long elementId, @Argument Long newParentId, @Argument String updatedBy, DataFetchingEnvironment env) {
         requireRole(env, "TENANT", "ADMIN");
+        // Both the element and its new parent must be in a tenant the caller belongs to.
+        requireElementTenant(env, elementId);
+        if (newParentId != null) {
+            requireElementTenant(env, newParentId);
+        }
         return elementService.moveElement(elementId, newParentId, updatedBy);
+    }
+
+    /** A TENANT/USER may only touch an element in a tenant they belong to (ADMIN bypasses). */
+    private void requireElementTenant(DataFetchingEnvironment env, Long elementId) {
+        requireTenantAccess(env, elementService.getArchiveTenantId(elementId));
+    }
+
+    /** Tenant-ownership check by owning archive id (for element creation). */
+    private void requireArchiveTenant(DataFetchingEnvironment env, Long archiveId) {
+        Archive archive = archiveRepository.findById(archiveId)
+            .orElseThrow(() -> new IllegalArgumentException("Archive not found"));
+        requireTenantAccess(env, archive.getTenantId());
     }
 
     // Field resolvers

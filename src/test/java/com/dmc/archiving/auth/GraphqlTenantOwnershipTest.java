@@ -141,4 +141,48 @@ class GraphqlTenantOwnershipTest {
 
         verify(svc).deletePackage(ID);
     }
+
+    // ---- Element (base controller: tenant via owning archive) ----
+
+    @Test
+    void deleteElement_foreignTenantTenantIsDenied_serviceNotCalled() {
+        com.dmc.archiving.archive.element.ElementService elementService =
+                mock(com.dmc.archiving.archive.element.ElementService.class);
+        TenancyApi tenancy = mock(TenancyApi.class);
+        when(elementService.getArchiveTenantId(ID)).thenReturn(OWNING_TENANT);
+        when(tenancy.isUserInTenant(2L, OWNING_TENANT)).thenReturn(false);
+        var controller = new com.dmc.archiving.archive.element.ElementController(
+                elementService, mock(com.dmc.archiving.archive.repository.ArchiveRepository.class), tenancy);
+
+        assertThatThrownBy(() -> controller.deleteElement(ID, env(2L, "TENANT")))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verify(elementService, never()).deleteElement(anyLong());
+    }
+
+    // ---- ElementLink (non-base controller: tenant via the link's element) ----
+
+    @Test
+    void deleteElementLink_foreignTenantTenantIsDenied_serviceNotCalled() {
+        var linkService = mock(com.dmc.archiving.archive.element.link.ElementLinkService.class);
+        var elementService = mock(com.dmc.archiving.archive.element.ElementService.class);
+        TenancyApi tenancy = mock(TenancyApi.class);
+
+        com.dmc.archiving.archive.element.Element source =
+                mock(com.dmc.archiving.archive.element.Element.class);
+        when(source.getId()).thenReturn(50L);
+        var link = mock(com.dmc.archiving.archive.element.link.ElementLink.class);
+        when(link.getSourceElement()).thenReturn(source);
+        when(linkService.getLink(ID)).thenReturn(link);
+        when(elementService.getArchiveTenantId(50L)).thenReturn(OWNING_TENANT);
+        when(tenancy.isUserInTenant(2L, OWNING_TENANT)).thenReturn(false);
+
+        var controller = new com.dmc.archiving.archive.element.link.ElementLinkController(
+                linkService, elementService, tenancy);
+
+        assertThatThrownBy(() -> controller.deleteElementLink(ID.toString(), env(2L, "TENANT")))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verify(linkService, never()).deleteLink(anyLong());
+    }
 }

@@ -1,6 +1,10 @@
 package com.dmc.archiving.archive.element.link;
 
+import com.dmc.archiving.archive.element.ElementService;
+import com.dmc.archiving.auth.api.AccessDeniedException;
+import com.dmc.archiving.auth.api.AuthContext;
 import com.dmc.archiving.auth.api.AuthGuard;
+import com.dmc.archiving.tenancy.api.TenancyApi;
 import graphql.schema.DataFetchingEnvironment;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -16,9 +20,26 @@ import java.util.Map;
 public class ElementLinkController {
 
     private final ElementLinkService linkService;
+    private final ElementService elementService;
+    private final TenancyApi tenancyApi;
 
-    public ElementLinkController(ElementLinkService linkService) {
+    public ElementLinkController(ElementLinkService linkService, ElementService elementService,
+                                 TenancyApi tenancyApi) {
         this.linkService = linkService;
+        this.elementService = elementService;
+        this.tenancyApi = tenancyApi;
+    }
+
+    /** A TENANT/USER may only touch a link whose element is in a tenant they belong to (ADMIN bypasses). */
+    private void requireElementTenant(DataFetchingEnvironment env, Long elementId) {
+        AuthContext ctx = AuthGuard.context(env);
+        if (ctx.isAdmin()) {
+            return;
+        }
+        Long tenantId = elementService.getArchiveTenantId(elementId);
+        if (tenantId == null || !tenancyApi.isUserInTenant(ctx.userId(), tenantId)) {
+            throw new AccessDeniedException("Access denied: not a member of the element's tenant");
+        }
     }
 
     @QueryMapping
@@ -39,9 +60,14 @@ public class ElementLinkController {
     @MutationMapping
     public ElementLink createElementLink(@Argument Map<String, Object> input, DataFetchingEnvironment env) {
         AuthGuard.requireRole(env, "TENANT", "ADMIN");
+        Long sourceElementId = Long.parseLong(input.get("sourceElementId").toString());
+        Long targetElementId = Long.parseLong(input.get("targetElementId").toString());
+        // Both endpoints must be in a tenant the caller belongs to.
+        requireElementTenant(env, sourceElementId);
+        requireElementTenant(env, targetElementId);
         return linkService.createLink(
-                Long.parseLong(input.get("sourceElementId").toString()),
-                Long.parseLong(input.get("targetElementId").toString()),
+                sourceElementId,
+                targetElementId,
                 input.get("linkType").toString(),
                 input.get("label") != null ? input.get("label").toString() : null,
                 input.get("description") != null ? input.get("description").toString() : null,
@@ -53,6 +79,12 @@ public class ElementLinkController {
     @MutationMapping
     public boolean deleteElementLink(@Argument String id, DataFetchingEnvironment env) {
         AuthGuard.requireRole(env, "TENANT", "ADMIN");
+        ElementLink link = linkService.getLink(Long.parseLong(id));
+        if (link == null) {
+            throw new IllegalArgumentException("Element link not found: " + id);
+        }
+        // The link belongs to the tenant of its (source) element.
+        requireElementTenant(env, link.getSourceElement().getId());
         return linkService.deleteLink(Long.parseLong(id));
     }
 

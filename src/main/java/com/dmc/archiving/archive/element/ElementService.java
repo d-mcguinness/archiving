@@ -75,6 +75,22 @@ public class ElementService {
     }
 
     /**
+     * Resolve the tenant of the element's owning archive. Runs in a transaction
+     * so the lazy archive association is initialized (no reliance on OSIV).
+     * Used for tenant-ownership checks on element/link mutations.
+     */
+    @Transactional(readOnly = true)
+    public Long getArchiveTenantId(Long elementId) {
+        Element element = elementRepository.findById(elementId)
+                .orElseThrow(() -> new com.dmc.archiving.common.exception.ResourceNotFoundException("Element", elementId));
+        Archive archive = element.getArchive();
+        if (archive == null) {
+            throw new com.dmc.archiving.common.exception.ResourceNotFoundException("Element archive", elementId);
+        }
+        return archive.getTenantId();
+    }
+
+    /**
      * Get all elements for an archive
      */
     public List<Element> getElementsByArchive(Long archiveId) {
