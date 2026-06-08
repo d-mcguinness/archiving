@@ -6,7 +6,6 @@ import com.dmc.archiving.dip.input.CreateDipInput;
 import com.dmc.archiving.dip.model.Dip;
 import com.dmc.archiving.dip.model.DipStatus;
 import com.dmc.archiving.tenancy.api.BillingTenantResolver;
-import com.dmc.archiving.tenancy.api.PremiumOverageGuard;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -24,15 +23,12 @@ public class DipController extends BaseGraphQlController {
 
     private final DipService dipService;
     private final BillingTenantResolver billingTenantResolver;
-    private final PremiumOverageGuard premiumOverageGuard;
 
     public DipController(DipService dipService, TenancyApi tenancyApi,
-                         BillingTenantResolver billingTenantResolver,
-                         PremiumOverageGuard premiumOverageGuard) {
+                         BillingTenantResolver billingTenantResolver) {
         super(tenancyApi);
         this.dipService = dipService;
         this.billingTenantResolver = billingTenantResolver;
-        this.premiumOverageGuard = premiumOverageGuard;
     }
 
     // Queries
@@ -64,12 +60,10 @@ public class DipController extends BaseGraphQlController {
         Long claimedTenantId = input.get("tenantId") != null
                 ? Long.parseLong(input.get("tenantId").toString()) : null;
         dipInput.setTenantId(billingTenantResolver.resolve(getAuthContext(env), claimedTenantId));
-        // ADMIN/operator-created packages are not billed to the tenant.
+        // ADMIN/operator-created packages are not billed to the tenant. The
+        // premium-package spend cap is enforced inside DipService.createDip
+        // (same transaction as the insert).
         dipInput.setBillable(!getAuthContext(env).isAdmin());
-        // Enforce the premium-package spend cap for billable premium generations.
-        if (dipInput.isBillable() && premiumOverageGuard.isPremiumStandard(input.get("standard").toString())) {
-            premiumOverageGuard.checkCanCreatePremiumPackage(dipInput.getTenantId());
-        }
         if (input.get("ownerId") != null) {
             dipInput.setOwnerId(Long.parseLong(input.get("ownerId").toString()));
         }

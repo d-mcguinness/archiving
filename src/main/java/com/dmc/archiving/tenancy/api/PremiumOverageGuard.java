@@ -50,6 +50,10 @@ public class PremiumOverageGuard {
      * Check whether the tenant may create one more billable premium package.
      * Throws {@link OverageSpendCapException} if it would exceed the included
      * bundle on a hard-stop plan, or exceed the overage spend cap without opt-in.
+     *
+     * <p>Must be called from within the package-creating transaction (it locks
+     * the tenant row so the count and the subsequent insert are serialized per
+     * tenant — concurrent premium creates cannot both pass the cap).
      */
     public void checkCanCreatePremiumPackage(Long tenantId) {
         Tenant tenant = tenancyService.getTenantById(tenantId);
@@ -59,6 +63,9 @@ public class PremiumOverageGuard {
         if (included < 0) {
             return; // unlimited (ENTERPRISE)
         }
+
+        // Serialize concurrent premium creates for this tenant before counting.
+        tenancyService.lockTenantForUpdate(tenantId);
 
         long current = usageRepository.countBillablePremiumAips(tenantId, PREMIUM_STANDARDS)
                 + usageRepository.countBillablePremiumDips(tenantId, PREMIUM_STANDARDS);

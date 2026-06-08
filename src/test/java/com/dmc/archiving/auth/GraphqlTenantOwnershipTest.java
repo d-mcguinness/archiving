@@ -11,7 +11,6 @@ import com.dmc.archiving.pkg.PackageController;
 import com.dmc.archiving.pkg.PackageService;
 import com.dmc.archiving.pkg.model.ArchivalPackage;
 import com.dmc.archiving.tenancy.api.BillingTenantResolver;
-import com.dmc.archiving.tenancy.api.PremiumOverageGuard;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import graphql.GraphQLContext;
 import graphql.schema.DataFetchingEnvironment;
@@ -47,7 +46,7 @@ class GraphqlTenantOwnershipTest {
     // ---- AIP (base controller: requireTenantAccess) ----
 
     private AipController aipController(AipService svc, TenancyApi tenancy) {
-        return new AipController(svc, tenancy, mock(BillingTenantResolver.class), mock(PremiumOverageGuard.class));
+        return new AipController(svc, tenancy, mock(BillingTenantResolver.class));
     }
 
     private static Aip aipInTenant() {

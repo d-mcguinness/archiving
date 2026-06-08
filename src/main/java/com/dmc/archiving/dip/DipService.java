@@ -25,11 +25,14 @@ public class DipService {
     private final DipRepository dipRepository;
     private final UserApi userApi;
     private final DipGeneratorFactory dipGeneratorFactory;
+    private final com.dmc.archiving.tenancy.api.PremiumOverageGuard premiumOverageGuard;
 
-    public DipService(DipRepository dipRepository, UserApi userApi, DipGeneratorFactory dipGeneratorFactory) {
+    public DipService(DipRepository dipRepository, UserApi userApi, DipGeneratorFactory dipGeneratorFactory,
+                      com.dmc.archiving.tenancy.api.PremiumOverageGuard premiumOverageGuard) {
         this.dipRepository = dipRepository;
         this.userApi = userApi;
         this.dipGeneratorFactory = dipGeneratorFactory;
+        this.premiumOverageGuard = premiumOverageGuard;
     }
 
     @Transactional
@@ -47,6 +50,13 @@ public class DipService {
 
         Long ownerId = input.getOwnerId() != null ? input.getOwnerId() : input.getUserId();
         Long tenantId = input.getTenantId() != null ? input.getTenantId() : ownerId;
+
+        // Premium-package spend cap, enforced inside this (write) transaction so
+        // the count and the insert are atomic under a per-tenant lock.
+        if (input.isBillable() && input.getStandard() != null
+                && premiumOverageGuard.isPremiumStandard(input.getStandard().name())) {
+            premiumOverageGuard.checkCanCreatePremiumPackage(tenantId);
+        }
 
         LocalDateTime now = LocalDateTime.now();
 
