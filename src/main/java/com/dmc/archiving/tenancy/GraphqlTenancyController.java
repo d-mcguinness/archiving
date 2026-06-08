@@ -61,23 +61,19 @@ public class GraphqlTenancyController {
     @MutationMapping
     public Boolean addUserToTenant(@Argument Long userId, @Argument Long tenantId, DataFetchingEnvironment env) {
         AuthGuard.requireRole(env, "ADMIN");
-        try {
-            tenancyService.addUserToTenant(userId, tenantId);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        // Let domain failures propagate (e.g. unknown user/tenant -> BAD_REQUEST,
+        // seat limit reached -> BAD_REQUEST): GlobalExceptionHandler classifies
+        // them into a message-bearing GraphQL error. Swallowing to `false` here
+        // hid the cause and defeated that handler.
+        tenancyService.addUserToTenant(userId, tenantId);
+        return true;
     }
 
     @MutationMapping
     public Boolean removeUserFromTenant(@Argument Long tenantId, @Argument Long userId, DataFetchingEnvironment env) {
         AuthGuard.requireRole(env, "ADMIN");
-        try {
-            tenancyService.removeUserFromTenant(tenantId, userId);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        tenancyService.removeUserFromTenant(tenantId, userId);
+        return true;
     }
 
     @MutationMapping
