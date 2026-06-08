@@ -538,8 +538,22 @@ UPDATE dips SET root_element_id = 1200 WHERE id = 1 AND root_element_id IS NULL;
 -- DIP-User assignments
 INSERT INTO dip_users (dip_id, user_id) VALUES (1, 1) ON CONFLICT DO NOTHING;
 
+-- Premium-package event ledger backfill.
+-- The seeded billable NOARK5 AIP 1 and DIP 1 (tenant 1) are premium generation
+-- events. The metering meter reads the append-only premium_package_events
+-- ledger, so mirror the seeded SIP -> AIP -> DIP chain here; otherwise a fresh
+-- ledger would report 0 premium packages for the seeded tenant.
+INSERT INTO premium_package_events (id, tenant_id, package_type, standard, generated_at)
+SELECT 1, 1, 'AIP', 'NOARK5', CURRENT_TIMESTAMP
+WHERE NOT EXISTS (SELECT 1 FROM premium_package_events WHERE id = 1);
+
+INSERT INTO premium_package_events (id, tenant_id, package_type, standard, generated_at)
+SELECT 2, 1, 'DIP', 'NOARK5', CURRENT_TIMESTAMP
+WHERE NOT EXISTS (SELECT 1 FROM premium_package_events WHERE id = 2);
+
 -- Reset AIP/DIP sequences
 SELECT setval('aips_id_seq', (SELECT COALESCE(MAX(id), 1) FROM aips), true);
 SELECT setval('dips_id_seq', (SELECT COALESCE(MAX(id), 1) FROM dips), true);
 SELECT setval('elements_id_seq', (SELECT COALESCE(MAX(id), 1) FROM elements), true);
+SELECT setval('premium_package_events_id_seq', (SELECT COALESCE(MAX(id), 1) FROM premium_package_events), true);
 

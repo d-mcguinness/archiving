@@ -7,6 +7,7 @@ import com.dmc.archiving.aip.repository.AipRepository;
 import com.dmc.archiving.archive.model.ArchiveStandard;
 import com.dmc.archiving.tenancy.api.OverageSpendCapException;
 import com.dmc.archiving.tenancy.api.PremiumOverageGuard;
+import com.dmc.archiving.tenancy.api.PremiumPackageType;
 import com.dmc.archiving.user.api.UserApi;
 import com.dmc.archiving.user.model.User;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,8 @@ import static org.mockito.Mockito.when;
  * Verifies the premium spend-cap check runs INSIDE createAip's transaction
  * (Review H5): a billable premium create is gated by the guard (and blocked
  * before the insert when over cap); non-premium and operator (non-billable)
- * creates skip the guard.
+ * creates skip the guard; and a billable premium create RECORDS a ledger event
+ * (metering-integrity) while the others record nothing.
  */
 class AipServicePremiumCapTest {
 
@@ -66,10 +68,11 @@ class AipServicePremiumCapTest {
 
         verify(guard).checkCanCreatePremiumPackage(TENANT);
         verify(repo, never()).save(any());
+        verify(guard, never()).recordPremiumPackageGenerated(anyLong(), any(), any()); // blocked → no ledger event
     }
 
     @Test
-    void billablePremiumWithinCapIsSaved() {
+    void billablePremiumWithinCapIsSavedAndRecorded() {
         when(guard.isPremiumStandard("NOARK5")).thenReturn(true); // guard allows (no throw)
         stubUserAndSave();
 
@@ -78,6 +81,8 @@ class AipServicePremiumCapTest {
 
         verify(guard).checkCanCreatePremiumPackage(TENANT);
         verify(repo).save(any(Aip.class));
+        // The generation is recorded to the append-only ledger after the save.
+        verify(guard).recordPremiumPackageGenerated(TENANT, "NOARK5", PremiumPackageType.AIP);
     }
 
     @Test
@@ -88,6 +93,7 @@ class AipServicePremiumCapTest {
         service.createAip(input(ArchiveStandard.OAIS, true));
 
         verify(guard, never()).checkCanCreatePremiumPackage(anyLong());
+        verify(guard, never()).recordPremiumPackageGenerated(anyLong(), any(), any());
         verify(repo).save(any(Aip.class));
     }
 
@@ -98,6 +104,7 @@ class AipServicePremiumCapTest {
         service.createAip(input(ArchiveStandard.NOARK5, false)); // billable=false (ADMIN)
 
         verify(guard, never()).checkCanCreatePremiumPackage(anyLong());
+        verify(guard, never()).recordPremiumPackageGenerated(anyLong(), any(), any()); // operator not metered
         verify(repo).save(any(Aip.class));
     }
 
@@ -111,6 +118,7 @@ class AipServicePremiumCapTest {
                 .isInstanceOf(IllegalArgumentException.class);
 
         verify(guard, never()).checkCanCreatePremiumPackage(anyLong());
+        verify(guard, never()).recordPremiumPackageGenerated(anyLong(), any(), any());
         verify(repo, never()).save(any());
     }
 }

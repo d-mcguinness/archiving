@@ -1,0 +1,61 @@
+package com.dmc.archiving.tenancy;
+
+import com.dmc.archiving.tenancy.api.PremiumPackageType;
+import com.dmc.archiving.tenancy.model.PremiumPackageEvent;
+import com.dmc.archiving.tenancy.repository.PremiumPackageEventRepository;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+import java.time.LocalDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * Verifies the append-only premium-package event ledger counts (metering
+ * integrity): a lifetime count for the spend-cap guard, and a half-open
+ * [start, end) window count for the per-period billing meter. Uses an isolated
+ * tenant id so it is independent of any seeded ledger rows.
+ */
+@DataJpaTest
+class PremiumPackageEventRepositoryTest {
+
+    private static final Long TENANT = 9001L;
+    private static final Long OTHER_TENANT = 9999L;
+
+    @Autowired private PremiumPackageEventRepository events;
+
+    private void record(Long tenantId, PremiumPackageType type, String standard, LocalDateTime at) {
+        events.save(new PremiumPackageEvent(tenantId, type, standard, at));
+    }
+
+    @Test
+    void lifetimeCountIsPerTenant() {
+        record(TENANT, PremiumPackageType.AIP, "NOARK5", LocalDateTime.of(2026, 6, 5, 9, 0));
+        record(TENANT, PremiumPackageType.DIP, "NOARK5", LocalDateTime.of(2026, 6, 5, 10, 0));
+        record(TENANT, PremiumPackageType.AIP, "EARK", LocalDateTime.of(2026, 6, 6, 9, 0));
+        record(OTHER_TENANT, PremiumPackageType.AIP, "NOARK5", LocalDateTime.of(2026, 6, 5, 9, 0));
+
+        assertThat(events.countByTenantId(TENANT)).isEqualTo(3L);
+        assertThat(events.countByTenantId(OTHER_TENANT)).isEqualTo(1L);
+    }
+
+    @Test
+    void perPeriodWindowIsHalfOpenAndPerTenant() {
+        record(TENANT, PremiumPackageType.AIP, "NOARK5", LocalDateTime.of(2026, 6, 5, 9, 0));
+        record(TENANT, PremiumPackageType.DIP, "NOARK5", LocalDateTime.of(2026, 6, 5, 23, 59));
+        record(TENANT, PremiumPackageType.AIP, "EARK", LocalDateTime.of(2026, 6, 6, 0, 0)); // boundary: next period
+        record(OTHER_TENANT, PremiumPackageType.AIP, "NOARK5", LocalDateTime.of(2026, 6, 5, 12, 0));
+
+        LocalDateTime day5Start = LocalDateTime.of(2026, 6, 5, 0, 0);
+        LocalDateTime day6Start = LocalDateTime.of(2026, 6, 6, 0, 0);
+        LocalDateTime day7Start = LocalDateTime.of(2026, 6, 7, 0, 0);
+
+        // [June 5, June 6): the two June-5 events; the June-6 00:00 event is excluded (half-open).
+        assertThat(events.countByTenantIdAndGeneratedAtGreaterThanEqualAndGeneratedAtLessThan(
+                TENANT, day5Start, day6Start)).isEqualTo(2L);
+        // [June 6, June 7): exactly the boundary event — billed in this period, not the previous one.
+        assertThat(events.countByTenantIdAndGeneratedAtGreaterThanEqualAndGeneratedAtLessThan(
+                TENANT, day6Start, day7Start)).isEqualTo(1L);
+    }
+}

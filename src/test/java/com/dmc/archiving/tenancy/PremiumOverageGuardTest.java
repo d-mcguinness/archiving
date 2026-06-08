@@ -5,7 +5,7 @@ import com.dmc.archiving.tenancy.api.PremiumOverageGuard;
 import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.tenancy.model.TenantOverageBudget;
 import com.dmc.archiving.tenancy.model.TenantPlan;
-import com.dmc.archiving.tenancy.repository.PremiumPackageUsageRepository;
+import com.dmc.archiving.tenancy.repository.PremiumPackageEventRepository;
 import com.dmc.archiving.tenancy.repository.TenantOverageBudgetRepository;
 import com.dmc.archiving.tenancy.service.TenancyService;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -31,10 +30,10 @@ class PremiumOverageGuardTest {
 
     private static final Long TENANT = 100L;
 
-    private final PremiumPackageUsageRepository usage = mock(PremiumPackageUsageRepository.class);
+    private final PremiumPackageEventRepository events = mock(PremiumPackageEventRepository.class);
     private final TenantOverageBudgetRepository budgets = mock(TenantOverageBudgetRepository.class);
     private final TenancyService tenancyService = mock(TenancyService.class);
-    private final PremiumOverageGuard guard = new PremiumOverageGuard(usage, budgets, tenancyService);
+    private final PremiumOverageGuard guard = new PremiumOverageGuard(events, budgets, tenancyService);
 
     private void plan(TenantPlan plan) {
         Tenant t = new Tenant();
@@ -43,13 +42,9 @@ class PremiumOverageGuardTest {
         when(tenancyService.getTenantById(TENANT)).thenReturn(t);
     }
 
-    private void currentPremiumCount(long aips, long dips) {
-        lenient().when(usage.countBillablePremiumAips(eqTenant(), any())).thenReturn(aips);
-        lenient().when(usage.countBillablePremiumDips(eqTenant(), any())).thenReturn(dips);
-    }
-
-    private static Long eqTenant() {
-        return org.mockito.ArgumentMatchers.eq(TENANT);
+    /** Current lifetime premium count from the append-only ledger. */
+    private void currentPremiumCount(long total) {
+        lenient().when(events.countByTenantId(TENANT)).thenReturn(total);
     }
 
     private void budget(Long premiumOverageLimit, boolean optIn) {
@@ -65,13 +60,13 @@ class PremiumOverageGuardTest {
         plan(TenantPlan.ENTERPRISE);
 
         assertThatCode(() -> guard.checkCanCreatePremiumPackage(TENANT)).doesNotThrowAnyException();
-        verify(usage, never()).countBillablePremiumAips(anyLong(), any());
+        verify(events, never()).countByTenantId(anyLong());
     }
 
     @Test
     void freeHardStopsAtIncludedZero() {
         plan(TenantPlan.FREE);
-        currentPremiumCount(0, 0);
+        currentPremiumCount(0);
 
         assertThatThrownBy(() -> guard.checkCanCreatePremiumPackage(TENANT))
                 .isInstanceOf(OverageSpendCapException.class)
@@ -81,7 +76,7 @@ class PremiumOverageGuardTest {
     @Test
     void professionalWithinIncludedBundleIsAllowed() {
         plan(TenantPlan.PROFESSIONAL); // included 100
-        currentPremiumCount(50, 0);
+        currentPremiumCount(50);
         when(budgets.findByTenantId(TENANT)).thenReturn(Optional.empty());
 
         assertThatCode(() -> guard.checkCanCreatePremiumPackage(TENANT)).doesNotThrowAnyException();
@@ -90,7 +85,7 @@ class PremiumOverageGuardTest {
     @Test
     void professionalWithinOverageBudgetIsAllowed() {
         plan(TenantPlan.PROFESSIONAL); // included 100, default premium overage 1000
-        currentPremiumCount(600, 300);  // current 900 -> projected 901, overage 801 <= 1000
+        currentPremiumCount(900);  // current 900 -> projected 901, overage 801 <= 1000
         when(budgets.findByTenantId(TENANT)).thenReturn(Optional.empty());
 
         assertThatCode(() -> guard.checkCanCreatePremiumPackage(TENANT)).doesNotThrowAnyException();
@@ -99,7 +94,7 @@ class PremiumOverageGuardTest {
     @Test
     void professionalOverBudgetWithoutOptInIsBlocked() {
         plan(TenantPlan.PROFESSIONAL);
-        currentPremiumCount(1100, 0); // projected 1101, overage 1001 > 1000 default
+        currentPremiumCount(1100); // projected 1101, overage 1001 > 1000 default
         when(budgets.findByTenantId(TENANT)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> guard.checkCanCreatePremiumPackage(TENANT))
@@ -110,7 +105,7 @@ class PremiumOverageGuardTest {
     @Test
     void overBudgetWithOptInIsAllowed() {
         plan(TenantPlan.PROFESSIONAL);
-        currentPremiumCount(1100, 0);
+        currentPremiumCount(1100);
         budget(1000L, true); // opted in to accrue past the cap
 
         assertThatCode(() -> guard.checkCanCreatePremiumPackage(TENANT)).doesNotThrowAnyException();

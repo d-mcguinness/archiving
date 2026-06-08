@@ -1,37 +1,46 @@
 package com.dmc.archiving.tenancy.api;
 
+import com.dmc.archiving.tenancy.model.PremiumPackageEvent;
 import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.tenancy.model.TenantPlan;
-import com.dmc.archiving.tenancy.repository.PremiumPackageUsageRepository;
+import com.dmc.archiving.tenancy.repository.PremiumPackageEventRepository;
 import com.dmc.archiving.tenancy.repository.TenantOverageBudgetRepository;
 import com.dmc.archiving.tenancy.service.TenancyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 /**
- * Live soft spend cap for the premium-package overage rail (NOARK5/E-ARK
- * AIP + DIP). Mirrors the storage spend cap, but the count is the COMBINED
- * billable AIP+DIP total, read via {@link PremiumPackageUsageRepository} so the
- * check stays cycle-free across the aip/dip modules.
+ * Premium-package metering for the NOARK5/E-ARK AIP+DIP rail: the soft spend cap
+ * (overage guard), event recording, and the per-period billing count — all over
+ * the append-only {@link PremiumPackageEvent} ledger via
+ * {@link PremiumPackageEventRepository}.
+ *
+ * <p>Counting the ledger (immutable generation events) rather than live
+ * {@code aips}/{@code dips} rows makes the meter delete-proof: deleting a
+ * package cannot lower a billed counter, nor free a slot to evade the cap.
+ * Reading the ledger via the tenancy-owned repository also keeps the check
+ * cycle-free across the aip/dip modules.
  *
  * <p>Included-bundle and overage-budget defaults are provisional pending the
- * COGS/pricing validation; and the count is a cumulative total rather than a
- * billing-period rate — both noted for the pricing-period work.
+ * COGS/pricing validation; and the cap counts a cumulative lifetime total
+ * rather than a billing-period rate — noted for the pricing-period work.
  */
 @Component
 public class PremiumOverageGuard {
 
     private static final Logger log = LoggerFactory.getLogger(PremiumOverageGuard.class);
 
-    private final PremiumPackageUsageRepository usageRepository;
+    private final PremiumPackageEventRepository eventRepository;
     private final TenantOverageBudgetRepository budgetRepository;
     private final TenancyService tenancyService;
 
-    public PremiumOverageGuard(PremiumPackageUsageRepository usageRepository,
+    public PremiumOverageGuard(PremiumPackageEventRepository eventRepository,
                                TenantOverageBudgetRepository budgetRepository,
                                TenancyService tenancyService) {
-        this.usageRepository = usageRepository;
+        this.eventRepository = eventRepository;
         this.budgetRepository = budgetRepository;
         this.tenancyService = tenancyService;
     }
@@ -39,6 +48,27 @@ public class PremiumOverageGuard {
     /** True if the standard (by name) is a metered premium standard. */
     public boolean isPremiumStandard(String standardName) {
         return PremiumStandards.contains(standardName);
+    }
+
+    /**
+     * Append an immutable ledger event for a billable premium package that was
+     * just generated. Call from within the package-creating transaction (after
+     * the row is saved) so it rolls back with the package on failure. Callers
+     * must only invoke this for billable premium standards (see
+     * {@link #isPremiumStandard(String)}).
+     */
+    public void recordPremiumPackageGenerated(Long tenantId, String standardName, PremiumPackageType type) {
+        eventRepository.save(new PremiumPackageEvent(tenantId, type, standardName, LocalDateTime.now()));
+    }
+
+    /**
+     * Premium packages generated for the tenant within the half-open period
+     * {@code [start, end)} — the per-period billing flow. Reads the ledger, so a
+     * later delete cannot retroactively lower the period's billed count.
+     */
+    public long countGeneratedInPeriod(Long tenantId, LocalDateTime start, LocalDateTime end) {
+        return eventRepository.countByTenantIdAndGeneratedAtGreaterThanEqualAndGeneratedAtLessThan(
+                tenantId, start, end);
     }
 
     /**
@@ -62,8 +92,7 @@ public class PremiumOverageGuard {
         // Serialize concurrent premium creates for this tenant before counting.
         tenancyService.lockTenantForUpdate(tenantId);
 
-        long current = usageRepository.countBillablePremiumAips(tenantId, PremiumStandards.NAMES)
-                + usageRepository.countBillablePremiumDips(tenantId, PremiumStandards.NAMES);
+        long current = eventRepository.countByTenantId(tenantId);
         long projected = current + 1;
         if (projected <= included) {
             return; // within the included bundle
