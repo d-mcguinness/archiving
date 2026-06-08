@@ -1,7 +1,7 @@
 package com.dmc.archiving.document;
 
 import com.dmc.archiving.auth.api.AuthContext;
-import com.dmc.archiving.auth.api.AuthTokens;
+import com.dmc.archiving.auth.api.TokenSigner;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +23,12 @@ public class RestAuthInterceptor implements HandlerInterceptor {
 
     public static final String AUTH_CONTEXT = "authContext";
 
+    private final TokenSigner tokenSigner;
+
+    public RestAuthInterceptor(TokenSigner tokenSigner) {
+        this.tokenSigner = tokenSigner;
+    }
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
@@ -30,7 +36,7 @@ public class RestAuthInterceptor implements HandlerInterceptor {
         if (HttpMethod.OPTIONS.matches(request.getMethod())) {
             return true;
         }
-        AuthContext ctx = AuthTokens.parse(request.getHeader(HttpHeaders.AUTHORIZATION));
+        AuthContext ctx = tokenSigner.verify(request.getHeader(HttpHeaders.AUTHORIZATION));
         if (!ctx.isAuthenticated()) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
