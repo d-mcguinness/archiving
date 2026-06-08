@@ -64,9 +64,16 @@ public class UsageAggregationService {
     @Transactional
     public UsageSnapshot capture(Long tenantId, LocalDate period) {
         long storageBytes = documentService.getStorageBytesByTenant(tenantId);
-        long premiumPackages =
-                aipService.countByTenantAndStandards(tenantId, PREMIUM_STANDARDS)
-                        + dipService.countByTenantAndStandards(tenantId, PREMIUM_STANDARDS);
+
+        // Premium packages are a one-time generation event, so meter the FLOW
+        // for this period (packages generated within the day) rather than the
+        // cumulative lifetime total — otherwise $0.40 x snapshot would re-bill
+        // every package ever generated, every period.
+        LocalDateTime periodStart = period.atStartOfDay();
+        LocalDateTime periodEnd = period.plusDays(1).atStartOfDay();
+        long premiumGenerated =
+                aipService.countByTenantAndStandardsGeneratedIn(tenantId, PREMIUM_STANDARDS, periodStart, periodEnd)
+                        + dipService.countByTenantAndStandardsGeneratedIn(tenantId, PREMIUM_STANDARDS, periodStart, periodEnd);
         long seats = tenancyApi.countUsersInTenant(tenantId);
 
         UsageSnapshot snapshot = snapshotRepository
@@ -76,7 +83,7 @@ public class UsageAggregationService {
         snapshot.setTenantId(tenantId);
         snapshot.setPeriod(period);
         snapshot.setStorageBytes(storageBytes);
-        snapshot.setPremiumPackageCount(premiumPackages);
+        snapshot.setPremiumPackagesGenerated(premiumGenerated);
         snapshot.setSeatCount(seats);
         snapshot.setCapturedAt(LocalDateTime.now());
 

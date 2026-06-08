@@ -23,9 +23,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Verifies the usage aggregation composition (Risk 1d): one snapshot per tenant
- * per period, values pulled from the SQL-aggregate-backed service methods, and
- * idempotent upsert when re-run for the same period.
+ * Verifies the usage aggregation composition (Risk 1d / 3b-meter): one snapshot
+ * per tenant per period; premium is a per-period FLOW (packages generated in
+ * the day), not a cumulative total; idempotent upsert per period.
  */
 class UsageAggregationServiceTest {
 
@@ -45,20 +45,21 @@ class UsageAggregationServiceTest {
     }
 
     @Test
-    void captureAll_writesOneSnapshotPerTenant_withAggregatedValues() {
+    void captureAll_writesOneSnapshotPerTenant_withPerPeriodValues() {
         LocalDate period = LocalDate.of(2026, 6, 5);
         when(tenancyApi.getAllTenants()).thenReturn(List.of(tenant(1L), tenant(2L)));
 
-        // Tenant 1: 1000 bytes, 3 premium AIPs + 2 premium DIPs = 5, 4 seats.
+        // Tenant 1: 1000 stored bytes; 3 premium AIPs + 2 premium DIPs generated
+        // this period = 5; 4 seats.
         when(documentService.getStorageBytesByTenant(1L)).thenReturn(1000L);
-        when(aipService.countByTenantAndStandards(eq(1L), any())).thenReturn(3L);
-        when(dipService.countByTenantAndStandards(eq(1L), any())).thenReturn(2L);
+        when(aipService.countByTenantAndStandardsGeneratedIn(eq(1L), any(), any(), any())).thenReturn(3L);
+        when(dipService.countByTenantAndStandardsGeneratedIn(eq(1L), any(), any(), any())).thenReturn(2L);
         when(tenancyApi.countUsersInTenant(1L)).thenReturn(4L);
 
         // Tenant 2: empty.
         when(documentService.getStorageBytesByTenant(2L)).thenReturn(0L);
-        when(aipService.countByTenantAndStandards(eq(2L), any())).thenReturn(0L);
-        when(dipService.countByTenantAndStandards(eq(2L), any())).thenReturn(0L);
+        when(aipService.countByTenantAndStandardsGeneratedIn(eq(2L), any(), any(), any())).thenReturn(0L);
+        when(dipService.countByTenantAndStandardsGeneratedIn(eq(2L), any(), any(), any())).thenReturn(0L);
         when(tenancyApi.countUsersInTenant(2L)).thenReturn(1L);
 
         when(repo.findByTenantIdAndPeriod(anyLong(), eq(period))).thenReturn(Optional.empty());
@@ -72,9 +73,29 @@ class UsageAggregationServiceTest {
         UsageSnapshot t1 = snapshots.stream().filter(s -> s.getTenantId() == 1L).findFirst().orElseThrow();
         assertThat(t1.getPeriod()).isEqualTo(period);
         assertThat(t1.getStorageBytes()).isEqualTo(1000L);
-        assertThat(t1.getPremiumPackageCount()).isEqualTo(5L); // 3 AIP + 2 DIP
+        assertThat(t1.getPremiumPackagesGenerated()).isEqualTo(5L); // 3 AIP + 2 DIP this period
         assertThat(t1.getSeatCount()).isEqualTo(4L);
         assertThat(t1.getCapturedAt()).isNotNull();
+    }
+
+    @Test
+    void premiumIsZeroWhenNothingGeneratedThisPeriod_evenWithLifetimePackages() {
+        // The DoD: a tenant with no NEW premium generations in the period is
+        // billed $0 for premium that period, regardless of lifetime history.
+        LocalDate period = LocalDate.of(2026, 6, 5);
+        when(documentService.getStorageBytesByTenant(1L)).thenReturn(0L);
+        when(aipService.countByTenantAndStandardsGeneratedIn(eq(1L), any(), any(), any())).thenReturn(0L);
+        when(dipService.countByTenantAndStandardsGeneratedIn(eq(1L), any(), any(), any())).thenReturn(0L);
+        when(tenancyApi.countUsersInTenant(1L)).thenReturn(3L);
+        when(repo.findByTenantIdAndPeriod(1L, period)).thenReturn(Optional.empty());
+        when(repo.save(any(UsageSnapshot.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UsageSnapshot snapshot = service.capture(1L, period);
+
+        assertThat(snapshot.getPremiumPackagesGenerated()).isZero();
+        // The cumulative (lifetime) count method must NOT drive the billing meter.
+        verify(aipService, times(0)).countByTenantAndStandards(anyLong(), any());
+        verify(dipService, times(0)).countByTenantAndStandards(anyLong(), any());
     }
 
     @Test
@@ -87,8 +108,8 @@ class UsageAggregationServiceTest {
         existing.setStorageBytes(500L); // stale value to be overwritten
 
         when(documentService.getStorageBytesByTenant(1L)).thenReturn(2048L);
-        when(aipService.countByTenantAndStandards(eq(1L), any())).thenReturn(1L);
-        when(dipService.countByTenantAndStandards(eq(1L), any())).thenReturn(0L);
+        when(aipService.countByTenantAndStandardsGeneratedIn(eq(1L), any(), any(), any())).thenReturn(1L);
+        when(dipService.countByTenantAndStandardsGeneratedIn(eq(1L), any(), any(), any())).thenReturn(0L);
         when(tenancyApi.countUsersInTenant(1L)).thenReturn(7L);
         when(repo.findByTenantIdAndPeriod(1L, period)).thenReturn(Optional.of(existing));
         when(repo.save(any(UsageSnapshot.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -98,7 +119,7 @@ class UsageAggregationServiceTest {
         // Same row (id preserved), fresh values.
         assertThat(result.getId()).isEqualTo(99L);
         assertThat(result.getStorageBytes()).isEqualTo(2048L);
-        assertThat(result.getPremiumPackageCount()).isEqualTo(1L);
+        assertThat(result.getPremiumPackagesGenerated()).isEqualTo(1L);
         assertThat(result.getSeatCount()).isEqualTo(7L);
     }
 }

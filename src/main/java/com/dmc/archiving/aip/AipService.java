@@ -25,11 +25,14 @@ public class AipService {
     private final AipRepository aipRepository;
     private final UserApi userApi;
     private final AipGeneratorFactory aipGeneratorFactory;
+    private final com.dmc.archiving.tenancy.api.PremiumOverageGuard premiumOverageGuard;
 
-    public AipService(AipRepository aipRepository, UserApi userApi, AipGeneratorFactory aipGeneratorFactory) {
+    public AipService(AipRepository aipRepository, UserApi userApi, AipGeneratorFactory aipGeneratorFactory,
+                      com.dmc.archiving.tenancy.api.PremiumOverageGuard premiumOverageGuard) {
         this.aipRepository = aipRepository;
         this.userApi = userApi;
         this.aipGeneratorFactory = aipGeneratorFactory;
+        this.premiumOverageGuard = premiumOverageGuard;
     }
 
     @Transactional
@@ -47,6 +50,13 @@ public class AipService {
 
         Long ownerId = input.getOwnerId() != null ? input.getOwnerId() : input.getUserId();
         Long tenantId = input.getTenantId() != null ? input.getTenantId() : ownerId;
+
+        // Premium-package spend cap, enforced inside this (write) transaction so
+        // the count and the insert are atomic under a per-tenant lock.
+        if (input.isBillable() && input.getStandard() != null
+                && premiumOverageGuard.isPremiumStandard(input.getStandard().name())) {
+            premiumOverageGuard.checkCanCreatePremiumPackage(tenantId);
+        }
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -140,5 +150,13 @@ public class AipService {
     public long countByTenantAndStandards(Long tenantId,
                                           java.util.Collection<com.dmc.archiving.archive.model.ArchiveStandard> standards) {
         return aipRepository.countByTenantIdAndStandardInAndBillableTrue(tenantId, standards);
+    }
+
+    /** Billable premium AIPs GENERATED in the half-open [start, end) — per-period billing. */
+    public long countByTenantAndStandardsGeneratedIn(
+            Long tenantId, java.util.Collection<com.dmc.archiving.archive.model.ArchiveStandard> standards,
+            java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return aipRepository.countByTenantIdAndStandardInAndBillableTrueAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(
+                tenantId, standards, start, end);
     }
 }

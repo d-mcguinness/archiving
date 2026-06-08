@@ -40,12 +40,18 @@ public class UsageSnapshot {
     @Column(name = "period", nullable = false)
     private LocalDate period;
 
+    /** Point-in-time stock: billable bytes stored at capture time (a GB-month rate input). */
     @Column(name = "storage_bytes", nullable = false)
     private long storageBytes;
 
-    /** Count of premium-standard (NOARK5/E-ARK) AIP + DIP packages. */
-    @Column(name = "premium_package_count", nullable = false)
-    private long premiumPackageCount;
+    /**
+     * Per-period FLOW: premium-standard (NOARK5/E-ARK) AIP + DIP packages
+     * GENERATED during this period (day). NOT a cumulative total — billing sums
+     * these across the billing window, so a one-time generation is billed once
+     * and never re-billed.
+     */
+    @Column(name = "premium_packages_generated", nullable = false)
+    private long premiumPackagesGenerated;
 
     @Column(name = "seat_count", nullable = false)
     private long seatCount;
