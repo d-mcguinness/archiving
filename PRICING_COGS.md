@@ -48,15 +48,16 @@ Noark 5 / E-ARK conformance and **never present it as cost-recovery**.
 - **Storage rail — OK.** Point-in-time monthly stock; bill $0.18/GB-month on the
   snapshot. *Refinement (not a blocker):* derive time-weighted GB-month by
   averaging the daily `UsageSnapshot` rows for mid-month churn fairness.
-- **Premium rail — MUST FIX (billing-integrity defect).** The meter is a
-  **cumulative lifetime `COUNT(*)`** with no period filter
-  (`PremiumPackageUsageRepository.java:23-31`), re-read every period
-  (`UsageAggregationService.java:67-69`) and flagged in code
-  (`PremiumOverageGuard.java:21-22`). Billing `$0.40 × snapshot` would
-  **re-charge every package ever generated, every month**. Premium generation is
-  a one-time event → bill as a **per-period delta** (new packages this period),
-  via a creation-timestamp/period filter or a period-over-period delta. Tracked
-  as a follow-up; do not enable $0.40 billing until fixed.
+- **Premium rail — FIXED (per-period flow).** The billing meter now counts
+  premium packages **generated within the period** (half-open `[start, end)` on
+  `createdAt`): `UsageSnapshot.premiumPackagesGenerated` is populated by
+  `UsageAggregationService.capture` via
+  `Aip/DipService.countByTenantAndStandardsGeneratedIn`. Billing sums these
+  across the window, so a one-time generation is billed once and never
+  re-billed. A tenant with no new generations this period is billed $0 for
+  premium (tested). The **cumulative** count
+  (`countByTenantIdAndStandardInAndBillableTrue`) remains, but only drives the
+  **lifetime spend-cap guard** (`PremiumOverageGuard`), not the bill.
 
 The included-bundle / overage-cap **defaults in code are provisional**
 (`PremiumOverageGuard` 122-138, `TenancyApiImpl.defaultStorageOverageBytes`

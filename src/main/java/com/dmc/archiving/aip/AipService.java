@@ -141,4 +141,12 @@ public class AipService {
                                           java.util.Collection<com.dmc.archiving.archive.model.ArchiveStandard> standards) {
         return aipRepository.countByTenantIdAndStandardInAndBillableTrue(tenantId, standards);
     }
+
+    /** Billable premium AIPs GENERATED in the half-open [start, end) — per-period billing. */
+    public long countByTenantAndStandardsGeneratedIn(
+            Long tenantId, java.util.Collection<com.dmc.archiving.archive.model.ArchiveStandard> standards,
+            java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return aipRepository.countByTenantIdAndStandardInAndBillableTrueAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(
+                tenantId, standards, start, end);
+    }
 }

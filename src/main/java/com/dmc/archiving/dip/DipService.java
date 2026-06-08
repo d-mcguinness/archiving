@@ -141,4 +141,12 @@ public class DipService {
                                           java.util.Collection<com.dmc.archiving.archive.model.ArchiveStandard> standards) {
         return dipRepository.countByTenantIdAndStandardInAndBillableTrue(tenantId, standards);
     }
+
+    /** Billable premium DIPs GENERATED in the half-open [start, end) — per-period billing. */
+    public long countByTenantAndStandardsGeneratedIn(
+            Long tenantId, java.util.Collection<com.dmc.archiving.archive.model.ArchiveStandard> standards,
+            java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return dipRepository.countByTenantIdAndStandardInAndBillableTrueAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(
+                tenantId, standards, start, end);
+    }
 }
