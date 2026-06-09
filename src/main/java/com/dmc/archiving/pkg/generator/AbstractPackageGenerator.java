@@ -41,6 +41,11 @@ public abstract class AbstractPackageGenerator<P, S> {
             S snapshot = toSnapshot(pkg);
             PackagePayload payload = buildPayload(snapshot);
             String fileKey = packageType() + "s/" + packageId(pkg) + "/" + payload.filename();
+            // Intentional (task #15): the generated artifact is uploaded to storage
+            // but NOT recorded as a billable Document, so its bytes never enter the
+            // storage meter. The per-package generation fee is all-in and covers the
+            // artifact's storage; metering it too would double-charge the same bytes.
+            // See PRICING_COGS.md §4 before changing this.
             return cloudStorageService.uploadBytes(payload.bytes(), fileKey, payload.contentType());
         } catch (Exception e) {
             log.error("Failed to generate {} package for id {}: {}",
