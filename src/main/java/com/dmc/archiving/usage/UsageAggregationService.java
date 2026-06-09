@@ -1,10 +1,7 @@
 package com.dmc.archiving.usage;
 
-import com.dmc.archiving.aip.AipService;
-import com.dmc.archiving.archive.model.ArchiveStandard;
-import com.dmc.archiving.dip.DipService;
 import com.dmc.archiving.document.DocumentService;
-import com.dmc.archiving.tenancy.api.PremiumStandards;
+import com.dmc.archiving.tenancy.api.PremiumOverageGuard;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.usage.model.UsageSnapshot;
@@ -17,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Computes per-tenant usage from SQL aggregates (never in-memory collection
@@ -29,31 +25,18 @@ public class UsageAggregationService {
 
     private static final Logger log = LoggerFactory.getLogger(UsageAggregationService.class);
 
-    /**
-     * Premium standards whose AIP/DIP generation is metered, derived (enum-typed,
-     * for the JPA aggregate queries) from the canonical billing-side name set in
-     * {@link PremiumStandards} — the single source of truth.
-     */
-    static final Set<ArchiveStandard> PREMIUM_STANDARDS =
-            PremiumStandards.NAMES.stream()
-                    .map(ArchiveStandard::valueOf)
-                    .collect(java.util.stream.Collectors.toUnmodifiableSet());
-
     private final TenancyApi tenancyApi;
     private final DocumentService documentService;
-    private final AipService aipService;
-    private final DipService dipService;
+    private final PremiumOverageGuard premiumOverageGuard;
     private final UsageSnapshotRepository snapshotRepository;
 
     public UsageAggregationService(TenancyApi tenancyApi,
                                    DocumentService documentService,
-                                   AipService aipService,
-                                   DipService dipService,
+                                   PremiumOverageGuard premiumOverageGuard,
                                    UsageSnapshotRepository snapshotRepository) {
         this.tenancyApi = tenancyApi;
         this.documentService = documentService;
-        this.aipService = aipService;
-        this.dipService = dipService;
+        this.premiumOverageGuard = premiumOverageGuard;
         this.snapshotRepository = snapshotRepository;
     }
 
@@ -75,12 +58,11 @@ public class UsageAggregationService {
         // Premium packages are a one-time generation event, so meter the FLOW
         // for this period (packages generated within the day) rather than the
         // cumulative lifetime total — otherwise $0.40 x snapshot would re-bill
-        // every package ever generated, every period.
+        // every package ever generated, every period. Read from the append-only
+        // event ledger so a later delete cannot retroactively lower the count.
         LocalDateTime periodStart = period.atStartOfDay();
         LocalDateTime periodEnd = period.plusDays(1).atStartOfDay();
-        long premiumGenerated =
-                aipService.countByTenantAndStandardsGeneratedIn(tenantId, PREMIUM_STANDARDS, periodStart, periodEnd)
-                        + dipService.countByTenantAndStandardsGeneratedIn(tenantId, PREMIUM_STANDARDS, periodStart, periodEnd);
+        long premiumGenerated = premiumOverageGuard.countGeneratedInPeriod(tenantId, periodStart, periodEnd);
         long seats = tenancyApi.countUsersInTenant(tenantId);
 
         UsageSnapshot snapshot = snapshotRepository

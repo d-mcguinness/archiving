@@ -1,8 +1,12 @@
 package com.dmc.archiving.document;
 
+import com.dmc.archiving.auth.api.AccessDeniedException;
+import com.dmc.archiving.auth.api.AuthContext;
+import com.dmc.archiving.document.model.Document;
 import com.dmc.archiving.storage.CloudStorageService;
 import com.dmc.archiving.storage.StorageException;
-import com.dmc.archiving.storage.UploadResult;
+import com.dmc.archiving.tenancy.api.BillingTenantResolver;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -13,92 +17,107 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Raw file upload/download endpoints. Uploads now route through the metered
+ * {@link DocumentService} (Review metering-integrity): they create a Document
+ * row so the bytes are quota-checked, file-size-capped, and counted toward
+ * storage billing — closing the gap where {@code /api/upload(/user)} wrote
+ * straight to cloud storage, untracked and unbilled.
+ *
+ * <p>Identity is derived from the authenticated caller (stashed by
+ * {@link RestAuthInterceptor}), never from request params, so the uploader and
+ * billing tenant cannot be forged. ADMIN/operator uploads are not billed and
+ * carry no tenant; a non-admin caller's single tenant is resolved via
+ * {@link BillingTenantResolver}.
+ */
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = {"http://localhost:3001", "http://localhost:5173", "http://localhost:4173"})
 public class FileUploadController {
 
     private static final Logger log = LoggerFactory.getLogger(FileUploadController.class);
-    private final CloudStorageService cloudStorageService;
 
-    public FileUploadController(CloudStorageService cloudStorageService) {
+    private final CloudStorageService cloudStorageService;
+    private final DocumentService documentService;
+    private final BillingTenantResolver billingTenantResolver;
+
+    public FileUploadController(CloudStorageService cloudStorageService,
+                                DocumentService documentService,
+                                BillingTenantResolver billingTenantResolver) {
         this.cloudStorageService = cloudStorageService;
+        this.documentService = documentService;
+        this.billingTenantResolver = billingTenantResolver;
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-            UploadResult result = cloudStorageService.uploadFile(file, null);
-
-            log.info("File uploaded successfully to cloud: {} (original: {})",
-                    result.getFileKey(), result.getOriginalFilename());
-
-            response.put("success", true);
-            response.put("message", "File uploaded successfully to cloud storage!");
-            response.put("fileKey", result.getFileKey());
-            response.put("fileUrl", result.getFileUrl());
-            response.put("originalFilename", result.getOriginalFilename());
-            response.put("size", result.getFileSize());
-            response.put("contentType", result.getContentType());
-            response.put("uploadTime", result.getUploadTime());
-
-            return ResponseEntity.ok(response);
-
-        } catch (StorageException e) {
-            log.error("Failed to upload file: {}", e.getMessage(), e);
-            response.put("success", false);
-            response.put("message", "Failed to upload file: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        } catch (Exception e) {
-            log.error("Unexpected error during file upload: {}", e.getMessage(), e);
-            response.put("success", false);
-            response.put("message", "An unexpected error occurred");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file,
+                                        HttpServletRequest request) {
+        return meteredUpload(file, request);
     }
 
     @PostMapping("/upload/user")
-    public ResponseEntity<?> uploadFileForUser(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("userId") Long userId) {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<?> uploadFileForUser(@RequestParam("file") MultipartFile file,
+                                               @RequestParam("userId") Long userId,
+                                               HttpServletRequest request) {
+        // userId is retained for request-shape compatibility but is NOT trusted
+        // for attribution: the uploader and billing tenant come from the token.
+        if (userId == null || userId <= 0) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "Invalid user ID"));
+        }
+        return meteredUpload(file, request);
+    }
+
+    /** Route an upload through the metered DocumentService and shape a backward-compatible response. */
+    private ResponseEntity<?> meteredUpload(MultipartFile file, HttpServletRequest request) {
+        AuthContext ctx = caller(request);
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "File is empty"));
+        }
+
+        // ADMIN/operator uploads are not billed and carry no tenant (and ADMIN has
+        // no single tenant to default to); every other caller's tenant is resolved
+        // and the upload is billable.
+        Long tenantId;
+        try {
+            tenantId = ctx.isAdmin() ? null : billingTenantResolver.resolve(ctx, null);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        }
 
         try {
-            if (userId == null || userId <= 0) {
-                response.put("success", false);
-                response.put("message", "Invalid user ID");
-                return ResponseEntity.badRequest().body(response);
-            }
+            Document document = documentService.uploadDocument(
+                    file, ctx.userId(), tenantId, null, null, !ctx.isAdmin());
 
-            UploadResult result = cloudStorageService.uploadFile(file, userId);
+            log.info("File uploaded via metered path: document {} for user {}, tenant {}",
+                    document.getId(), ctx.userId(), tenantId);
 
-            log.info("File uploaded successfully to cloud for user {}: {} (original: {})",
-                    userId, result.getFileKey(), result.getOriginalFilename());
-
+            Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "File uploaded successfully to cloud storage!");
-            response.put("fileKey", result.getFileKey());
-            response.put("fileUrl", result.getFileUrl());
-            response.put("originalFilename", result.getOriginalFilename());
-            response.put("userId", userId);
-            response.put("size", result.getFileSize());
-            response.put("contentType", result.getContentType());
-            response.put("uploadTime", result.getUploadTime());
-
+            response.put("documentId", document.getId());
+            response.put("fileKey", document.getFileKey());
+            response.put("fileUrl", document.getFileUrl());
+            response.put("originalFilename", document.getFileName());
+            response.put("size", document.getFileSize());
+            response.put("contentType", document.getContentType());
             return ResponseEntity.ok(response);
 
-        } catch (StorageException e) {
-            log.error("Failed to upload file for user {}: {}", userId, e.getMessage(), e);
-            response.put("success", false);
-            response.put("message", "Failed to upload file: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        } catch (FileTooLargeException e) {
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        } catch (StorageQuotaExceededException e) {
+            return ResponseEntity.status(HttpStatus.INSUFFICIENT_STORAGE)
+                    .body(Map.of("success", false, "message", e.getMessage()));
+        } catch (SpendCapExceededException e) {
+            return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
+                    .body(Map.of("success", false, "message", e.getMessage()));
         } catch (Exception e) {
-            log.error("Unexpected error during file upload for user {}: {}", userId, e.getMessage(), e);
-            response.put("success", false);
-            response.put("message", "An unexpected error occurred");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            log.error("Failed to upload file: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "Failed to upload file: " + e.getMessage()));
         }
     }
 
@@ -133,5 +152,11 @@ public class FileUploadController {
         });
 
         return ResponseEntity.ok(info);
+    }
+
+    /** The authenticated caller, stashed by RestAuthInterceptor (auth is enforced there). */
+    private AuthContext caller(HttpServletRequest request) {
+        AuthContext ctx = (AuthContext) request.getAttribute(RestAuthInterceptor.AUTH_CONTEXT);
+        return ctx != null ? ctx : AuthContext.ANONYMOUS;
     }
 }

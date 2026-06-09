@@ -8,6 +8,7 @@ import com.dmc.archiving.aip.generator.AipGeneratorFactory;
 import com.dmc.archiving.aip.repository.AipRepository;
 import com.dmc.archiving.archive.element.Element;
 import com.dmc.archiving.archive.element.field.Field;
+import com.dmc.archiving.tenancy.api.PremiumPackageType;
 import com.dmc.archiving.user.model.User;
 import com.dmc.archiving.user.api.UserApi;
 import org.jspecify.annotations.NonNull;
@@ -57,10 +58,13 @@ public class AipService {
         }
         Long tenantId = input.getTenantId();
 
-        // Premium-package spend cap, enforced inside this (write) transaction so
-        // the count and the insert are atomic under a per-tenant lock.
-        if (input.isBillable() && input.getStandard() != null
-                && premiumOverageGuard.isPremiumStandard(input.getStandard().name())) {
+        // A billable premium-standard generation is metered: cap-checked before
+        // the insert and recorded to the append-only ledger after — both inside
+        // this (write) transaction, under a per-tenant lock, so the count and
+        // the insert are atomic and a rollback drops the ledger event too.
+        boolean meterPremium = input.isBillable() && input.getStandard() != null
+                && premiumOverageGuard.isPremiumStandard(input.getStandard().name());
+        if (meterPremium) {
             premiumOverageGuard.checkCanCreatePremiumPackage(tenantId);
         }
 
@@ -100,7 +104,12 @@ public class AipService {
 
         aip.setRootElement(rootElement);
 
-        return aipRepository.save(aip);
+        Aip saved = aipRepository.save(aip);
+        if (meterPremium) {
+            premiumOverageGuard.recordPremiumPackageGenerated(
+                    tenantId, input.getStandard().name(), PremiumPackageType.AIP);
+        }
+        return saved;
     }
 
     private static @NonNull Element getRootElement(CreateAipInput input, LocalDateTime now) {
@@ -147,22 +156,5 @@ public class AipService {
         }
         aipRepository.deleteById(id);
         return true;
-    }
-
-    /**
-     * Count AIPs for a tenant whose standard is in the given set
-     * (SQL aggregate, for usage metering).
-     */
-    public long countByTenantAndStandards(Long tenantId,
-                                          java.util.Collection<com.dmc.archiving.archive.model.ArchiveStandard> standards) {
-        return aipRepository.countByTenantIdAndStandardInAndBillableTrue(tenantId, standards);
-    }
-
-    /** Billable premium AIPs GENERATED in the half-open [start, end) — per-period billing. */
-    public long countByTenantAndStandardsGeneratedIn(
-            Long tenantId, java.util.Collection<com.dmc.archiving.archive.model.ArchiveStandard> standards,
-            java.time.LocalDateTime start, java.time.LocalDateTime end) {
-        return aipRepository.countByTenantIdAndStandardInAndBillableTrueAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(
-                tenantId, standards, start, end);
     }
 }
