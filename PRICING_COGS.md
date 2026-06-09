@@ -63,8 +63,32 @@ The included-bundle / overage-cap **defaults in code are provisional**
 (`PremiumOverageGuard` 122-138, `TenancyApiImpl.defaultStorageOverageBytes`
 120-123) — ratify under COGS sign-off; keep rates in the billing layer.
 
-## 4. Open question
+## 4. Resolved: package-generation bytes are NOT billable storage (task #15)
 
-Confirm whether package-generation bytes **also** count toward billable storage.
-If yes, a tenant pays $0.40 to generate **and** $0.18/GB-month to store the same
-bytes — verify that is intended, not double-counting (relates to task #15).
+**Decision: NO.** A generated AIP/DIP artifact does **not** count toward the
+tenant's billable storage; the **$0.40/package** generation fee is all-in and
+covers the artifact's whole lifecycle, including its storage.
+
+Rationale:
+
+- **No double-charge.** Billing both $0.40/pkg *and* $0.18/GB-month for the same
+  bytes would charge the same object twice. The generation fee already carries a
+  ~71,000× margin over marginal cost, so the artifact's storage COGS is absorbed.
+- **Negligible COGS.** Generated artifacts are NOARK 5.5 / E-ARK **metadata
+  manifests** (the serialized package descriptor), typically KBs–low MBs. At
+  $0.18/GB-month a 10 MB manifest is ~$0.0018/month — not worth a second meter or
+  the customer confusion of a storage line item appearing after a generation.
+- **No duplication of content.** The archived *content* (the actual documents)
+  are separate `Document` uploads that **are** already metered. The manifest is
+  not a copy of that content, so it is not "missing" revenue.
+- **Clean rails.** Storage metering (`SUM(Document.fileSize)` over billable
+  documents) stays "user-uploaded content"; premium generation is its own
+  per-event rail. The two do not overlap.
+
+Mechanically this needs no billing change: `AbstractPackageGenerator.generate`
+uploads the artifact via `CloudStorageService.uploadBytes` and creates **no**
+`Document` row, so the bytes never enter the storage meter. That is intentional
+and is noted at the upload seam so it is not "fixed" by accident.
+
+If a future plan wants to recover artifact storage COGS, prefer raising the
+per-package fee over adding a second meter on the same bytes.
