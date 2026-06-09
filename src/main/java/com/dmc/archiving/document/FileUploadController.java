@@ -6,6 +6,7 @@ import com.dmc.archiving.document.model.Document;
 import com.dmc.archiving.storage.CloudStorageService;
 import com.dmc.archiving.storage.StorageException;
 import com.dmc.archiving.tenancy.api.BillingTenantResolver;
+import com.dmc.archiving.tenancy.api.TenancyApi;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,13 +41,16 @@ public class FileUploadController {
     private final CloudStorageService cloudStorageService;
     private final DocumentService documentService;
     private final BillingTenantResolver billingTenantResolver;
+    private final TenancyApi tenancyApi;
 
     public FileUploadController(CloudStorageService cloudStorageService,
                                 DocumentService documentService,
-                                BillingTenantResolver billingTenantResolver) {
+                                BillingTenantResolver billingTenantResolver,
+                                TenancyApi tenancyApi) {
         this.cloudStorageService = cloudStorageService;
         this.documentService = documentService;
         this.billingTenantResolver = billingTenantResolver;
+        this.tenancyApi = tenancyApi;
     }
 
     @PostMapping("/upload")
@@ -122,7 +126,20 @@ public class FileUploadController {
     }
 
     @GetMapping("/download/{fileKey}")
-    public ResponseEntity<?> downloadFile(@PathVariable String fileKey) {
+    public ResponseEntity<?> downloadFile(@PathVariable String fileKey, HttpServletRequest request) {
+        // Tenant-ownership: only presign keys that map to a tracked document the
+        // caller may access. Without this, any authenticated user could download
+        // any object by its (guessable) key — a cross-tenant IDOR.
+        Document document = documentService.getDocumentByFileKey(fileKey).orElse(null);
+        if (document == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("success", false, "message", "File not found"));
+        }
+        if (!canAccess(caller(request), document.getTenantId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("success", false, "message", "Access denied: not a member of the file's tenant"));
+        }
+
         try {
             String presignedUrl = cloudStorageService.getPresignedUrl(fileKey, 60);
 
@@ -158,5 +175,10 @@ public class FileUploadController {
     private AuthContext caller(HttpServletRequest request) {
         AuthContext ctx = (AuthContext) request.getAttribute(RestAuthInterceptor.AUTH_CONTEXT);
         return ctx != null ? ctx : AuthContext.ANONYMOUS;
+    }
+
+    /** ADMIN may access any tenant's files; others must be a member of the file's tenant. */
+    private boolean canAccess(AuthContext ctx, Long tenantId) {
+        return ctx.isAdmin() || (tenantId != null && tenancyApi.isUserInTenant(ctx.userId(), tenantId));
     }
 }

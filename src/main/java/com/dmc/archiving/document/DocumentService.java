@@ -152,6 +152,14 @@ public class DocumentService {
     }
 
     /**
+     * Get document by its storage file key (for tenant-ownership checks on raw
+     * presigned-URL downloads). Empty when the key maps to no tracked document.
+     */
+    public Optional<Document> getDocumentByFileKey(String fileKey) {
+        return Optional.ofNullable(documentRepository.findByFileKey(fileKey));
+    }
+
+    /**
      * Update document
      */
     @Transactional
