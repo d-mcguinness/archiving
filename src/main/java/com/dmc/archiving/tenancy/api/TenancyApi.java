@@ -22,10 +22,18 @@ public interface TenancyApi {
 
     long countUsersInTenant(Long tenantId);
 
-    /** Storage allotment for the tenant's plan in bytes; -1 means unlimited. */
+    /**
+     * Storage allotment for the tenant's plan in bytes; -1 means unlimited.
+     * Fails closed: a tenant with missing settings falls back to its plan's
+     * default allotment (ENTERPRISE stays unlimited) rather than unlimited.
+     */
     long getStorageLimitBytes(Long tenantId);
 
-    /** Max number of archives for the tenant's plan; -1 means unlimited. */
+    /**
+     * Max number of archives for the tenant's plan; -1 means unlimited.
+     * Fails closed on missing settings the same way as
+     * {@link #getStorageLimitBytes(Long)}.
+     */
     int getArchiveLimit(Long tenantId);
 
     /**
@@ -58,10 +66,4 @@ public interface TenancyApi {
      * hard stop at the allotment (FREE). Applies to storage, archives and seats.
      */
     boolean isOverageAllowed(Long tenantId);
-
-    /** @deprecated use {@link #isOverageAllowed(Long)} — kept for the storage call site. */
-    @Deprecated
-    default boolean isStorageOverageAllowed(Long tenantId) {
-        return isOverageAllowed(tenantId);
-    }
 }

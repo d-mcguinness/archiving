@@ -1,9 +1,9 @@
-package com.dmc.archiving.aip;
+package com.dmc.archiving.dip;
 
-import com.dmc.archiving.aip.generator.AipGeneratorFactory;
-import com.dmc.archiving.aip.input.CreateAipInput;
-import com.dmc.archiving.aip.model.Aip;
-import com.dmc.archiving.aip.repository.AipRepository;
+import com.dmc.archiving.dip.generator.DipGeneratorFactory;
+import com.dmc.archiving.dip.input.CreateDipInput;
+import com.dmc.archiving.dip.model.Dip;
+import com.dmc.archiving.dip.repository.DipRepository;
 import com.dmc.archiving.archive.model.ArchiveStandard;
 import com.dmc.archiving.tenancy.api.OverageSpendCapException;
 import com.dmc.archiving.tenancy.api.PremiumOverageGuard;
@@ -24,23 +24,24 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Verifies the premium spend-cap check runs INSIDE createAip's transaction
- * (Review H5): a billable premium create is gated by the guard (and blocked
- * before the insert when over cap); non-premium and operator (non-billable)
- * creates skip the guard.
+ * Verifies the premium spend-cap check runs INSIDE createDip's transaction
+ * (Review H5/M9 — the DIP side was previously untested): a billable premium
+ * create is gated by the guard (and blocked before the insert when over cap);
+ * non-premium and operator (non-billable) creates skip the guard; and a null
+ * tenantId is rejected rather than billed to the owner.
  */
-class AipServicePremiumCapTest {
+class DipServicePremiumCapTest {
 
     private static final Long TENANT = 100L;
 
-    private final AipRepository repo = mock(AipRepository.class);
+    private final DipRepository repo = mock(DipRepository.class);
     private final UserApi userApi = mock(UserApi.class);
     private final PremiumOverageGuard guard = mock(PremiumOverageGuard.class);
-    private final AipService service =
-            new AipService(repo, userApi, mock(AipGeneratorFactory.class), guard);
+    private final DipService service =
+            new DipService(repo, userApi, mock(DipGeneratorFactory.class), guard);
 
-    private CreateAipInput input(ArchiveStandard standard, boolean billable) {
-        CreateAipInput in = new CreateAipInput();
+    private CreateDipInput input(ArchiveStandard standard, boolean billable) {
+        CreateDipInput in = new CreateDipInput();
         in.setUserId(2L);
         in.setTenantId(TENANT);
         in.setTitle("pkg");
@@ -51,7 +52,7 @@ class AipServicePremiumCapTest {
 
     private void stubUserAndSave() {
         when(userApi.getUserById(2L)).thenReturn(Optional.of(new User()));
-        when(repo.save(any(Aip.class))).thenAnswer(i -> i.getArgument(0));
+        when(repo.save(any(Dip.class))).thenAnswer(i -> i.getArgument(0));
     }
 
     @Test
@@ -61,7 +62,7 @@ class AipServicePremiumCapTest {
         doThrow(new OverageSpendCapException("over cap"))
                 .when(guard).checkCanCreatePremiumPackage(TENANT);
 
-        assertThatThrownBy(() -> service.createAip(input(ArchiveStandard.NOARK5, true)))
+        assertThatThrownBy(() -> service.createDip(input(ArchiveStandard.NOARK5, true)))
                 .isInstanceOf(OverageSpendCapException.class);
 
         verify(guard).checkCanCreatePremiumPackage(TENANT);
@@ -73,11 +74,11 @@ class AipServicePremiumCapTest {
         when(guard.isPremiumStandard("NOARK5")).thenReturn(true); // guard allows (no throw)
         stubUserAndSave();
 
-        assertThatCode(() -> service.createAip(input(ArchiveStandard.NOARK5, true)))
+        assertThatCode(() -> service.createDip(input(ArchiveStandard.NOARK5, true)))
                 .doesNotThrowAnyException();
 
         verify(guard).checkCanCreatePremiumPackage(TENANT);
-        verify(repo).save(any(Aip.class));
+        verify(repo).save(any(Dip.class));
     }
 
     @Test
@@ -85,29 +86,29 @@ class AipServicePremiumCapTest {
         when(guard.isPremiumStandard("OAIS")).thenReturn(false);
         stubUserAndSave();
 
-        service.createAip(input(ArchiveStandard.OAIS, true));
+        service.createDip(input(ArchiveStandard.OAIS, true));
 
         verify(guard, never()).checkCanCreatePremiumPackage(anyLong());
-        verify(repo).save(any(Aip.class));
+        verify(repo).save(any(Dip.class));
     }
 
     @Test
     void operatorCreatedPremiumSkipsTheGuard() {
         stubUserAndSave();
 
-        service.createAip(input(ArchiveStandard.NOARK5, false)); // billable=false (ADMIN)
+        service.createDip(input(ArchiveStandard.NOARK5, false)); // billable=false (ADMIN)
 
         verify(guard, never()).checkCanCreatePremiumPackage(anyLong());
-        verify(repo).save(any(Aip.class));
+        verify(repo).save(any(Dip.class));
     }
 
     @Test
     void nullTenantIdIsRejected_neverBilledToTheOwner() {
-        when(userApi.getUserById(2L)).thenReturn(Optional.of(new User())); // user lookup precedes the check
-        CreateAipInput in = input(ArchiveStandard.NOARK5, true);
+        when(userApi.getUserById(2L)).thenReturn(Optional.of(new User()));
+        CreateDipInput in = input(ArchiveStandard.NOARK5, true);
         in.setTenantId(null); // no resolved billing tenant — must fail, not fall back to ownerId
 
-        assertThatThrownBy(() -> service.createAip(in))
+        assertThatThrownBy(() -> service.createDip(in))
                 .isInstanceOf(IllegalArgumentException.class);
 
         verify(guard, never()).checkCanCreatePremiumPackage(anyLong());

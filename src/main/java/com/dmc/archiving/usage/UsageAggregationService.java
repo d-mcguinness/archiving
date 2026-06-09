@@ -4,6 +4,7 @@ import com.dmc.archiving.aip.AipService;
 import com.dmc.archiving.archive.model.ArchiveStandard;
 import com.dmc.archiving.dip.DipService;
 import com.dmc.archiving.document.DocumentService;
+import com.dmc.archiving.tenancy.api.PremiumStandards;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.usage.model.UsageSnapshot;
@@ -28,9 +29,15 @@ public class UsageAggregationService {
 
     private static final Logger log = LoggerFactory.getLogger(UsageAggregationService.class);
 
-    /** Premium standards whose AIP/DIP generation is metered (real-XML conformance). */
+    /**
+     * Premium standards whose AIP/DIP generation is metered, derived (enum-typed,
+     * for the JPA aggregate queries) from the canonical billing-side name set in
+     * {@link PremiumStandards} — the single source of truth.
+     */
     static final Set<ArchiveStandard> PREMIUM_STANDARDS =
-            Set.of(ArchiveStandard.NOARK5, ArchiveStandard.EARK);
+            PremiumStandards.NAMES.stream()
+                    .map(ArchiveStandard::valueOf)
+                    .collect(java.util.stream.Collectors.toUnmodifiableSet());
 
     private final TenancyApi tenancyApi;
     private final DocumentService documentService;

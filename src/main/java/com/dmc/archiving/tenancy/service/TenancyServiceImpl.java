@@ -220,12 +220,6 @@ public class TenancyServiceImpl implements TenancyService {
     }
 
     private TenantSettings createDefaultSettings(com.dmc.archiving.tenancy.model.TenantPlan plan) {
-        return switch (plan) {
-            case FREE -> new TenantSettings(5, 10, 1024L * 1024 * 100, false, false, "UTC", "en", null);
-            case BASIC -> new TenantSettings(25, 100, 1024L * 1024 * 1024, true, false, "UTC", "en", null);
-            case PROFESSIONAL -> new TenantSettings(100, 1000, 1024L * 1024 * 1024 * 10, true, true, "UTC", "en", null);
-            case ENTERPRISE -> new TenantSettings(-1, -1, -1L, true, true, "UTC", "en", null);
-            case CUSTOM -> new TenantSettings(50, 500, 1024L * 1024 * 1024 * 5, true, true, "UTC", "en", null);
-        };
+        return TenantSettings.defaultsFor(plan);
     }
 }
