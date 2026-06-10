@@ -80,4 +80,15 @@ class UserAuthTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("8 characters");
     }
+
+    @Test
+    void usernameWithReservedOrUnsafeCharsIsRejected() {
+        // Review-PR16 CRITICAL: '_' must never be storable (it would shift the token
+        // parse); also reject spaces and other unsafe characters.
+        assertThatThrownBy(() -> service.register("Evil", "evil@example.com", "x_ADMIN", "password1", "TENANT"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Username");
+        assertThatThrownBy(() -> service.register("Sp", "sp@example.com", "bad name", "password1", "TENANT"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
 }

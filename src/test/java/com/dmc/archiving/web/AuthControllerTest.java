@@ -32,7 +32,9 @@ class AuthControllerTest {
     private final TenancyApi tenancyApi = mock(TenancyApi.class);
     private final UserApi userApi = mock(UserApi.class);
     private final TokenSigner signer = new TokenSigner("test-secret");
-    private final AuthController controller = new AuthController(tenancyApi, userApi, signer);
+    private final RegistrationService registrationService = mock(RegistrationService.class);
+    private final AuthController controller =
+            new AuthController(tenancyApi, userApi, signer, registrationService);
 
     private static User user(Long id, String username, String role) {
         User u = new User();
@@ -76,10 +78,10 @@ class AuthControllerTest {
     }
 
     @Test
-    void registerCreatesOwnerTenantAndLogsIn() {
+    void registerDelegatesToRegistrationServiceAndLogsIn() {
         User created = user(42L, "ada", "TENANT");
-        when(userApi.register("Ada", "ada@example.com", "ada", "password1", "TENANT")).thenReturn(created);
-        when(tenancyApi.createTenantWithOwner("Ada's Archive", 42L)).thenReturn(9L);
+        when(registrationService.register("Ada", "ada@example.com", "ada", "password1", "Ada's Archive"))
+                .thenReturn(created);
         when(tenancyApi.getTenantIdsByUserId(42L)).thenReturn(List.of(9L));
 
         RegisterRequest req = new RegisterRequest();
@@ -97,13 +99,14 @@ class AuthControllerTest {
         assertThat(b.get("role")).isEqualTo("TENANT");
         assertThat(b.get("tenantId")).isEqualTo(9L);
         assertThat(signer.verify((String) b.get("token")).userId()).isEqualTo(42L);
-        verify(userApi).register("Ada", "ada@example.com", "ada", "password1", "TENANT");
-        verify(tenancyApi).createTenantWithOwner("Ada's Archive", 42L);
+        verify(registrationService).register("Ada", "ada@example.com", "ada", "password1", "Ada's Archive");
     }
 
     @Test
-    void registerWithDuplicateIsBadRequestAndProvisionsNoTenant() {
-        when(userApi.register(anyString(), anyString(), anyString(), anyString(), anyString()))
+    void registerDuplicateOrInvalidIsBadRequest() {
+        // RegistrationService is the atomic unit; a propagated IllegalArgumentException
+        // (validation / duplicate / charset) maps to 400 and nothing is committed.
+        when(registrationService.register(anyString(), anyString(), anyString(), anyString(), anyString()))
                 .thenThrow(new IllegalArgumentException("Username is already taken"));
 
         RegisterRequest req = new RegisterRequest();
@@ -117,6 +120,5 @@ class AuthControllerTest {
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(body(resp).get("error")).isEqualTo("Username is already taken");
-        verify(tenancyApi, never()).createTenantWithOwner(anyString(), anyLong());
     }
 }

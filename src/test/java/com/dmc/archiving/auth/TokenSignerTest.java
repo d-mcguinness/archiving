@@ -51,6 +51,24 @@ class TokenSignerTest {
     }
 
     @Test
+    void usernameWithUnderscoreCannotShiftTheParseToAdmin() {
+        // Review-PR16 CRITICAL: a '_' in the username would shift the positional
+        // parse so role reads "ADMIN" on a legitimately-signed token. verify now
+        // requires exactly 4 segments, so this is rejected outright.
+        AuthContext ctx = signer.verify(signer.issue(42L, "x_ADMIN", "TENANT"));
+
+        assertThat(ctx).isEqualTo(AuthContext.ANONYMOUS);
+        assertThat(ctx.isAdmin()).isFalse();
+    }
+
+    @Test
+    void rejectsAnUnknownRole() {
+        // Role must be allow-listed even though it's HMAC-signed (defence in depth).
+        assertThat(signer.verify(signer.issue(1L, "alice", "SUPERUSER")))
+                .isEqualTo(AuthContext.ANONYMOUS);
+    }
+
+    @Test
     void rejectsRoleTampering() {
         String tenantToken = signer.issue(2L, "tenant", "TENANT");
         // Swap the role in a validly-signed token; the signature no longer covers it.

@@ -31,11 +31,14 @@ public class AuthController {
     private final TenancyApi tenancyApi;
     private final UserApi userApi;
     private final TokenSigner tokenSigner;
+    private final RegistrationService registrationService;
 
-    public AuthController(TenancyApi tenancyApi, UserApi userApi, TokenSigner tokenSigner) {
+    public AuthController(TenancyApi tenancyApi, UserApi userApi, TokenSigner tokenSigner,
+                          RegistrationService registrationService) {
         this.tenancyApi = tenancyApi;
         this.userApi = userApi;
         this.tokenSigner = tokenSigner;
+        this.registrationService = registrationService;
     }
 
     @PostMapping("/login")
@@ -73,13 +76,12 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
             log.info("Registration attempt for username: {}", request.getUsername());
-            // Self-service signups are always tenant owners on the FREE plan;
-            // ADMIN (operator) is never obtainable via the public endpoint.
-            User user = userApi.register(
+            // One atomic step (RegistrationService): user + their FREE tenant, so a
+            // provisioning failure rolls back the user rather than orphaning it.
+            User user = registrationService.register(
                     request.getName(), request.getEmail(), request.getUsername(),
-                    request.getPassword(), "TENANT");
-            Long tenantId = tenancyApi.createTenantWithOwner(request.getOrganization(), user.getId());
-            log.info("Registered user {} ({}) as owner of new tenant {}", user.getId(), user.getUsername(), tenantId);
+                    request.getPassword(), request.getOrganization());
+            log.info("Registered user {} ({}) as a new tenant owner", user.getId(), user.getUsername());
             return ResponseEntity.status(HttpStatus.CREATED).body(authSuccess(user, "Registration successful"));
         } catch (IllegalArgumentException e) {
             // Validation / duplicate username or email.

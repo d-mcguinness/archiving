@@ -69,18 +69,31 @@ public final class TokenSigner {
                 return AuthContext.ANONYMOUS;
             }
 
-            String[] parts = payload.split("_", 4); // userId_username_role_nonce
-            if (parts.length < 4) {
+            // Split with -1 (keep trailing empties) and require EXACTLY 4 segments.
+            // userId is numeric, role is allow-listed, and the nonce is a UUID — none
+            // contain '_'. A '_' in the username (the only attacker-influenced field)
+            // would yield != 4 segments and is rejected here, so a crafted username
+            // cannot shift the parse to read role=ADMIN out of the username. Usernames
+            // are also charset-restricted at registration; this is defence-in-depth.
+            String[] parts = payload.split("_", -1); // userId_username_role_nonce
+            if (parts.length != 4) {
                 return AuthContext.ANONYMOUS;
             }
             Long userId = Long.valueOf(parts[0]); // tamper-proof: covered by the HMAC
             String username = parts[1];
             String role = parts[2];
+            if (username.isEmpty() || !isAllowedRole(role)) {
+                return AuthContext.ANONYMOUS;
+            }
             return new AuthContext(userId, role, username);
         } catch (Exception e) {
             // Includes NumberFormatException on a non-numeric userId segment.
             return AuthContext.ANONYMOUS;
         }
+    }
+
+    private static boolean isAllowedRole(String role) {
+        return "ADMIN".equals(role) || "TENANT".equals(role) || "USER".equals(role);
     }
 
     private String sign(String payload) {
