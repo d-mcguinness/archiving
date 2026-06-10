@@ -14,14 +14,17 @@ import static org.assertj.core.api.Assertions.assertThatCode;
  * Guards the single-source premium-standard set (Review dedup). The canonical
  * set lives in the tenancy module as enum NAMES (the billing module owns the
  * "premium" concept, and tenancy cannot import the archive enum without a module
- * cycle). These assertions ensure the names stay in lockstep with the real
- * ArchiveStandard enum, so the usage module's name->enum derivation can't throw.
+ * cycle). These assertions protect the string-to-{@code ArchiveStandard.name()}
+ * contract: the names are persisted in the {@code premium_package_events.standard}
+ * (and {@code aips/dips.standard}) EnumType.STRING columns, so a name that didn't
+ * match a real enum constant would silently fail to match stored rows.
  */
 class PremiumStandardsTest {
 
     @Test
     void everyNameMapsToARealArchiveStandard() {
-        // Mirrors UsageAggregationService's static derivation; a typo would throw here.
+        // Each NAME must equal an ArchiveStandard.name() so it matches the persisted
+        // EnumType.STRING value; a typo would throw here.
         assertThatCode(() -> PremiumStandards.NAMES.forEach(ArchiveStandard::valueOf))
                 .doesNotThrowAnyException();
     }

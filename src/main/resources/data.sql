@@ -543,12 +543,15 @@ INSERT INTO dip_users (dip_id, user_id) VALUES (1, 1) ON CONFLICT DO NOTHING;
 -- events. The metering meter reads the append-only premium_package_events
 -- ledger, so mirror the seeded SIP -> AIP -> DIP chain here; otherwise a fresh
 -- ledger would report 0 premium packages for the seeded tenant.
+-- Stamp a FIXED historical date (not CURRENT_TIMESTAMP): these are seed data, not
+-- real generations, so on a recreated DB they must NOT fall into the current
+-- billing period and inflate this month's premium bill/cap.
 INSERT INTO premium_package_events (id, tenant_id, package_type, standard, generated_at)
-SELECT 1, 1, 'AIP', 'NOARK5', CURRENT_TIMESTAMP
+SELECT 1, 1, 'AIP', 'NOARK5', TIMESTAMP '2026-01-15 12:00:00'
 WHERE NOT EXISTS (SELECT 1 FROM premium_package_events WHERE id = 1);
 
 INSERT INTO premium_package_events (id, tenant_id, package_type, standard, generated_at)
-SELECT 2, 1, 'DIP', 'NOARK5', CURRENT_TIMESTAMP
+SELECT 2, 1, 'DIP', 'NOARK5', TIMESTAMP '2026-01-15 12:00:00'
 WHERE NOT EXISTS (SELECT 1 FROM premium_package_events WHERE id = 2);
 
 -- Reset AIP/DIP sequences

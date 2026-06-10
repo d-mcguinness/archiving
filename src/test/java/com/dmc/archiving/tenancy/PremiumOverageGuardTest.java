@@ -14,17 +14,24 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.mockito.InOrder;
+
 /**
  * Verifies the premium-package spend cap policy (Risk 3a-pkg): FREE/unbundled
  * plans hard-stop at the included bundle; paid plans allow overage up to the
- * cap and block past it unless opted in; ENTERPRISE is unlimited.
+ * cap and block past it unless opted in; ENTERPRISE is unlimited. The cap counts
+ * the CURRENT billing period (per-period bundle), under a per-tenant lock taken
+ * before the count.
  */
 class PremiumOverageGuardTest {
 
@@ -42,9 +49,10 @@ class PremiumOverageGuardTest {
         when(tenancyService.getTenantById(TENANT)).thenReturn(t);
     }
 
-    /** Current lifetime premium count from the append-only ledger. */
+    /** Current per-period premium count from the append-only ledger (calendar-month window). */
     private void currentPremiumCount(long total) {
-        lenient().when(events.countByTenantId(TENANT)).thenReturn(total);
+        lenient().when(events.countByTenantIdAndGeneratedAtGreaterThanEqualAndGeneratedAtLessThan(
+                eq(TENANT), any(), any())).thenReturn(total);
     }
 
     private void budget(Long premiumOverageLimit, boolean optIn) {
@@ -56,11 +64,28 @@ class PremiumOverageGuardTest {
     }
 
     @Test
-    void enterpriseIsUnlimited_andDoesNotEvenCount() {
+    void enterpriseIsUnlimited_doesNotCountOrLock() {
         plan(TenantPlan.ENTERPRISE);
 
         assertThatCode(() -> guard.checkCanCreatePremiumPackage(TENANT)).doesNotThrowAnyException();
-        verify(events, never()).countByTenantId(anyLong());
+        verify(events, never()).countByTenantIdAndGeneratedAtGreaterThanEqualAndGeneratedAtLessThan(
+                anyLong(), any(), any());
+        verify(tenancyService, never()).lockTenantForUpdate(anyLong());
+    }
+
+    @Test
+    void locksTenantBeforeCounting() {
+        // The cap's race-safety depends on the per-tenant lock being taken before
+        // the count (Review L6). ENTERPRISE short-circuits without locking (above).
+        plan(TenantPlan.PROFESSIONAL);
+        currentPremiumCount(0);
+
+        guard.checkCanCreatePremiumPackage(TENANT);
+
+        InOrder order = inOrder(tenancyService, events);
+        order.verify(tenancyService).lockTenantForUpdate(TENANT);
+        order.verify(events).countByTenantIdAndGeneratedAtGreaterThanEqualAndGeneratedAtLessThan(
+                eq(TENANT), any(), any());
     }
 
     @Test

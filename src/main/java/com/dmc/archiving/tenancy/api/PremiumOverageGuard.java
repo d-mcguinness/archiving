@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -24,9 +25,11 @@ import java.time.LocalDateTime;
  * Reading the ledger via the tenancy-owned repository also keeps the check
  * cycle-free across the aip/dip modules.
  *
- * <p>Included-bundle and overage-budget defaults are provisional pending the
- * COGS/pricing validation; and the cap counts a cumulative lifetime total
- * rather than a billing-period rate — noted for the pricing-period work.
+ * <p>The cap counts generations in the CURRENT billing period (calendar month),
+ * matching the per-period bill: the included bundle resets each period, so a
+ * tenant that used its bundle last month is not capped forever. Included-bundle
+ * and overage-budget defaults, and the calendar-month period anchor, are
+ * provisional pending COGS/pricing sign-off.
  */
 @Component
 public class PremiumOverageGuard {
@@ -56,6 +59,11 @@ public class PremiumOverageGuard {
      * the row is saved) so it rolls back with the package on failure. Callers
      * must only invoke this for billable premium standards (see
      * {@link #isPremiumStandard(String)}).
+     *
+     * <p>MUST share the package's transaction — do NOT give this (or the caller)
+     * a separate/{@code REQUIRES_NEW} transaction, or a rolled-back package could
+     * leave an orphaned billable event (a tenant billed for a package that does
+     * not exist), or vice versa.
      */
     public void recordPremiumPackageGenerated(Long tenantId, String standardName, PremiumPackageType type) {
         eventRepository.save(new PremiumPackageEvent(tenantId, type, standardName, LocalDateTime.now()));
@@ -92,10 +100,17 @@ public class PremiumOverageGuard {
         // Serialize concurrent premium creates for this tenant before counting.
         tenancyService.lockTenantForUpdate(tenantId);
 
-        long current = eventRepository.countByTenantId(tenantId);
+        // Count generations in the CURRENT billing period (calendar month), so the
+        // included bundle resets per period to match the per-period bill — a tenant
+        // who used its bundle last month is not capped forever. Anchor (calendar
+        // month) is provisional; ratify under pricing sign-off.
+        LocalDate today = LocalDate.now();
+        LocalDateTime periodStart = today.withDayOfMonth(1).atStartOfDay();
+        LocalDateTime periodEnd = periodStart.plusMonths(1);
+        long current = countGeneratedInPeriod(tenantId, periodStart, periodEnd);
         long projected = current + 1;
         if (projected <= included) {
-            return; // within the included bundle
+            return; // within the included bundle for this period
         }
 
         boolean overageAllowed = plan != null && plan != TenantPlan.FREE;

@@ -14,10 +14,13 @@ import java.util.Set;
  * would form a module cycle that {@code ModulithStructureTest} rejects.
  *
  * <p>Held as enum NAMES (not {@code ArchiveStandard}) for that same
- * cycle-avoidance reason, and because the persisted {@code aips/dips.standard}
- * column is {@code @Enumerated(EnumType.STRING)} — so these names must equal
- * {@code ArchiveStandard.name()} exactly (asserted by {@code PremiumStandardsTest}).
- * The usage module derives the enum-typed set from these names.
+ * cycle-avoidance reason, and because the persisted {@code premium_package_events
+ * .standard} (and {@code aips/dips.standard}) column is
+ * {@code @Enumerated(EnumType.STRING)} — so these names must equal
+ * {@code ArchiveStandard.name()} exactly ({@code PremiumStandardsTest} guards
+ * that string-to-enum.name() contract). Consumed by
+ * {@link PremiumOverageGuard#isPremiumStandard(String)} (via {@link #contains(String)})
+ * to decide whether a generation is metered.
  */
 public final class PremiumStandards {
 
