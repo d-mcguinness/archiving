@@ -54,7 +54,7 @@ class GraphQlAuthInterceptorTest {
 
     @Test
     void validSignedTokenStashesItsIdentity() {
-        AuthContext ctx = stashedContextFor(signer.issue("admin", "ADMIN"));
+        AuthContext ctx = stashedContextFor(signer.issue(1L, "admin", "ADMIN"));
         assertThat(ctx.isAuthenticated()).isTrue();
         assertThat(ctx.isAdmin()).isTrue();
     }

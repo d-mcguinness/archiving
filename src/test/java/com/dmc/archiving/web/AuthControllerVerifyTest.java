@@ -17,11 +17,11 @@ import static org.mockito.Mockito.mock;
 class AuthControllerVerifyTest {
 
     private final TokenSigner signer = new TokenSigner("test-secret");
-    private final AuthController controller = new AuthController(mock(TenancyApi.class), signer);
+    private final AuthController controller = new AuthController(mock(TenancyApi.class), mock(com.dmc.archiving.user.api.UserApi.class), signer);
 
     @Test
     void validSignedTokenIsReportedValid() {
-        ResponseEntity<?> resp = controller.verifyToken(signer.issue("tenant", "TENANT"));
+        ResponseEntity<?> resp = controller.verifyToken(signer.issue(2L, "tenant", "TENANT"));
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 

@@ -37,6 +37,21 @@ public interface UserApi {
     Long createUser(CreateUserRequest request);
 
     /**
+     * Authenticate a login: return the user iff the username exists and the raw
+     * password matches the stored BCrypt hash. Empty otherwise (unknown user, no
+     * password set, or mismatch). Plaintext never leaves the user module.
+     */
+    Optional<User> authenticate(String username, String rawPassword);
+
+    /**
+     * Register a new login account (self-service signup). Validates non-blank
+     * fields and a minimum password length, enforces unique username/email
+     * (throws {@link IllegalArgumentException} on conflict), hashes the password,
+     * and persists the user with the given role. Returns the saved user (with id).
+     */
+    User register(String name, String email, String username, String rawPassword, String role);
+
+    /**
      * Update an existing user.
      * @param id the user ID
      * @param input the new user data

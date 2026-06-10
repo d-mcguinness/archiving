@@ -24,6 +24,18 @@ public class User {
     @Column(name = "age")
     private Integer age;
 
+    /** Login identifier. Unique; null for seeded data rows that aren't login accounts. */
+    @Column(name = "username", unique = true, length = 50)
+    private String username;
+
+    /** BCrypt hash of the password; null for non-login rows. Never expose. */
+    @Column(name = "password_hash")
+    private String passwordHash;
+
+    /** Account role: ADMIN / TENANT / USER. */
+    @Column(name = "role", length = 20)
+    private String role;
+
     // Note: Tenant relationship is managed from the Tenant side only
     // to maintain Spring Modulith module boundaries.
     // Use TenantService to query user's tenants if needed.

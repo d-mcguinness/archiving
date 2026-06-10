@@ -62,7 +62,7 @@ class RestAuthInterceptorTest {
         HttpServletRequest req = mock(HttpServletRequest.class);
         HttpServletResponse resp = mock(HttpServletResponse.class);
         when(req.getMethod()).thenReturn("DELETE");
-        when(req.getHeader("Authorization")).thenReturn(signer.issue("tenant", "TENANT"));
+        when(req.getHeader("Authorization")).thenReturn(signer.issue(2L, "tenant", "TENANT"));
 
         boolean proceed = interceptor.preHandle(req, resp, new Object());
 

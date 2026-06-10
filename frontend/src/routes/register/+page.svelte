@@ -1,4 +1,8 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
+  import { toasts } from '$lib/stores/toastStore';
+  import { auth } from '$lib/stores/authStore';
+
   let name = '';
   let organization = '';
   let email = '';
@@ -6,7 +10,7 @@
   let password = '';
   let confirmPassword = '';
   let error = '';
-  let submitted = false;
+  let loading = false;
 
   function validate(): string {
     if (!name || !organization || !email || !username || !password || !confirmPassword) {
@@ -24,15 +28,39 @@
     return '';
   }
 
-  function handleRegister() {
+  async function handleRegister() {
     error = validate();
     if (error) {
       return;
     }
-    // No self-service backend in this demo: login authenticates a fixed set of
-    // demo accounts, so we don't POST to a non-existent endpoint. Acknowledge the
-    // request and route activation through an administrator.
-    submitted = true;
+    loading = true;
+    try {
+      const response = await fetch('http://localhost:2020/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, organization, email, username, password })
+      });
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // Signup creates a FREE-plan tenant the user owns and logs them straight in.
+        auth.login(result.token, result.user, result.role, result.tenantId);
+        toasts.success(`Welcome to Arcana, ${result.user.name}!`);
+        if (result.tenantId) {
+          goto(`/tenants/${result.tenantId}/archives`);
+        } else {
+          goto('/');
+        }
+      } else {
+        error = result.error || result.message || 'Registration failed';
+        toasts.error(`Registration failed: ${error}`);
+      }
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'Network error';
+      toasts.error(`Registration error: ${error}`);
+    } finally {
+      loading = false;
+    }
   }
 </script>
 
@@ -42,67 +70,56 @@
 
 <div class="register-page">
   <div class="register-container">
-    {#if submitted}
-      <div class="success">
-        <div class="success-icon">✅</div>
-        <h1>Thanks, {name}!</h1>
-        <p>
-          We've received your request to register <strong>{organization}</strong>.
-          In this demo, accounts are provisioned by an administrator — they'll
-          activate your access shortly.
-        </p>
-        <a href="/login" class="primary-button">Back to Sign In</a>
+    <div class="register-header">
+      <h1>Create your account</h1>
+      <p>Start preserving on the Free plan — upgrade anytime.</p>
+    </div>
+
+    <form on:submit|preventDefault={handleRegister} class="register-form">
+      {#if error}
+        <div class="error-banner">
+          <span class="error-icon">❌</span>
+          <span>{error}</span>
+        </div>
+      {/if}
+
+      <div class="form-group">
+        <label for="name">Full name</label>
+        <input id="name" type="text" bind:value={name} disabled={loading} placeholder="Ada Lovelace" autocomplete="name" />
       </div>
-    {:else}
-      <div class="register-header">
-        <h1>Create your account</h1>
-        <p>Start preserving on the Free plan — upgrade anytime.</p>
+
+      <div class="form-group">
+        <label for="organization">Organization</label>
+        <input id="organization" type="text" bind:value={organization} disabled={loading} placeholder="Your archive or institution" autocomplete="organization" />
       </div>
 
-      <form on:submit|preventDefault={handleRegister} class="register-form">
-        {#if error}
-          <div class="error-banner">
-            <span class="error-icon">❌</span>
-            <span>{error}</span>
-          </div>
-        {/if}
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" bind:value={email} disabled={loading} placeholder="you@example.com" autocomplete="email" />
+      </div>
 
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input id="username" type="text" bind:value={username} disabled={loading} placeholder="Choose a username" autocomplete="username" />
+      </div>
+
+      <div class="form-row">
         <div class="form-group">
-          <label for="name">Full name</label>
-          <input id="name" type="text" bind:value={name} placeholder="Ada Lovelace" autocomplete="name" />
+          <label for="password">Password</label>
+          <input id="password" type="password" bind:value={password} disabled={loading} placeholder="At least 8 characters" autocomplete="new-password" />
         </div>
-
         <div class="form-group">
-          <label for="organization">Organization</label>
-          <input id="organization" type="text" bind:value={organization} placeholder="Your archive or institution" autocomplete="organization" />
+          <label for="confirmPassword">Confirm</label>
+          <input id="confirmPassword" type="password" bind:value={confirmPassword} disabled={loading} placeholder="Re-enter password" autocomplete="new-password" />
         </div>
+      </div>
 
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input id="email" type="email" bind:value={email} placeholder="you@example.com" autocomplete="email" />
-        </div>
+      <button type="submit" class="primary-button" disabled={loading}>
+        {loading ? 'Creating account…' : 'Create account'}
+      </button>
+    </form>
 
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input id="username" type="text" bind:value={username} placeholder="Choose a username" autocomplete="username" />
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input id="password" type="password" bind:value={password} placeholder="At least 8 characters" autocomplete="new-password" />
-          </div>
-          <div class="form-group">
-            <label for="confirmPassword">Confirm</label>
-            <input id="confirmPassword" type="password" bind:value={confirmPassword} placeholder="Re-enter password" autocomplete="new-password" />
-          </div>
-        </div>
-
-        <button type="submit" class="primary-button">Create account</button>
-      </form>
-
-      <p class="signin-hint">Already have an account? <a href="/login">Sign in</a></p>
-    {/if}
+    <p class="signin-hint">Already have an account? <a href="/login">Sign in</a></p>
   </div>
 </div>
 
@@ -232,27 +249,6 @@
 
   .signin-hint a:hover {
     text-decoration: underline;
-  }
-
-  .success {
-    text-align: center;
-  }
-
-  .success-icon {
-    font-size: 3rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .success h1 {
-    margin: 0 0 0.75rem 0;
-    color: #1e293b;
-    font-size: 1.6rem;
-  }
-
-  .success p {
-    margin: 0 0 2rem;
-    color: #475569;
-    line-height: 1.6;
   }
 
   @media (max-width: 640px) {

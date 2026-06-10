@@ -9,8 +9,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Verifies the bearer token is unforgeable (Review M1): a token issued under the
- * server secret round-trips to its identity, while any missing, tampered, or
- * differently-signed token resolves to ANONYMOUS rather than an assumed role.
+ * server secret round-trips to its identity (the REAL userId is carried in the
+ * signed payload), while any missing, tampered, or differently-signed token
+ * resolves to ANONYMOUS rather than an assumed identity.
  */
 class TokenSignerTest {
 
@@ -18,28 +19,29 @@ class TokenSignerTest {
 
     @Test
     void issuedTokenRoundTripsToItsIdentity() {
-        AuthContext ctx = signer.verify(signer.issue("tenant", "TENANT"));
+        AuthContext ctx = signer.verify(signer.issue(42L, "tenant", "TENANT"));
 
         assertThat(ctx.isAuthenticated()).isTrue();
         assertThat(ctx.role()).isEqualTo("TENANT");
         assertThat(ctx.username()).isEqualTo("tenant");
-        assertThat(ctx.userId()).isEqualTo(2L);
+        assertThat(ctx.userId()).isEqualTo(42L); // carried, not derived from username
         assertThat(ctx.isTenant()).isTrue();
     }
 
     @Test
-    void adminTokenMapsToAdminIdentity() {
-        AuthContext ctx = signer.verify(signer.issue("admin", "ADMIN"));
+    void carriesTheRealUserId() {
+        AuthContext ctx = signer.verify(signer.issue(7L, "admin", "ADMIN"));
 
         assertThat(ctx.isAdmin()).isTrue();
-        assertThat(ctx.userId()).isEqualTo(1L);
+        assertThat(ctx.userId()).isEqualTo(7L);
     }
 
     @Test
     void toleratesBearerSchemePrefix() {
-        AuthContext ctx = signer.verify("Bearer " + signer.issue("admin", "ADMIN"));
+        AuthContext ctx = signer.verify("Bearer " + signer.issue(1L, "admin", "ADMIN"));
 
         assertThat(ctx.isAdmin()).isTrue();
+        assertThat(ctx.userId()).isEqualTo(1L);
     }
 
     @Test
@@ -50,7 +52,7 @@ class TokenSignerTest {
 
     @Test
     void rejectsRoleTampering() {
-        String tenantToken = signer.issue("tenant", "TENANT");
+        String tenantToken = signer.issue(2L, "tenant", "TENANT");
         // Swap the role in a validly-signed token; the signature no longer covers it.
         String escalated = tenantToken.replace("_TENANT_", "_ADMIN_");
 
@@ -59,7 +61,7 @@ class TokenSignerTest {
 
     @Test
     void rejectsTokenSignedWithADifferentSecret() {
-        String foreign = new TokenSigner("other-secret").issue("admin", "ADMIN");
+        String foreign = new TokenSigner("other-secret").issue(1L, "admin", "ADMIN");
 
         assertThat(signer.verify(foreign)).isEqualTo(AuthContext.ANONYMOUS);
     }

@@ -10,6 +10,13 @@ INSERT INTO users (name, email, age) VALUES
 ('Charlie Brown', 'charlie.brown@example.com', 29)
 ON CONFLICT (email) DO NOTHING;
 
+-- Demo login accounts: annotate the first three seeded users (ids 1/2/3 by insert
+-- order) with usernames + roles so DB-backed login works. Their BCrypt password
+-- hashes are set at startup by DemoUserSeeder (admin123 / tenant123 / user123).
+UPDATE users SET username = 'admin',  role = 'ADMIN'  WHERE email = 'john.doe@example.com';
+UPDATE users SET username = 'tenant', role = 'TENANT' WHERE email = 'jane.smith@example.com';
+UPDATE users SET username = 'user',   role = 'USER'   WHERE email = 'bob.johnson@example.com';
+
 -- Insert Tenants (skip if already exists based on domain)
 INSERT INTO tenants (name, domain, display_name, description, status, plan, created_at, updated_at, owner_id, max_users, max_archives, max_storage_bytes, allow_external_sharing, enable_audit_log, timezone, default_language) VALUES
 ('Acme Corp', 'acme.example.com', 'Acme Corporation', 'Main corporate tenant for enterprise solutions', 'ACTIVE', 'ENTERPRISE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'user_001', 100, 1000, 107374182400, true, true, 'America/New_York', 'en'),

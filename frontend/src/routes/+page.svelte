@@ -137,7 +137,7 @@
                 <li>{f}</li>
               {/each}
             </ul>
-            <a href="/login" class="tier-cta">{tier.cta}</a>
+            <a href="/register" class="tier-cta">{tier.cta}</a>
           </div>
         {/each}
       </div>
