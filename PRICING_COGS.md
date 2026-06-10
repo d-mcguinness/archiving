@@ -4,8 +4,10 @@
 **Scope:** validate the two proposed overage rates against real marginal cost.
 
 No dollar rates are hardcoded in `src/` — the code collects only counts/bytes
-(`UsageSnapshot`, `PremiumPackageUsageRepository`), and a billing layer applies
-rates. `$0.18`/`$0.40` below are proposed rate-card numbers.
+(`UsageSnapshot`; premium generations via the append-only `PremiumPackageEvent`
+ledger, read through `PremiumPackageEventRepository` / `PremiumOverageGuard`),
+and a billing layer applies rates. `$0.18`/`$0.40` below are proposed rate-card
+numbers.
 
 ## 1. Marginal COGS (us-east-1, June 2026)
 
@@ -48,16 +50,17 @@ Noark 5 / E-ARK conformance and **never present it as cost-recovery**.
 - **Storage rail — OK.** Point-in-time monthly stock; bill $0.18/GB-month on the
   snapshot. *Refinement (not a blocker):* derive time-weighted GB-month by
   averaging the daily `UsageSnapshot` rows for mid-month churn fairness.
-- **Premium rail — FIXED (per-period flow).** The billing meter now counts
-  premium packages **generated within the period** (half-open `[start, end)` on
-  `createdAt`): `UsageSnapshot.premiumPackagesGenerated` is populated by
-  `UsageAggregationService.capture` via
-  `Aip/DipService.countByTenantAndStandardsGeneratedIn`. Billing sums these
-  across the window, so a one-time generation is billed once and never
-  re-billed. A tenant with no new generations this period is billed $0 for
-  premium (tested). The **cumulative** count
-  (`countByTenantIdAndStandardInAndBillableTrue`) remains, but only drives the
-  **lifetime spend-cap guard** (`PremiumOverageGuard`), not the bill.
+- **Premium rail — FIXED (per-period flow), delete-proof.** Each billable
+  premium generation is recorded as an immutable `PremiumPackageEvent` (the
+  append-only ledger), so deletes can't lower a counter. The billing meter counts
+  events **generated within the period** (half-open `[start, end)` on
+  `generatedAt`): `UsageSnapshot.premiumPackagesGenerated` is populated by
+  `UsageAggregationService.capture` via `PremiumOverageGuard.countGeneratedInPeriod`.
+  Billing sums these across the window, so a one-time generation is billed once
+  and never re-billed; a tenant with no new generations this period is billed $0
+  for premium (tested). The **spend-cap guard** (`PremiumOverageGuard`) counts the
+  ledger for the **current billing period (calendar month)** too, so the included
+  bundle resets per period (a tenant is not capped forever).
 
 The included-bundle / overage-cap **defaults in code are provisional**
 (`PremiumOverageGuard` 122-138, `TenancyApiImpl.defaultStorageOverageBytes`
