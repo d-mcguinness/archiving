@@ -19,7 +19,7 @@ class AuthSecurityConfigTest {
     void honoursAnExplicitSecretEvenInProd() {
         TokenSigner signer = AuthSecurityConfig.buildTokenSigner(new String[]{"prod"}, "real-secret");
 
-        AuthContext ctx = signer.verify(signer.issue("admin", "ADMIN"));
+        AuthContext ctx = signer.verify(signer.issue(1L, "admin", "ADMIN"));
         assertThat(ctx.isAdmin()).isTrue();
     }
 
@@ -49,14 +49,14 @@ class AuthSecurityConfigTest {
     @Test
     void testProfileWithNoSecretFallsBackToDevSecret() {
         TokenSigner signer = AuthSecurityConfig.buildTokenSigner(new String[]{"test"}, "");
-        assertThat(signer.verify(signer.issue("admin", "ADMIN")).isAdmin()).isTrue();
+        assertThat(signer.verify(signer.issue(1L, "admin", "ADMIN")).isAdmin()).isTrue();
     }
 
     @Test
     void nonProdWithNoSecretFallsBackToDevSecret() {
         TokenSigner signer = AuthSecurityConfig.buildTokenSigner(new String[]{"local"}, "");
 
-        AuthContext ctx = signer.verify(signer.issue("user", "USER"));
+        AuthContext ctx = signer.verify(signer.issue(3L, "user", "USER"));
         assertThat(ctx.isUser()).isTrue();
     }
 
@@ -64,7 +64,7 @@ class AuthSecurityConfigTest {
     void noActiveProfileWithNoSecretFallsBackToDevSecret() {
         TokenSigner signer = AuthSecurityConfig.buildTokenSigner(new String[]{}, "  ");
 
-        AuthContext ctx = signer.verify(signer.issue("tenant", "TENANT"));
+        AuthContext ctx = signer.verify(signer.issue(2L, "tenant", "TENANT"));
         assertThat(ctx.isTenant()).isTrue();
     }
 }

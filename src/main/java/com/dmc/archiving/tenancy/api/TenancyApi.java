@@ -14,6 +14,14 @@ public interface TenancyApi {
 
     Tenant getTenantById(Long tenantId);
 
+    /**
+     * Provision a brand-new FREE-plan tenant for a self-service signup and add
+     * the given user as its owner (membership). Returns the new tenant id. Takes
+     * primitives (not the internal CreateTenantInput) so callers in other modules
+     * stay off the tenancy module's non-exposed packages.
+     */
+    Long createTenantWithOwner(String orgName, Long ownerId);
+
     boolean isUserInTenant(Long userId, Long tenantId);
 
     List<Long> getTenantIdsByUserId(Long userId);

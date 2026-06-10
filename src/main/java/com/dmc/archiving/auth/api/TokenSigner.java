@@ -10,11 +10,11 @@ import java.util.UUID;
 
 /**
  * Issues and verifies the app's bearer token. The token is
- * {@code Bearer_{username}_{role}_{nonce}_{hmac}}, where the HMAC-SHA256 covers
- * {@code username_role_nonce} under a server-held secret. A token therefore
- * cannot be forged, nor its role/username tampered, without that secret —
- * replacing the old unsigned scheme that let anyone present
- * {@code Bearer_x_ADMIN_0} and assume any identity.
+ * {@code Bearer_{userId}_{username}_{role}_{nonce}_{hmac}}, where the HMAC-SHA256
+ * covers {@code userId_username_role_nonce} under a server-held secret. A token
+ * therefore cannot be forged, nor its userId/role/username tampered, without that
+ * secret. The userId is the REAL persisted user id, carried in the signed payload
+ * (no username-to-id mapping), so it is correct for DB-backed accounts.
  *
  * <p>This class is deterministic and Spring-free so it can be unit-tested
  * directly; the secret-resolution and prod-gating policy lives in
@@ -34,9 +34,9 @@ public final class TokenSigner {
         this.secret = secret.getBytes(StandardCharsets.UTF_8);
     }
 
-    /** Issue a freshly signed token for an authenticated user. */
-    public String issue(String username, String role) {
-        String payload = username + "_" + role + "_" + UUID.randomUUID();
+    /** Issue a freshly signed token carrying the user's real id, username, and role. */
+    public String issue(Long userId, String username, String role) {
+        String payload = userId + "_" + username + "_" + role + "_" + UUID.randomUUID();
         return PREFIX + payload + "_" + sign(payload);
     }
 
@@ -69,16 +69,31 @@ public final class TokenSigner {
                 return AuthContext.ANONYMOUS;
             }
 
-            String[] parts = payload.split("_", 3); // username_role_nonce
-            if (parts.length < 3) {
+            // Split with -1 (keep trailing empties) and require EXACTLY 4 segments.
+            // userId is numeric, role is allow-listed, and the nonce is a UUID — none
+            // contain '_'. A '_' in the username (the only attacker-influenced field)
+            // would yield != 4 segments and is rejected here, so a crafted username
+            // cannot shift the parse to read role=ADMIN out of the username. Usernames
+            // are also charset-restricted at registration; this is defence-in-depth.
+            String[] parts = payload.split("_", -1); // userId_username_role_nonce
+            if (parts.length != 4) {
                 return AuthContext.ANONYMOUS;
             }
-            String username = parts[0];
-            String role = parts[1];
-            return new AuthContext(mapUserId(username), role, username);
+            Long userId = Long.valueOf(parts[0]); // tamper-proof: covered by the HMAC
+            String username = parts[1];
+            String role = parts[2];
+            if (username.isEmpty() || !isAllowedRole(role)) {
+                return AuthContext.ANONYMOUS;
+            }
+            return new AuthContext(userId, role, username);
         } catch (Exception e) {
+            // Includes NumberFormatException on a non-numeric userId segment.
             return AuthContext.ANONYMOUS;
         }
+    }
+
+    private static boolean isAllowedRole(String role) {
+        return "ADMIN".equals(role) || "TENANT".equals(role) || "USER".equals(role);
     }
 
     private String sign(String payload) {
@@ -94,14 +109,5 @@ public final class TokenSigner {
     private static boolean constantTimeEquals(String a, String b) {
         return MessageDigest.isEqual(
                 a.getBytes(StandardCharsets.UTF_8), b.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private static Long mapUserId(String username) {
-        return switch (username.toLowerCase()) {
-            case "admin" -> 1L;
-            case "tenant" -> 2L;
-            case "user" -> 3L;
-            default -> 999L;
-        };
     }
 }

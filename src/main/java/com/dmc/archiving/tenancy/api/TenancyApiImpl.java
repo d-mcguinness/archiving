@@ -1,11 +1,13 @@
 package com.dmc.archiving.tenancy.api;
 
+import com.dmc.archiving.tenancy.input.CreateTenantInput;
 import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.tenancy.model.TenantPlan;
 import com.dmc.archiving.tenancy.model.TenantSettings;
 import com.dmc.archiving.tenancy.repository.TenantOverageBudgetRepository;
 import com.dmc.archiving.tenancy.service.TenancyService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -36,6 +38,25 @@ class TenancyApiImpl implements TenancyApi {
     @Override
     public Tenant getTenantById(Long tenantId) {
         return tenancyService.getTenantById(tenantId);
+    }
+
+    @Override
+    @Transactional
+    public Long createTenantWithOwner(String orgName, Long ownerId) {
+        String name = (orgName == null || orgName.isBlank()) ? "My Organization" : orgName.trim();
+        // ownerId is unique per signup, so suffixing it guarantees a unique domain
+        // (createTenant rejects duplicate domains).
+        String domain = slug(name) + "-" + ownerId;
+        CreateTenantInput input = new CreateTenantInput(
+                name, domain, name, null, String.valueOf(ownerId), TenantPlan.FREE);
+        Tenant tenant = tenancyService.createTenant(input);
+        tenancyService.addUserToTenant(ownerId, tenant.getId());
+        return tenant.getId();
+    }
+
+    private static String slug(String s) {
+        String slug = s.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
+        return slug.isBlank() ? "org" : slug;
     }
 
     @Override

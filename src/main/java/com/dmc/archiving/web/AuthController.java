@@ -3,6 +3,8 @@ package com.dmc.archiving.web;
 import com.dmc.archiving.auth.LoginRequest;
 import com.dmc.archiving.auth.api.TokenSigner;
 import com.dmc.archiving.tenancy.api.TenancyApi;
+import com.dmc.archiving.user.api.UserApi;
+import com.dmc.archiving.user.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -12,10 +14,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
- * Authentication Controller
- * Handles login and authentication with role-based access
+ * Authentication Controller — DB-backed login and public self-service signup.
+ * Login verifies credentials against stored BCrypt hashes (user module); signup
+ * creates a user, provisions a FREE-plan tenant they own, and logs them in.
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -25,89 +29,68 @@ public class AuthController {
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final TenancyApi tenancyApi;
+    private final UserApi userApi;
     private final TokenSigner tokenSigner;
+    private final RegistrationService registrationService;
 
-    public AuthController(TenancyApi tenancyApi, TokenSigner tokenSigner) {
+    public AuthController(TenancyApi tenancyApi, UserApi userApi, TokenSigner tokenSigner,
+                          RegistrationService registrationService) {
         this.tenancyApi = tenancyApi;
+        this.userApi = userApi;
         this.tokenSigner = tokenSigner;
-    }
-
-    private static final Map<String, AuthCredentials> DEFAULT_CREDENTIALS = new HashMap<>();
-
-    static {
-        DEFAULT_CREDENTIALS.put("admin", new AuthCredentials("admin", "admin123", "ADMIN", "Administrator"));
-        DEFAULT_CREDENTIALS.put("tenant", new AuthCredentials("tenant", "tenant123", "TENANT", "Tenant Manager"));
-        DEFAULT_CREDENTIALS.put("user", new AuthCredentials("user", "user123", "USER", "Regular User"));
+        this.registrationService = registrationService;
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            log.info("Login attempt for username: {}", loginRequest.getUsername());
-
             String username = loginRequest.getUsername();
             String password = loginRequest.getPassword();
+            log.info("Login attempt for username: {}", username);
 
             if (username == null || username.trim().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("success", false, "error", "Username is required"));
             }
-
             if (password == null || password.trim().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("success", false, "error", "Password is required"));
             }
 
-            AuthCredentials credentials = DEFAULT_CREDENTIALS.get(username.toLowerCase());
-
-            if (credentials != null && credentials.getPassword().equals(password)) {
-                String token = generateToken(username, credentials.getRole());
-
-                log.info("Login successful for user: {} with role: {}", username, credentials.getRole());
-
-                Long userId = getDefaultUserId(username);
-
-                Map<String, Object> user = new HashMap<>();
-                user.put("id", userId);
-                user.put("username", username);
-                user.put("name", credentials.getName());
-                user.put("email", username + "@archiving.com");
-                user.put("role", credentials.getRole());
-
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", true);
-                response.put("message", "Login successful");
-                response.put("user", user);
-                response.put("role", credentials.getRole());
-                response.put("token", token);
-                response.put("expiresIn", 3600);
-
-                if ("TENANT".equals(credentials.getRole()) || "USER".equals(credentials.getRole())) {
-                    try {
-                        List<Long> tenantIds = tenancyApi.getTenantIdsByUserId(userId);
-                        if (!tenantIds.isEmpty()) {
-                            Long tenantId = tenantIds.get(0);
-                            response.put("tenantId", tenantId);
-                            user.put("tenantId", tenantId);
-                            log.info("Added tenantId {} for user {} with role {}", tenantId, username, credentials.getRole());
-                        } else {
-                            log.warn("No tenants found for user {} with role {}", username, credentials.getRole());
-                        }
-                    } catch (Exception e) {
-                        log.error("Error getting tenant IDs for user {}: {}", username, e.getMessage());
-                    }
-                }
-
-                return ResponseEntity.ok(response);
-            } else {
+            Optional<User> authenticated = userApi.authenticate(username, password);
+            if (authenticated.isEmpty()) {
                 log.warn("Login failed for username: {} - Invalid credentials", username);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("success", false, "error", "Invalid username or password"));
             }
+            log.info("Login successful for user: {}", username);
+            return ResponseEntity.ok(authSuccess(authenticated.get(), "Login successful"));
         } catch (Exception e) {
             log.error("Login error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("success", false, "error", "An error occurred during login"));
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        try {
+            log.info("Registration attempt for username: {}", request.getUsername());
+            // One atomic step (RegistrationService): user + their FREE tenant, so a
+            // provisioning failure rolls back the user rather than orphaning it.
+            User user = registrationService.register(
+                    request.getName(), request.getEmail(), request.getUsername(),
+                    request.getPassword(), request.getOrganization());
+            log.info("Registered user {} ({}) as a new tenant owner", user.getId(), user.getUsername());
+            return ResponseEntity.status(HttpStatus.CREATED).body(authSuccess(user, "Registration successful"));
+        } catch (IllegalArgumentException e) {
+            // Validation / duplicate username or email.
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("success", false, "error", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Registration error: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("success", false, "error", "An error occurred during registration"));
         }
     }
 
@@ -133,35 +116,34 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("success", true, "valid", true, "message", "Token is valid"));
     }
 
-    private String generateToken(String username, String role) {
-        return tokenSigner.issue(username, role);
-    }
+    /** Build the shared login/registration success body: signed token + user + first tenant. */
+    private Map<String, Object> authSuccess(User user, String message) {
+        String token = tokenSigner.issue(user.getId(), user.getUsername(), user.getRole());
 
-    private Long getDefaultUserId(String username) {
-        return switch (username.toLowerCase()) {
-            case "admin" -> 1L;
-            case "tenant" -> 2L;
-            case "user" -> 3L;
-            default -> 999L;
-        };
-    }
+        Map<String, Object> userBody = new HashMap<>();
+        userBody.put("id", user.getId());
+        userBody.put("username", user.getUsername());
+        userBody.put("name", user.getName());
+        userBody.put("email", user.getEmail());
+        userBody.put("role", user.getRole());
 
-    private static class AuthCredentials {
-        private final String username;
-        private final String password;
-        private final String role;
-        private final String name;
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", message);
+        response.put("user", userBody);
+        response.put("role", user.getRole());
+        response.put("token", token);
+        response.put("expiresIn", 3600);
 
-        AuthCredentials(String username, String password, String role, String name) {
-            this.username = username;
-            this.password = password;
-            this.role = role;
-            this.name = name;
+        // Non-ADMIN accounts resolve to their (first) tenant for the UI to scope to.
+        if (!"ADMIN".equals(user.getRole())) {
+            List<Long> tenantIds = tenancyApi.getTenantIdsByUserId(user.getId());
+            if (!tenantIds.isEmpty()) {
+                Long tenantId = tenantIds.get(0);
+                response.put("tenantId", tenantId);
+                userBody.put("tenantId", tenantId);
+            }
         }
-
-        public String getUsername() { return username; }
-        public String getPassword() { return password; }
-        public String getRole() { return role; }
-        public String getName() { return name; }
+        return response;
     }
 }

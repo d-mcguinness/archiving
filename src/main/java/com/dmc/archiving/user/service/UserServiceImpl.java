@@ -7,6 +7,8 @@ import com.dmc.archiving.user.model.User;
 import com.dmc.archiving.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +20,57 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public Optional<User> authenticate(String username, String rawPassword) {
+        if (username == null || rawPassword == null) {
+            return Optional.empty();
+        }
+        return userRepository.findByUsername(username)
+                .filter(u -> u.getPasswordHash() != null
+                        && passwordEncoder.matches(rawPassword, u.getPasswordHash()));
+    }
+
+    @Override
+    public User register(String name, String email, String username, String rawPassword, String role) {
+        if (isBlank(name) || isBlank(email) || isBlank(username) || isBlank(rawPassword)) {
+            throw new IllegalArgumentException("Name, email, username and password are required");
+        }
+        if (rawPassword.length() < 8) {
+            throw new IllegalArgumentException("Password must be at least 8 characters");
+        }
+        // Restrict the charset: usernames flow into the underscore-delimited signed
+        // token, so a '_' (or other reserved char) must never be storable, or it
+        // could shift the token parse. Letters, digits, dot, hyphen only.
+        if (!username.matches("^[A-Za-z0-9.-]{3,50}$")) {
+            throw new IllegalArgumentException(
+                    "Username must be 3-50 characters using only letters, numbers, dots or hyphens");
+        }
+        if (userRepository.existsByUsername(username)) {
+            throw new IllegalArgumentException("Username is already taken");
+        }
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("Email is already registered");
+        }
+        User user = new User();
+        user.setName(name);
+        user.setEmail(email);
+        user.setUsername(username);
+        user.setPasswordHash(passwordEncoder.encode(rawPassword));
+        user.setRole(role);
+        try {
+            return userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            // Lost a concurrent uniqueness race after the existsBy checks (the DB
+            // constraint is the source of truth). Surface as a 400, not a 500.
+            throw new IllegalArgumentException("Username or email is already taken");
+        }
+    }
+
+    private static boolean isBlank(String s) {
+        return s == null || s.isBlank();
+    }
 
     @Override
     public Optional<User> getUserById(Long id) {
