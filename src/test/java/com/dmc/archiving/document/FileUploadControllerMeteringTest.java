@@ -9,11 +9,16 @@ import com.dmc.archiving.tenancy.api.TenancyApi;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.pattern.PathPatternParser;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -188,5 +193,27 @@ class FileUploadControllerMeteringTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         verify(tenancyApi, never()).isUserInTenant(anyLong(), anyLong());
+    }
+
+    @Test
+    void downloadRoutesMultiSegmentKey_andStripsLeadingSlash() throws Exception {
+        // Real S3 keys contain '/', so {*fileKey} (not single-segment {fileKey})
+        // is required or the endpoint 404s every real key (Review L7). Drive it
+        // through MockMvc routing to prove the multi-segment key arrives intact.
+        AuthContext ctx = new AuthContext(2L, "TENANT", "tenant");
+        when(documentService.getDocumentByFileKey("documents/42/report.pdf"))
+                .thenReturn(Optional.of(docInTenant(100L)));
+        when(tenancyApi.isUserInTenant(2L, 100L)).thenReturn(true);
+        when(storage.getPresignedUrl("documents/42/report.pdf", 60)).thenReturn("https://signed");
+
+        MockMvc mvc = MockMvcBuilders.standaloneSetup(controller)
+                .setPatternParser(new PathPatternParser())
+                .build();
+
+        mvc.perform(get("/api/download/documents/42/report.pdf")
+                        .requestAttr(RestAuthInterceptor.AUTH_CONTEXT, ctx))
+                .andExpect(status().isOk());
+
+        verify(storage).getPresignedUrl("documents/42/report.pdf", 60);
     }
 }

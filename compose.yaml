@@ -8,6 +8,10 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      # The docker profile fails closed without a signing secret (AuthSecurityConfig),
+      # so provide one here. Passes through the host APP_AUTH_TOKEN_SECRET if set;
+      # otherwise a compose-local demo default — OVERRIDE THIS for any real deploy.
+      - APP_AUTH_TOKEN_SECRET=${APP_AUTH_TOKEN_SECRET:-docker-demo-secret-override-me}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/archiving
       - SPRING_DATASOURCE_HOST=db
       - SPRING_DATASOURCE_PORT=5432

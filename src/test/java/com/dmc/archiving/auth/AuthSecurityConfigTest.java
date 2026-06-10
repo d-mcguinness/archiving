@@ -31,6 +31,28 @@ class AuthSecurityConfigTest {
     }
 
     @Test
+    void dockerProfileWithNoSecretFailsClosed() {
+        // The shipped compose profile is NOT local/dev/test, so the DEV fallback
+        // must not apply — it has to supply a real secret (Review H1).
+        assertThatThrownBy(() -> AuthSecurityConfig.buildTokenSigner(new String[]{"docker"}, ""))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("APP_AUTH_TOKEN_SECRET");
+    }
+
+    @Test
+    void anyNonLocalProfileWithLocalAlongsideStillFailsClosed() {
+        // A non-local profile present alongside a local one is still deployment-grade.
+        assertThatThrownBy(() -> AuthSecurityConfig.buildTokenSigner(new String[]{"local", "staging"}, ""))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void testProfileWithNoSecretFallsBackToDevSecret() {
+        TokenSigner signer = AuthSecurityConfig.buildTokenSigner(new String[]{"test"}, "");
+        assertThat(signer.verify(signer.issue("admin", "ADMIN")).isAdmin()).isTrue();
+    }
+
+    @Test
     void nonProdWithNoSecretFallsBackToDevSecret() {
         TokenSigner signer = AuthSecurityConfig.buildTokenSigner(new String[]{"local"}, "");
 

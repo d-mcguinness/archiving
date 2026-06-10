@@ -123,6 +123,13 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("success", false, "error", "No token provided"));
         }
+        // Actually verify the signature — a non-empty header is NOT proof of a
+        // valid token. Reject forged/tampered tokens so this endpoint cannot
+        // drive a client into an authenticated state with a bogus token.
+        if (!tokenSigner.verify(token).isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("success", false, "valid", false, "error", "Invalid token"));
+        }
         return ResponseEntity.ok(Map.of("success", true, "valid", true, "message", "Token is valid"));
     }
 
