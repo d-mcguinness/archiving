@@ -125,8 +125,14 @@ public class FileUploadController {
         }
     }
 
-    @GetMapping("/download/{fileKey}")
+    @GetMapping("/download/{*fileKey}")
     public ResponseEntity<?> downloadFile(@PathVariable String fileKey, HttpServletRequest request) {
+        // {*fileKey} captures the whole remaining path INCLUDING the slashes that
+        // real S3 keys contain (e.g. documents/.., users/42/..); a single-segment
+        // {fileKey} would 404 every real key. The captured value has a leading '/'.
+        if (fileKey != null && fileKey.startsWith("/")) {
+            fileKey = fileKey.substring(1);
+        }
         // Tenant-ownership: only presign keys that map to a tracked document the
         // caller may access. Without this, any authenticated user could download
         // any object by its (guessable) key — a cross-tenant IDOR.
