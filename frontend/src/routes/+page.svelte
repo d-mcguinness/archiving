@@ -6,6 +6,39 @@
   $: currentUser = $auth.user;
 
   const standards = ['NOARK5', 'OAIS', 'PREMIS', 'Dublin Core', 'METS', 'EAD', 'BagIt', 'ISAD(G)', 'MODS', 'E-ARK'];
+  // Compliance-grade standards that generate validated, regulator-ready packages.
+  const premiumStandards = ['NOARK5', 'E-ARK'];
+
+  const tiers = [
+    {
+      name: 'Free',
+      tagline: 'Explore the full archival workflow',
+      features: ['5 team members', '10 archives', '100 MB storage', 'All 10 open standards', 'SIP → AIP → DIP workflow'],
+      cta: 'Start free',
+      popular: false
+    },
+    {
+      name: 'Basic',
+      tagline: 'For small teams getting started',
+      features: ['25 team members', '100 archives', '1 GB storage', 'Pay-as-you-go premium packages', 'Usage-based scaling'],
+      cta: 'Choose Basic',
+      popular: false
+    },
+    {
+      name: 'Professional',
+      tagline: 'Compliance at scale',
+      features: ['100 team members', '1,000 archives', '10 GB storage', '100 NOARK 5.5 / E-ARK packages / mo', 'Priority support'],
+      cta: 'Choose Professional',
+      popular: true
+    },
+    {
+      name: 'Enterprise',
+      tagline: 'Unlimited preservation',
+      features: ['Unlimited members & archives', 'Unlimited storage', 'Unlimited premium conformance', 'Audit logging & SSO-ready', 'Dedicated support'],
+      cta: 'Contact sales',
+      popular: false
+    }
+  ];
 </script>
 
 <svelte:head>
@@ -21,13 +54,15 @@
       <div class="hero-badge">Open-Standard Archiving</div>
       <h1>Digital Preservation,<br/><span class="gradient-text">Simplified.</span></h1>
       <p class="hero-subtitle">
-        Enterprise-grade archival management built on international standards.
-        Ingest, preserve, and deliver your digital assets with confidence.
+        Archival management built on international standards — from a free tier to
+        unlimited enterprise. Ingest, preserve, and deliver your digital assets
+        with compliance-grade NOARK&nbsp;5.5 and E-ARK conformance.
       </p>
       <div class="hero-actions">
-        <a href="/login" class="btn-cta">Get Started</a>
+        <a href="/login" class="btn-cta">Get Started Free</a>
         <a href="#how-it-works" class="btn-outline">How It Works</a>
       </div>
+      <p class="hero-note">No credit card to start · <a href="#pricing">Compare plans &rarr;</a></p>
     </section>
 
     <section class="stats-banner">
@@ -77,18 +112,46 @@
 
     <section class="standards-section">
       <h2 class="section-title">Built on Standards You Trust</h2>
-      <p class="section-desc">Full compliance with international archival and preservation standards.</p>
+      <p class="section-desc">Ten archival standards out of the box — including compliance-grade <strong>NOARK&nbsp;5.5</strong> and <strong>E-ARK</strong> conformance for regulated archives.</p>
       <div class="standards-grid">
         {#each standards as std}
-          <div class="standard-chip">{std}</div>
+          <div class="standard-chip" class:premium={premiumStandards.includes(std)}>
+            {std}{#if premiumStandards.includes(std)}<span class="premium-star">★</span>{/if}
+          </div>
         {/each}
       </div>
+      <p class="standards-legend"><span class="premium-star">★</span> Premium conformance — validated, regulator-ready NOARK&nbsp;5.5 / E-ARK packages</p>
+    </section>
+
+    <section id="pricing" class="pricing-section">
+      <h2 class="section-title">Plans That Scale With Your Archive</h2>
+      <p class="section-desc">Start free on open standards. Upgrade for compliance-grade conformance and room to grow.</p>
+      <div class="pricing-grid">
+        {#each tiers as tier}
+          <div class="tier-card" class:popular={tier.popular}>
+            {#if tier.popular}<div class="tier-badge">Most Popular</div>{/if}
+            <h3 class="tier-name">{tier.name}</h3>
+            <p class="tier-tagline">{tier.tagline}</p>
+            <ul class="tier-features">
+              {#each tier.features as f}
+                <li>{f}</li>
+              {/each}
+            </ul>
+            <a href="/login" class="tier-cta">{tier.cta}</a>
+          </div>
+        {/each}
+      </div>
+      <p class="pricing-usage">
+        Usage-based add-ons: <strong>$0.18</strong> / GB-month for storage beyond your plan,
+        <strong>$0.40</strong> per premium NOARK&nbsp;5.5 / E-ARK package.
+      </p>
+      <p class="pricing-custom">Need something bespoke? <a href="/login">Custom plans</a> with tailored limits and SLAs are available.</p>
     </section>
 
     <section class="cta-section">
       <h2>Ready to modernize your digital archive?</h2>
-      <p>Start managing your preservation workflows in minutes.</p>
-      <a href="/login" class="btn-cta">Sign In to Arcana</a>
+      <p>Start free in minutes — no credit card required. Upgrade when you need compliance-grade conformance.</p>
+      <a href="/login" class="btn-cta">Get Started Free</a>
     </section>
   </div>
 
@@ -429,6 +492,194 @@
     border-color: #3b82f6;
     background: #eff6ff;
     color: #1e40af;
+  }
+
+  .standard-chip.premium {
+    border-color: #c4b5fd;
+    background: linear-gradient(135deg, #faf5ff, #eff6ff);
+    color: #6d28d9;
+    font-weight: 700;
+  }
+
+  .standard-chip.premium:hover {
+    border-color: #8b5cf6;
+    background: #f5f3ff;
+    color: #5b21b6;
+  }
+
+  .premium-star {
+    color: #8b5cf6;
+    margin-left: 0.3rem;
+    font-size: 0.7rem;
+    vertical-align: middle;
+  }
+
+  .standards-legend {
+    margin: 1.25rem auto 0;
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  /* Hero note */
+  .hero-note {
+    margin: 1.25rem 0 0;
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+
+  .hero-note a {
+    color: #3b82f6;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .hero-note a:hover {
+    text-decoration: underline;
+  }
+
+  /* Pricing */
+  .pricing-section {
+    margin-bottom: 4rem;
+  }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+    text-align: left;
+    align-items: stretch;
+  }
+
+  .tier-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.85rem;
+    padding: 1.75rem 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  }
+
+  .tier-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+  }
+
+  .tier-card.popular {
+    border-color: #8b5cf6;
+    box-shadow: 0 8px 28px rgba(139, 92, 246, 0.18);
+  }
+
+  .tier-badge {
+    position: absolute;
+    top: -0.7rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #3b82f6, #7c3aed);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 0.8rem;
+    border-radius: 1rem;
+    white-space: nowrap;
+  }
+
+  .tier-name {
+    margin: 0 0 0.25rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .tier-tagline {
+    margin: 0 0 1.1rem;
+    font-size: 0.85rem;
+    color: #64748b;
+    min-height: 2.4em;
+  }
+
+  .tier-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    flex: 1;
+  }
+
+  .tier-features li {
+    position: relative;
+    padding: 0.4rem 0 0.4rem 1.5rem;
+    font-size: 0.875rem;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .tier-features li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #10b981;
+    font-weight: 800;
+  }
+
+  .tier-cta {
+    display: block;
+    text-align: center;
+    padding: 0.7rem 1rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: 1.5px solid #cbd5e1;
+    color: #1e293b;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+  }
+
+  .tier-cta:hover {
+    border-color: #64748b;
+  }
+
+  .tier-card.popular .tier-cta {
+    background: linear-gradient(135deg, #3b82f6, #7c3aed);
+    color: white;
+    border-color: transparent;
+  }
+
+  .tier-card.popular .tier-cta:hover {
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.35);
+  }
+
+  .pricing-usage {
+    margin: 1.75rem auto 0;
+    max-width: 620px;
+    font-size: 0.875rem;
+    color: #475569;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.6rem;
+    padding: 0.85rem 1.25rem;
+  }
+
+  .pricing-usage strong {
+    color: #0f172a;
+  }
+
+  .pricing-custom {
+    margin: 0.9rem 0 0;
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+
+  .pricing-custom a {
+    color: #3b82f6;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .pricing-custom a:hover {
+    text-decoration: underline;
   }
 
   /* CTA */
