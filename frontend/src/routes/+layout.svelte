@@ -168,6 +168,9 @@
             <a href="/login" class="login-button">
               Sign In
             </a>
+            <a href="/register" class="register-button">
+              Register
+            </a>
           {/if}
         </div>
       </div>
@@ -383,6 +386,26 @@
     border-color: rgba(255, 255, 255, 0.5);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .register-button {
+    padding: 0.625rem 1.25rem;
+    background: white;
+    color: #1e293b;
+    border: 2px solid white;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .register-button:hover {
+    background: #f8fafc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
 
   .logout-button {
