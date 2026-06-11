@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { goto } from '$app/navigation';
+import { API_BASE } from '../api';
 
 export interface AuthState {
   isLoggedIn: boolean;
@@ -82,13 +83,14 @@ function createAuthStore() {
     });
   }
 
-  function login(token: string, user: any, role: string, tenantId?: number | null) {
+  function login(token: string, user: any, role: string, tenantId?: number | null, refreshToken?: string | null) {
     // Save original session before mimic
     if (token.startsWith('Bearer_mimic_') && !localStorage.getItem('auth_original_token')) {
       localStorage.setItem('auth_original_token', localStorage.getItem('auth_token') || '');
       localStorage.setItem('auth_original_user', localStorage.getItem('auth_user') || '');
       localStorage.setItem('auth_original_role', localStorage.getItem('auth_role') || '');
       localStorage.setItem('auth_original_tenantId', localStorage.getItem('auth_tenantId') || '');
+      localStorage.setItem('auth_original_refresh_token', localStorage.getItem('auth_refresh_token') || '');
     }
 
     localStorage.setItem('auth_token', token || '');
@@ -98,6 +100,14 @@ function createAuthStore() {
       localStorage.setItem('auth_tenantId', tenantId.toString());
     } else {
       localStorage.removeItem('auth_tenantId');
+    }
+    // A mimic session has no backend refresh token; clear it so a stray refresh
+    // can't spend the real user's token while impersonating (refresh is also
+    // short-circuited under isMimicking()).
+    if (refreshToken) {
+      localStorage.setItem('auth_refresh_token', refreshToken);
+    } else {
+      localStorage.removeItem('auth_refresh_token');
     }
     set({
       isLoggedIn: true,
@@ -123,6 +133,7 @@ function createAuthStore() {
     const originalTenantId = localStorage.getItem('auth_original_tenantId');
 
     if (originalToken && originalUser) {
+      const originalRefreshToken = localStorage.getItem('auth_original_refresh_token');
       localStorage.setItem('auth_token', originalToken);
       localStorage.setItem('auth_user', originalUser);
       localStorage.setItem('auth_role', originalRole || '');
@@ -131,11 +142,17 @@ function createAuthStore() {
       } else {
         localStorage.removeItem('auth_tenantId');
       }
+      if (originalRefreshToken) {
+        localStorage.setItem('auth_refresh_token', originalRefreshToken);
+      } else {
+        localStorage.removeItem('auth_refresh_token');
+      }
 
       localStorage.removeItem('auth_original_token');
       localStorage.removeItem('auth_original_user');
       localStorage.removeItem('auth_original_role');
       localStorage.removeItem('auth_original_tenantId');
+      localStorage.removeItem('auth_original_refresh_token');
 
       set(readFromLocalStorage());
       goto('/admin');
@@ -145,10 +162,24 @@ function createAuthStore() {
   }
 
   function logout() {
+    // Best-effort server-side revoke of the refresh token (device-scoped) so it
+    // can't renew the session after logout. Fire-and-forget — never block the UI.
+    try {
+      const refreshToken = localStorage.getItem('auth_refresh_token');
+      if (refreshToken) {
+        fetch(`${API_BASE}/api/auth/logout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken })
+        }).catch(() => { /* offline / already gone — local clear below still applies */ });
+      }
+    } catch { /* storage unavailable */ }
+
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_user');
     localStorage.removeItem('auth_role');
     localStorage.removeItem('auth_tenantId');
+    localStorage.removeItem('auth_refresh_token');
     set(defaultState);
     goto('/');
   }

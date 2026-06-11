@@ -1,7 +1,9 @@
 package com.dmc.archiving.web;
 
 import com.dmc.archiving.auth.LoginRequest;
+import com.dmc.archiving.auth.RefreshTokenService;
 import com.dmc.archiving.auth.api.TokenSigner;
+import com.dmc.archiving.auth.repository.RefreshTokenRepository;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.user.api.UserApi;
 import com.dmc.archiving.user.model.User;
@@ -36,8 +38,13 @@ class AuthControllerTest {
     // itself is covered by SignupRateLimiterTest / SignupRateLimitMvcTest).
     private final SignupRateLimiter rateLimiter = new SignupRateLimiter(100, 60_000L, System::currentTimeMillis);
     private final LoginAttemptLimiter loginLimiter = new LoginAttemptLimiter(100, 60_000L, System::currentTimeMillis);
+    // Real service over a mocked repo: login/register only call generate(), which
+    // just returns the minted plaintext (rotation/reuse is covered by its own tests).
+    private final RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
+    private final RefreshTokenService refreshTokenService =
+            new RefreshTokenService(refreshTokenRepository, 14L * 24 * 60 * 60_000L, System::currentTimeMillis);
     private final AuthController controller =
-            new AuthController(tenancyApi, userApi, signer, registrationService, rateLimiter, loginLimiter);
+            new AuthController(tenancyApi, userApi, signer, registrationService, rateLimiter, loginLimiter, refreshTokenService);
 
     private static HttpServletRequest request() {
         HttpServletRequest req = mock(HttpServletRequest.class);

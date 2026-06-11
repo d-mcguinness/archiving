@@ -58,8 +58,8 @@
         console.log('TenantId:', result.tenantId || '(none)');
         console.groupEnd();
 
-        // Store auth data
-        auth.login(result.token, result.user, result.role, result.tenantId);
+        // Store auth data (incl. the refresh token used to renew the session)
+        auth.login(result.token, result.user, result.role, result.tenantId, result.refreshToken);
 
         toasts.success(`Welcome back, ${result.user.name}!`);
 

@@ -1,5 +1,6 @@
 package com.dmc.archiving.web;
 
+import com.dmc.archiving.auth.RefreshTokenService;
 import com.dmc.archiving.auth.api.TokenSigner;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,9 @@ import static org.mockito.Mockito.mock;
 class AuthControllerVerifyTest {
 
     private final TokenSigner signer = new TokenSigner("test-secret");
-    private final AuthController controller = new AuthController(mock(TenancyApi.class), mock(com.dmc.archiving.user.api.UserApi.class), signer, mock(RegistrationService.class), new SignupRateLimiter(100, 60000L, System::currentTimeMillis), new LoginAttemptLimiter(100, 60000L, System::currentTimeMillis));
+    private final RefreshTokenService refreshTokenService = new RefreshTokenService(
+            mock(com.dmc.archiving.auth.repository.RefreshTokenRepository.class), 14L * 24 * 60 * 60_000L, System::currentTimeMillis);
+    private final AuthController controller = new AuthController(mock(TenancyApi.class), mock(com.dmc.archiving.user.api.UserApi.class), signer, mock(RegistrationService.class), new SignupRateLimiter(100, 60000L, System::currentTimeMillis), new LoginAttemptLimiter(100, 60000L, System::currentTimeMillis), refreshTokenService);
 
     @Test
     void validSignedTokenIsReportedValid() {
