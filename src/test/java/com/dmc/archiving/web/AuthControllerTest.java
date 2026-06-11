@@ -5,6 +5,7 @@ import com.dmc.archiving.auth.api.TokenSigner;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.user.api.UserApi;
 import com.dmc.archiving.user.model.User;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +15,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -33,8 +32,17 @@ class AuthControllerTest {
     private final UserApi userApi = mock(UserApi.class);
     private final TokenSigner signer = new TokenSigner("test-secret");
     private final RegistrationService registrationService = mock(RegistrationService.class);
+    // High-capacity limiter so it always allows in these unit tests (rate limiting
+    // itself is covered by SignupRateLimiterTest / SignupRateLimitMvcTest).
+    private final SignupRateLimiter rateLimiter = new SignupRateLimiter(100, 60_000L, System::currentTimeMillis);
     private final AuthController controller =
-            new AuthController(tenancyApi, userApi, signer, registrationService);
+            new AuthController(tenancyApi, userApi, signer, registrationService, rateLimiter);
+
+    private static HttpServletRequest request() {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        when(req.getRemoteAddr()).thenReturn("203.0.113.7");
+        return req;
+    }
 
     private static User user(Long id, String username, String role) {
         User u = new User();
@@ -91,7 +99,7 @@ class AuthControllerTest {
         req.setUsername("ada");
         req.setPassword("password1");
 
-        ResponseEntity<?> resp = controller.register(req);
+        ResponseEntity<?> resp = controller.register(req, request());
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         Map<String, Object> b = body(resp);
@@ -116,7 +124,7 @@ class AuthControllerTest {
         req.setUsername("ada");
         req.setPassword("password1");
 
-        ResponseEntity<?> resp = controller.register(req);
+        ResponseEntity<?> resp = controller.register(req, request());
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(body(resp).get("error")).isEqualTo("Username is already taken");

@@ -5,6 +5,7 @@ import com.dmc.archiving.auth.api.TokenSigner;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.user.api.UserApi;
 import com.dmc.archiving.user.model.User;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -32,13 +33,15 @@ public class AuthController {
     private final UserApi userApi;
     private final TokenSigner tokenSigner;
     private final RegistrationService registrationService;
+    private final SignupRateLimiter signupRateLimiter;
 
     public AuthController(TenancyApi tenancyApi, UserApi userApi, TokenSigner tokenSigner,
-                          RegistrationService registrationService) {
+                          RegistrationService registrationService, SignupRateLimiter signupRateLimiter) {
         this.tenancyApi = tenancyApi;
         this.userApi = userApi;
         this.tokenSigner = tokenSigner;
         this.registrationService = registrationService;
+        this.signupRateLimiter = signupRateLimiter;
     }
 
     @PostMapping("/login")
@@ -73,7 +76,14 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request, HttpServletRequest httpRequest) {
+        // Rate-limit per client IP before any work, to blunt automated signup abuse.
+        String clientIp = clientIp(httpRequest);
+        if (!signupRateLimiter.tryAcquire(clientIp)) {
+            log.warn("Signup rate limit exceeded for {}", clientIp);
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(Map.of("success", false, "error", "Too many sign-up attempts. Please try again later."));
+        }
         try {
             log.info("Registration attempt for username: {}", request.getUsername());
             // One atomic step (RegistrationService): user + their FREE tenant, so a
@@ -145,5 +155,14 @@ public class AuthController {
             }
         }
         return response;
+    }
+
+    /** Client IP for rate-limiting — first X-Forwarded-For hop if present, else the socket address. */
+    private static String clientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }
