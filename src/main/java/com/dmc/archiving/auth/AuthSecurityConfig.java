@@ -37,17 +37,26 @@ public class AuthSecurityConfig {
     static final String DEV_FALLBACK_SECRET = "dev-insecure-demo-secret-do-not-use-in-prod";
     /** Profiles under which the DEV fallback is acceptable; everything else must supply a real secret. */
     static final Set<String> LOCAL_PROFILES = Set.of("local", "dev", "test");
+    /** TTL applied when a caller (e.g. the gating unit tests) does not specify one. */
+    static final long DEFAULT_TTL_MINUTES = 60;
 
     @Bean
     TokenSigner tokenSigner(Environment environment,
-                            @Value("${app.auth.token-secret:}") String configuredSecret) {
-        return buildTokenSigner(environment.getActiveProfiles(), configuredSecret);
+                            @Value("${app.auth.token-secret:}") String configuredSecret,
+                            @Value("${app.auth.token-ttl-minutes:60}") long ttlMinutes) {
+        return buildTokenSigner(environment.getActiveProfiles(), configuredSecret, ttlMinutes);
+    }
+
+    /** Package-visible 2-arg overload (default TTL) for the gating unit tests. */
+    static TokenSigner buildTokenSigner(String[] activeProfiles, String configuredSecret) {
+        return buildTokenSigner(activeProfiles, configuredSecret, DEFAULT_TTL_MINUTES);
     }
 
     /** Package-visible so the gating policy can be unit-tested without a context. */
-    static TokenSigner buildTokenSigner(String[] activeProfiles, String configuredSecret) {
+    static TokenSigner buildTokenSigner(String[] activeProfiles, String configuredSecret, long ttlMinutes) {
+        long ttlMillis = ttlMinutes * 60_000L;
         if (configuredSecret != null && !configuredSecret.isBlank()) {
-            return new TokenSigner(configuredSecret);
+            return new TokenSigner(configuredSecret, ttlMillis, System::currentTimeMillis);
         }
         // Fail closed unless this is clearly a local/test run. A real secret is
         // required for every named deployment profile (docker, staging, prod, …),
@@ -62,6 +71,6 @@ public class AuthSecurityConfig {
         log.warn("No app.auth.token-secret set; using the built-in DEV auth secret (profiles={}). "
                 + "Tokens are DEMO-ONLY and forgeable by anyone with repo access. "
                 + "Set APP_AUTH_TOKEN_SECRET before any non-local deployment.", Arrays.toString(activeProfiles));
-        return new TokenSigner(DEV_FALLBACK_SECRET);
+        return new TokenSigner(DEV_FALLBACK_SECRET, ttlMillis, System::currentTimeMillis);
     }
 }

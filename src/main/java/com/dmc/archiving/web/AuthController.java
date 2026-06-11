@@ -165,7 +165,7 @@ public class AuthController {
         response.put("user", userBody);
         response.put("role", user.getRole());
         response.put("token", token);
-        response.put("expiresIn", 3600);
+        response.put("expiresIn", tokenSigner.ttlSeconds());
 
         // Non-ADMIN accounts resolve to their (first) tenant for the UI to scope to.
         if (!"ADMIN".equals(user.getRole())) {
