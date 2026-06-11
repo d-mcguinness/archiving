@@ -44,7 +44,7 @@
 
       if (response.ok && result.success) {
         // Signup creates a FREE-plan tenant the user owns and logs them straight in.
-        auth.login(result.token, result.user, result.role, result.tenantId);
+        auth.login(result.token, result.user, result.role, result.tenantId, result.refreshToken);
         toasts.success(`Welcome to Arcana, ${result.user.name}!`);
         if (result.tenantId) {
           goto(`/tenants/${result.tenantId}/archives`);

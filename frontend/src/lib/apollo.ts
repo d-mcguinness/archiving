@@ -2,8 +2,10 @@
 import * as apolloCore from '@apollo/client/core';
 import * as apolloLinkError from '@apollo/client/link/error';
 import type { ErrorResponse, ServerError, ServerParseError } from '@apollo/client/link/error';
+import { auth } from './stores/authStore';
+import { refreshAccessToken } from './refresh';
 
-const { ApolloClient, InMemoryCache, createHttpLink, ApolloLink } = apolloCore;
+const { ApolloClient, InMemoryCache, createHttpLink, ApolloLink, Observable, fromPromise } = apolloCore;
 const { onError } = apolloLinkError;
 
 const uri: string = import.meta.env?.VITE_GRAPHQL_URI || '/graphql';
@@ -14,7 +16,28 @@ const httpLink = createHttpLink({
   credentials: 'include'
 });
 
-const errorLink = onError(({ graphQLErrors, networkError, operation }: ErrorResponse) => {
+const errorLink = onError(({ graphQLErrors, networkError, operation, forward }: ErrorResponse) => {
+  // Transparent recovery from an expired access token: on a 401, refresh once and
+  // replay the operation (authLink re-reads the rotated token per operation). If
+  // the refresh fails, log out. While mimicking, a 401 means the impersonation
+  // token expired → restore the admin's own session rather than refreshing.
+  const status = networkError && 'statusCode' in (networkError as ServerError)
+    ? (networkError as ServerError).statusCode
+    : undefined;
+  if (status === 401 && typeof window !== 'undefined') {
+    if (auth.isMimicking()) {
+      auth.exitMimic();
+    } else {
+      return fromPromise(refreshAccessToken()).flatMap((refreshed) => {
+        if (refreshed) {
+          return forward(operation);
+        }
+        auth.logout();
+        return Observable.of();
+      });
+    }
+  }
+
   const parts: string[] = [];
 
   if (graphQLErrors && graphQLErrors.length) {

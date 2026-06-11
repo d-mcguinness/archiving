@@ -1,6 +1,7 @@
 package com.dmc.archiving.web;
 
 import com.dmc.archiving.auth.LoginRequest;
+import com.dmc.archiving.auth.RefreshTokenService;
 import com.dmc.archiving.auth.api.TokenSigner;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.user.api.UserApi;
@@ -35,16 +36,18 @@ public class AuthController {
     private final RegistrationService registrationService;
     private final SignupRateLimiter signupRateLimiter;
     private final LoginAttemptLimiter loginAttemptLimiter;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthController(TenancyApi tenancyApi, UserApi userApi, TokenSigner tokenSigner,
                           RegistrationService registrationService, SignupRateLimiter signupRateLimiter,
-                          LoginAttemptLimiter loginAttemptLimiter) {
+                          LoginAttemptLimiter loginAttemptLimiter, RefreshTokenService refreshTokenService) {
         this.tenancyApi = tenancyApi;
         this.userApi = userApi;
         this.tokenSigner = tokenSigner;
         this.registrationService = registrationService;
         this.signupRateLimiter = signupRateLimiter;
         this.loginAttemptLimiter = loginAttemptLimiter;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @PostMapping("/login")
@@ -84,7 +87,9 @@ public class AuthController {
             log.info("Login successful for user: {}", username);
             loginAttemptLimiter.recordSuccess(userKey);
             loginAttemptLimiter.recordSuccess(ipKey);
-            return ResponseEntity.ok(authSuccess(authenticated.get(), "Login successful"));
+            User user = authenticated.get();
+            return ResponseEntity.ok(authSuccess(user, "Login successful",
+                    refreshTokenService.generate(user.getId())));
         } catch (Exception e) {
             log.error("Login error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -114,7 +119,8 @@ public class AuthController {
                     request.getName(), request.getEmail(), request.getUsername(),
                     request.getPassword(), request.getOrganization());
             log.info("Registered user {} ({}) as a new tenant owner", user.getId(), user.getUsername());
-            return ResponseEntity.status(HttpStatus.CREATED).body(authSuccess(user, "Registration successful"));
+            return ResponseEntity.status(HttpStatus.CREATED).body(authSuccess(user, "Registration successful",
+                    refreshTokenService.generate(user.getId())));
         } catch (IllegalArgumentException e) {
             // Validation / duplicate username or email.
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -126,8 +132,38 @@ public class AuthController {
         }
     }
 
+    /**
+     * Exchange a valid refresh token for a fresh access token (and a rotated
+     * refresh token). Single-use: the presented refresh token is consumed, so a
+     * replay is rejected and a reused (already-rotated) token revokes the whole
+     * session set. The user is re-read so a current role/username is minted and a
+     * since-deleted account cannot refresh. Open endpoint (outside the REST auth
+     * interceptor) and takes no access token — it renews an EXPIRED session.
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody RefreshRequest request) {
+        var rotation = refreshTokenService.rotate(request == null ? null : request.getRefreshToken());
+        if (rotation.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("success", false, "error", "Invalid or expired refresh token"));
+        }
+        Optional<User> user = userApi.getUserById(rotation.get().userId());
+        if (user.isEmpty()) {
+            // Account deleted since the refresh token was issued — nothing to renew.
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("success", false, "error", "Account no longer exists"));
+        }
+        return ResponseEntity.ok(authSuccess(user.get(), "Token refreshed", rotation.get().refreshToken()));
+    }
+
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String token) {
+    public ResponseEntity<?> logout(@RequestBody(required = false) RefreshRequest request) {
+        // Real revocation (device-scoped): kill the presented refresh token so it
+        // can no longer renew the session. The access token remains valid until its
+        // own (short) expiry — the documented bound on offline-verified tokens.
+        if (request != null) {
+            refreshTokenService.revoke(request.getRefreshToken());
+        }
         log.info("Logout request received");
         return ResponseEntity.ok(Map.of("success", true, "message", "Logged out successfully"));
     }
@@ -148,8 +184,12 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("success", true, "valid", true, "message", "Token is valid"));
     }
 
-    /** Build the shared login/registration success body: signed token + user + first tenant. */
-    private Map<String, Object> authSuccess(User user, String message) {
+    /**
+     * Build the shared login/registration/refresh success body: a fresh signed
+     * access token, the opaque refresh token to renew it with, the user, and
+     * their first tenant.
+     */
+    private Map<String, Object> authSuccess(User user, String message, String refreshToken) {
         String token = tokenSigner.issue(user.getId(), user.getUsername(), user.getRole());
 
         Map<String, Object> userBody = new HashMap<>();
@@ -165,6 +205,7 @@ public class AuthController {
         response.put("user", userBody);
         response.put("role", user.getRole());
         response.put("token", token);
+        response.put("refreshToken", refreshToken);
         response.put("expiresIn", tokenSigner.ttlSeconds());
 
         // Non-ADMIN accounts resolve to their (first) tenant for the UI to scope to.
