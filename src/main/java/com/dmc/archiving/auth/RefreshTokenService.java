@@ -91,9 +91,14 @@ public class RefreshTokenService {
             // Already rotated (has a successor) → REUSE of a consumed token, the
             // stolen-refresh-token signal: kill every live token for this user.
             // Revoked without a successor → an explicit logout; just reject it.
+            // Gated on the affected-row count so replaying a long-dead token is an
+            // idempotent no-op (no log spam, nothing left to revoke).
             if (token.getRotatedToId() != null) {
-                log.warn("Refresh-token reuse detected for user {} — revoking all sessions", token.getUserId());
-                repository.revokeAllByUserId(token.getUserId());
+                int revoked = repository.revokeAllByUserId(token.getUserId());
+                if (revoked > 0) {
+                    log.warn("Refresh-token reuse detected for user {} — revoked {} live session(s)",
+                            token.getUserId(), revoked);
+                }
             }
             return Optional.empty();
         }
@@ -101,12 +106,16 @@ public class RefreshTokenService {
             return Optional.empty(); // expired → client must re-authenticate
         }
 
-        // Valid: revoke this one and link it to a freshly-minted successor.
+        // Mint the successor, then ATOMICALLY claim the presented token: the
+        // conditional UPDATE flips revoked false→true and links the successor only
+        // if still live. Exactly one of N concurrent refreshes of the same token
+        // wins (1 row); a loser (0 rows) was beaten to it — drop its orphan
+        // successor and reject, so single-use holds and no false reuse-nuke fires.
         Issued successor = persistNew(token.getUserId());
-        token.setRevoked(true);
-        token.setRotatedToId(successor.row().getId());
-        repository.save(token);
-
+        if (repository.consumeForRotation(token.getId(), successor.row().getId()) == 0) {
+            repository.delete(successor.row());
+            return Optional.empty();
+        }
         return Optional.of(new Rotation(token.getUserId(), successor.plaintext()));
     }
 

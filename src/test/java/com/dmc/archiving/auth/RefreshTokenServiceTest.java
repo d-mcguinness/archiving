@@ -16,6 +16,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -33,11 +35,12 @@ class RefreshTokenServiceTest {
     private final Map<String, RefreshToken> store = new HashMap<>();
     private final AtomicLong idSeq = new AtomicLong(1);
     private final AtomicLong now = new AtomicLong(0L);
+    private RefreshTokenRepository repo;
     private RefreshTokenService service;
 
     @BeforeEach
     void setUp() {
-        RefreshTokenRepository repo = mock(RefreshTokenRepository.class);
+        repo = mock(RefreshTokenRepository.class);
         when(repo.save(any(RefreshToken.class))).thenAnswer(inv -> {
             RefreshToken t = inv.getArgument(0);
             if (t.getId() == null) {
@@ -48,6 +51,18 @@ class RefreshTokenServiceTest {
         });
         when(repo.findByTokenHash(anyString())).thenAnswer(inv ->
                 Optional.ofNullable(store.get((String) inv.getArgument(0))));
+        // Atomic claim: flip revoked false→true + link successor, only if live.
+        when(repo.consumeForRotation(anyLong(), anyLong())).thenAnswer(inv -> {
+            long id = inv.getArgument(0);
+            for (RefreshToken t : store.values()) {
+                if (t.getId() == id && !t.isRevoked()) {
+                    t.setRevoked(true);
+                    t.setRotatedToId(inv.getArgument(1));
+                    return 1;
+                }
+            }
+            return 0;
+        });
         when(repo.revokeAllByUserId(anyLong())).thenAnswer(inv -> {
             long uid = inv.getArgument(0);
             int n = 0;
@@ -115,5 +130,18 @@ class RefreshTokenServiceTest {
         assertThat(service.rotate("never-issued")).isEmpty();
         assertThat(service.rotate(null)).isEmpty();
         assertThat(service.rotate("  ")).isEmpty();
+    }
+
+    @Test
+    void losingTheConcurrentClaimRejectsWithoutMintingOrNuking() {
+        // Simulate the race: the token still reads as live, but the atomic
+        // consumeForRotation reports 0 rows because a concurrent refresh already
+        // claimed it. The loser must reject — NOT return a usable rotation, and
+        // NOT fire a false reuse-nuke against the (now legitimately rotated) user.
+        String token = service.generate(8L);
+        when(repo.consumeForRotation(anyLong(), anyLong())).thenReturn(0);
+
+        assertThat(service.rotate(token)).isEmpty();
+        verify(repo, never()).revokeAllByUserId(anyLong());
     }
 }
