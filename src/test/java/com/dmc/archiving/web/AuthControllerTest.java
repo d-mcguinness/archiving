@@ -35,8 +35,9 @@ class AuthControllerTest {
     // High-capacity limiter so it always allows in these unit tests (rate limiting
     // itself is covered by SignupRateLimiterTest / SignupRateLimitMvcTest).
     private final SignupRateLimiter rateLimiter = new SignupRateLimiter(100, 60_000L, System::currentTimeMillis);
+    private final LoginAttemptLimiter loginLimiter = new LoginAttemptLimiter(100, 60_000L, System::currentTimeMillis);
     private final AuthController controller =
-            new AuthController(tenancyApi, userApi, signer, registrationService, rateLimiter);
+            new AuthController(tenancyApi, userApi, signer, registrationService, rateLimiter, loginLimiter);
 
     private static HttpServletRequest request() {
         HttpServletRequest req = mock(HttpServletRequest.class);
@@ -64,7 +65,7 @@ class AuthControllerTest {
         when(userApi.authenticate("tenant", "tenant123")).thenReturn(Optional.of(user(2L, "tenant", "TENANT")));
         when(tenancyApi.getTenantIdsByUserId(2L)).thenReturn(List.of(5L));
 
-        ResponseEntity<?> resp = controller.login(new LoginRequest("tenant", "tenant123"));
+        ResponseEntity<?> resp = controller.login(new LoginRequest("tenant", "tenant123"), request());
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
         Map<String, Object> b = body(resp);
@@ -79,7 +80,7 @@ class AuthControllerTest {
     void loginWithBadCredentialsIsUnauthorized() {
         when(userApi.authenticate("tenant", "wrong")).thenReturn(Optional.empty());
 
-        ResponseEntity<?> resp = controller.login(new LoginRequest("tenant", "wrong"));
+        ResponseEntity<?> resp = controller.login(new LoginRequest("tenant", "wrong"), request());
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(body(resp).get("success")).isEqualTo(false);
