@@ -34,22 +34,35 @@ public class AuthController {
     private final TokenSigner tokenSigner;
     private final RegistrationService registrationService;
     private final SignupRateLimiter signupRateLimiter;
+    private final LoginAttemptLimiter loginAttemptLimiter;
 
     public AuthController(TenancyApi tenancyApi, UserApi userApi, TokenSigner tokenSigner,
-                          RegistrationService registrationService, SignupRateLimiter signupRateLimiter) {
+                          RegistrationService registrationService, SignupRateLimiter signupRateLimiter,
+                          LoginAttemptLimiter loginAttemptLimiter) {
         this.tenancyApi = tenancyApi;
         this.userApi = userApi;
         this.tokenSigner = tokenSigner;
         this.registrationService = registrationService;
         this.signupRateLimiter = signupRateLimiter;
+        this.loginAttemptLimiter = loginAttemptLimiter;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletRequest httpRequest) {
         try {
             String username = loginRequest.getUsername();
             String password = loginRequest.getPassword();
             log.info("Login attempt for username: {}", username);
+
+            // Throttle brute-force/spraying: block before verifying the password when
+            // too many recent FAILURES exist for this account OR this client IP.
+            String userKey = loginKey(username);
+            String ipKey = "ip:" + clientIp(httpRequest);
+            if (loginAttemptLimiter.isBlocked(userKey) || loginAttemptLimiter.isBlocked(ipKey)) {
+                log.warn("Login throttled for username '{}' / {}", username, ipKey);
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(Map.of("success", false, "error", "Too many failed login attempts. Please try again later."));
+            }
 
             if (username == null || username.trim().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -63,16 +76,25 @@ public class AuthController {
             Optional<User> authenticated = userApi.authenticate(username, password);
             if (authenticated.isEmpty()) {
                 log.warn("Login failed for username: {} - Invalid credentials", username);
+                loginAttemptLimiter.recordFailure(userKey);
+                loginAttemptLimiter.recordFailure(ipKey);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("success", false, "error", "Invalid username or password"));
             }
             log.info("Login successful for user: {}", username);
+            loginAttemptLimiter.recordSuccess(userKey);
+            loginAttemptLimiter.recordSuccess(ipKey);
             return ResponseEntity.ok(authSuccess(authenticated.get(), "Login successful"));
         } catch (Exception e) {
             log.error("Login error: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("success", false, "error", "An error occurred during login"));
         }
+    }
+
+    /** Lowercased, prefixed username key for the login limiter (null-safe). */
+    private static String loginKey(String username) {
+        return "u:" + (username == null ? "" : username.trim().toLowerCase());
     }
 
     @PostMapping("/register")

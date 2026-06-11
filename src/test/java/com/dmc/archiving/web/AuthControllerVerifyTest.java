@@ -17,7 +17,7 @@ import static org.mockito.Mockito.mock;
 class AuthControllerVerifyTest {
 
     private final TokenSigner signer = new TokenSigner("test-secret");
-    private final AuthController controller = new AuthController(mock(TenancyApi.class), mock(com.dmc.archiving.user.api.UserApi.class), signer, mock(RegistrationService.class), new SignupRateLimiter(100, 60000L, System::currentTimeMillis));
+    private final AuthController controller = new AuthController(mock(TenancyApi.class), mock(com.dmc.archiving.user.api.UserApi.class), signer, mock(RegistrationService.class), new SignupRateLimiter(100, 60000L, System::currentTimeMillis), new LoginAttemptLimiter(100, 60000L, System::currentTimeMillis));
 
     @Test
     void validSignedTokenIsReportedValid() {
