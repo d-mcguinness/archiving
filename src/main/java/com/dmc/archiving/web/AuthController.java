@@ -37,10 +37,12 @@ public class AuthController {
     private final SignupRateLimiter signupRateLimiter;
     private final LoginAttemptLimiter loginAttemptLimiter;
     private final RefreshTokenService refreshTokenService;
+    private final RefreshRateLimiter refreshRateLimiter;
 
     public AuthController(TenancyApi tenancyApi, UserApi userApi, TokenSigner tokenSigner,
                           RegistrationService registrationService, SignupRateLimiter signupRateLimiter,
-                          LoginAttemptLimiter loginAttemptLimiter, RefreshTokenService refreshTokenService) {
+                          LoginAttemptLimiter loginAttemptLimiter, RefreshTokenService refreshTokenService,
+                          RefreshRateLimiter refreshRateLimiter) {
         this.tenancyApi = tenancyApi;
         this.userApi = userApi;
         this.tokenSigner = tokenSigner;
@@ -48,6 +50,7 @@ public class AuthController {
         this.signupRateLimiter = signupRateLimiter;
         this.loginAttemptLimiter = loginAttemptLimiter;
         this.refreshTokenService = refreshTokenService;
+        this.refreshRateLimiter = refreshRateLimiter;
     }
 
     @PostMapping("/login")
@@ -141,7 +144,14 @@ public class AuthController {
      * interceptor) and takes no access token — it renews an EXPIRED session.
      */
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@RequestBody RefreshRequest request) {
+    public ResponseEntity<?> refresh(@RequestBody RefreshRequest request, HttpServletRequest httpRequest) {
+        // Per-IP cap before any DB work: this is an open, DB-writing endpoint, and
+        // throttling also blunts replaying a stale token to fire the reuse-nuke.
+        if (!refreshRateLimiter.tryAcquire(clientIp(httpRequest))) {
+            log.warn("Refresh rate limit exceeded for {}", clientIp(httpRequest));
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(Map.of("success", false, "error", "Too many refresh attempts. Please try again later."));
+        }
         var rotation = refreshTokenService.rotate(request == null ? null : request.getRefreshToken());
         if (rotation.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -157,7 +167,14 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestBody(required = false) RefreshRequest request) {
+    public ResponseEntity<?> logout(@RequestBody(required = false) RefreshRequest request,
+                                    HttpServletRequest httpRequest) {
+        // Per-IP cap on this open, DB-writing endpoint (shares the refresh window).
+        if (!refreshRateLimiter.tryAcquire(clientIp(httpRequest))) {
+            log.warn("Logout rate limit exceeded for {}", clientIp(httpRequest));
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(Map.of("success", false, "error", "Too many requests. Please try again later."));
+        }
         // Real revocation (device-scoped): kill the presented refresh token so it
         // can no longer renew the session. The access token remains valid until its
         // own (short) expiry — the documented bound on offline-verified tokens.

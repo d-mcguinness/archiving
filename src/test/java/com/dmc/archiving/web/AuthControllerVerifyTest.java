@@ -20,7 +20,7 @@ class AuthControllerVerifyTest {
     private final TokenSigner signer = new TokenSigner("test-secret");
     private final RefreshTokenService refreshTokenService = new RefreshTokenService(
             mock(com.dmc.archiving.auth.repository.RefreshTokenRepository.class), 14L * 24 * 60 * 60_000L, System::currentTimeMillis);
-    private final AuthController controller = new AuthController(mock(TenancyApi.class), mock(com.dmc.archiving.user.api.UserApi.class), signer, mock(RegistrationService.class), new SignupRateLimiter(100, 60000L, System::currentTimeMillis), new LoginAttemptLimiter(100, 60000L, System::currentTimeMillis), refreshTokenService);
+    private final AuthController controller = new AuthController(mock(TenancyApi.class), mock(com.dmc.archiving.user.api.UserApi.class), signer, mock(RegistrationService.class), new SignupRateLimiter(100, 60000L, System::currentTimeMillis), new LoginAttemptLimiter(100, 60000L, System::currentTimeMillis), refreshTokenService, new RefreshRateLimiter(100, 60000L, System::currentTimeMillis));
 
     @Test
     void validSignedTokenIsReportedValid() {
