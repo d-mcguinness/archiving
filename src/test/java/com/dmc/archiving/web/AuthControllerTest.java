@@ -38,13 +38,15 @@ class AuthControllerTest {
     // itself is covered by SignupRateLimiterTest / SignupRateLimitMvcTest).
     private final SignupRateLimiter rateLimiter = new SignupRateLimiter(100, 60_000L, System::currentTimeMillis);
     private final LoginAttemptLimiter loginLimiter = new LoginAttemptLimiter(100, 60_000L, System::currentTimeMillis);
+    private final RefreshRateLimiter refreshRateLimiter = new RefreshRateLimiter(100, 60_000L, System::currentTimeMillis);
     // Real service over a mocked repo: login/register only call generate(), which
     // just returns the minted plaintext (rotation/reuse is covered by its own tests).
     private final RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
     private final RefreshTokenService refreshTokenService =
             new RefreshTokenService(refreshTokenRepository, 14L * 24 * 60 * 60_000L, System::currentTimeMillis);
     private final AuthController controller =
-            new AuthController(tenancyApi, userApi, signer, registrationService, rateLimiter, loginLimiter, refreshTokenService);
+            new AuthController(tenancyApi, userApi, signer, registrationService, rateLimiter, loginLimiter,
+                    refreshTokenService, refreshRateLimiter);
 
     private static HttpServletRequest request() {
         HttpServletRequest req = mock(HttpServletRequest.class);
