@@ -91,14 +91,17 @@ public class RefreshTokenService {
             // Already rotated (has a successor) → REUSE of a consumed token, the
             // stolen-refresh-token signal: kill every live token for this user.
             // Revoked without a successor → an explicit logout; just reject it.
-            // Gated on the affected-row count so replaying a long-dead token is an
-            // idempotent no-op (no log spam, nothing left to revoke).
-            if (token.getRotatedToId() != null) {
+            //
+            // markReuseReported atomically flips the one-shot flag, so the nuke
+            // fires at most ONCE per captured token: a replayed stale token can't
+            // be used as a repeatable session-DoS (re-firing the revoke-all on
+            // every replay, including against the victim's fresh post-relogin
+            // sessions). The first replay reports + revokes; later replays of the
+            // same token are silently rejected.
+            if (token.getRotatedToId() != null && repository.markReuseReported(token.getId()) == 1) {
                 int revoked = repository.revokeAllByUserId(token.getUserId());
-                if (revoked > 0) {
-                    log.warn("Refresh-token reuse detected for user {} — revoked {} live session(s)",
-                            token.getUserId(), revoked);
-                }
+                log.warn("Refresh-token reuse detected for user {} — revoked {} live session(s)",
+                        token.getUserId(), revoked);
             }
             return Optional.empty();
         }

@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -73,6 +74,17 @@ class RefreshTokenServiceTest {
                 }
             }
             return n;
+        });
+        // One-shot reuse flag: flip reuseReported false→true only once.
+        when(repo.markReuseReported(anyLong())).thenAnswer(inv -> {
+            long id = inv.getArgument(0);
+            for (RefreshToken t : store.values()) {
+                if (t.getId() == id && !t.isReuseReported()) {
+                    t.setReuseReported(true);
+                    return 1;
+                }
+            }
+            return 0;
         });
         service = new RefreshTokenService(repo, TTL, now::get);
     }
@@ -143,5 +155,24 @@ class RefreshTokenServiceTest {
 
         assertThat(service.rotate(token)).isEmpty();
         verify(repo, never()).revokeAllByUserId(anyLong());
+    }
+
+    @Test
+    void reuseNukeFiresAtMostOncePerCapturedToken() {
+        String stolen = service.generate(11L);
+        service.rotate(stolen); // legit client rotates it; `stolen` is now a consumed token
+
+        // First replay of the consumed token → theft signal → revoke-all fires once.
+        assertThat(service.rotate(stolen)).isEmpty();
+        verify(repo, times(1)).revokeAllByUserId(11L);
+
+        // Victim re-authenticates: a fresh, unrelated session.
+        String fresh = service.generate(11L);
+
+        // Attacker replays the SAME stale token again. It must NOT re-fire the nuke
+        // (no repeatable DoS) and must NOT kill the victim's new session.
+        assertThat(service.rotate(stolen)).isEmpty();
+        verify(repo, times(1)).revokeAllByUserId(11L); // still exactly once
+        assertThat(service.rotate(fresh)).isPresent();  // the fresh session survives
     }
 }

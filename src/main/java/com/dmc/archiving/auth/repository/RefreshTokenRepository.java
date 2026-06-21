@@ -26,6 +26,16 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
             + "where r.id = :id and r.revoked = false")
     int consumeForRotation(@Param("id") Long id, @Param("successorId") Long successorId);
 
+    /**
+     * Atomically claim the right to report reuse of a rotated token: flip
+     * reuseReported false→true only once. Returns 1 for the single caller that
+     * wins the flip and 0 thereafter, so replaying the same captured token fires
+     * the revoke-all nuke at most once (no repeatable session-DoS).
+     */
+    @Modifying
+    @Query("update RefreshToken r set r.reuseReported = true where r.id = :id and r.reuseReported = false")
+    int markReuseReported(@Param("id") Long id);
+
     /** Revoke every still-live token for a user (reuse-detection nuke, "sign out everywhere"). */
     @Modifying
     @Query("update RefreshToken r set r.revoked = true where r.userId = :userId and r.revoked = false")
