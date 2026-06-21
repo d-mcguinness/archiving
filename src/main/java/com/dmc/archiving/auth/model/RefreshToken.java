@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
@@ -57,6 +58,15 @@ public class RefreshToken {
     /** Id of the successor row this one rotated into; non-null only once rotated. */
     @Column(name = "rotated_to_id")
     private Long rotatedToId;
+
+    /**
+     * Set once this rotated token's reuse has triggered the revoke-all nuke, so a
+     * replay of the SAME captured token can't fire it again — bounding a stolen
+     * token to a single session-wide revocation rather than a repeatable DoS.
+     */
+    @Column(name = "reuse_reported", nullable = false)
+    @ColumnDefault("false")
+    private boolean reuseReported;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
