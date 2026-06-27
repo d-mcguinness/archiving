@@ -1,0 +1,12 @@
+-- V4: add the reuse_reported flag to refresh_tokens.
+--
+-- The RefreshToken entity (PR #23) gained reuse_reported to make the
+-- stolen-token "revoke-all" nuke one-shot per captured token. The V1 baseline
+-- was generated before #23 landed and reserved the "V2" slot for this column,
+-- but V2/V3 were claimed by the Stripe billing migrations (PR #24) — so the
+-- column never got a migration and a fresh DB fails Hibernate ddl-auto=validate
+-- with "missing column [reuse_reported] in table [refresh_tokens]".
+--
+-- Matches the entity mapping: boolean, NOT NULL, @ColumnDefault("false").
+-- DEFAULT FALSE also backfills any existing rows so the NOT NULL add is safe.
+ALTER TABLE refresh_tokens ADD COLUMN reuse_reported BOOLEAN NOT NULL DEFAULT FALSE;
