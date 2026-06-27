@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15
@@ -28,7 +26,10 @@ services:
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
     ports:
-      - "4566:4566"
+      # Host 4567 → container 4566 to avoid clashing with the vsware-docker
+      # LocalStack stack, which already binds host 4566. The app's
+      # aws.localstack.endpoint (application-local.properties) points here.
+      - "4567:4566"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
       interval: 10s
