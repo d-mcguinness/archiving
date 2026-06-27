@@ -18,6 +18,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -39,6 +40,23 @@ public class GlobalExceptionHandler extends DataFetcherExceptionResolverAdapter 
                 .status(HttpStatus.NOT_FOUND.value())
                 .error("Not Found")
                 .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build());
+    }
+
+    /**
+     * Spring throws NoResourceFoundException when a request matches no controller
+     * and no static resource (e.g. a typo'd path, or hitting this GraphQL app on a
+     * REST-style URL). It is a 404; without this it would fall through to the
+     * catch-all handler below and be reported as a misleading 500.
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex) {
+        log.warn("No resource found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorResponse.builder()
+                .status(HttpStatus.NOT_FOUND.value())
+                .error("Not Found")
+                .message("The requested resource was not found")
                 .timestamp(LocalDateTime.now())
                 .build());
     }
