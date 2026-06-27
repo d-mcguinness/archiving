@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { API_BASE } from '$lib/api';
   import { onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
@@ -119,7 +120,7 @@
     extracting = true;
     extractError = null;
     try {
-      const response = await fetch(`http://localhost:2020/api/archives/${selectedDipForExtract.id}/extract`, {
+      const response = await fetch(`${API_BASE}/api/archives/${selectedDipForExtract.id}/extract`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: extractPassword })

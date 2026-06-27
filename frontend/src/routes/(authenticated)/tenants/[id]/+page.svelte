@@ -4,7 +4,7 @@
   import { client } from '$lib/apollo';
   import { GET_TENANT, GET_TENANT_DASHBOARD_STATS, GET_SIPS_BY_TENANT_V2, GET_AIPS_BY_TENANT, GET_DIPS_BY_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
-  import { authHeaders } from '$lib/api';
+  import { authHeaders, API_BASE } from '$lib/api';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   let tenant: any = null;
@@ -46,7 +46,7 @@
         client.query({ query: GET_SIPS_BY_TENANT_V2, variables: { tenantId }, fetchPolicy: 'network-only' }).catch(() => ({ data: { getSipsByTenantV2: [] } })),
         client.query({ query: GET_AIPS_BY_TENANT, variables: { tenantId }, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAipsByTenant: [] } })),
         client.query({ query: GET_DIPS_BY_TENANT, variables: { tenantId }, fetchPolicy: 'network-only' }).catch(() => ({ data: { getDipsByTenant: [] } })),
-        fetch(`http://localhost:2020/api/documents?role=TENANT&tenantId=${tenantId}`, { headers: { ...authHeaders() } }).then(r => r.json()).catch(() => ({ documents: [] })),
+        fetch(`${API_BASE}/api/documents?role=TENANT&tenantId=${tenantId}`, { headers: { ...authHeaders() } }).then(r => r.json()).catch(() => ({ documents: [] })),
       ]);
 
       tenant = tenantResult?.data?.getTenant || null;

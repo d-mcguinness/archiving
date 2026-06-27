@@ -4,7 +4,7 @@
   import { goto } from '$app/navigation';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
-  import { authHeaders } from '$lib/api';
+  import { authHeaders, API_BASE } from '$lib/api';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   let documents: any[] = [];
@@ -51,7 +51,7 @@
       }
       // ADMIN doesn't need extra params - will get all documents
 
-      const response = await fetch(`http://localhost:2020/api/documents?${params.toString()}`, {
+      const response = await fetch(`${API_BASE}/api/documents?${params.toString()}`, {
         headers: { ...authHeaders() }
       });
 
@@ -112,7 +112,7 @@
       }
 
       const uploadToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const response = await fetch('http://localhost:2020/api/documents/upload', {
+      const response = await fetch(`${API_BASE}/api/documents/upload`, {
         method: 'POST',
         headers: { ...authHeaders(), ...(uploadToken ? { Authorization: uploadToken } : {}) },
         body: formData
@@ -140,7 +140,7 @@
 
   async function handleDownload(doc: any) {
     try {
-      const response = await fetch(`http://localhost:2020/api/documents/${doc.id}/file`, {
+      const response = await fetch(`${API_BASE}/api/documents/${doc.id}/file`, {
         headers: { ...authHeaders() }
       });
       if (!response.ok) {
@@ -168,7 +168,7 @@
     }
 
     try {
-      const response = await fetch(`http://localhost:2020/api/documents/${id}`, {
+      const response = await fetch(`${API_BASE}/api/documents/${id}`, {
         method: 'DELETE',
         headers: { ...authHeaders() }
       });

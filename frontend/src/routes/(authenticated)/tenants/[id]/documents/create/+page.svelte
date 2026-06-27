@@ -6,7 +6,7 @@
   import { GET_TENANT, GET_ALL_USERS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
-  import { authHeaders } from '$lib/api';
+  import { authHeaders, API_BASE } from '$lib/api';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   interface PageData { tenantId: string; }
@@ -89,7 +89,7 @@
       formData.append('tenantId', data.tenantId);
 
       // Identity is taken from the auth token, not request params.
-      const response = await fetch('http://localhost:2020/api/documents/upload', {
+      const response = await fetch(`${API_BASE}/api/documents/upload`, {
         method: 'POST',
         headers: { ...authHeaders() },
         body: formData

@@ -2,7 +2,9 @@
 // GraphQL goes through Apollo's authLink; REST (file/document endpoints) must
 // attach the same bearer token, which the backend's RestAuthInterceptor requires.
 
-export const API_BASE = 'http://localhost:2020';
+// Backend base URL. Build-time env override (Vite) so the app can target a
+// deployed backend; defaults to localhost for local dev.
+export const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:2020';
 
 /** Bearer token stored at login, or null on the server / when logged out. */
 export function authToken(): string | null {

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { API_BASE } from '$lib/api';
   import { goto } from '$app/navigation';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
@@ -32,7 +33,7 @@
 
       const startTime = performance.now();
 
-      const response = await fetch('http://localhost:2020/api/auth/login', {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

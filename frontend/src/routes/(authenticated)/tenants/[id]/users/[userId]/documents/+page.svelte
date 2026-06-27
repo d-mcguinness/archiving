@@ -3,7 +3,7 @@
   import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
-  import { authHeaders } from '$lib/api';
+  import { authHeaders, API_BASE } from '$lib/api';
   import { GET_SIPS_BY_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
@@ -164,7 +164,7 @@
       params.append('userId', data.userId);
       params.append('tenantId', data.tenantId);
 
-      const response = await fetch(`http://localhost:2020/api/documents?${params.toString()}`, {
+      const response = await fetch(`${API_BASE}/api/documents?${params.toString()}`, {
         headers: { ...authHeaders() }
       });
 
@@ -290,7 +290,7 @@
       }
 
       const uploadToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-      const response = await fetch('http://localhost:2020/api/documents/upload', {
+      const response = await fetch(`${API_BASE}/api/documents/upload`, {
         method: 'POST',
         headers: { ...authHeaders(), ...(uploadToken ? { Authorization: uploadToken } : {}) },
         body: formData

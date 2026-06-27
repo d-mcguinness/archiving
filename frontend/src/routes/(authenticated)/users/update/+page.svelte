@@ -2,7 +2,7 @@
 import { page } from '$app/stores';
 import { goto } from '$app/navigation';
 import { client } from '$lib/apollo';
-import { authHeaders } from '$lib/api';
+import { authHeaders, API_BASE } from '$lib/api';
 import { GET_USER, UPDATE_USER } from '$lib/graphql/queries';
 import { onMount } from 'svelte';
 import { get } from 'svelte/store';
@@ -51,7 +51,7 @@ async function handleUpload() {
     formData.append('file', selectedFile);
     formData.append('userId', userId);
 
-    const response = await fetch('http://localhost:2020/api/upload/user', {
+    const response = await fetch(`${API_BASE}/api/upload/user`, {
       method: 'POST',
       headers: { ...authHeaders() },
       body: formData

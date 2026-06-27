@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { API_BASE } from '$lib/api';
   import { goto } from '$app/navigation';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
@@ -35,7 +36,7 @@
     }
     loading = true;
     try {
-      const response = await fetch('http://localhost:2020/api/auth/register', {
+      const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, organization, email, username, password })

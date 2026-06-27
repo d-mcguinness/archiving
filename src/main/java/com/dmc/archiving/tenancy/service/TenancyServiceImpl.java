@@ -62,6 +62,9 @@ public class TenancyServiceImpl implements TenancyService {
             now,
             now,
             String.valueOf(input.getOwnerId()),
+            null, // stripeCustomerId — set when provisioned in Stripe (billing phase)
+            null, // stripeSubscriptionId — set on subscription creation (billing phase)
+            null, // billingCollectionMethod — chosen at provisioning (billing phase)
             defaultSettings
         );
 

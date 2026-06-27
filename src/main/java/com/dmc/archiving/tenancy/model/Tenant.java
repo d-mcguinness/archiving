@@ -47,6 +47,24 @@ public class Tenant {
     @Column(name = "owner_id", nullable = false)
     private String ownerId;
 
+    // ── Billing linkage (Stripe). Null until the tenant is provisioned in Stripe. ──
+    /** Stripe Customer id (cus_...) — one Customer per tenant. */
+    @Column(name = "stripe_customer_id", length = 255)
+    private String stripeCustomerId;
+
+    /** Stripe Subscription id (sub_...) for the tenant's current plan. */
+    @Column(name = "stripe_subscription_id", length = 255)
+    private String stripeSubscriptionId;
+
+    /**
+     * How this tenant is billed: CARD (Checkout, charge automatically) for
+     * self-serve, or SEND_INVOICE (net terms, bank/wire) for public-sector buyers
+     * who can't pay by card. Null = not yet set (defaults applied at provisioning).
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "billing_collection_method", length = 32)
+    private BillingCollectionMethod billingCollectionMethod;
+
     @Embedded
     private TenantSettings settings;
 
