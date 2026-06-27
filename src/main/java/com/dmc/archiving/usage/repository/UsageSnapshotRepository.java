@@ -16,4 +16,7 @@ public interface UsageSnapshotRepository extends JpaRepository<UsageSnapshot, Lo
     List<UsageSnapshot> findByPeriod(LocalDate period);
 
     List<UsageSnapshot> findByTenantIdOrderByPeriodDesc(Long tenantId);
+
+    /** Snapshots for a tenant within [start, end] inclusive, ascending — for billing-period totals. */
+    List<UsageSnapshot> findByTenantIdAndPeriodBetweenOrderByPeriodAsc(Long tenantId, LocalDate start, LocalDate end);
 }

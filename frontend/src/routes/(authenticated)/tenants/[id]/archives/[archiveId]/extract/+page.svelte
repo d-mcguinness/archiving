@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { API_BASE } from '$lib/api';
   import { onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
@@ -85,7 +86,7 @@
     extractError = null;
 
     try {
-      const response = await fetch(`http://localhost:2020/api/archives/${data.archiveId}/extract`, {
+      const response = await fetch(`${API_BASE}/api/archives/${data.archiveId}/extract`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: extractPassword })

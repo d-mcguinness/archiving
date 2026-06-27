@@ -3,7 +3,7 @@
   import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
-  import { authHeaders } from '$lib/api';
+  import { authHeaders, API_BASE } from '$lib/api';
   import { GET_USER, GET_TENANT, UPDATE_USER } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
@@ -99,7 +99,7 @@
       const params = new URLSearchParams();
       params.append('userId', data.userId);
       params.append('tenantId', data.tenantId);
-      const response = await fetch(`http://localhost:2020/api/documents?${params.toString()}`, { headers: { ...authHeaders() } });
+      const response = await fetch(`${API_BASE}/api/documents?${params.toString()}`, { headers: { ...authHeaders() } });
       if (response.ok) {
         const result = await response.json();
         if (result.success) {
