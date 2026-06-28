@@ -4,7 +4,7 @@
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
   import { authHeaders, API_BASE } from '$lib/api';
-  import { GET_SIPS_BY_TENANT } from '$lib/graphql/queries';
+  import { GET_INTAKES_BY_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
@@ -27,7 +27,7 @@
   let showUploadModal = false;
   let uploadFile: File | null = null;
   let uploadTitle = '';
-  let uploadSipId = '';
+  let uploadIntakeId = '';
   let uploading = false;
   let uploadError: string | null = null;
   let sips: any[] = [];
@@ -117,13 +117,13 @@
     ],
   };
 
-  // Get the selected SIP's standard
-  $: selectedSip = sips.find((s: any) => s.id === uploadSipId) || null;
-  $: selectedStandard = selectedSip?.standard || '';
+  // Get the selected Intake's standard
+  $: selectedIntake = sips.find((s: any) => s.id === uploadIntakeId) || null;
+  $: selectedStandard = selectedIntake?.standard || '';
   $: currentFields = selectedStandard ? (standardFields[selectedStandard] || []) : [];
 
-  // Reset metadata when SIP changes
-  $: if (uploadSipId) {
+  // Reset metadata when Intake changes
+  $: if (uploadIntakeId) {
     metadata = {};
     showMetadata = false;
   }
@@ -151,7 +151,7 @@
     }
 
     hasAccess = true;
-    await Promise.all([loadDocuments(), loadSips()]);
+    await Promise.all([loadDocuments(), loadIntakes()]);
   });
 
   async function loadDocuments() {
@@ -189,23 +189,23 @@
     }
   }
 
-  async function loadSips() {
+  async function loadIntakes() {
     try {
       const result = await client.query({
-        query: GET_SIPS_BY_TENANT,
+        query: GET_INTAKES_BY_TENANT,
         variables: { tenantId: data.tenantId },
         fetchPolicy: 'network-only'
       });
-      sips = result?.data?.getSipsByTenant || [];
+      sips = result?.data?.getIntakesByTenant || [];
     } catch (e) {
-      console.error('Failed to load SIPs:', e);
+      console.error('Failed to load Intakes:', e);
     }
   }
 
   function openUploadModal() {
     uploadFile = null;
     uploadTitle = '';
-    uploadSipId = '';
+    uploadIntakeId = '';
     uploadError = null;
     metadata = {};
     showMetadata = false;
@@ -216,7 +216,7 @@
     showUploadModal = false;
     uploadFile = null;
     uploadTitle = '';
-    uploadSipId = '';
+    uploadIntakeId = '';
     uploadError = null;
     metadata = {};
     showMetadata = false;
@@ -262,8 +262,8 @@
       uploadError = 'Please enter a title';
       return;
     }
-    if (!uploadSipId) {
-      uploadError = 'Please select a SIP to link this document to';
+    if (!uploadIntakeId) {
+      uploadError = 'Please select a Intake to link this document to';
       return;
     }
 
@@ -276,7 +276,7 @@
       formData.append('userId', data.userId);
       formData.append('tenantId', data.tenantId);
       formData.append('title', uploadTitle.trim());
-      formData.append('sipId', uploadSipId);
+      formData.append('intakeId', uploadIntakeId);
 
       // Build description from standard metadata if any fields were filled
       const filledMeta = Object.entries(metadata).filter(([_, v]) => v && v.trim());
@@ -560,21 +560,21 @@
           />
         </div>
 
-        <!-- SIP selector (required) -->
+        <!-- Intake selector (required) -->
         <div class="form-group">
-          <label for="uploadSip">Link to SIP <span class="required-marker">*</span></label>
-          <select id="uploadSip" bind:value={uploadSipId} disabled={uploading} required>
-            <option value="">Select a SIP...</option>
+          <label for="uploadIntake">Link to Intake <span class="required-marker">*</span></label>
+          <select id="uploadIntake" bind:value={uploadIntakeId} disabled={uploading} required>
+            <option value="">Select a Intake...</option>
             {#each sips as sip}
               <option value={sip.id}>{sip.title} ({sip.standard})</option>
             {/each}
           </select>
           {#if sips.length === 0}
-            <p class="helper-text">No SIPs available. <a href="/sip/create">Create a SIP</a> first.</p>
+            <p class="helper-text">No Intakes available. <a href="/intake/create">Create a Intake</a> first.</p>
           {/if}
         </div>
 
-        <!-- Standard-specific metadata (shown when a SIP is selected) -->
+        <!-- Standard-specific metadata (shown when a Intake is selected) -->
         {#if selectedStandard && currentFields.length > 0}
           <div class="metadata-section">
             <div class="metadata-header">

@@ -245,58 +245,58 @@ SELECT 20, 'Q2 Strategy Deck', 'Strategic planning presentation for Q2 2026', 'q
 WHERE NOT EXISTS (SELECT 1 FROM documents WHERE id = 20);
 
 -- Associate some documents with SIPs
-UPDATE documents SET sip_id = 1 WHERE id = 2 AND sip_id IS NULL;  -- Annual Report Draft -> NOARK5 Personnel Records SIP
-UPDATE documents SET sip_id = 3 WHERE id = 4 AND sip_id IS NULL;  -- Project Presentation -> PREMIS Software Artifacts SIP
-UPDATE documents SET sip_id = 7 WHERE id = 5 AND sip_id IS NULL;  -- Meeting Notes -> BagIt Source Code Package SIP
+UPDATE documents SET intake_id = 1 WHERE id = 2 AND intake_id IS NULL;  -- Annual Report Draft -> NOARK5 Personnel Records SIP
+UPDATE documents SET intake_id = 3 WHERE id = 4 AND intake_id IS NULL;  -- Project Presentation -> PREMIS Software Artifacts SIP
+UPDATE documents SET intake_id = 7 WHERE id = 5 AND intake_id IS NULL;  -- Meeting Notes -> BagIt Source Code Package SIP
 
 -- Reset documents sequence
 SELECT setval('documents_id_seq', (SELECT COALESCE(MAX(id), 1) FROM documents), true);
 
 -- Insert SIPs (Submission Information Packages)
 -- SIP 1 - NOARK5, Tenant 1 (Acme Corp), Owner: John Doe (User 1)
-INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+INSERT INTO intakes (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
 SELECT 1, 1, 1, 1, 'NOARK5 Personnel Records SIP', 'Submission package for personnel records following NOARK5 standard', '{"sipType":"Archive (Arkiv)","standard":"NOARK5","entity":"Archive","fields":{"systemID":"SIP-NOARK5-001","title":"Personnel Records","archiveStatus":"Created","documentMedium":"Electronic archive"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'NOARK5'
-WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 1);
+WHERE NOT EXISTS (SELECT 1 FROM intakes WHERE id = 1);
 
 -- SIP 2 - OAIS, Tenant 1 (Acme Corp), Owner: Jane Smith (User 2)
-INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+INSERT INTO intakes (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
 SELECT 2, 1, 2, 2, 'OAIS Digital Preservation Package', 'OAIS-compliant submission information package for digital preservation', '{"sipType":"Submission Information Package","standard":"OAIS","entity":"Submission Information Package","fields":{"packageID":"SIP-OAIS-001","title":"Digital Preservation Package","packageType":"SIP","producer":"Jane Smith"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'SUBMITTED', 'OAIS'
-WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 2);
+WHERE NOT EXISTS (SELECT 1 FROM intakes WHERE id = 2);
 
 -- SIP 3 - PREMIS, Tenant 2 (Tech Innovations), Owner: Bob Johnson (User 3)
-INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+INSERT INTO intakes (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
 SELECT 3, 2, 3, 3, 'PREMIS Software Artifacts SIP', 'Preservation metadata package for software development artifacts', '{"sipType":"Preservation Object","standard":"PREMIS","entity":"Object","fields":{"objectIdentifierType":"local","objectIdentifierValue":"SIP-PREMIS-001","objectCategory":"Representation","originalName":"Software Artifacts"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'VALIDATED', 'PREMIS'
-WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 3);
+WHERE NOT EXISTS (SELECT 1 FROM intakes WHERE id = 3);
 
 -- SIP 4 - DUBLIN_CORE, Tenant 2 (Tech Innovations), Owner: Jane Smith (User 2)
-INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+INSERT INTO intakes (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
 SELECT 4, 2, 2, 4, 'Dublin Core Research Dataset', 'Research publications described using Dublin Core metadata', '{"sipType":"Resource","standard":"Dublin Core","entity":"Resource","fields":{"resourceIdentifier":"SIP-DC-001","resourceType":"Dataset"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'DUBLIN_CORE'
-WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 4);
+WHERE NOT EXISTS (SELECT 1 FROM intakes WHERE id = 4);
 
 -- SIP 5 - METS, Tenant 3 (Global Services), Owner: Bob Johnson (User 3)
-INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+INSERT INTO intakes (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
 SELECT 5, 3, 3, 5, 'METS Digitized Documents Package', 'METS-encoded package of digitized historical documents', '{"sipType":"METS Document","standard":"METS","entity":"METS Document","fields":{"metsID":"SIP-METS-001","label":"Digitized Documents","type":"digital object"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'ACCEPTED', 'METS'
-WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 5);
+WHERE NOT EXISTS (SELECT 1 FROM intakes WHERE id = 5);
 
 -- SIP 6 - EAD, Tenant 3 (Global Services), Owner: Alice Williams (User 4)
-INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+INSERT INTO intakes (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
 SELECT 6, 3, 4, 6, 'EAD Finding Aid SIP', 'Encoded Archival Description finding aid submission', '{"sipType":"Finding Aid (EAD)","standard":"EAD","entity":"EAD","fields":{"eadID":"SIP-EAD-001","audience":"external","lang":"eng"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'EAD'
-WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 6);
+WHERE NOT EXISTS (SELECT 1 FROM intakes WHERE id = 6);
 
 -- SIP 7 - BAGIT, Tenant 4 (Startup Labs), Owner: Alice Williams (User 4)
-INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+INSERT INTO intakes (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
 SELECT 7, 4, 4, 7, 'BagIt Source Code Package', 'BagIt-packaged source code and documentation', '{"sipType":"Bag","standard":"BagIt","entity":"Bag","fields":{"bagName":"source-code-bag","payloadOxum":"1024.5","bagSize":"1 GB","isComplete":"true","isValid":"true"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'SUBMITTED', 'BAGIT'
-WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 7);
+WHERE NOT EXISTS (SELECT 1 FROM intakes WHERE id = 7);
 
 -- SIP 8 - ISADG, Tenant 4 (Startup Labs), Owner: Charlie Brown (User 5)
-INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+INSERT INTO intakes (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
 SELECT 8, 4, 5, 8, 'ISAD(G) Founders Archive', 'Multi-level archival description of founders documents', '{"sipType":"Archival Description","standard":"ISAD(G)","entity":"Archival Description","fields":{"descriptionID":"SIP-ISADG-001","levelOfDescription":"Fonds"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DRAFT', 'ISADG'
-WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 8);
+WHERE NOT EXISTS (SELECT 1 FROM intakes WHERE id = 8);
 
 -- SIP 9 - MODS, Tenant 4 (Startup Labs), Owner: Charlie Brown (User 5)
-INSERT INTO sips (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
+INSERT INTO intakes (id, tenant_id, owner_id, archive_id, title, description, content, created_at, updated_at, status, standard)
 SELECT 9, 4, 5, 9, 'MODS Technical Library SIP', 'Bibliographic records for technical reference library', '{"sipType":"MODS Record","standard":"MODS","entity":"MODS","fields":{"modsID":"SIP-MODS-001","version":"3.8"}}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'VALIDATED', 'MODS'
-WHERE NOT EXISTS (SELECT 1 FROM sips WHERE id = 9);
+WHERE NOT EXISTS (SELECT 1 FROM intakes WHERE id = 9);
 
 -- Insert Elements for SIPs (root elements)
 -- Element for SIP 1 (NOARK5)
@@ -345,29 +345,29 @@ SELECT 1008, 'SIP-MODS-001', 'MODS', 'bibliographic', 'MODS Record', 'Technical 
 WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1008);
 
 -- Set root elements on SIPs
-UPDATE sips SET root_element_id = 1000 WHERE id = 1 AND root_element_id IS NULL;
-UPDATE sips SET root_element_id = 1001 WHERE id = 2 AND root_element_id IS NULL;
-UPDATE sips SET root_element_id = 1002 WHERE id = 3 AND root_element_id IS NULL;
-UPDATE sips SET root_element_id = 1003 WHERE id = 4 AND root_element_id IS NULL;
-UPDATE sips SET root_element_id = 1004 WHERE id = 5 AND root_element_id IS NULL;
-UPDATE sips SET root_element_id = 1005 WHERE id = 6 AND root_element_id IS NULL;
-UPDATE sips SET root_element_id = 1006 WHERE id = 7 AND root_element_id IS NULL;
-UPDATE sips SET root_element_id = 1007 WHERE id = 8 AND root_element_id IS NULL;
-UPDATE sips SET root_element_id = 1008 WHERE id = 9 AND root_element_id IS NULL;
+UPDATE intakes SET root_element_id = 1000 WHERE id = 1 AND root_element_id IS NULL;
+UPDATE intakes SET root_element_id = 1001 WHERE id = 2 AND root_element_id IS NULL;
+UPDATE intakes SET root_element_id = 1002 WHERE id = 3 AND root_element_id IS NULL;
+UPDATE intakes SET root_element_id = 1003 WHERE id = 4 AND root_element_id IS NULL;
+UPDATE intakes SET root_element_id = 1004 WHERE id = 5 AND root_element_id IS NULL;
+UPDATE intakes SET root_element_id = 1005 WHERE id = 6 AND root_element_id IS NULL;
+UPDATE intakes SET root_element_id = 1006 WHERE id = 7 AND root_element_id IS NULL;
+UPDATE intakes SET root_element_id = 1007 WHERE id = 8 AND root_element_id IS NULL;
+UPDATE intakes SET root_element_id = 1008 WHERE id = 9 AND root_element_id IS NULL;
 
 -- Backfill archive_id for existing SIPs (match by tenant + standard)
-UPDATE sips SET archive_id = 1 WHERE id = 1 AND archive_id IS NULL;
-UPDATE sips SET archive_id = 2 WHERE id = 2 AND archive_id IS NULL;
-UPDATE sips SET archive_id = 3 WHERE id = 3 AND archive_id IS NULL;
-UPDATE sips SET archive_id = 4 WHERE id = 4 AND archive_id IS NULL;
-UPDATE sips SET archive_id = 5 WHERE id = 5 AND archive_id IS NULL;
-UPDATE sips SET archive_id = 6 WHERE id = 6 AND archive_id IS NULL;
-UPDATE sips SET archive_id = 7 WHERE id = 7 AND archive_id IS NULL;
-UPDATE sips SET archive_id = 8 WHERE id = 8 AND archive_id IS NULL;
-UPDATE sips SET archive_id = 9 WHERE id = 9 AND archive_id IS NULL;
+UPDATE intakes SET archive_id = 1 WHERE id = 1 AND archive_id IS NULL;
+UPDATE intakes SET archive_id = 2 WHERE id = 2 AND archive_id IS NULL;
+UPDATE intakes SET archive_id = 3 WHERE id = 3 AND archive_id IS NULL;
+UPDATE intakes SET archive_id = 4 WHERE id = 4 AND archive_id IS NULL;
+UPDATE intakes SET archive_id = 5 WHERE id = 5 AND archive_id IS NULL;
+UPDATE intakes SET archive_id = 6 WHERE id = 6 AND archive_id IS NULL;
+UPDATE intakes SET archive_id = 7 WHERE id = 7 AND archive_id IS NULL;
+UPDATE intakes SET archive_id = 8 WHERE id = 8 AND archive_id IS NULL;
+UPDATE intakes SET archive_id = 9 WHERE id = 9 AND archive_id IS NULL;
 
 -- Catch-all: assign any remaining SIPs with null archive_id to a matching archive (by tenant + standard)
-UPDATE sips s SET archive_id = (
+UPDATE intakes s SET archive_id = (
     SELECT a.id FROM archives a
     WHERE a.tenant_id = s.tenant_id AND a.standard = s.standard
     ORDER BY a.id LIMIT 1
@@ -376,7 +376,7 @@ UPDATE sips s SET archive_id = (
 );
 
 -- For any SIPs still without archive_id (no matching archive), assign to the first archive in the same tenant
-UPDATE sips s SET archive_id = (
+UPDATE intakes s SET archive_id = (
     SELECT a.id FROM archives a
     WHERE a.tenant_id = s.tenant_id
     ORDER BY a.id LIMIT 1
@@ -491,23 +491,23 @@ SELECT 2082, 1008, 'genre', 'Genre', 'string', 'technical reference'
 WHERE NOT EXISTS (SELECT 1 FROM fields WHERE id = 2082);
 
 -- Insert SIP-User assignments
-INSERT INTO sip_users (sip_id, user_id) VALUES (1, 1) ON CONFLICT DO NOTHING;
-INSERT INTO sip_users (sip_id, user_id) VALUES (1, 2) ON CONFLICT DO NOTHING;
-INSERT INTO sip_users (sip_id, user_id) VALUES (2, 2) ON CONFLICT DO NOTHING;
-INSERT INTO sip_users (sip_id, user_id) VALUES (3, 3) ON CONFLICT DO NOTHING;
-INSERT INTO sip_users (sip_id, user_id) VALUES (3, 2) ON CONFLICT DO NOTHING;
-INSERT INTO sip_users (sip_id, user_id) VALUES (4, 2) ON CONFLICT DO NOTHING;
-INSERT INTO sip_users (sip_id, user_id) VALUES (5, 3) ON CONFLICT DO NOTHING;
-INSERT INTO sip_users (sip_id, user_id) VALUES (5, 4) ON CONFLICT DO NOTHING;
-INSERT INTO sip_users (sip_id, user_id) VALUES (6, 4) ON CONFLICT DO NOTHING;
-INSERT INTO sip_users (sip_id, user_id) VALUES (7, 4) ON CONFLICT DO NOTHING;
-INSERT INTO sip_users (sip_id, user_id) VALUES (7, 5) ON CONFLICT DO NOTHING;
-INSERT INTO sip_users (sip_id, user_id) VALUES (8, 5) ON CONFLICT DO NOTHING;
-INSERT INTO sip_users (sip_id, user_id) VALUES (9, 5) ON CONFLICT DO NOTHING;
-INSERT INTO sip_users (sip_id, user_id) VALUES (9, 4) ON CONFLICT DO NOTHING;
+INSERT INTO intake_users (intake_id, user_id) VALUES (1, 1) ON CONFLICT DO NOTHING;
+INSERT INTO intake_users (intake_id, user_id) VALUES (1, 2) ON CONFLICT DO NOTHING;
+INSERT INTO intake_users (intake_id, user_id) VALUES (2, 2) ON CONFLICT DO NOTHING;
+INSERT INTO intake_users (intake_id, user_id) VALUES (3, 3) ON CONFLICT DO NOTHING;
+INSERT INTO intake_users (intake_id, user_id) VALUES (3, 2) ON CONFLICT DO NOTHING;
+INSERT INTO intake_users (intake_id, user_id) VALUES (4, 2) ON CONFLICT DO NOTHING;
+INSERT INTO intake_users (intake_id, user_id) VALUES (5, 3) ON CONFLICT DO NOTHING;
+INSERT INTO intake_users (intake_id, user_id) VALUES (5, 4) ON CONFLICT DO NOTHING;
+INSERT INTO intake_users (intake_id, user_id) VALUES (6, 4) ON CONFLICT DO NOTHING;
+INSERT INTO intake_users (intake_id, user_id) VALUES (7, 4) ON CONFLICT DO NOTHING;
+INSERT INTO intake_users (intake_id, user_id) VALUES (7, 5) ON CONFLICT DO NOTHING;
+INSERT INTO intake_users (intake_id, user_id) VALUES (8, 5) ON CONFLICT DO NOTHING;
+INSERT INTO intake_users (intake_id, user_id) VALUES (9, 5) ON CONFLICT DO NOTHING;
+INSERT INTO intake_users (intake_id, user_id) VALUES (9, 4) ON CONFLICT DO NOTHING;
 
 -- Reset SIP-related sequences
-SELECT setval('sips_id_seq', (SELECT COALESCE(MAX(id), 1) FROM sips), true);
+SELECT setval('sips_id_seq', (SELECT COALESCE(MAX(id), 1) FROM intakes), true);
 SELECT setval('elements_id_seq', (SELECT COALESCE(MAX(id), 1) FROM elements), true);
 SELECT setval('fields_id_seq', (SELECT COALESCE(MAX(id), 1) FROM fields), true);
 
@@ -515,35 +515,35 @@ SELECT setval('fields_id_seq', (SELECT COALESCE(MAX(id), 1) FROM fields), true);
 -- AIP 1 - NOARK5, derived from SIP 1. Demonstrates the SIP -> AIP step in the
 -- archival lifecycle for the Noark 5 chain (matched by the Noark5 arkivuttrekk
 -- XML generators).
-INSERT INTO aips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard, source_sip_id)
+INSERT INTO preservations (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard, source_intake_id)
 SELECT 1, 1, 1, 'NOARK5 Personnel AIP', 'Preserved personnel records derived from SIP 1', '{"aipType":"Archival Information Package","standard":"NOARK5","sourceSipId":1}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'STORED', 'NOARK5', 1
-WHERE NOT EXISTS (SELECT 1 FROM aips WHERE id = 1);
+WHERE NOT EXISTS (SELECT 1 FROM preservations WHERE id = 1);
 
 -- Element for AIP 1 (NOARK5)
 INSERT INTO elements (id, element_identifier, entity_name, entity_type, norwegian_name, english_name, title, description, created_at, created_by, status, is_root)
 SELECT 1100, 'AIP-NOARK5-001', 'Personnel', 'Arkivdel', 'Arkiv', 'Archive', 'Personnel Records', 'Preserved personnel records', CURRENT_TIMESTAMP, 'david', 'Bevart', true
 WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1100);
 
-UPDATE aips SET root_element_id = 1100 WHERE id = 1 AND root_element_id IS NULL;
+UPDATE preservations SET root_element_id = 1100 WHERE id = 1 AND root_element_id IS NULL;
 
 -- AIP-User assignments
-INSERT INTO aip_users (aip_id, user_id) VALUES (1, 1) ON CONFLICT DO NOTHING;
+INSERT INTO preservation_users (preservation_id, user_id) VALUES (1, 1) ON CONFLICT DO NOTHING;
 
 -- Insert DIPs (Dissemination Information Packages)
 -- DIP 1 - NOARK5, derived from AIP 1. Completes the SIP -> AIP -> DIP chain.
-INSERT INTO dips (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard, source_aip_id)
+INSERT INTO releases (id, tenant_id, owner_id, title, description, content, created_at, updated_at, status, standard, source_preservation_id)
 SELECT 1, 1, 1, 'NOARK5 Personnel DIP', 'Delivered personnel records derived from AIP 1', '{"dipType":"Dissemination Information Package","standard":"NOARK5","sourceAipId":1}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'DISSEMINATED', 'NOARK5', 1
-WHERE NOT EXISTS (SELECT 1 FROM dips WHERE id = 1);
+WHERE NOT EXISTS (SELECT 1 FROM releases WHERE id = 1);
 
 -- Element for DIP 1 (NOARK5)
 INSERT INTO elements (id, element_identifier, entity_name, entity_type, norwegian_name, english_name, title, description, created_at, created_by, status, is_root)
 SELECT 1200, 'DIP-NOARK5-001', 'Personnel', 'Arkivdel', 'Arkiv', 'Archive', 'Personnel Records', 'Delivered to consumer', CURRENT_TIMESTAMP, 'david', 'Avlevert', true
 WHERE NOT EXISTS (SELECT 1 FROM elements WHERE id = 1200);
 
-UPDATE dips SET root_element_id = 1200 WHERE id = 1 AND root_element_id IS NULL;
+UPDATE releases SET root_element_id = 1200 WHERE id = 1 AND root_element_id IS NULL;
 
 -- DIP-User assignments
-INSERT INTO dip_users (dip_id, user_id) VALUES (1, 1) ON CONFLICT DO NOTHING;
+INSERT INTO release_users (release_id, user_id) VALUES (1, 1) ON CONFLICT DO NOTHING;
 
 -- Premium-package event ledger backfill.
 -- The seeded billable NOARK5 AIP 1 and DIP 1 (tenant 1) are premium generation
@@ -554,16 +554,16 @@ INSERT INTO dip_users (dip_id, user_id) VALUES (1, 1) ON CONFLICT DO NOTHING;
 -- real generations, so on a recreated DB they must NOT fall into the current
 -- billing period and inflate this month's premium bill/cap.
 INSERT INTO premium_package_events (id, tenant_id, package_type, standard, generated_at)
-SELECT 1, 1, 'AIP', 'NOARK5', TIMESTAMP '2026-01-15 12:00:00'
+SELECT 1, 1, 'PRESERVATION', 'NOARK5', TIMESTAMP '2026-01-15 12:00:00'
 WHERE NOT EXISTS (SELECT 1 FROM premium_package_events WHERE id = 1);
 
 INSERT INTO premium_package_events (id, tenant_id, package_type, standard, generated_at)
-SELECT 2, 1, 'DIP', 'NOARK5', TIMESTAMP '2026-01-15 12:00:00'
+SELECT 2, 1, 'RELEASE', 'NOARK5', TIMESTAMP '2026-01-15 12:00:00'
 WHERE NOT EXISTS (SELECT 1 FROM premium_package_events WHERE id = 2);
 
 -- Reset AIP/DIP sequences
-SELECT setval('aips_id_seq', (SELECT COALESCE(MAX(id), 1) FROM aips), true);
-SELECT setval('dips_id_seq', (SELECT COALESCE(MAX(id), 1) FROM dips), true);
+SELECT setval('aips_id_seq', (SELECT COALESCE(MAX(id), 1) FROM preservations), true);
+SELECT setval('dips_id_seq', (SELECT COALESCE(MAX(id), 1) FROM releases), true);
 SELECT setval('elements_id_seq', (SELECT COALESCE(MAX(id), 1) FROM elements), true);
 SELECT setval('premium_package_events_id_seq', (SELECT COALESCE(MAX(id), 1) FROM premium_package_events), true);
 

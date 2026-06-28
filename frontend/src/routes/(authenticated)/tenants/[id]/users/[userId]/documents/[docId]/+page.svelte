@@ -293,10 +293,10 @@
               <span class="info-value mono">{doc.archiveId}</span>
             </div>
           {/if}
-          {#if doc.sipId}
+          {#if doc.intakeId}
             <div class="info-item">
-              <span class="info-label">SIP ID</span>
-              <span class="info-value mono">{doc.sipId}</span>
+              <span class="info-label">Intake ID</span>
+              <span class="info-value mono">{doc.intakeId}</span>
             </div>
           {/if}
         </div>

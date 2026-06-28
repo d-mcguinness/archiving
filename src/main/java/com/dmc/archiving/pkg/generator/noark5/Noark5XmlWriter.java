@@ -18,8 +18,8 @@ import java.util.List;
 /**
  * Emits Noark 5.5-shaped <code>arkivuttrekk</code> XML. The structure follows the
  * Noark 5 entity hierarchy (Arkiv → Arkivdel → optional Klassifikasjonssystem /
- * Mappe), but is intentionally built from the data we actually have on a Sip /
- * Aip / Dip — this is a well-formed Noark-shaped document, not a
+ * Mappe), but is intentionally built from the data we actually have on a Intake /
+ * Preservation / Release — this is a well-formed Noark-shaped document, not a
  * schema-validated production arkivuttrekk (which would need the full Klasse /
  * Mappe / Registrering / Dokumentbeskrivelse hierarchy our model doesn't carry).
  */

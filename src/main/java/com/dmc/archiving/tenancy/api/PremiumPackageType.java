@@ -6,6 +6,6 @@ package com.dmc.archiving.tenancy.api;
  * ledger free of a dependency on them.
  */
 public enum PremiumPackageType {
-    AIP,
-    DIP
+    PRESERVATION,
+    RELEASE
 }

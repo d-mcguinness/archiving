@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
     @Index(name = "idx_document_user_id", columnList = "user_id"),
     @Index(name = "idx_document_tenant_id", columnList = "tenant_id"),
     @Index(name = "idx_document_archive_id", columnList = "archive_id"),
-    @Index(name = "idx_document_sip_id", columnList = "sip_id"),
+    @Index(name = "idx_document_intake_id", columnList = "intake_id"),
     @Index(name = "idx_document_created_at", columnList = "created_at"),
     @Index(name = "idx_document_status", columnList = "status")
 })
@@ -64,8 +64,8 @@ public class Document {
     @Column(name = "archive_id")
     private Long archiveId;  // Optional: associated archive
 
-    @Column(name = "sip_id")
-    private Long sipId;  // Optional: associated SIP
+    @Column(name = "intake_id")
+    private Long intakeId;  // Optional: associated SIP
 
     /** False when uploaded by an ADMIN operator; such documents are excluded from tenant billing. */
     @Column(name = "billable", nullable = false)

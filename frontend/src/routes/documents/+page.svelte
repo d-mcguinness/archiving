@@ -25,7 +25,7 @@
       <h1>Document Management</h1>
       <p class="hero-subtitle">
         Upload, organize, and manage documents within your archival workflows. Attach files to
-        archives, SIPs, AIPs, and DIPs with secure cloud storage and role-based access.
+        archives, Intakes, Preservations, and Releases with secure cloud storage and role-based access.
       </p>
       <div class="hero-actions">
         <a href="/login" class="btn-cta">Sign In</a>
@@ -44,7 +44,7 @@
         <div class="feature-card">
           <span class="feature-icon">🔗</span>
           <h3>Package Linking</h3>
-          <p>Associate documents with archives, SIPs, AIPs, or DIPs for complete package assembly.</p>
+          <p>Associate documents with archives, Intakes, Preservations, or Releases for complete package assembly.</p>
         </div>
         <div class="feature-card">
           <span class="feature-icon">☁️</span>

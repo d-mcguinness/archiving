@@ -41,7 +41,7 @@
         <div class="feature-card">
           <span class="feature-icon">📦</span>
           <h3>OAIS Packages</h3>
-          <p>Build SIPs, AIPs, and DIPs following the Open Archival Information System reference model.</p>
+          <p>Build Intakes, Preservations, and Releases following the Open Archival Information System reference model.</p>
         </div>
         <div class="feature-card">
           <span class="feature-icon">🔧</span>

@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { client } from '$lib/apollo';
-  import { GET_TENANT, GET_ALL_USERS, GET_SIPS_BY_TENANT_V2, GET_AIPS_BY_TENANT, GET_DIPS_BY_TENANT } from '$lib/graphql/queries';
+  import { GET_TENANT, GET_ALL_USERS, GET_INTAKES_BY_TENANT_V2, GET_PRESERVATIONS_BY_TENANT, GET_RELEASES_BY_TENANT } from '$lib/graphql/queries';
   import { gql } from '@apollo/client/core';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
@@ -45,9 +45,9 @@
     await Promise.all([
       loadArchive(),
       loadTenant(),
-      loadSips(),
-      loadAips(),
-      loadDips(),
+      loadIntakes(),
+      loadPreservations(),
+      loadReleases(),
       loadDocuments(),
       loadUsers(),
     ]);
@@ -68,25 +68,25 @@
     } catch (e) { console.error('Failed to load tenant:', e); }
   }
 
-  async function loadSips() {
+  async function loadIntakes() {
     try {
-      const result = await client.query({ query: GET_SIPS_BY_TENANT_V2, variables: { tenantId: data.tenantId }, fetchPolicy: 'network-only' });
-      sips = result?.data?.getSipsByTenantV2 || [];
-    } catch (e) { console.error('Failed to load SIPs:', e); }
+      const result = await client.query({ query: GET_INTAKES_BY_TENANT_V2, variables: { tenantId: data.tenantId }, fetchPolicy: 'network-only' });
+      sips = result?.data?.getIntakesByTenantV2 || [];
+    } catch (e) { console.error('Failed to load Intakes:', e); }
   }
 
-  async function loadAips() {
+  async function loadPreservations() {
     try {
-      const result = await client.query({ query: GET_AIPS_BY_TENANT, variables: { tenantId: data.tenantId }, fetchPolicy: 'network-only' });
-      aips = result?.data?.getAipsByTenant || [];
-    } catch (e) { console.error('Failed to load AIPs:', e); }
+      const result = await client.query({ query: GET_PRESERVATIONS_BY_TENANT, variables: { tenantId: data.tenantId }, fetchPolicy: 'network-only' });
+      aips = result?.data?.getPreservationsByTenant || [];
+    } catch (e) { console.error('Failed to load Preservations:', e); }
   }
 
-  async function loadDips() {
+  async function loadReleases() {
     try {
-      const result = await client.query({ query: GET_DIPS_BY_TENANT, variables: { tenantId: data.tenantId }, fetchPolicy: 'network-only' });
-      dips = result?.data?.getDipsByTenant || [];
-    } catch (e) { console.error('Failed to load DIPs:', e); }
+      const result = await client.query({ query: GET_RELEASES_BY_TENANT, variables: { tenantId: data.tenantId }, fetchPolicy: 'network-only' });
+      dips = result?.data?.getReleasesByTenant || [];
+    } catch (e) { console.error('Failed to load Releases:', e); }
   }
 
   async function loadDocuments() {
@@ -114,9 +114,9 @@
 
   $: assignedUsers = archive?.assignedUsers || [];
   $: archiveDocuments = documents.filter((d: any) => d.archiveId?.toString() === data.archiveId);
-  $: archiveSips = archive?.standard ? sips.filter((s: any) => s.standard === archive.standard) : sips;
-  $: archiveAips = archive?.standard ? aips.filter((a: any) => a.standard === archive.standard) : aips;
-  $: archiveDips = archive?.standard ? dips.filter((d: any) => d.standard === archive.standard) : dips;
+  $: archiveIntakes = archive?.standard ? sips.filter((s: any) => s.standard === archive.standard) : sips;
+  $: archivePreservations = archive?.standard ? aips.filter((a: any) => a.standard === archive.standard) : aips;
+  $: archiveReleases = archive?.standard ? dips.filter((d: any) => d.standard === archive.standard) : dips;
 </script>
 
 <svelte:head>
@@ -157,17 +157,17 @@
 
     <!-- Stats Row -->
     <div class="stats-row">
-      <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/sips" class="stat-card">
-        <span class="stat-num">{archiveSips.length}</span>
-        <span class="stat-label">SIPs</span>
+      <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/intakes" class="stat-card">
+        <span class="stat-num">{archiveIntakes.length}</span>
+        <span class="stat-label">Intakes</span>
       </a>
-      <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/aips" class="stat-card">
-        <span class="stat-num">{archiveAips.length}</span>
-        <span class="stat-label">AIPs</span>
+      <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/preservations" class="stat-card">
+        <span class="stat-num">{archivePreservations.length}</span>
+        <span class="stat-label">Preservations</span>
       </a>
-      <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/dips" class="stat-card">
-        <span class="stat-num">{archiveDips.length}</span>
-        <span class="stat-label">DIPs</span>
+      <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/releases" class="stat-card">
+        <span class="stat-num">{archiveReleases.length}</span>
+        <span class="stat-label">Releases</span>
       </a>
       <a href="/tenants/{data.tenantId}/users" class="stat-card">
         <span class="stat-num">{assignedUsers.length}</span>
@@ -180,16 +180,16 @@
     </div>
 
     <div class="grid-2col">
-      <!-- Recent SIPs -->
+      <!-- Recent Intakes -->
       <div class="panel">
         <div class="panel-top">
-          <h2>📦 SIPs</h2>
-          <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/sips" class="link">View All →</a>
+          <h2>📦 Intakes</h2>
+          <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/intakes" class="link">View All →</a>
         </div>
-        {#if archiveSips.length === 0}
-          <p class="muted">No SIPs yet</p>
+        {#if archiveIntakes.length === 0}
+          <p class="muted">No Intakes yet</p>
         {:else}
-          {#each archiveSips.slice(0, 5) as sip}
+          {#each archiveIntakes.slice(0, 5) as sip}
             <div class="list-row">
               <div class="list-info">
                 <span class="list-title">{sip.title}</span>
@@ -201,16 +201,16 @@
         {/if}
       </div>
 
-      <!-- Recent AIPs -->
+      <!-- Recent Preservations -->
       <div class="panel">
         <div class="panel-top">
-          <h2>🏗️ AIPs</h2>
-          <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/aips" class="link">View All →</a>
+          <h2>🏗️ Preservations</h2>
+          <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/preservations" class="link">View All →</a>
         </div>
-        {#if archiveAips.length === 0}
-          <p class="muted">No AIPs yet</p>
+        {#if archivePreservations.length === 0}
+          <p class="muted">No Preservations yet</p>
         {:else}
-          {#each archiveAips.slice(0, 5) as aip}
+          {#each archivePreservations.slice(0, 5) as aip}
             <div class="list-row">
               <div class="list-info">
                 <span class="list-title">{aip.title}</span>
@@ -222,16 +222,16 @@
         {/if}
       </div>
 
-      <!-- Recent DIPs -->
+      <!-- Recent Releases -->
       <div class="panel">
         <div class="panel-top">
-          <h2>📤 DIPs</h2>
-          <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/dips" class="link">View All →</a>
+          <h2>📤 Releases</h2>
+          <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/releases" class="link">View All →</a>
         </div>
-        {#if archiveDips.length === 0}
-          <p class="muted">No DIPs yet</p>
+        {#if archiveReleases.length === 0}
+          <p class="muted">No Releases yet</p>
         {:else}
-          {#each archiveDips.slice(0, 5) as dip}
+          {#each archiveReleases.slice(0, 5) as dip}
             <div class="list-row">
               <div class="list-info">
                 <span class="list-title">{dip.title}</span>

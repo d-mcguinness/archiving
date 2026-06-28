@@ -267,25 +267,25 @@
               </td>
               <td class="actions-cell">
                 <a
-                  href="/admin/archive/{archive.id}/sip/create"
+                  href="/admin/archive/{archive.id}/intake/create"
                   class="btn-action btn-sip"
-                  title="Create SIP from this archive"
+                  title="Create Intake from this archive"
                 >
-                  📦 Create SIP
+                  📦 Create Intake
                 </a>
                 <a
-                  href="/admin/archive/{archive.id}/aip/create"
+                  href="/admin/archive/{archive.id}/preservation/create"
                   class="btn-action btn-aip"
-                  title="Create AIP from this archive"
+                  title="Create Preservation from this archive"
                 >
-                  🏗️ Create AIP
+                  🏗️ Create Preservation
                 </a>
                 <a
-                  href="/admin/archive/{archive.id}/dip/create"
+                  href="/admin/archive/{archive.id}/release/create"
                   class="btn-action btn-dip"
-                  title="Create DIP from this archive"
+                  title="Create Release from this archive"
                 >
-                  📤 Create DIP
+                  📤 Create Release
                 </a>
                 <a href="/archives/delete/{archive.id}" class="btn-action btn-delete">
                   🗑️ Delete

@@ -1,9 +1,9 @@
 package com.dmc.archiving.auth;
 
-import com.dmc.archiving.aip.AipController;
-import com.dmc.archiving.aip.AipService;
-import com.dmc.archiving.aip.model.Aip;
-import com.dmc.archiving.aip.model.AipStatus;
+import com.dmc.archiving.preservation.PreservationController;
+import com.dmc.archiving.preservation.PreservationService;
+import com.dmc.archiving.preservation.model.Preservation;
+import com.dmc.archiving.preservation.model.PreservationStatus;
 import com.dmc.archiving.auth.api.AccessDeniedException;
 import com.dmc.archiving.auth.api.AuthContext;
 import com.dmc.archiving.common.exception.ResourceNotFoundException;
@@ -45,64 +45,64 @@ class GraphqlTenantOwnershipTest {
 
     // ---- AIP (base controller: requireTenantAccess) ----
 
-    private AipController aipController(AipService svc, TenancyApi tenancy) {
-        return new AipController(svc, tenancy, mock(BillingTenantResolver.class));
+    private PreservationController aipController(PreservationService svc, TenancyApi tenancy) {
+        return new PreservationController(svc, tenancy, mock(BillingTenantResolver.class));
     }
 
-    private static Aip aipInTenant() {
-        Aip a = new Aip();
+    private static Preservation aipInTenant() {
+        Preservation a = new Preservation();
         a.setId(ID);
         a.setTenantId(OWNING_TENANT);
         return a;
     }
 
     @Test
-    void deleteAip_foreignTenantTenantIsDenied_serviceNotCalled() {
-        AipService svc = mock(AipService.class);
+    void deletePreservation_foreignTenantTenantIsDenied_serviceNotCalled() {
+        PreservationService svc = mock(PreservationService.class);
         TenancyApi tenancy = mock(TenancyApi.class);
-        when(svc.getAip(ID)).thenReturn(aipInTenant());
+        when(svc.getPreservation(ID)).thenReturn(aipInTenant());
         when(tenancy.isUserInTenant(2L, OWNING_TENANT)).thenReturn(false);
 
-        assertThatThrownBy(() -> aipController(svc, tenancy).deleteAip(ID, env(2L, "TENANT")))
+        assertThatThrownBy(() -> aipController(svc, tenancy).deletePreservation(ID, env(2L, "TENANT")))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(svc, never()).deleteAip(anyLong());
+        verify(svc, never()).deletePreservation(anyLong());
     }
 
     @Test
-    void deleteAip_memberTenantProceeds() {
-        AipService svc = mock(AipService.class);
+    void deletePreservation_memberTenantProceeds() {
+        PreservationService svc = mock(PreservationService.class);
         TenancyApi tenancy = mock(TenancyApi.class);
-        when(svc.getAip(ID)).thenReturn(aipInTenant());
+        when(svc.getPreservation(ID)).thenReturn(aipInTenant());
         when(tenancy.isUserInTenant(2L, OWNING_TENANT)).thenReturn(true);
-        when(svc.deleteAip(ID)).thenReturn(true);
+        when(svc.deletePreservation(ID)).thenReturn(true);
 
-        aipController(svc, tenancy).deleteAip(ID, env(2L, "TENANT"));
+        aipController(svc, tenancy).deletePreservation(ID, env(2L, "TENANT"));
 
-        verify(svc).deleteAip(ID);
+        verify(svc).deletePreservation(ID);
     }
 
     @Test
-    void updateAipStatus_adminBypassesMembership() {
-        AipService svc = mock(AipService.class);
+    void updatePreservationStatus_adminBypassesMembership() {
+        PreservationService svc = mock(PreservationService.class);
         TenancyApi tenancy = mock(TenancyApi.class);
-        when(svc.getAip(ID)).thenReturn(aipInTenant());
+        when(svc.getPreservation(ID)).thenReturn(aipInTenant());
 
-        aipController(svc, tenancy).updateAipStatus(ID, AipStatus.STORED, env(1L, "ADMIN"));
+        aipController(svc, tenancy).updatePreservationStatus(ID, PreservationStatus.STORED, env(1L, "ADMIN"));
 
-        verify(svc).updateAipStatus(ID, AipStatus.STORED);
+        verify(svc).updatePreservationStatus(ID, PreservationStatus.STORED);
         verify(tenancy, never()).isUserInTenant(anyLong(), anyLong());
     }
 
     @Test
-    void generateAip_missingAipIsNotFound() {
-        AipService svc = mock(AipService.class);
+    void generatePreservation_missingPreservationIsNotFound() {
+        PreservationService svc = mock(PreservationService.class);
         TenancyApi tenancy = mock(TenancyApi.class);
-        when(svc.getAip(ID)).thenReturn(null);
+        when(svc.getPreservation(ID)).thenReturn(null);
 
-        assertThatThrownBy(() -> aipController(svc, tenancy).generateAip(ID, env(1L, "ADMIN")))
+        assertThatThrownBy(() -> aipController(svc, tenancy).generatePreservation(ID, env(1L, "ADMIN")))
                 .isInstanceOf(ResourceNotFoundException.class);
-        verify(svc, never()).generateAip(anyLong());
+        verify(svc, never()).generatePreservation(anyLong());
     }
 
     // ---- Package (non-base controller: AuthGuard.context + TenancyApi) ----

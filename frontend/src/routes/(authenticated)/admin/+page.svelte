@@ -4,7 +4,7 @@
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
   import { authHeaders, API_BASE } from '$lib/api';
-  import { GET_DASHBOARD_STATS, GET_ALL_TENANTS, GET_ALL_USERS, GET_ALL_SIPS_V2, GET_ALL_AIPS, GET_ALL_DIPS } from '$lib/graphql/queries';
+  import { GET_DASHBOARD_STATS, GET_ALL_TENANTS, GET_ALL_USERS, GET_ALL_INTAKES_V2, GET_ALL_PRESERVATIONS, GET_ALL_RELEASES } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
@@ -19,14 +19,14 @@
     archivedArchives: 0,
   };
 
-  let totalSips = 0;
-  let totalAips = 0;
-  let totalDips = 0;
+  let totalIntakes = 0;
+  let totalPreservations = 0;
+  let totalReleases = 0;
   let totalDocuments = 0;
 
   let tenants: any[] = [];
   let recentUsers: any[] = [];
-  let recentSips: any[] = [];
+  let recentIntakes: any[] = [];
 
   // Status breakdowns
   let sipStatuses: Record<string, number> = {};
@@ -51,9 +51,9 @@
         client.query({ query: GET_DASHBOARD_STATS, fetchPolicy: 'network-only' }),
         client.query({ query: GET_ALL_TENANTS, fetchPolicy: 'network-only' }),
         client.query({ query: GET_ALL_USERS, fetchPolicy: 'network-only' }),
-        client.query({ query: GET_ALL_SIPS_V2, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAllSipsV2: [] } })),
-        client.query({ query: GET_ALL_AIPS, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAllAips: [] } })),
-        client.query({ query: GET_ALL_DIPS, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAllDips: [] } })),
+        client.query({ query: GET_ALL_INTAKES_V2, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAllIntakesV2: [] } })),
+        client.query({ query: GET_ALL_PRESERVATIONS, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAllPreservations: [] } })),
+        client.query({ query: GET_ALL_RELEASES, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAllReleases: [] } })),
         fetch(`${API_BASE}/api/documents?role=ADMIN`, { headers: { ...authHeaders() } }).then(r => r.json()).catch(() => ({ documents: [] })),
       ]);
 
@@ -72,17 +72,17 @@
       tenants = tenantsResult?.data?.getAllTenants || [];
       recentUsers = (usersResult?.data?.getAllUsers || []).slice(0, 5);
 
-      const sips = sipsResult?.data?.getAllSipsV2 || [];
-      totalSips = sips.length;
-      recentSips = sips.slice(0, 5);
+      const sips = sipsResult?.data?.getAllIntakesV2 || [];
+      totalIntakes = sips.length;
+      recentIntakes = sips.slice(0, 5);
       sipStatuses = countBy(sips, 'status');
 
-      const aips = aipsResult?.data?.getAllAips || [];
-      totalAips = aips.length;
+      const aips = aipsResult?.data?.getAllPreservations || [];
+      totalPreservations = aips.length;
       aipStatuses = countBy(aips, 'status');
 
-      const dips = dipsResult?.data?.getAllDips || [];
-      totalDips = dips.length;
+      const dips = dipsResult?.data?.getAllReleases || [];
+      totalReleases = dips.length;
       dipStatuses = countBy(dips, 'status');
 
       totalDocuments = docsResult?.documents?.length || docsResult?.count || 0;
@@ -169,16 +169,16 @@
         <span class="stat-label">Archives</span>
       </a>
       <div class="stat-card">
-        <span class="stat-num">{totalSips}</span>
-        <span class="stat-label">SIPs</span>
+        <span class="stat-num">{totalIntakes}</span>
+        <span class="stat-label">Intakes</span>
       </div>
       <div class="stat-card">
-        <span class="stat-num">{totalAips}</span>
-        <span class="stat-label">AIPs</span>
+        <span class="stat-num">{totalPreservations}</span>
+        <span class="stat-label">Preservations</span>
       </div>
       <div class="stat-card">
-        <span class="stat-num">{totalDips}</span>
-        <span class="stat-label">DIPs</span>
+        <span class="stat-num">{totalReleases}</span>
+        <span class="stat-label">Releases</span>
       </div>
       <div class="stat-card">
         <span class="stat-num">{totalDocuments}</span>
@@ -212,56 +212,56 @@
         </div>
       </div>
 
-      <!-- SIP Status Breakdown -->
+      <!-- Intake Status Breakdown -->
       <div class="panel">
-        <h2>SIP Status</h2>
+        <h2>Intake Status</h2>
         <div class="breakdown-list">
           {#each Object.entries(sipStatuses) as [status, count]}
             <div class="breakdown-item">
               <span class="breakdown-dot" style="background: {statusColor(status)}"></span>
               <span class="breakdown-label">{status}</span>
               <span class="breakdown-val">{count}</span>
-              <div class="breakdown-bar"><div class="bar-fill" style="width: {totalSips ? (count / totalSips * 100) : 0}%; background: {statusColor(status)}"></div></div>
+              <div class="breakdown-bar"><div class="bar-fill" style="width: {totalIntakes ? (count / totalIntakes * 100) : 0}%; background: {statusColor(status)}"></div></div>
             </div>
           {/each}
           {#if Object.keys(sipStatuses).length === 0}
-            <p class="muted">No SIPs yet</p>
+            <p class="muted">No Intakes yet</p>
           {/if}
         </div>
       </div>
 
-      <!-- AIP Status Breakdown -->
+      <!-- Preservation Status Breakdown -->
       <div class="panel">
-        <h2>AIP Status</h2>
+        <h2>Preservation Status</h2>
         <div class="breakdown-list">
           {#each Object.entries(aipStatuses) as [status, count]}
             <div class="breakdown-item">
               <span class="breakdown-dot" style="background: {statusColor(status)}"></span>
               <span class="breakdown-label">{status}</span>
               <span class="breakdown-val">{count}</span>
-              <div class="breakdown-bar"><div class="bar-fill" style="width: {totalAips ? (count / totalAips * 100) : 0}%; background: {statusColor(status)}"></div></div>
+              <div class="breakdown-bar"><div class="bar-fill" style="width: {totalPreservations ? (count / totalPreservations * 100) : 0}%; background: {statusColor(status)}"></div></div>
             </div>
           {/each}
           {#if Object.keys(aipStatuses).length === 0}
-            <p class="muted">No AIPs yet</p>
+            <p class="muted">No Preservations yet</p>
           {/if}
         </div>
       </div>
 
-      <!-- DIP Status Breakdown -->
+      <!-- Release Status Breakdown -->
       <div class="panel">
-        <h2>DIP Status</h2>
+        <h2>Release Status</h2>
         <div class="breakdown-list">
           {#each Object.entries(dipStatuses) as [status, count]}
             <div class="breakdown-item">
               <span class="breakdown-dot" style="background: {statusColor(status)}"></span>
               <span class="breakdown-label">{status}</span>
               <span class="breakdown-val">{count}</span>
-              <div class="breakdown-bar"><div class="bar-fill" style="width: {totalDips ? (count / totalDips * 100) : 0}%; background: {statusColor(status)}"></div></div>
+              <div class="breakdown-bar"><div class="bar-fill" style="width: {totalReleases ? (count / totalReleases * 100) : 0}%; background: {statusColor(status)}"></div></div>
             </div>
           {/each}
           {#if Object.keys(dipStatuses).length === 0}
-            <p class="muted">No DIPs yet</p>
+            <p class="muted">No Releases yet</p>
           {/if}
         </div>
       </div>
@@ -323,14 +323,14 @@
 
       <div class="panel">
         <div class="panel-header">
-          <h2>Recent SIPs</h2>
-          <a href="/admin/sip" class="panel-link">View All →</a>
+          <h2>Recent Intakes</h2>
+          <a href="/admin/intake" class="panel-link">View All →</a>
         </div>
-        {#if recentSips.length === 0}
-          <p class="muted">No SIPs yet</p>
+        {#if recentIntakes.length === 0}
+          <p class="muted">No Intakes yet</p>
         {:else}
           <div class="list">
-            {#each recentSips as sip}
+            {#each recentIntakes as sip}
               <div class="list-row">
                 <div class="list-info">
                   <span class="list-title">{sip.title}</span>
@@ -349,9 +349,9 @@
       <a href="/admin/tenants" class="qn-card">🏢 Manage Tenants</a>
       <a href="/admin/users" class="qn-card">👥 Manage Users</a>
       <a href="/admin/archives" class="qn-card">📁 All Archives</a>
-      <a href="/admin/sip" class="qn-card">📦 All SIPs</a>
-      <a href="/admin/aip" class="qn-card">🏗️ All AIPs</a>
-      <a href="/admin/dip" class="qn-card">📤 All DIPs</a>
+      <a href="/admin/intake" class="qn-card">📦 All Intakes</a>
+      <a href="/admin/preservation" class="qn-card">🏗️ All Preservations</a>
+      <a href="/admin/release" class="qn-card">📤 All Releases</a>
       <a href="/admin/documents" class="qn-card">📄 All Documents</a>
       <a href="/ingest" class="qn-card">Ingest Standards</a>
     </div>

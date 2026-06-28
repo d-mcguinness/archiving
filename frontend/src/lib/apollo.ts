@@ -158,12 +158,12 @@ const cache = new InMemoryCache({
             return incoming;
           }
         },
-        getAllAips: {
+        getAllPreservations: {
           merge(existing: any[] = [], incoming: any[] = []): any[] {
             return incoming;
           }
         },
-        getAllDips: {
+        getAllReleases: {
           merge(existing: any[] = [], incoming: any[] = []): any[] {
             return incoming;
           }
@@ -172,8 +172,8 @@ const cache = new InMemoryCache({
     },
     Tenant: { keyFields: ['id'] },
     Archive: { keyFields: ['id'] },
-    Aip: { keyFields: ['id'] },
-    Dip: { keyFields: ['id'] },
+    Preservation: { keyFields: ['id'] },
+    Release: { keyFields: ['id'] },
     User: { keyFields: ['id'] },
     Element: { keyFields: ['id'] },
     TenantSettings: { keyFields: false }

@@ -9,10 +9,10 @@
 <StandardsPage
   title="Ingest"
   oaisStep="Submission Packages"
-  heroDescription="The ingest workflow accepts Submission Information Packages (SIPs) from producers. Choose from 10 archival standards — NOARK5, OAIS, PREMIS, Dublin Core, METS, EAD, BagIt, ISAD(G), MODS, and E-ARK — to create standard-compliant packages ready for preservation."
+  heroDescription="The ingest workflow accepts Intake packages (SIPs) from producers. Choose from 10 archival standards — NOARK5, OAIS, PREMIS, Dublin Core, METS, EAD, BagIt, ISAD(G), MODS, and E-ARK — to create standard-compliant packages ready for preservation."
   packageType="sip"
-  createPath="/sip/create"
-  listPath="/sip"
+  createPath="/intake/create"
+  listPath="/intake"
   accentColor="#3b82f6"
   steps={[
     { title: 'Select Standard', description: 'Choose the archival standard that fits your content. Each standard provides its own entity model, field definitions, and validation rules.' },

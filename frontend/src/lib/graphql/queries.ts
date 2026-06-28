@@ -342,9 +342,9 @@ export const GET_ARCHIVES_BY_OWNER: DocumentNode = gql`
   }
 `;
 
-export const GET_ALL_SIPS: DocumentNode = gql`
-  query GetAllSips {
-    getAllSips {
+export const GET_ALL_INTAKES: DocumentNode = gql`
+  query GetAllIntakes {
+    getAllIntakes {
       id
       ownerId
       tenantId
@@ -377,9 +377,9 @@ export const GET_ALL_SIPS: DocumentNode = gql`
   }
 `;
 
-export const GET_SIPS_BY_TENANT: DocumentNode = gql`
-  query GetSipsByTenant($tenantId: ID!) {
-    getSipsByTenant(tenantId: $tenantId) {
+export const GET_INTAKES_BY_TENANT: DocumentNode = gql`
+  query GetIntakesByTenant($tenantId: ID!) {
+    getIntakesByTenant(tenantId: $tenantId) {
       id
       ownerId
       tenantId
@@ -539,19 +539,19 @@ export const UNASSIGN_USER_FROM_ARCHIVE: DocumentNode = gql`
   }
 `;
 
-export const PREFILL_SIP_FIELDS: DocumentNode = gql`
-  query PrefillSipFields($standard: ArchiveStandard!, $fileMetadata: FileMetadataInput!) {
-    prefillSipFields(standard: $standard, fileMetadata: $fileMetadata) {
+export const PREFILL_INTAKE_FIELDS: DocumentNode = gql`
+  query PrefillIntakeFields($standard: ArchiveStandard!, $fileMetadata: FileMetadataInput!) {
+    prefillIntakeFields(standard: $standard, fileMetadata: $fileMetadata) {
       name
       value
     }
   }
 `;
 
-// SIP V2 Queries (dedicated Sip entity)
-export const GET_ALL_SIPS_V2: DocumentNode = gql`
-  query GetAllSipsV2 {
-    getAllSipsV2 {
+// Intake V2 Queries (dedicated Intake entity)
+export const GET_ALL_INTAKES_V2: DocumentNode = gql`
+  query GetAllIntakesV2 {
+    getAllIntakesV2 {
       id
       ownerId
       tenantId
@@ -585,9 +585,9 @@ export const GET_ALL_SIPS_V2: DocumentNode = gql`
   }
 `;
 
-export const GET_SIPS_BY_TENANT_V2: DocumentNode = gql`
-  query GetSipsByTenantV2($tenantId: ID!) {
-    getSipsByTenantV2(tenantId: $tenantId) {
+export const GET_INTAKES_BY_TENANT_V2: DocumentNode = gql`
+  query GetIntakesByTenantV2($tenantId: ID!) {
+    getIntakesByTenantV2(tenantId: $tenantId) {
       id
       ownerId
       tenantId
@@ -621,9 +621,9 @@ export const GET_SIPS_BY_TENANT_V2: DocumentNode = gql`
   }
 `;
 
-export const GET_SIP: DocumentNode = gql`
-  query GetSip($id: ID!) {
-    getSip(id: $id) {
+export const GET_INTAKE: DocumentNode = gql`
+  query GetIntake($id: ID!) {
+    getIntake(id: $id) {
       id
       ownerId
       tenantId
@@ -709,9 +709,9 @@ export const GET_SIP: DocumentNode = gql`
   }
 `;
 
-export const CREATE_SIP: DocumentNode = gql`
-  mutation CreateSipV2($input: CreateSipInput!) {
-    createSipV2(input: $input) {
+export const CREATE_INTAKE: DocumentNode = gql`
+  mutation CreateIntakeV2($input: CreateIntakeInput!) {
+    createIntakeV2(input: $input) {
       id
       ownerId
       tenantId
@@ -745,16 +745,16 @@ export const CREATE_SIP: DocumentNode = gql`
   }
 `;
 
-export const DELETE_SIP: DocumentNode = gql`
-  mutation DeleteSipV2($id: ID!) {
-    deleteSipV2(id: $id)
+export const DELETE_INTAKE: DocumentNode = gql`
+  mutation DeleteIntakeV2($id: ID!) {
+    deleteIntakeV2(id: $id)
   }
 `;
 
-// AIP Queries
-export const GET_ALL_AIPS: DocumentNode = gql`
-  query GetAllAips {
-    getAllAips {
+// Preservation Queries
+export const GET_ALL_PRESERVATIONS: DocumentNode = gql`
+  query GetAllPreservations {
+    getAllPreservations {
       id
       ownerId
       tenantId
@@ -764,7 +764,7 @@ export const GET_ALL_AIPS: DocumentNode = gql`
       updatedAt
       status
       standard
-      sourceSipId
+      sourceIntakeId
       rootElement {
         id
         elementIdentifier
@@ -788,9 +788,9 @@ export const GET_ALL_AIPS: DocumentNode = gql`
   }
 `;
 
-export const GET_AIPS_BY_TENANT: DocumentNode = gql`
-  query GetAipsByTenant($tenantId: ID!) {
-    getAipsByTenant(tenantId: $tenantId) {
+export const GET_PRESERVATIONS_BY_TENANT: DocumentNode = gql`
+  query GetPreservationsByTenant($tenantId: ID!) {
+    getPreservationsByTenant(tenantId: $tenantId) {
       id
       ownerId
       tenantId
@@ -800,7 +800,7 @@ export const GET_AIPS_BY_TENANT: DocumentNode = gql`
       updatedAt
       status
       standard
-      sourceSipId
+      sourceIntakeId
       rootElement {
         id
         elementIdentifier
@@ -824,9 +824,9 @@ export const GET_AIPS_BY_TENANT: DocumentNode = gql`
   }
 `;
 
-export const GET_AIP: DocumentNode = gql`
-  query GetAip($id: ID!) {
-    getAip(id: $id) {
+export const GET_PRESERVATION: DocumentNode = gql`
+  query GetPreservation($id: ID!) {
+    getPreservation(id: $id) {
       id
       ownerId
       tenantId
@@ -837,7 +837,7 @@ export const GET_AIP: DocumentNode = gql`
       updatedAt
       status
       standard
-      sourceSipId
+      sourceIntakeId
       rootElement {
         id
         elementIdentifier
@@ -895,9 +895,9 @@ export const GET_AIP: DocumentNode = gql`
   }
 `;
 
-export const CREATE_AIP: DocumentNode = gql`
-  mutation CreateAip($input: CreateAipInput!) {
-    createAip(input: $input) {
+export const CREATE_PRESERVATION: DocumentNode = gql`
+  mutation CreatePreservation($input: CreatePreservationInput!) {
+    createPreservation(input: $input) {
       id
       ownerId
       tenantId
@@ -907,7 +907,7 @@ export const CREATE_AIP: DocumentNode = gql`
       updatedAt
       status
       standard
-      sourceSipId
+      sourceIntakeId
       rootElement {
         id
         elementIdentifier
@@ -931,16 +931,16 @@ export const CREATE_AIP: DocumentNode = gql`
   }
 `;
 
-export const DELETE_AIP: DocumentNode = gql`
-  mutation DeleteAip($id: ID!) {
-    deleteAip(id: $id)
+export const DELETE_PRESERVATION: DocumentNode = gql`
+  mutation DeletePreservation($id: ID!) {
+    deletePreservation(id: $id)
   }
 `;
 
-// DIP Queries
-export const GET_ALL_DIPS: DocumentNode = gql`
-  query GetAllDips {
-    getAllDips {
+// Release Queries
+export const GET_ALL_RELEASES: DocumentNode = gql`
+  query GetAllReleases {
+    getAllReleases {
       id
       ownerId
       tenantId
@@ -950,7 +950,7 @@ export const GET_ALL_DIPS: DocumentNode = gql`
       updatedAt
       status
       standard
-      sourceAipId
+      sourcePreservationId
       rootElement {
         id
         elementIdentifier
@@ -974,9 +974,9 @@ export const GET_ALL_DIPS: DocumentNode = gql`
   }
 `;
 
-export const GET_DIPS_BY_TENANT: DocumentNode = gql`
-  query GetDipsByTenant($tenantId: ID!) {
-    getDipsByTenant(tenantId: $tenantId) {
+export const GET_RELEASES_BY_TENANT: DocumentNode = gql`
+  query GetReleasesByTenant($tenantId: ID!) {
+    getReleasesByTenant(tenantId: $tenantId) {
       id
       ownerId
       tenantId
@@ -986,7 +986,7 @@ export const GET_DIPS_BY_TENANT: DocumentNode = gql`
       updatedAt
       status
       standard
-      sourceAipId
+      sourcePreservationId
       rootElement {
         id
         elementIdentifier
@@ -1010,9 +1010,9 @@ export const GET_DIPS_BY_TENANT: DocumentNode = gql`
   }
 `;
 
-export const GET_DIP: DocumentNode = gql`
-  query GetDip($id: ID!) {
-    getDip(id: $id) {
+export const GET_RELEASE: DocumentNode = gql`
+  query GetRelease($id: ID!) {
+    getRelease(id: $id) {
       id
       ownerId
       tenantId
@@ -1023,7 +1023,7 @@ export const GET_DIP: DocumentNode = gql`
       updatedAt
       status
       standard
-      sourceAipId
+      sourcePreservationId
       rootElement {
         id
         elementIdentifier
@@ -1081,9 +1081,9 @@ export const GET_DIP: DocumentNode = gql`
   }
 `;
 
-export const CREATE_DIP: DocumentNode = gql`
-  mutation CreateDip($input: CreateDipInput!) {
-    createDip(input: $input) {
+export const CREATE_RELEASE: DocumentNode = gql`
+  mutation CreateRelease($input: CreateReleaseInput!) {
+    createRelease(input: $input) {
       id
       ownerId
       tenantId
@@ -1093,7 +1093,7 @@ export const CREATE_DIP: DocumentNode = gql`
       updatedAt
       status
       standard
-      sourceAipId
+      sourcePreservationId
       rootElement {
         id
         elementIdentifier
@@ -1117,9 +1117,9 @@ export const CREATE_DIP: DocumentNode = gql`
   }
 `;
 
-export const DELETE_DIP: DocumentNode = gql`
-  mutation DeleteDip($id: ID!) {
-    deleteDip(id: $id)
+export const DELETE_RELEASE: DocumentNode = gql`
+  mutation DeleteRelease($id: ID!) {
+    deleteRelease(id: $id)
   }
 `;
 
@@ -1162,7 +1162,7 @@ export const DELETE_ELEMENT_LINK: DocumentNode = gql`
 `;
 
 // ═══════════════════════════════════════════════
-// Unified Package Queries (SIP/AIP/DIP)
+// Unified Package Queries (Intake/Preservation/Release)
 // ═══════════════════════════════════════════════
 
 export const GET_ALL_PACKAGES: DocumentNode = gql`

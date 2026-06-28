@@ -124,7 +124,7 @@
     <div class="drop-content">
       <span class="drop-icon">📁</span>
       <p class="drop-text">Drop files here or click to browse</p>
-      <p class="drop-hint">File metadata will auto-populate SIP fields</p>
+      <p class="drop-hint">File metadata will auto-populate Intake fields</p>
     </div>
   {/if}
 </div>

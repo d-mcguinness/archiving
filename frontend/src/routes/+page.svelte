@@ -23,7 +23,7 @@
     {
       icon: '⟳',
       title: 'The complete OAIS workflow',
-      body: 'Carry every asset cleanly from SIP to AIP to DIP, with provenance, fixity, and integrity tracked at every step.'
+      body: 'Carry every asset cleanly from Intake to Preservation to Release, with provenance, fixity, and integrity tracked at every step.'
     },
     {
       icon: '⛉',
@@ -44,29 +44,29 @@
 
   const workflow = [
     {
-      stage: 'SIP',
+      stage: 'Intake',
       step: '01',
       kicker: 'Ingest',
       title: 'Submission packages',
-      body: 'Assemble and validate Submission Information Packages across all ten standards, with metadata captured at the door.',
+      body: 'Assemble and validate Intake packages across all ten standards, with metadata captured at the door.',
       href: '/ingest',
       tone: 'ingest'
     },
     {
-      stage: 'AIP',
+      stage: 'Preservation',
       step: '02',
       kicker: 'Preserve',
       title: 'Long-term storage',
-      body: 'Seal Archival Information Packages with full provenance, fixity checks, and format-migration readiness.',
+      body: 'Seal Preservation packages with full provenance, fixity checks, and format-migration readiness.',
       href: '/preserve',
       tone: 'preserve'
     },
     {
-      stage: 'DIP',
+      stage: 'Release',
       step: '03',
       kicker: 'Deliver',
       title: 'Access packages',
-      body: 'Produce Dissemination Information Packages tailored to each audience, with standard-compliant metadata and access control.',
+      body: 'Produce Release packages tailored to each audience, with standard-compliant metadata and access control.',
       href: '/deliver',
       tone: 'deliver'
     }
@@ -86,7 +86,7 @@
       price: '$0',
       cadence: 'forever',
       tagline: 'Explore the full archival workflow',
-      features: ['5 team members', '10 archives', '100 MB storage', 'All 10 open standards', 'SIP → AIP → DIP workflow'],
+      features: ['5 team members', '10 archives', '100 MB storage', 'All 10 open standards', 'Intake → Preservation → Release workflow'],
       cta: 'Start free',
       popular: false
     },
@@ -193,19 +193,19 @@
             </div>
             <div class="pc-flow">
               <div class="pc-node n-ingest">
-                <span class="pc-stage">SIP</span>
+                <span class="pc-stage">Intake</span>
                 <span class="pc-kicker">Ingest</span>
                 <span class="pc-state">validated</span>
               </div>
               <div class="pc-conn"><span class="pc-pulse"></span></div>
               <div class="pc-node n-preserve">
-                <span class="pc-stage">AIP</span>
+                <span class="pc-stage">Preservation</span>
                 <span class="pc-kicker">Preserve</span>
                 <span class="pc-state">sealed</span>
               </div>
               <div class="pc-conn"><span class="pc-pulse" style="animation-delay:.8s"></span></div>
               <div class="pc-node n-deliver">
-                <span class="pc-stage">DIP</span>
+                <span class="pc-stage">Release</span>
                 <span class="pc-kicker">Deliver</span>
                 <span class="pc-state">ready</span>
               </div>
@@ -404,20 +404,20 @@
           <h3>Archives</h3>
           <p>Create and manage archival collections</p>
         </a>
-        <a href="/sip" class="nav-card sips">
+        <a href="/intake" class="nav-card sips">
           <span class="nav-icon">📦</span>
-          <h3>SIPs</h3>
-          <p>Build Submission Information Packages</p>
+          <h3>Intakes</h3>
+          <p>Build Intake packages</p>
         </a>
-        <a href="/aip" class="nav-card aips">
+        <a href="/preservation" class="nav-card aips">
           <span class="nav-icon">🏗️</span>
-          <h3>AIPs</h3>
-          <p>Manage Archival Information Packages</p>
+          <h3>Preservations</h3>
+          <p>Manage Preservation packages</p>
         </a>
-        <a href="/dip" class="nav-card dips">
+        <a href="/release" class="nav-card dips">
           <span class="nav-icon">📤</span>
-          <h3>DIPs</h3>
-          <p>Create Dissemination Information Packages</p>
+          <h3>Releases</h3>
+          <p>Create Release packages</p>
         </a>
       </RoleGate>
 

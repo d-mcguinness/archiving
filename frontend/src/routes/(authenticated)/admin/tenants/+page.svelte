@@ -273,14 +273,14 @@
                 <a href="/tenants/{tenant.id}/archives" class="btn-action btn-archives">
                   📁 Archives
                 </a>
-                <a href="/tenants/{tenant.id}/sips" class="btn-action btn-sips">
-                  📦 SIPs
+                <a href="/tenants/{tenant.id}/intakes" class="btn-action btn-sips">
+                  📦 Intakes
                 </a>
-                <a href="/tenants/{tenant.id}/aips" class="btn-action btn-aips">
-                  🏗️ AIPs
+                <a href="/tenants/{tenant.id}/preservations" class="btn-action btn-aips">
+                  🏗️ Preservations
                 </a>
-                <a href="/tenants/{tenant.id}/dips" class="btn-action btn-dips">
-                  📤 DIPs
+                <a href="/tenants/{tenant.id}/releases" class="btn-action btn-dips">
+                  📤 Releases
                 </a>
               </td>
             </tr>

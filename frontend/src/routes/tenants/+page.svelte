@@ -52,7 +52,7 @@
         </div>
         <div class="feature-card">
           <span class="feature-icon">📦</span>
-          <h3>SIP / AIP / DIP</h3>
+          <h3>Intake / Preservation / Release</h3>
           <p>Build submission, archival, and dissemination packages within your tenant boundary.</p>
         </div>
         <div class="feature-card">

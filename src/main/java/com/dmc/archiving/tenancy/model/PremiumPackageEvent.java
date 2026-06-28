@@ -44,7 +44,7 @@ public class PremiumPackageEvent {
     private Long tenantId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "package_type", nullable = false, length = 8)
+    @Column(name = "package_type", nullable = false, length = 20)
     private PremiumPackageType packageType;
 
     /** Archive standard name (enum-string), e.g. NOARK5 / EARK. */

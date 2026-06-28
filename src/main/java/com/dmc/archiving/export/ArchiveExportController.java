@@ -1,13 +1,13 @@
 package com.dmc.archiving.export;
 
-import com.dmc.archiving.aip.api.AipExportApi;
-import com.dmc.archiving.aip.api.AipExportFile;
+import com.dmc.archiving.preservation.api.PreservationExportApi;
+import com.dmc.archiving.preservation.api.PreservationExportFile;
 import com.dmc.archiving.archive.api.ArchiveExportApi;
 import com.dmc.archiving.archive.api.ArchiveExportInfo;
-import com.dmc.archiving.dip.api.DipExportApi;
-import com.dmc.archiving.dip.api.DipExportFile;
-import com.dmc.archiving.sip.api.SipExportApi;
-import com.dmc.archiving.sip.api.SipExportFile;
+import com.dmc.archiving.release.api.ReleaseExportApi;
+import com.dmc.archiving.release.api.ReleaseExportFile;
+import com.dmc.archiving.intake.api.IntakeExportApi;
+import com.dmc.archiving.intake.api.IntakeExportFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -36,15 +36,15 @@ public class ArchiveExportController {
     private static final Logger log = LoggerFactory.getLogger(ArchiveExportController.class);
 
     private final ArchiveExportApi archiveExportApi;
-    private final SipExportApi sipExportApi;
-    private final AipExportApi aipExportApi;
-    private final DipExportApi dipExportApi;
+    private final IntakeExportApi sipExportApi;
+    private final PreservationExportApi aipExportApi;
+    private final ReleaseExportApi dipExportApi;
     private final ObjectMapper mapper;
 
     public ArchiveExportController(ArchiveExportApi archiveExportApi,
-                                   SipExportApi sipExportApi,
-                                   AipExportApi aipExportApi,
-                                   DipExportApi dipExportApi) {
+                                   IntakeExportApi sipExportApi,
+                                   PreservationExportApi aipExportApi,
+                                   ReleaseExportApi dipExportApi) {
         this.archiveExportApi = archiveExportApi;
         this.sipExportApi = sipExportApi;
         this.aipExportApi = aipExportApi;
@@ -69,9 +69,9 @@ public class ArchiveExportController {
             }
 
             Long tenantId = info.tenantId();
-            List<SipExportFile> sips = sipExportApi.exportByTenant(tenantId);
-            List<AipExportFile> aips = aipExportApi.exportByTenant(tenantId);
-            List<DipExportFile> dips = dipExportApi.exportByTenant(tenantId);
+            List<IntakeExportFile> sips = sipExportApi.exportByTenant(tenantId);
+            List<PreservationExportFile> aips = aipExportApi.exportByTenant(tenantId);
+            List<ReleaseExportFile> dips = dipExportApi.exportByTenant(tenantId);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try (ZipOutputStream zos = new ZipOutputStream(baos)) {
@@ -90,13 +90,13 @@ public class ArchiveExportController {
 
                 addJsonEntry(zos, "archive.json", info.data());
 
-                for (SipExportFile sip : sips) {
+                for (IntakeExportFile sip : sips) {
                     addJsonEntry(zos, "sips/sip_" + sip.id() + "_" + sanitize(sip.title()) + ".json", sip.data());
                 }
-                for (AipExportFile aip : aips) {
+                for (PreservationExportFile aip : aips) {
                     addJsonEntry(zos, "aips/aip_" + aip.id() + "_" + sanitize(aip.title()) + ".json", aip.data());
                 }
-                for (DipExportFile dip : dips) {
+                for (ReleaseExportFile dip : dips) {
                     addJsonEntry(zos, "dips/dip_" + dip.id() + "_" + sanitize(dip.title()) + ".json", dip.data());
                 }
             }

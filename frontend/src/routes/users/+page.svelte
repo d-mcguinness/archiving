@@ -54,7 +54,7 @@
           <ul>
             <li>Manage tenant users</li>
             <li>Create and manage archives</li>
-            <li>Build SIPs, AIPs, and DIPs</li>
+            <li>Build Intakes, Preservations, and Releases</li>
             <li>Upload and manage documents</li>
           </ul>
         </div>

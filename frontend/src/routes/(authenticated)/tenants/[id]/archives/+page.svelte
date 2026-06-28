@@ -426,14 +426,14 @@
                   <a href="/tenants/{data.tenantId}/archives/{archive.id}/update" class="btn-action btn-edit">
                     ✏️ Edit
                   </a>
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/sips" class="btn-action btn-sips">
-                    📦 SIPs
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/intakes" class="btn-action btn-sips">
+                    📦 Intakes
                   </a>
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/aips" class="btn-action btn-aips">
-                    🏗️ AIPs
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/preservations" class="btn-action btn-aips">
+                    🏗️ Preservations
                   </a>
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/dips" class="btn-action btn-dips">
-                    📤 DIPs
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/releases" class="btn-action btn-dips">
+                    📤 Releases
                   </a>
                   <a href="/tenants/{data.tenantId}/archives/{archive.id}/users" class="btn-action btn-users">
                     👥 Users

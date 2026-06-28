@@ -26,7 +26,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     List<Document> findByArchiveId(Long archiveId);
 
     // Find by SIP
-    List<Document> findBySipId(Long sipId);
+    List<Document> findByIntakeId(Long intakeId);
 
     // Find by status
     List<Document> findByStatus(DocumentStatus status);

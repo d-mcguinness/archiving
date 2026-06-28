@@ -172,12 +172,12 @@ public class ArchiveService {
         return archiveRepository.findByOwnerId(ownerId);
     }
 
-    public List<Archive> getAllSips() {
+    public List<Archive> getAllIntakes() {
         return archiveRepository.findByRootElementIsNotNull();
     }
 
-    public List<Archive> getSipsByTenant(Long tenantId) {
-        return archiveRepository.findSipsByTenantId(tenantId);
+    public List<Archive> getIntakesByTenant(Long tenantId) {
+        return archiveRepository.findIntakesByTenantId(tenantId);
     }
 
     @Cacheable(key = "#tenantId", cacheNames = "archivesByTenant")

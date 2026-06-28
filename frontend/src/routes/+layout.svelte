@@ -36,17 +36,17 @@
         {#if !$auth.isLoggedIn}
           <ul class="nav-links">
             <li>
-              <a href="/ingest" class="sips-link" class:active={isActive('/ingest')}>
+              <a href="/ingest" class="intakes-link" class:active={isActive('/ingest')}>
                 Ingest
               </a>
             </li>
             <li>
-              <a href="/preserve" class="aips-link" class:active={isActive('/preserve')}>
+              <a href="/preserve" class="preservations-link" class:active={isActive('/preserve')}>
                 Preserve
               </a>
             </li>
             <li>
-              <a href="/deliver" class="dips-link" class:active={isActive('/deliver')}>
+              <a href="/deliver" class="releases-link" class:active={isActive('/deliver')}>
                 Deliver
               </a>
             </li>
@@ -71,18 +71,18 @@
                 </a>
               </li>
               <li>
-                <a href="/admin/sip" class="sips-link" class:active={isActive('/admin/sip')}>
-                  📦 SIPs
+                <a href="/admin/intake" class="intakes-link" class:active={isActive('/admin/intake')}>
+                  📦 Intakes
                 </a>
               </li>
               <li>
-                <a href="/admin/aip" class="aips-link" class:active={isActive('/admin/aip')}>
-                  🏗️ AIPs
+                <a href="/admin/preservation" class="preservations-link" class:active={isActive('/admin/preservation')}>
+                  🏗️ Preservations
                 </a>
               </li>
               <li>
-                <a href="/admin/dip" class="dips-link" class:active={isActive('/admin/dip')}>
-                  📤 DIPs
+                <a href="/admin/release" class="releases-link" class:active={isActive('/admin/release')}>
+                  📤 Releases
                 </a>
               </li>
               <li>
@@ -103,18 +103,18 @@
                 </a>
               </li>
               <li>
-                <a href="/tenants/{$auth.tenantId}/sips" class="sips-link" class:active={isActive(`/tenants/${$auth.tenantId}/sips`)}>
-                  📦 SIPs
+                <a href="/tenants/{$auth.tenantId}/intakes" class="intakes-link" class:active={isActive(`/tenants/${$auth.tenantId}/intakes`)}>
+                  📦 Intakes
                 </a>
               </li>
               <li>
-                <a href="/tenants/{$auth.tenantId}/aips" class="aips-link" class:active={isActive(`/tenants/${$auth.tenantId}/aips`)}>
-                  🏗️ AIPs
+                <a href="/tenants/{$auth.tenantId}/preservations" class="preservations-link" class:active={isActive(`/tenants/${$auth.tenantId}/preservations`)}>
+                  🏗️ Preservations
                 </a>
               </li>
               <li>
-                <a href="/tenants/{$auth.tenantId}/dips" class="dips-link" class:active={isActive(`/tenants/${$auth.tenantId}/dips`)}>
-                  📤 DIPs
+                <a href="/tenants/{$auth.tenantId}/releases" class="releases-link" class:active={isActive(`/tenants/${$auth.tenantId}/releases`)}>
+                  📤 Releases
                 </a>
               </li>
               <li>
@@ -302,39 +302,39 @@
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
   }
 
-  .nav-links a.sips-link {
+  .nav-links a.intakes-link {
     background: linear-gradient(135deg, #ec4899, #db2777);
   }
 
-  .nav-links a.sips-link:hover:not(.active) {
+  .nav-links a.intakes-link:hover:not(.active) {
     background: linear-gradient(135deg, #db2777, #be185d);
   }
 
-  .nav-links a.sips-link.active {
+  .nav-links a.intakes-link.active {
     background: linear-gradient(135deg, #f472b6, #ec4899);
   }
 
-  .nav-links a.aips-link {
+  .nav-links a.preservations-link {
     background: linear-gradient(135deg, #6366f1, #4f46e5);
   }
 
-  .nav-links a.aips-link:hover:not(.active) {
+  .nav-links a.preservations-link:hover:not(.active) {
     background: linear-gradient(135deg, #4f46e5, #4338ca);
   }
 
-  .nav-links a.aips-link.active {
+  .nav-links a.preservations-link.active {
     background: linear-gradient(135deg, #818cf8, #6366f1);
   }
 
-  .nav-links a.dips-link {
+  .nav-links a.releases-link {
     background: linear-gradient(135deg, #f97316, #ea580c);
   }
 
-  .nav-links a.dips-link:hover:not(.active) {
+  .nav-links a.releases-link:hover:not(.active) {
     background: linear-gradient(135deg, #ea580c, #c2410c);
   }
 
-  .nav-links a.dips-link.active {
+  .nav-links a.releases-link.active {
     background: linear-gradient(135deg, #fb923c, #f97316);
   }
 

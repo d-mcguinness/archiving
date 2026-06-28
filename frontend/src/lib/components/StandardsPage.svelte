@@ -12,10 +12,10 @@
   export let heroDescription = '';
   /** Package type key to derive labels and links */
   export let packageType: 'sip' | 'aip' | 'dip' = 'sip';
-  /** Create path prefix: /sip/create, /aip/create, /dip/create */
-  export let createPath = '/sip/create';
-  /** List path: /sip, /aip, /dip */
-  export let listPath = '/sip';
+  /** Create path prefix: /intake/create, /preservation/create, /release/create */
+  export let createPath = '/intake/create';
+  /** List path: /intake, /preservation, /release */
+  export let listPath = '/intake';
   /** Accent color */
   export let accentColor = '#3b82f6';
   /** How-it-works steps for public page */
@@ -34,9 +34,9 @@
   let loading = true;
 
   const typeLabelKey: Record<string, keyof StandardDefinition> = {
-    sip: 'sipLabel',
-    aip: 'aipLabel',
-    dip: 'dipLabel',
+    sip: 'intakeLabel',
+    aip: 'preservationLabel',
+    dip: 'releaseLabel',
   };
 
   function getTypeLabel(std: StandardDefinition): string {
@@ -44,15 +44,15 @@
   }
 
   const packageNames: Record<string, string> = {
-    sip: 'Submission Information Package',
-    aip: 'Archival Information Package',
-    dip: 'Dissemination Information Package',
+    sip: 'Intake package',
+    aip: 'Preservation package',
+    dip: 'Release package',
   };
 
   const packageAbbr: Record<string, string> = {
-    sip: 'SIP',
-    aip: 'AIP',
-    dip: 'DIP',
+    sip: 'Intake',
+    aip: 'Preservation',
+    dip: 'Release',
   };
 
   onMount(async () => {
@@ -161,7 +161,7 @@
     <div class="page-header">
       <div>
         <h1>{title}</h1>
-        <p class="page-subtitle">Select an archival standard to create a {packageNames[packageType]} ({packageAbbr[packageType]}).</p>
+        <p class="page-subtitle">Select an archival standard to create {packageNames[packageType] === 'Intake package' ? 'an' : 'a'} {packageNames[packageType]}.</p>
       </div>
       <a href={listPath} class="btn-secondary">View All {packageAbbr[packageType]}s</a>
     </div>
