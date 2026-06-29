@@ -1387,6 +1387,12 @@
       grid-template-columns: 1fr;
       gap: 2.5rem;
     }
+    /* Let the single column shrink to the container so hero text wraps
+       instead of being forced wide by the pipeline's intrinsic width. */
+    .hero-copy,
+    .hero-visual {
+      min-width: 0;
+    }
     .hero-visual {
       max-width: 28rem;
     }
@@ -1417,6 +1423,17 @@
     }
     .hero {
       padding: 3.5rem 0 4rem;
+    }
+    /* Stack the pipeline so its three nodes never force horizontal overflow. */
+    .pc-flow {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.45rem;
+    }
+    .pc-conn {
+      width: 2px;
+      height: 0.9rem;
+      align-self: center;
     }
     .trustbar {
       flex-direction: column;

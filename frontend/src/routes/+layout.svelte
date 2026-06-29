@@ -3,12 +3,33 @@
   import Toast from '$lib/components/Toast.svelte';
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
+  import { afterNavigate } from '$app/navigation';
   import { auth } from '$lib/stores/authStore';
 
   export let data: any;
 
   // Reactive declaration ensures this updates whenever the route changes
   $: currentPath = $page.url.pathname;
+
+  // Mobile nav state — the links/auth collapse behind a hamburger on small screens.
+  let mobileOpen = false;
+  const toggleMenu = () => (mobileOpen = !mobileOpen);
+  const closeMenu = () => (mobileOpen = false);
+
+  // Close the menu after any client-side navigation (e.g. tapping a link).
+  afterNavigate(() => {
+    mobileOpen = false;
+  });
+
+  function handleLogout() {
+    mobileOpen = false;
+    auth.logout();
+  }
+
+  function handleExitMimic() {
+    mobileOpen = false;
+    auth.exitMimic();
+  }
 
   // Check if a path is active based on current route
   $: isActive = (path: string): boolean => {
@@ -23,6 +44,8 @@
   });
 </script>
 
+<svelte:window on:keydown={(e) => e.key === 'Escape' && closeMenu()} />
+
 <div class="app">
   <Toast />
 
@@ -33,21 +56,25 @@
           <h1><a href="/">Arcana</a></h1>
         </div>
 
+        <button
+          class="nav-toggle"
+          class:open={mobileOpen}
+          aria-label="Toggle navigation menu"
+          aria-expanded={mobileOpen}
+          aria-controls="nav-menu"
+          on:click={toggleMenu}
+        >
+          <span class="nav-toggle-bar"></span>
+          <span class="nav-toggle-bar"></span>
+          <span class="nav-toggle-bar"></span>
+        </button>
+
+        <div class="nav-collapse" class:open={mobileOpen} id="nav-menu">
         {#if !$auth.isLoggedIn}
           <ul class="nav-links">
             <li>
-              <a href="/ingest" class="intakes-link" class:active={isActive('/ingest')}>
-                Ingest
-              </a>
-            </li>
-            <li>
-              <a href="/preserve" class="preservations-link" class:active={isActive('/preserve')}>
-                Preserve
-              </a>
-            </li>
-            <li>
-              <a href="/deliver" class="releases-link" class:active={isActive('/deliver')}>
-                Deliver
+              <a href="/product" class="product-link" class:active={isActive('/product')}>
+                Product
               </a>
             </li>
           </ul>
@@ -157,11 +184,11 @@
           {#if $auth.isLoggedIn}
             <span class="user-name-display">👤 {$auth.user?.name}</span>
             {#if auth.isMimicking()}
-              <button class="exit-mimic-button" on:click={auth.exitMimic}>
+              <button class="exit-mimic-button" on:click={handleExitMimic}>
                 🎭 Exit Mimic
               </button>
             {/if}
-            <button class="logout-button" on:click={auth.logout}>
+            <button class="logout-button" on:click={handleLogout}>
               Logout
             </button>
           {:else}
@@ -173,9 +200,14 @@
             </a>
           {/if}
         </div>
+        </div>
       </div>
     </nav>
   </header>
+
+  {#if mobileOpen}
+    <button class="nav-backdrop" aria-label="Close navigation menu" on:click={closeMenu}></button>
+  {/if}
 
   <main>
     <slot />
@@ -197,6 +229,8 @@
     background: #1e293b;
     color: white;
     padding: 1rem 0;
+    position: relative;
+    z-index: 50;
   }
 
   .nav-container {
@@ -207,6 +241,58 @@
     justify-content: space-between;
     align-items: center;
     gap: 2rem;
+    position: relative;
+    flex-wrap: wrap; /* heavy authenticated navs wrap instead of overflowing */
+  }
+
+  /* Hamburger toggle — hidden on desktop, shown below the breakpoint. */
+  .nav-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .nav-toggle:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  .nav-toggle-bar {
+    display: block;
+    width: 22px;
+    height: 2px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 2px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .nav-toggle.open .nav-toggle-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .nav-toggle.open .nav-toggle-bar:nth-child(2) {
+    opacity: 0;
+  }
+  .nav-toggle.open .nav-toggle-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* On desktop the wrapper is transparent to the flex layout. */
+  .nav-collapse {
+    display: contents;
+  }
+
+  .nav-backdrop {
+    display: none;
   }
 
   .brand-section {
@@ -338,6 +424,19 @@
     background: linear-gradient(135deg, #fb923c, #f97316);
   }
 
+  /* Single public "Product" entry point — echoes the brand indigo→violet→cyan gradient. */
+  .nav-links a.product-link {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6 55%, #06b6d4);
+  }
+
+  .nav-links a.product-link:hover:not(.active) {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed 55%, #0891b2);
+  }
+
+  .nav-links a.product-link.active {
+    background: linear-gradient(135deg, #818cf8, #a78bfa 55%, #22d3ee);
+  }
+
   .nav-links a.documents-link {
     background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   }
@@ -451,5 +550,92 @@
     text-align: center;
     padding: 1rem;
     color: #64748b;
+  }
+
+  /* ── Responsive nav: collapse links + auth behind the hamburger ── */
+  @media (max-width: 900px) {
+    .nav-container {
+      flex-wrap: nowrap;
+    }
+
+    .nav-toggle {
+      display: flex;
+    }
+
+    .nav-collapse {
+      display: none;
+      position: absolute;
+      top: calc(100% + 1rem);
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1rem;
+      background: #1e293b;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 1.25rem 1rem;
+      box-shadow: 0 20px 36px -14px rgba(0, 0, 0, 0.65);
+      z-index: 60;
+      max-height: calc(100vh - 5rem);
+      overflow-y: auto;
+    }
+
+    .nav-collapse.open {
+      display: flex;
+    }
+
+    .nav-links {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .nav-links a {
+      display: block;
+      text-align: center;
+    }
+
+    .auth-section {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.6rem;
+      width: 100%;
+      margin-left: 0;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .user-name-display {
+      text-align: center;
+    }
+
+    .login-button,
+    .register-button,
+    .logout-button,
+    .exit-mimic-button {
+      width: 100%;
+      text-align: center;
+    }
+
+    .nav-backdrop {
+      display: block;
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(2, 6, 23, 0.5);
+      border: none;
+      padding: 0;
+      margin: 0;
+      cursor: default;
+      z-index: 40;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-toggle-bar {
+      transition: none;
+    }
   }
 </style>
