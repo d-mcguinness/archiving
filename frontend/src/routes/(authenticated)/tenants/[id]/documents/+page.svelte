@@ -151,6 +151,7 @@
     <!-- Page Header -->
     <div class="page-header">
       <div class="header-content">
+        <span class="eyebrow">Tenant workspace</span>
         <h1>📄 Documents</h1>
         {#if tenant}
           <div class="tenant-badge">
@@ -265,18 +266,18 @@
 
   .access-denied h1 {
     margin: 0 0 1rem 0;
-    color: #1e293b;
+    color: var(--arc-ink);
     font-size: 2rem;
   }
 
   .access-denied p {
     margin: 0.5rem 0;
-    color: #64748b;
+    color: var(--arc-muted);
     font-size: 1.125rem;
   }
 
   .redirect-message {
-    color: #3b82f6;
+    color: var(--arc-link);
     font-weight: 500;
     animation: pulse 1.5s ease-in-out infinite;
   }
@@ -284,22 +285,6 @@
   @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
-  }
-
-  /* Breadcrumb */
-  .breadcrumb {
-    margin-bottom: 1.5rem;
-  }
-
-  .breadcrumb a {
-    color: #3b82f6;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s;
-  }
-
-  .breadcrumb a:hover {
-    color: #2563eb;
   }
 
   /* Page Header */
@@ -320,20 +305,24 @@
 
   .btn-create {
     padding: 0.75rem 1.5rem;
-    background: #8b5cf6;
+    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
     color: white;
-    border-radius: 0.5rem;
+    border-radius: 0.65rem;
     text-decoration: none;
-    font-weight: 600;
-    transition: all 0.2s;
+    font-weight: 700;
+    box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
+    transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
     white-space: nowrap;
   }
 
-  .btn-create:hover { background: #7c3aed; }
+  .btn-create:hover {
+    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
+    transform: translateY(-2px);
+  }
 
   .page-header h1 {
     margin: 0;
-    color: #1e293b;
+    color: var(--arc-ink);
     font-size: 2rem;
   }
 
@@ -341,11 +330,12 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 0.5rem;
+    padding: 0.35rem 0.9rem;
+    background: var(--arc-chip-indigo-bg);
+    color: var(--arc-chip-indigo-ink);
+    border-radius: 9999px;
     font-weight: 600;
+    font-size: 0.9rem;
     width: fit-content;
   }
 
@@ -364,8 +354,8 @@
   }
 
   .spinner {
-    border: 4px solid #f3f4f6;
-    border-top: 4px solid #3b82f6;
+    border: 4px solid var(--arc-line-strong);
+    border-top: 4px solid #6366f1;
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -379,21 +369,21 @@
 
   /* Error */
   .error {
-    background: #fee;
-    color: #c00;
+    background: var(--arc-alert-red-bg);
+    color: var(--arc-alert-red-ink);
     padding: 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid #fcc;
+    border-radius: 0.6rem;
+    border: 1px solid var(--arc-alert-red-border);
     margin-bottom: 1.5rem;
   }
 
   /* Documents Section */
   .documents-section {
-    background: white;
+    background: var(--arc-card);
     padding: 2rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    border: 1px solid var(--arc-line);
   }
 
   .section-header {
@@ -402,27 +392,30 @@
     align-items: center;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 1px solid var(--arc-line);
   }
 
   .section-header h2 {
     margin: 0;
-    color: #1e293b;
+    color: var(--arc-ink);
     font-size: 1.5rem;
   }
 
   .document-count {
-    color: #64748b;
-    font-weight: 600;
-    font-size: 0.875rem;
+    color: var(--arc-muted);
+    font-weight: 700;
+    font-size: 0.72rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
   }
 
-  /* Empty State */
+  /* Empty State — dark hero panel */
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
+    background: var(--arc-grad-dark, radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%));
+    border: 1px solid var(--arc-line);
+    border-radius: 1rem;
   }
 
   .empty-icon {
@@ -433,12 +426,12 @@
 
   .empty-state h3 {
     margin: 0 0 0.5rem 0;
-    color: #1e293b;
+    color: #f8fafc;
   }
 
   .empty-state p {
     margin: 0;
-    color: #64748b;
+    color: #cbd5e1;
   }
 
   /* Documents Grid */
@@ -455,16 +448,29 @@
   }
 
   .document-card {
-    background: #f8fafc;
+    background: var(--arc-card);
     padding: 1.5rem;
-    border-radius: 0.75rem;
-    border: 2px solid #e2e8f0;
-    transition: all 0.2s;
+    border-radius: 1rem;
+    border: 1px solid var(--arc-line);
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
   .document-card:hover {
-    border-color: #3b82f6;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transform: translateY(-4px);
+    border-color: var(--arc-hover-border);
+    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .document-card,
+    .btn-create {
+      transition: none;
+    }
+    .document-card:hover,
+    .btn-create:hover {
+      transform: none;
+    }
   }
 
   .document-icon-large {
@@ -481,14 +487,14 @@
 
   .document-title {
     margin: 0;
-    color: #1e293b;
+    color: var(--arc-ink);
     font-size: 1.125rem;
     font-weight: 600;
   }
 
   .document-description {
     margin: 0;
-    color: #64748b;
+    color: var(--arc-muted);
     font-size: 0.875rem;
     line-height: 1.5;
   }
@@ -507,44 +513,44 @@
   }
 
   .meta-label {
-    color: #64748b;
+    color: var(--arc-muted);
     font-weight: 500;
   }
 
   .meta-value {
-    color: #1e293b;
+    color: var(--arc-ink);
     font-weight: 400;
   }
 
   .status {
     padding: 0.25rem 0.75rem;
-    border-radius: 0.375rem;
-    font-size: 0.75rem;
-    font-weight: 600;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
   }
 
   .status-active,
   .status-approved {
-    background: #dcfce7;
-    color: #166534;
+    background: var(--arc-chip-green-bg);
+    color: var(--arc-chip-green-ink);
   }
 
   .status-pending,
   .status-pending_review {
-    background: #fef3c7;
-    color: #92400e;
+    background: var(--arc-chip-amber-bg);
+    color: var(--arc-chip-amber-ink);
   }
 
   .status-rejected {
-    background: #fee2e2;
-    color: #991b1b;
+    background: var(--arc-chip-red-bg);
+    color: var(--arc-chip-red-ink);
   }
 
   .status-unknown {
-    background: #f1f5f9;
-    color: #64748b;
+    background: var(--arc-chip-slate-bg);
+    color: var(--arc-chip-slate-ink);
   }
 
   @media (max-width: 768px) {

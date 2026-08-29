@@ -58,6 +58,7 @@ function handleCancel() {
 }
 </script>
 
+<span class="eyebrow">Tenants</span>
 <h2>Delete Tenant</h2>
 {#if loading}
   <div class="loading">Loading...</div>
@@ -78,54 +79,59 @@ function handleCancel() {
 {/if}
 
 <style>
+  h2 {
+    margin: 0 0 1rem;
+    color: var(--arc-ink, #0f172a);
+  }
   .actions {
     margin-top: 2rem;
     display: flex;
     gap: 1rem;
   }
   .delete-btn {
-    background: #f44336;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
     color: white;
     padding: 0.5rem 1.5rem;
-    border-radius: 0.25rem;
-    font-weight: 500;
+    border-radius: 0.65rem;
+    font-weight: 700;
     border: none;
     cursor: pointer;
-    transition: background 0.2s;
+    box-shadow: 0 10px 30px -8px rgba(220, 38, 38, 0.5);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
   }
   .delete-btn:disabled {
-    background: #e57373;
+    background: #fca5a5;
     cursor: not-allowed;
+    box-shadow: none;
   }
   .delete-btn:hover:not(:disabled) {
-    background: #c62828;
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px);
   }
   .cancel-btn {
-    background: #e0e0e0;
-    color: #333;
+    background: var(--arc-card);
+    color: var(--arc-ink);
     padding: 0.5rem 1.5rem;
-    border-radius: 0.25rem;
-    font-weight: 500;
-    border: none;
+    border-radius: 0.65rem;
+    font-weight: 600;
+    border: 1.5px solid var(--arc-line-strong);
     cursor: pointer;
-    transition: background 0.2s;
+    box-shadow: none;
+    transition: border-color 0.18s ease, color 0.18s ease;
   }
   .cancel-btn:hover:not(:disabled) {
-    background: #bdbdbd;
+    background: var(--arc-card);
+    border-color: var(--arc-indigo, #6366f1);
+    color: var(--arc-link);
+    box-shadow: none;
+  }
+  .cancel-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
   .loading {
     text-align: center;
     margin: 2rem;
-    color: #64748b;
-  }
-  .error {
-    color: #f44336;
-    margin: 2rem 0;
-    text-align: center;
-  }
-  .success {
-    color: #10b981;
-    margin: 2rem 0;
-    text-align: center;
+    color: var(--arc-muted);
   }
 </style>

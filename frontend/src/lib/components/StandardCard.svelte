@@ -30,21 +30,22 @@
 
 <style>
   .standard-card {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.75rem;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line);
+    border-radius: 1rem;
     padding: 1.5rem;
     text-decoration: none;
     color: inherit;
     display: flex;
     flex-direction: column;
-    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   }
 
   .standard-card:hover {
-    border-color: var(--accent);
-    box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 12%, transparent);
-    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--arc-card));
+    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
+    transform: translateY(-4px);
   }
 
   .card-header {
@@ -55,19 +56,19 @@
   }
 
   .standard-badge {
-    font-size: 0.7rem;
-    font-weight: 800;
+    font-size: 0.72rem;
+    font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 10%, white);
-    padding: 0.25rem 0.625rem;
-    border-radius: 0.25rem;
+    background: color-mix(in srgb, var(--accent) 10%, var(--arc-card));
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
   }
 
   .version {
     font-size: 0.7rem;
-    color: #94a3b8;
+    color: var(--arc-faint);
     font-weight: 600;
   }
 
@@ -75,13 +76,13 @@
     margin: 0 0 0.5rem 0;
     font-size: 1.1rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--arc-ink);
     line-height: 1.3;
   }
 
   .card-description {
     margin: 0 0 0.75rem 0;
-    color: #64748b;
+    color: var(--arc-muted);
     font-size: 0.85rem;
     line-height: 1.5;
     flex: 1;
@@ -90,7 +91,7 @@
   .card-reference {
     display: block;
     font-size: 0.7rem;
-    color: #94a3b8;
+    color: var(--arc-faint);
     margin-bottom: 1rem;
     font-family: monospace;
   }
@@ -100,23 +101,33 @@
     justify-content: space-between;
     align-items: center;
     padding-top: 0.75rem;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--arc-line);
   }
 
   .type-label {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #475569;
+    color: var(--arc-body);
   }
 
   .card-arrow {
     font-size: 1.25rem;
-    color: #cbd5e1;
+    color: var(--arc-faint);
     transition: color 0.2s, transform 0.2s;
   }
 
   .standard-card:hover .card-arrow {
     color: var(--accent);
     transform: translateX(4px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .standard-card, .card-arrow {
+      transition: none;
+    }
+    .standard-card:hover,
+    .standard-card:hover .card-arrow {
+      transform: none;
+    }
   }
 </style>

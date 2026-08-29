@@ -77,6 +77,7 @@ async function createTenant() {
 </script>
 
 <div class="form-container">
+  <span class="eyebrow">Tenants</span>
   <h3>Create New Tenant</h3>
   <button type="button" class="btn-fill" on:click={fillRandom}>Fill Random</button>
   {#if error}
@@ -130,11 +131,12 @@ async function createTenant() {
   .form-container {
     max-width: 500px;
     margin: 2rem auto;
-    background: #fff;
-    padding: 2rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    border: 1px solid #e2e8f0;
+  }
+  h3 {
+    margin: 0 0 1rem;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--arc-ink, #0f172a);
   }
   .form-row {
     display: grid;
@@ -144,52 +146,22 @@ async function createTenant() {
   .form-group {
     margin-bottom: 1.5rem;
   }
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #1e293b;
-    font-weight: 500;
-  }
-  input, select, textarea {
-    width: 100%;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    border: 1px solid #e2e8f0;
-    font-size: 1rem;
-  }
-  button[type="submit"] {
-    background: #3b82f6;
-    color: white;
-    padding: 0.5rem 1.5rem;
-    border-radius: 0.25rem;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  button[type="submit"]:disabled {
-    background: #90cdf4;
-    cursor: not-allowed;
-  }
   .btn-fill {
     padding: 0.5rem 1rem;
-    background: #f0fdf4;
-    color: #16a34a;
-    border: 1px solid #bbf7d0;
-    border-radius: 0.25rem;
-    font-weight: 500;
+    background: var(--arc-chip-soft-indigo-bg);
+    color: var(--arc-chip-indigo-ink);
+    border: 1px solid var(--arc-hover-border);
+    border-radius: 0.6rem;
+    font-weight: 600;
     font-size: 0.875rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
     margin-bottom: 1rem;
+    box-shadow: none;
   }
   .btn-fill:hover {
-    background: #dcfce7;
-    border-color: #86efac;
-  }
-  .error {
-    color: #f44336;
-    margin: 2rem 0;
-    text-align: center;
+    background: var(--arc-chip-indigo-bg);
+    border-color: var(--arc-hover-border);
+    box-shadow: none;
   }
 </style>

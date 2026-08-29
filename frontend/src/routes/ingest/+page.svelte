@@ -13,7 +13,7 @@
   packageType="sip"
   createPath="/intake/create"
   listPath="/intake"
-  accentColor="#3b82f6"
+  accentColor="#ec4899"
   steps={[
     { title: 'Select Standard', description: 'Choose the archival standard that fits your content. Each standard provides its own entity model, field definitions, and validation rules.' },
     { title: 'Build Package', description: 'Define metadata elements using schema-driven forms. Create nested hierarchies, attach documents, and fill standard-specific fields.' },

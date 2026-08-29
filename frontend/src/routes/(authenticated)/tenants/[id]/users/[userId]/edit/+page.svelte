@@ -147,6 +147,7 @@
 
     <div class="edit-card">
       <div class="card-header">
+        <span class="eyebrow">User profile</span>
         <h1>Edit Profile</h1>
         <p>{user.name}</p>
       </div>
@@ -214,38 +215,39 @@
     justify-content: center; min-height: 400px; gap: 1rem;
   }
   .spinner {
-    border: 4px solid #f3f4f6; border-top: 4px solid #3b82f6;
+    border: 4px solid var(--arc-line-strong, #e2e8f0); border-top: 4px solid var(--arc-indigo, #6366f1);
     border-radius: 50%; width: 40px; height: 40px;
     animation: spin 1s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .error-msg {
-    background: #fee2e2; color: #991b1b; padding: 1rem;
-    border-radius: 0.5rem; border: 1px solid #fca5a5;
+    background: var(--arc-alert-red-bg, #fee2e2); color: var(--arc-alert-red-ink, #991b1b); padding: 1rem;
+    border-radius: 0.5rem; border: 1px solid var(--arc-alert-red-border, #fca5a5);
   }
 
   .edit-card {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.75rem;
+    background: var(--arc-card, #fff);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
     overflow: hidden;
   }
 
   .card-header {
     padding: 1.5rem 2rem;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--arc-line, #e8edf3);
   }
 
   .card-header h1 {
     margin: 0 0 0.25rem;
     font-size: 1.5rem;
-    color: #0f172a;
+    color: var(--arc-ink, #0f172a);
   }
 
   .card-header p {
     margin: 0;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.9rem;
   }
 
@@ -261,28 +263,14 @@
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: #475569;
+    color: var(--arc-body, #475569);
     font-size: 0.875rem;
   }
 
-  .form-group input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    box-sizing: border-box;
-    transition: border-color 0.2s;
-  }
-
-  .form-group input:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
+  /* inputs inherit the global Arcana input styling from app.css */
 
   .form-group input:disabled {
-    background: #f1f5f9;
+    background: var(--arc-card-2, #f1f5f9);
     cursor: not-allowed;
   }
 
@@ -291,42 +279,33 @@
     justify-content: flex-end;
     gap: 0.75rem;
     padding: 1.5rem 2rem;
-    border-top: 1px solid #f1f5f9;
-    background: #f8fafc;
+    border-top: 1px solid var(--arc-line, #e8edf3);
+    background: var(--arc-ground, #f8fafc);
   }
 
   .btn-primary, .btn-secondary {
     padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 0.5rem;
+    border-radius: 0.65rem;
     font-weight: 600;
     font-size: 0.875rem;
     cursor: pointer;
-    transition: all 0.2s;
     text-decoration: none;
     display: inline-block;
   }
 
-  .btn-primary {
-    background: #3b82f6;
-    color: white;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-  }
-
-  .btn-primary:disabled {
-    background: #94a3b8;
-    cursor: not-allowed;
-  }
+  /* .btn-primary inherits the global brand-gradient button styling from app.css */
 
   .btn-secondary {
-    background: #e2e8f0;
-    color: #475569;
+    background: var(--arc-card, #fff);
+    color: var(--arc-ink, #1e293b);
+    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
+    box-shadow: none;
+    transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
   }
 
   .btn-secondary:hover {
-    background: #cbd5e1;
+    border-color: var(--arc-indigo, #6366f1);
+    color: var(--arc-link, #4f46e5);
+    transform: translateY(-2px);
   }
 </style>

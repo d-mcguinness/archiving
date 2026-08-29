@@ -321,7 +321,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--arc-overlay, rgba(15, 23, 42, 0.55));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -329,9 +329,10 @@
   }
 
   .modal-content {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    background: var(--arc-card, #fff);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-lift, 0 24px 60px -16px rgba(15, 23, 42, 0.35));
     max-width: 600px;
     width: 90%;
     max-height: 90vh;
@@ -343,12 +344,12 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--arc-line, #e8edf3);
   }
 
   .modal-header h3 {
     margin: 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 1.25rem;
     font-weight: 600;
   }
@@ -357,7 +358,7 @@
     background: none;
     border: none;
     font-size: 1.5rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     cursor: pointer;
     padding: 0;
     width: 2rem;
@@ -365,10 +366,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 0.5rem;
+    box-shadow: none;
   }
 
   .modal-close:hover {
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
+    background: var(--arc-card-2, #f1f5f9);
+    transform: none;
+    box-shadow: none;
   }
 
   .modal-body {
@@ -376,28 +382,21 @@
   }
 
   .parent-info {
-    background: #f1f5f9;
+    background: var(--arc-alert-indigo-bg, #eef2ff);
+    border: 1px solid var(--arc-alert-indigo-border, #c7d2fe);
     padding: 0.75rem 1rem;
-    border-radius: 0.25rem;
+    border-radius: 0.6rem;
     margin-bottom: 1.5rem;
     font-size: 0.875rem;
-    color: #475569;
+    color: var(--arc-alert-indigo-ink, #4338ca);
   }
 
   .form-group {
     margin-bottom: 1.25rem;
   }
 
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #1e293b;
-    font-size: 0.875rem;
-  }
-
   .field-type {
-    color: #94a3b8;
+    color: var(--arc-faint, #94a3b8);
     font-weight: 400;
     font-size: 0.75rem;
     margin-left: 0.25rem;
@@ -409,26 +408,10 @@
     margin-left: 0.125rem;
   }
 
-  .form-group input,
-  .form-group select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.25rem;
-    font-size: 1rem;
-    transition: border-color 0.2s;
-  }
-
-  .form-group input:focus,
-  .form-group select:focus {
-    outline: none;
-    border-color: #3b82f6;
-  }
-
   .helper-text {
     margin-top: 0.25rem;
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-style: italic;
   }
 
@@ -439,12 +422,12 @@
   .dynamic-fields-section {
     margin-top: 1.5rem;
     padding-top: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
   .dynamic-fields-section h4 {
     margin: 0 0 1rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 1rem;
     font-weight: 600;
   }
@@ -454,7 +437,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
   .button-group {
@@ -465,11 +448,11 @@
   .btn {
     padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 0.25rem;
+    border-radius: 0.65rem;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   }
 
   .btn:disabled {
@@ -481,6 +464,7 @@
     background: #f59e0b;
     color: white;
     margin-right: auto;
+    box-shadow: none;
   }
 
   .btn-defaults:hover {
@@ -488,21 +472,27 @@
   }
 
   .btn-primary {
-    background: #3b82f6;
+    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
     color: white;
+    box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
   }
 
   .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
+    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
+    transform: translateY(-2px);
   }
 
   .btn-secondary {
-    background: #e2e8f0;
-    color: #1e293b;
+    background: var(--arc-card, #fff);
+    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
+    color: var(--arc-ink, #1e293b);
+    box-shadow: none;
   }
 
   .btn-secondary:hover {
-    background: #cbd5e1;
+    background: var(--arc-card, #fff);
+    border-color: var(--arc-indigo, #6366f1);
+    color: var(--arc-link, #4f46e5);
   }
 </style>
 

@@ -94,6 +94,7 @@
 
     <div class="page-header">
       <div>
+        <span class="eyebrow">Preservation</span>
         <h1>🏗️ Preservation packages</h1>
         {#if archive}
           <p class="subtitle">Archive: {archive.title} ({archive.standard})</p>
@@ -150,47 +151,53 @@
 <style>
   .page { max-width: 1400px; margin: 0 auto; padding: 2rem; }
   .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; gap: 1rem; }
-  .spinner { border: 4px solid #f3f4f6; border-top: 4px solid #6366f1; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+  .spinner { border: 4px solid var(--arc-line-strong); border-top: 4px solid var(--arc-indigo); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; gap: 1rem; }
-  .page-header h1 { margin: 0 0 0.35rem; color: #1e293b; font-size: 1.75rem; }
-  .subtitle { margin: 0; color: #64748b; font-size: 0.9rem; }
+  .page-header h1 { margin: 0 0 0.35rem; color: var(--arc-ink); font-size: 1.75rem; }
+  .subtitle { margin: 0; color: var(--arc-muted); font-size: 0.9rem; }
 
-  .btn-create { padding: 0.65rem 1.25rem; background: #6366f1; color: white; border-radius: 0.5rem; text-decoration: none; font-weight: 600; font-size: 0.875rem; transition: background 0.2s; white-space: nowrap; }
-  .btn-create:hover { background: #4f46e5; }
+  .btn-create { padding: 0.65rem 1.25rem; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border-radius: 0.65rem; text-decoration: none; font-weight: 700; font-size: 0.875rem; box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6); transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease; white-space: nowrap; }
+  .btn-create:hover { background: linear-gradient(135deg, #4f46e5, #7c3aed); transform: translateY(-2px); }
 
-  .empty { text-align: center; padding: 4rem 2rem; background: white; border-radius: 0.75rem; border: 1px solid #e2e8f0; }
-  .empty h3 { margin: 0 0 0.5rem; color: #1e293b; }
-  .empty p { margin: 0; color: #64748b; }
+  .empty { text-align: center; padding: 4rem 2rem; background: var(--arc-card); border-radius: 1rem; border: 1px solid var(--arc-line); box-shadow: var(--arc-shadow-card); }
+  .empty h3 { margin: 0 0 0.5rem; color: var(--arc-ink); }
+  .empty p { margin: 0; color: var(--arc-muted); }
 
-  .table-container { background: white; border-radius: 0.75rem; overflow-x: auto; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+  .table-container { background: var(--arc-card); border-radius: 1rem; overflow-x: auto; box-shadow: var(--arc-shadow-card); border: 1px solid var(--arc-line); border-top: 3px solid #6366f1; }
   .data-table { width: 100%; border-collapse: collapse; min-width: 800px; }
-  .data-table thead { background: #eef2ff; border-bottom: 2px solid #c7d2fe; }
-  .data-table th { padding: 1rem; text-align: left; font-weight: 600; color: #3730a3; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; }
-  .data-table td { padding: 1rem; border-bottom: 1px solid #e2e8f0; }
+  .data-table thead { background: var(--arc-card-2); border-bottom: 1px solid var(--arc-line); }
+  .data-table th { padding: 1rem; text-align: left; font-weight: 700; color: var(--arc-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .data-table td { padding: 1rem; border-bottom: 1px solid var(--arc-line); }
   .data-table tbody tr:last-child td { border-bottom: none; }
-  .data-table tbody tr:hover { background: #eef2ff; }
+  .data-table tbody tr:hover { background: var(--arc-card-2); }
 
-  .id-cell { color: #64748b; font-family: monospace; font-size: 0.875rem; width: 60px; }
+  .id-cell { color: var(--arc-muted); font-family: monospace; font-size: 0.875rem; width: 60px; }
   .title-cell { min-width: 200px; }
-  .aip-title { font-weight: 600; color: #1e293b; }
-  .aip-desc { font-size: 0.825rem; color: #64748b; margin-top: 0.15rem; }
-  .owner-cell { color: #64748b; font-size: 0.875rem; white-space: nowrap; }
-  .date-cell { color: #64748b; font-size: 0.875rem; white-space: nowrap; }
+  .aip-title { font-weight: 600; color: var(--arc-ink); }
+  .aip-desc { font-size: 0.825rem; color: var(--arc-muted); margin-top: 0.15rem; }
+  .owner-cell { color: var(--arc-muted); font-size: 0.875rem; white-space: nowrap; }
+  .date-cell { color: var(--arc-muted); font-size: 0.875rem; white-space: nowrap; }
   .actions-cell { white-space: nowrap; }
 
-  .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 0.25rem; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
-  .standard { background: #eef2ff; color: #3730a3; }
-  .status-draft { background: #fef3c7; color: #92400e; }
-  .status-building { background: #dbeafe; color: #1e40af; }
-  .status-validated { background: #d1fae5; color: #065f46; }
-  .status-stored { background: #dcfce7; color: #166534; }
-  .status-rejected { background: #fee2e2; color: #991b1b; }
+  .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+  .standard { background: var(--arc-chip-indigo-bg); color: var(--arc-chip-indigo-ink); }
+  .status-draft { background: var(--arc-chip-amber-bg); color: var(--arc-chip-amber-ink); }
+  .status-building { background: var(--arc-chip-indigo-bg); color: var(--arc-chip-indigo-ink); }
+  .status-validated { background: var(--arc-chip-green-bg); color: var(--arc-chip-green-ink); }
+  .status-stored { background: var(--arc-chip-green-bg); color: var(--arc-chip-green-ink); }
+  .status-rejected { background: var(--arc-chip-red-bg); color: var(--arc-chip-red-ink); }
 
-  .btn-action { display: inline-block; padding: 0.375rem 0.75rem; margin: 0 0.25rem; border: none; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; text-decoration: none; cursor: pointer; transition: all 0.2s; }
-  .btn-edit { background: #dbeafe; color: #1e40af; }
-  .btn-edit:hover { background: #bfdbfe; }
+  .btn-action { display: inline-block; padding: 0.375rem 0.75rem; margin: 0 0.25rem; border: none; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; text-decoration: none; cursor: pointer; transition: background 0.18s ease, color 0.18s ease; }
+  .btn-edit { background: var(--arc-chip-indigo-bg); color: var(--arc-chip-indigo-ink); }
+  .btn-edit:hover { background: var(--arc-chip-indigo-hover); }
 
   @media (max-width: 768px) { .page-header { flex-direction: column; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spinner { animation: none; }
+    .btn-create, .btn-action { transition: none; }
+    .btn-create:hover { transform: none; }
+  }
 </style>

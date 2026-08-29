@@ -131,34 +131,38 @@
 
 <style>
   .drop-zone {
-    border: 2px dashed #cbd5e1;
-    border-radius: 0.5rem;
+    border: 2px dashed var(--arc-line-strong, #cbd5e1);
+    border-radius: 0.75rem;
     padding: 1.5rem;
     text-align: center;
     cursor: pointer;
-    transition: all 0.2s;
-    background: #f8fafc;
+    transition: all 0.2s ease;
+    background: var(--arc-ground, #f8fafc);
     min-height: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  .drop-zone:hover:not(.disabled) { border-color: #93c5fd; background: #eff6ff; }
-  .drop-zone.drag-over { border-color: #3b82f6; background: #dbeafe; border-style: solid; }
+  .drop-zone:hover:not(.disabled) { border-color: var(--arc-hover-border, #a5b4fc); background: var(--arc-chip-soft-indigo-bg, #eef2ff); }
+  .drop-zone:focus-visible { outline: none; border-color: var(--arc-indigo, #6366f1); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.16); }
+  .drop-zone.drag-over { border-color: var(--arc-indigo, #6366f1); background: var(--arc-chip-indigo-bg, #e0e7ff); border-style: solid; }
   .drop-zone.disabled { opacity: 0.5; cursor: not-allowed; }
   .drop-zone.has-files { cursor: default; text-align: left; }
   .file-input { display: none; }
   .drop-content { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
   .drop-icon { font-size: 2rem; }
-  .drop-text { margin: 0; color: #475569; font-weight: 500; font-size: 0.9rem; }
-  .drop-hint { margin: 0; color: #94a3b8; font-size: 0.75rem; }
-  .spinner { width: 1.5rem; height: 1.5rem; border: 2px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
+  .drop-text { margin: 0; color: var(--arc-body, #475569); font-weight: 500; font-size: 0.9rem; }
+  .drop-hint { margin: 0; color: var(--arc-faint, #94a3b8); font-size: 0.75rem; }
+  .spinner { width: 1.5rem; height: 1.5rem; border: 2px solid var(--arc-line-strong, #e2e8f0); border-top-color: var(--arc-indigo, #6366f1); border-radius: 50%; animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    .spinner { animation: none; }
+  }
   .file-list { width: 100%; display: flex; flex-direction: column; gap: 0.5rem; }
-  .file-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: white; border: 1px solid #e2e8f0; border-radius: 0.375rem; }
+  .file-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: var(--arc-card, #fff); border: 1px solid var(--arc-line, #e8edf3); border-radius: 0.5rem; }
   .file-icon { font-size: 1rem; }
-  .file-name { flex: 1; font-size: 0.85rem; font-weight: 500; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .file-size { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; }
-  .file-remove { background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer; padding: 0 0.25rem; line-height: 1; }
-  .file-remove:hover { color: #ef4444; }
+  .file-name { flex: 1; font-size: 0.85rem; font-weight: 500; color: var(--arc-ink, #1e293b); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-size { font-size: 0.75rem; color: var(--arc-faint, #94a3b8); white-space: nowrap; }
+  .file-remove { background: none; border: none; box-shadow: none; transform: none; color: var(--arc-faint, #94a3b8); font-size: 1.25rem; font-weight: 400; cursor: pointer; padding: 0 0.25rem; line-height: 1; }
+  .file-remove:hover { background: none; color: #ef4444; }
 </style>

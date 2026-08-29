@@ -163,6 +163,7 @@
     />
     <div class="header">
     <div>
+      <span class="eyebrow">User management</span>
       <h1>Tenant Users</h1>
       {#if tenant}
         <p class="tenant-info">
@@ -304,19 +305,19 @@
 
   h1 {
     margin: 0 0 0.5rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 2rem;
   }
 
   .tenant-info {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     margin: 0;
     font-size: 1rem;
   }
 
   .separator {
     margin: 0 0.5rem;
-    color: #cbd5e1;
+    color: var(--arc-faint, #cbd5e1);
   }
 
   .header-actions {
@@ -326,21 +327,28 @@
   }
 
   .btn-create {
-    padding: 0.5rem 1rem;
-    background: #10b981;
-    color: white;
-    border-radius: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.65rem 1.25rem;
+    background: var(--arc-card, #fff);
+    color: var(--arc-ink, #1e293b);
+    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
+    border-radius: 0.65rem;
     text-decoration: none;
     font-weight: 600;
-    transition: background 0.2s;
+    transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
   }
 
-  .btn-create:hover { background: #059669; }
+  .btn-create:hover {
+    border-color: var(--arc-indigo, #6366f1);
+    color: var(--arc-link, #4f46e5);
+    transform: translateY(-2px);
+  }
 
   .btn-back {
     padding: 0.5rem 1rem;
-    background: #f1f5f9;
-    color: #475569;
+    background: var(--arc-chip-slate-bg, #f1f5f9);
+    color: var(--arc-chip-slate-ink, #475569);
     border-radius: 0.5rem;
     text-decoration: none;
     font-weight: 500;
@@ -348,23 +356,10 @@
   }
 
   .btn-back:hover {
-    background: #e2e8f0;
+    background: var(--arc-chip-slate-hover, #e2e8f0);
   }
 
-  .btn-primary {
-    padding: 0.5rem 1rem;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-  }
+  /* .btn-primary inherits the global brand-gradient button styling from app.css */
 
   /* Access Denied */
   .access-denied {
@@ -384,18 +379,18 @@
 
   .access-denied h1 {
     margin: 0 0 1rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 2rem;
   }
 
   .access-denied p {
     margin: 0.5rem 0;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 1.125rem;
   }
 
   .redirect-message {
-    color: #3b82f6;
+    color: var(--arc-indigo, #6366f1);
     font-weight: 500;
     animation: pulse 1.5s ease-in-out infinite;
   }
@@ -405,32 +400,29 @@
     50% { opacity: 0.5; }
   }
 
-  .loading {
-    background: #cbd5e1;
-    cursor: not-allowed;
-  }
-
   .btn-secondary {
-    padding: 0.5rem 1rem;
-    background: #f1f5f9;
-    color: #475569;
-    border: none;
-    border-radius: 0.5rem;
-    font-weight: 500;
+    padding: 0.65rem 1.25rem;
+    background: var(--arc-card, #fff);
+    color: var(--arc-ink, #1e293b);
+    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
+    border-radius: 0.65rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    box-shadow: none;
   }
 
   .btn-secondary:hover:not(:disabled) {
-    background: #e2e8f0;
+    border-color: var(--arc-indigo, #6366f1);
+    color: var(--arc-link, #4f46e5);
   }
 
   .stats-bar {
-    background: white;
+    background: var(--arc-card, #fff);
     padding: 1rem 1.5rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    border: 1px solid var(--arc-line, #e8edf3);
     margin-bottom: 1.5rem;
   }
 
@@ -441,12 +433,14 @@
   }
 
   .stat-label {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-weight: 500;
   }
 
   .stat-value {
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
+    font-family: var(--arc-font-display, 'Space Grotesk', 'Inter', sans-serif);
+    letter-spacing: -0.02em;
     font-weight: 700;
     font-size: 1.25rem;
   }
@@ -459,8 +453,8 @@
   .spinner {
     width: 3rem;
     height: 3rem;
-    border: 4px solid #f3f4f6;
-    border-top-color: #3b82f6;
+    border: 4px solid var(--arc-line-strong, #e2e8f0);
+    border-top-color: var(--arc-indigo, #6366f1);
     border-radius: 50%;
     margin: 0 auto 1rem;
     animation: spin 1s linear infinite;
@@ -473,19 +467,19 @@
   .error {
     text-align: center;
     padding: 2rem;
-    background: #fee2e2;
-    border: 1px solid #fca5a5;
+    background: var(--arc-alert-red-bg, #fee2e2);
+    border: 1px solid var(--arc-alert-red-border, #fca5a5);
     border-radius: 0.5rem;
-    color: #991b1b;
+    color: var(--arc-alert-red-ink, #991b1b);
   }
 
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
+    background: var(--arc-card, #fff);
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    border: 1px solid var(--arc-line, #e8edf3);
   }
 
   .empty-icon {
@@ -496,21 +490,21 @@
   .empty-title {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     margin-bottom: 0.5rem;
   }
 
   .empty-description {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     margin-bottom: 2rem;
   }
 
   .table-container {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: var(--arc-card, #fff);
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
     overflow-x: auto;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--arc-line, #e8edf3);
   }
 
   .data-table {
@@ -519,24 +513,27 @@
   }
 
   .data-table thead {
-    background: #f8fafc;
+    background: var(--arc-card-2, #f8fafc);
   }
 
   .data-table th {
     padding: 1rem;
     text-align: left;
-    font-weight: 600;
-    color: #475569;
-    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--arc-muted, #64748b);
+    border-bottom: 1px solid var(--arc-line, #e8edf3);
   }
 
   .data-table td {
     padding: 1rem;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--arc-line, #e8edf3);
   }
 
   .data-table tbody tr:hover {
-    background: #f8fafc;
+    background: var(--arc-card-2, #f8fafc);
   }
 
   .user-name {
@@ -556,40 +553,41 @@
 
   .btn-action {
     padding: 0.5rem 0.75rem;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     text-decoration: none;
     border: none;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: none;
   }
 
   .btn-edit {
-    background: #3b82f6;
-    color: white;
+    background: var(--arc-chip-indigo-bg, #e0e7ff);
+    color: var(--arc-chip-indigo-ink, #4338ca);
   }
 
   .btn-edit:hover {
-    background: #2563eb;
+    background: var(--arc-chip-indigo-hover, #c7d2fe);
   }
 
   .btn-remove {
-    background: #ef4444;
-    color: white;
+    background: var(--arc-chip-red-bg, #fee2e2);
+    color: var(--arc-chip-red-ink, #991b1b);
   }
 
   .btn-remove:hover {
-    background: #dc2626;
+    background: var(--arc-chip-red-hover, #fecaca);
   }
 
   .btn-view {
-    background: #f59e0b;
-    color: white;
+    background: var(--arc-chip-indigo-bg, #e0e7ff);
+    color: var(--arc-chip-indigo-ink, #4338ca);
   }
 
   .btn-view:hover {
-    background: #d97706;
+    background: var(--arc-chip-indigo-hover, #c7d2fe);
   }
 
   /* Dialog Styles */
@@ -599,7 +597,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--arc-overlay, rgba(0, 0, 0, 0.5));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -607,9 +605,10 @@
   }
 
   .dialog {
-    background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    background: var(--arc-card, #fff);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
     max-width: 500px;
     width: 90%;
     max-height: 90vh;
@@ -621,20 +620,21 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--arc-line, #e8edf3);
   }
 
   .dialog-header h2 {
     margin: 0;
     font-size: 1.25rem;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
   }
 
   .dialog-close {
     background: none;
     border: none;
+    box-shadow: none;
     font-size: 1.5rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     cursor: pointer;
     padding: 0;
     width: 2rem;
@@ -642,12 +642,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0.25rem;
+    border-radius: 0.375rem;
     transition: background 0.2s;
   }
 
   .dialog-close:hover {
-    background: #f1f5f9;
+    background: var(--arc-card-2, #f1f5f9);
+    transform: none;
+    box-shadow: none;
   }
 
   .dialog-body {
@@ -661,24 +663,18 @@
   .form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #1e293b;
+    font-weight: 600;
+    color: var(--arc-ink, #0f172a);
   }
 
-  .form-group select {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-  }
+  /* select inherits the global Arcana input styling from app.css */
 
   .dialog-footer {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
     padding: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
   @media (max-width: 768px) {

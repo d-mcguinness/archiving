@@ -498,7 +498,7 @@
      ══════════════════════════════════════════ */
   .product {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #0f172a;
+    color: var(--arc-ink);
   }
 
   /* Full-bleed sections span 100vw; guard against the scrollbar-gutter
@@ -538,7 +538,7 @@
   }
 
   .eyebrow-dark {
-    color: #7c3aed;
+    color: var(--arc-eyebrow-ink);
   }
 
   /* ── Hero ── */
@@ -549,6 +549,8 @@
     color: #e2e8f0;
     margin-top: -2rem; /* cancel <main> top padding so it meets the nav */
     padding: 5rem 0 5.5rem;
+    /* Stays dark in both themes; hairline keeps it from dissolving into a dark ground. */
+    border-bottom: 1px solid var(--arc-line);
   }
 
   .hero-aurora {
@@ -967,7 +969,7 @@
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--arc-faint);
   }
 
   .trustbar-marquee {
@@ -996,17 +998,17 @@
     flex-shrink: 0;
     font-size: 0.82rem;
     font-weight: 600;
-    color: #475569;
-    background: white;
-    border: 1px solid #e2e8f0;
+    color: var(--arc-body);
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line-strong);
     border-radius: 0.5rem;
     padding: 0.45rem 0.9rem;
   }
 
   .trustbar-item.premium {
-    color: #6d28d9;
-    border-color: #ddd6fe;
-    background: #faf5ff;
+    color: var(--arc-chip-violet-ink);
+    border-color: var(--arc-chip-violet-hover);
+    background: var(--arc-chip-violet-bg);
   }
 
   /* ── Sections ── */
@@ -1023,19 +1025,19 @@
   .section-head h2 {
     font-size: clamp(1.8rem, 3.2vw, 2.5rem);
     font-weight: 700;
-    color: #0f172a;
+    color: var(--arc-ink);
     margin: 0 0 0.85rem;
   }
 
   .section-sub {
     font-size: 1.05rem;
-    color: #64748b;
+    color: var(--arc-muted);
     line-height: 1.6;
     margin: 0;
   }
 
   .section-sub strong {
-    color: #334155;
+    color: var(--arc-body);
   }
 
   /* ── Outcomes ── */
@@ -1047,8 +1049,8 @@
 
   .outcome-card {
     position: relative;
-    background: white;
-    border: 1px solid #e8edf3;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line);
     border-radius: 1rem;
     padding: 2rem 1.7rem;
     overflow: hidden;
@@ -1070,11 +1072,11 @@
 
   .outcome-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 18px 40px -16px rgba(15, 23, 42, 0.2);
+    box-shadow: var(--arc-shadow-lift);
   }
 
   .o-ingest:hover { border-color: #bfdbfe; }
-  .o-preserve:hover { border-color: #c7d2fe; }
+  .o-preserve:hover { border-color: var(--arc-hover-border); }
   .o-release:hover { border-color: #fed7aa; }
 
   .outcome-icon {
@@ -1095,13 +1097,13 @@
 
   .outcome-card h3 {
     font-size: 1.3rem;
-    color: #0f172a;
+    color: var(--arc-ink);
     margin: 0 0 0.6rem;
   }
 
   .outcome-card p {
     font-size: 0.95rem;
-    color: #64748b;
+    color: var(--arc-muted);
     line-height: 1.65;
     margin: 0;
   }
@@ -1111,8 +1113,8 @@
     margin-top: 5rem;
     padding: 4.5rem 0 0.5rem;
     background:
-      radial-gradient(80% 60% at 50% 0%, #f1f5f9 0%, transparent 70%),
-      #fbfcfe;
+      radial-gradient(80% 60% at 50% 0%, var(--arc-card-2) 0%, transparent 70%),
+      var(--arc-ground);
   }
 
   .band-head {
@@ -1124,7 +1126,7 @@
   .band-head h2 {
     font-size: clamp(1.8rem, 3.2vw, 2.5rem);
     font-weight: 700;
-    color: #0f172a;
+    color: var(--arc-ink);
     margin: 0 0 0.85rem;
   }
 
@@ -1162,7 +1164,7 @@
   .ps-headline {
     font-size: clamp(1.7rem, 3vw, 2.3rem);
     font-weight: 700;
-    color: #0f172a;
+    color: var(--arc-ink);
     margin: 0 0 1rem;
     line-height: 1.12;
   }
@@ -1170,7 +1172,7 @@
   .ps-lede {
     font-size: 1.05rem;
     line-height: 1.7;
-    color: #475569;
+    color: var(--arc-body);
     margin: 0 0 1.75rem;
   }
 
@@ -1189,7 +1191,7 @@
     gap: 0.6rem;
     font-size: 0.92rem;
     line-height: 1.45;
-    color: #334155;
+    color: var(--arc-body);
     font-weight: 500;
   }
 
@@ -1218,9 +1220,9 @@
     border-radius: 0.7rem;
     font-size: 0.88rem;
     line-height: 1.55;
-    color: #475569;
-    background: #f8fafc;
-    border: 1px solid #e8edf3;
+    color: var(--arc-body);
+    background: var(--arc-card-2);
+    border: 1px solid var(--arc-line);
     border-left-width: 3px;
   }
 
@@ -1271,8 +1273,8 @@
   }
 
   .ps-card {
-    background: white;
-    border: 1px solid #e8edf3;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line);
     border-radius: 1.1rem;
     box-shadow: 0 30px 60px -28px rgba(15, 23, 42, 0.35);
     overflow: hidden;
@@ -1293,8 +1295,8 @@
     align-items: center;
     gap: 0.4rem;
     padding: 0.9rem 1.1rem;
-    background: #f8fafc;
-    border-bottom: 1px solid #e8edf3;
+    background: var(--arc-card-2);
+    border-bottom: 1px solid var(--arc-line);
   }
 
   .ps-dot {
@@ -1313,7 +1315,7 @@
     font-size: 0.72rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--arc-faint);
     font-weight: 600;
   }
 
@@ -1328,7 +1330,7 @@
     gap: 0.75rem;
     margin-bottom: 1.2rem;
     padding-bottom: 1.1rem;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--arc-line);
   }
 
   .ps-stage-meta {
@@ -1352,7 +1354,7 @@
   .ps-pkg {
     font-size: 0.82rem;
     font-weight: 600;
-    color: #64748b;
+    color: var(--arc-muted);
   }
 
   .ps-abbr {
@@ -1361,9 +1363,9 @@
     font-size: 0.6rem;
     font-weight: 800;
     letter-spacing: 0.06em;
-    color: #6d28d9;
-    background: #faf5ff;
-    border: 1px solid #ddd6fe;
+    color: var(--arc-chip-violet-ink);
+    background: var(--arc-chip-violet-bg);
+    border: 1px solid var(--arc-chip-violet-hover);
     border-radius: 1rem;
     padding: 0.08rem 0.42rem;
     vertical-align: middle;
@@ -1374,9 +1376,9 @@
     font-size: 0.62rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #047857;
-    background: #ecfdf5;
-    border: 1px solid #a7f3d0;
+    color: var(--arc-alert-green-ink);
+    background: var(--arc-alert-green-bg);
+    border: 1px solid var(--arc-alert-green-border);
     border-radius: 1rem;
     padding: 0.2rem 0.6rem;
     font-weight: 700;
@@ -1395,9 +1397,9 @@
     align-items: center;
     gap: 0.65rem;
     font-size: 0.82rem;
-    color: #475569;
-    background: #f8fafc;
-    border: 1px solid #eef2f7;
+    color: var(--arc-body);
+    background: var(--arc-card-2);
+    border: 1px solid var(--arc-line);
     border-radius: 0.6rem;
     padding: 0.55rem 0.75rem;
   }
@@ -1418,16 +1420,16 @@
     align-items: center;
     gap: 0.4rem;
     padding-top: 1rem;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--arc-line);
     flex-wrap: wrap;
   }
 
   .ps-tag {
     font-size: 0.66rem;
     font-weight: 700;
-    color: #6d28d9;
-    background: #faf5ff;
-    border: 1px solid #ddd6fe;
+    color: var(--arc-chip-violet-ink);
+    background: var(--arc-chip-violet-bg);
+    border: 1px solid var(--arc-chip-violet-hover);
     border-radius: 1rem;
     padding: 0.2rem 0.6rem;
   }
@@ -1436,16 +1438,16 @@
     margin-left: auto;
     font-size: 0.7rem;
     font-weight: 700;
-    color: #047857;
+    color: var(--arc-alert-green-ink);
   }
 
   /* ── At-a-glance comparison ── */
   .glance {
-    border: 1px solid #e8edf3;
+    border: 1px solid var(--arc-line);
     border-radius: 1rem;
     overflow: hidden;
-    background: white;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    background: var(--arc-card);
+    box-shadow: var(--arc-shadow-card);
   }
 
   .glance-head,
@@ -1456,8 +1458,8 @@
   }
 
   .glance-head {
-    background: #f8fafc;
-    border-bottom: 1px solid #e8edf3;
+    background: var(--arc-card-2);
+    border-bottom: 1px solid var(--arc-line);
     padding: 0.85rem 1.4rem;
   }
 
@@ -1466,7 +1468,7 @@
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--arc-faint);
   }
 
   .glance-row {
@@ -1474,7 +1476,7 @@
     padding: 1.25rem 1.4rem;
     text-decoration: none;
     color: inherit;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--arc-line);
     transition: background 0.2s ease;
   }
 
@@ -1496,12 +1498,12 @@
   .glance-row.release::before { background: linear-gradient(180deg, #f97316, #fb923c); }
 
   .glance-row.ingest:hover { background: #eff6ff; }
-  .glance-row.preserve:hover { background: #eef2ff; }
-  .glance-row.release:hover { background: #fff7ed; }
+  .glance-row.preserve:hover { background: var(--arc-chip-soft-indigo-bg); }
+  .glance-row.release:hover { background: var(--arc-chip-orange-bg); }
 
   .glance-cell {
     font-size: 0.92rem;
-    color: #334155;
+    color: var(--arc-body);
     line-height: 1.4;
   }
 
@@ -1515,7 +1517,7 @@
     font-family: 'Space Grotesk', sans-serif;
     font-size: 1.1rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--arc-ink);
   }
 
   .glance-row.ingest .glance-kicker { color: #2563eb; }
@@ -1527,7 +1529,7 @@
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--arc-faint);
   }
 
   .glance-legend {
@@ -1535,12 +1537,12 @@
     margin: 1.5rem auto 0;
     max-width: 42rem;
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--arc-muted);
     line-height: 1.6;
   }
 
   .glance-legend strong {
-    color: #6d28d9;
+    color: var(--arc-chip-violet-ink);
   }
 
   /* ── Security ── */
@@ -1549,6 +1551,9 @@
     background: radial-gradient(120% 120% at 80% 0%, #1e1b4b 0%, #0f172a 60%, #0b1120 100%);
     color: #e2e8f0;
     padding: 5rem 0;
+    /* Stays dark in both themes; hairlines keep it from dissolving into a dark ground. */
+    border-top: 1px solid var(--arc-line);
+    border-bottom: 1px solid var(--arc-line);
   }
 
   .security-inner {
@@ -1619,25 +1624,25 @@
 
   .chip {
     padding: 0.5rem 1.1rem;
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line-strong);
     border-radius: 2rem;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #334155;
+    color: var(--arc-body);
     transition: border-color 0.2s, background 0.2s, transform 0.2s;
   }
 
   .chip:hover {
-    border-color: #818cf8;
-    background: #eef2ff;
+    border-color: var(--arc-hover-border);
+    background: var(--arc-chip-soft-indigo-bg);
     transform: translateY(-2px);
   }
 
   .chip.premium {
     border-color: #c4b5fd;
-    background: linear-gradient(135deg, #faf5ff, #eef2ff);
-    color: #6d28d9;
+    background: linear-gradient(135deg, var(--arc-chip-violet-bg), var(--arc-chip-soft-indigo-bg));
+    color: var(--arc-chip-violet-ink);
     font-weight: 700;
   }
 
@@ -1652,7 +1657,7 @@
     text-align: center;
     margin: 1.4rem auto 0;
     font-size: 0.82rem;
-    color: #64748b;
+    color: var(--arc-muted);
   }
 
   /* ── Final CTA ── */
@@ -1791,7 +1796,7 @@
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #94a3b8;
+      color: var(--arc-faint);
       margin-bottom: 0.15rem;
     }
     .security-inner {
@@ -1840,4 +1845,34 @@
       text-align: center;
     }
   }
+
+  /* ── Dark-theme accent adjustments (no tokens exist for the per-product
+     blue/orange accents; keep the hue, lift it for a dark ground) ── */
+  :global(html[data-theme='dark']) .ingest .ps-eyebrow,
+  :global(html[data-theme='dark']) .ingest .ps-note-label,
+  :global(html[data-theme='dark']) .ingest .ps-stage-label,
+  :global(html[data-theme='dark']) .glance-row.ingest .glance-kicker {
+    color: #60a5fa;
+  }
+
+  :global(html[data-theme='dark']) .preserve .ps-eyebrow,
+  :global(html[data-theme='dark']) .preserve .ps-note-label,
+  :global(html[data-theme='dark']) .preserve .ps-stage-label,
+  :global(html[data-theme='dark']) .glance-row.preserve .glance-kicker {
+    color: #818cf8;
+  }
+
+  :global(html[data-theme='dark']) .release .ps-eyebrow,
+  :global(html[data-theme='dark']) .release .ps-note-label,
+  :global(html[data-theme='dark']) .release .ps-stage-label,
+  :global(html[data-theme='dark']) .glance-row.release .glance-kicker {
+    color: #fb923c;
+  }
+
+  :global(html[data-theme='dark']) .o-ingest:hover { border-color: rgba(59, 130, 246, 0.45); }
+  :global(html[data-theme='dark']) .o-release:hover { border-color: rgba(249, 115, 22, 0.45); }
+
+  :global(html[data-theme='dark']) .glance-row.ingest:hover { background: rgba(59, 130, 246, 0.12); }
+
+  :global(html[data-theme='dark']) .chip.premium { border-color: rgba(139, 92, 246, 0.45); }
 </style>

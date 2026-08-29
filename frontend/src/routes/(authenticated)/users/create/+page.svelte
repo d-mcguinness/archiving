@@ -53,6 +53,7 @@
 
 <div class="form-container">
   <div class="form-header">
+    <span class="eyebrow">Users</span>
     <h1>Create New User</h1>
     <p class="form-description">Add a new user to the system</p>
     <button type="button" class="btn btn-fill" on:click={fillRandom}>Fill Random</button>
@@ -119,11 +120,11 @@
   .form-container {
     max-width: 600px;
     margin: 2rem auto;
-    background: white;
+    background: var(--arc-card, #fff);
     padding: 2rem;
     border-radius: 1rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    border: 1px solid var(--arc-line, #e8edf3);
   }
 
   .form-header {
@@ -133,14 +134,14 @@
 
   .form-header h1 {
     margin: 0 0 0.5rem 0;
-    color: #1a202c;
+    color: var(--arc-ink, #0f172a);
     font-size: 2rem;
     font-weight: 700;
   }
 
   .form-description {
     margin: 0;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 1rem;
   }
 
@@ -154,9 +155,9 @@
   }
 
   .alert-error {
-    background: #fef2f2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
+    background: var(--arc-alert-red-bg, #fef2f2);
+    color: var(--arc-alert-red-ink, #991b1b);
+    border: 1px solid var(--arc-alert-red-border, #fecaca);
   }
 
   .alert button {
@@ -171,6 +172,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: none;
+  }
+
+  .alert button:hover {
+    background: none;
+    transform: none;
+    box-shadow: none;
   }
 
   .form-row {
@@ -183,31 +191,8 @@
     margin-bottom: 1.5rem;
   }
 
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #1a202c;
-    font-weight: 600;
-    font-size: 0.875rem;
-  }
-
-  input, select, textarea {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid #e2e8f0;
-    font-size: 1rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-
-  input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-
   input:disabled, select:disabled, textarea:disabled {
-    background-color: #f8fafc;
+    background-color: var(--arc-card-2, #f8fafc);
     cursor: not-allowed;
   }
 
@@ -217,16 +202,16 @@
     justify-content: flex-end;
     margin-top: 2rem;
     padding-top: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
   .btn {
     padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 0.5rem;
-    font-weight: 600;
+    border-radius: 0.65rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
@@ -234,52 +219,70 @@
   }
 
   .btn-primary {
-    background: #3b82f6;
+    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
     color: white;
+    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
   }
 
   .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-    transform: translateY(-1px);
+    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
+    transform: translateY(-2px);
   }
 
   .btn-primary:disabled {
-    background: #94a3b8;
+    background: var(--arc-disabled-bg, #c7cdd8);
+    box-shadow: none;
     cursor: not-allowed;
     transform: none;
   }
 
   .btn-secondary {
-    background: #e2e8f0;
-    color: #475569;
+    background: var(--arc-card, #fff);
+    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
+    color: var(--arc-ink, #1e293b);
+    box-shadow: none;
   }
 
   .btn-secondary:hover:not(:disabled) {
-    background: #cbd5e1;
+    border-color: var(--arc-indigo, #6366f1);
+    color: var(--arc-indigo-deep, #4f46e5);
   }
 
   .btn-secondary:disabled {
-    background: #f1f5f9;
-    color: #94a3b8;
+    background: var(--arc-card-2, #f1f5f9);
+    border-color: var(--arc-line-strong, #e2e8f0);
+    color: var(--arc-faint, #94a3b8);
     cursor: not-allowed;
   }
 
   .btn-fill {
     padding: 0.5rem 1rem;
-    background: #f0fdf4;
-    color: #16a34a;
-    border: 1px solid #bbf7d0;
-    border-radius: 0.5rem;
+    background: var(--arc-chip-soft-indigo-bg, #eef2ff);
+    color: var(--arc-chip-indigo-ink, #4338ca);
+    border: 1px solid var(--arc-chip-indigo-hover, #c7d2fe);
+    border-radius: 0.65rem;
     font-weight: 600;
     font-size: 0.875rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
     margin-top: 0.75rem;
+    box-shadow: none;
   }
 
   .btn-fill:hover {
-    background: #dcfce7;
-    border-color: #86efac;
+    background: var(--arc-chip-indigo-bg, #e0e7ff);
+    border-color: var(--arc-hover-border, #a5b4fc);
+    transform: none;
+    box-shadow: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn, .btn-fill {
+      transition: none;
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: none;
+    }
   }
 
   @media (max-width: 768px) {

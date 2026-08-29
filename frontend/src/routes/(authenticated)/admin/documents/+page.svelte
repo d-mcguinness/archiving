@@ -210,7 +210,10 @@
 <div class="documents-page">
   <Breadcrumb items={[{ label: 'Admin', href: '/admin' }, { label: 'Documents' }]} />
   <div class="page-header">
-    <h1>📄 Documents</h1>
+    <div class="page-heading">
+      <span class="eyebrow">Admin console</span>
+      <h1>📄 Documents</h1>
+    </div>
     <button class="btn-primary" on:click={() => showUploadForm = !showUploadForm}>
       ➕ Upload Document
     </button>
@@ -343,21 +346,22 @@
 
   .page-header h1 {
     font-size: 2rem;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     margin: 0;
   }
 
   .upload-form {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    background: var(--arc-card, #fff);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
     padding: 2rem;
     margin-bottom: 2rem;
   }
 
   .upload-form h2 {
     margin-top: 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
   }
 
   .form-group {
@@ -368,22 +372,12 @@
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: #475569;
-  }
-
-  .form-group input[type="text"],
-  .form-group input[type="file"],
-  .form-group textarea {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
-    font-size: 1rem;
+    color: var(--arc-body, #475569);
   }
 
   .file-info {
     margin-top: 0.5rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
   }
 
@@ -392,42 +386,36 @@
     gap: 1rem;
   }
 
-  .btn-primary, .btn-secondary {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-
-  .btn-primary {
-    background-color: #3b82f6;
-    color: white;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background-color: #2563eb;
-  }
-
-  .btn-primary:disabled {
-    background-color: #94a3b8;
-    cursor: not-allowed;
-  }
+  /* .btn-primary inherits the global brand-gradient button styling from app.css */
 
   .btn-secondary {
-    background-color: #e2e8f0;
-    color: #475569;
+    padding: 0.75rem 1.5rem;
+    background: var(--arc-card, #fff);
+    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
+    border-radius: 0.65rem;
+    color: var(--arc-ink, #1e293b);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: none;
+    transition: all 0.2s ease;
   }
 
   .btn-secondary:hover:not(:disabled) {
-    background-color: #cbd5e1;
+    border-color: var(--arc-indigo, #6366f1);
+    color: var(--arc-link, #4f46e5);
+    background: var(--arc-card, #fff);
+  }
+
+  .btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .loading, .error, .empty-state {
     text-align: center;
     padding: 3rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
   }
 
   .error {
@@ -441,15 +429,28 @@
   }
 
   .document-card {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    background: var(--arc-card, #fff);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
     padding: 1.5rem;
-    transition: box-shadow 0.2s;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   }
 
   .document-card:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    border-color: var(--arc-hover-border, #c7d2fe);
+    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .document-card {
+      transition: none;
+    }
+
+    .document-card:hover {
+      transform: none;
+    }
   }
 
   .document-icon {
@@ -460,19 +461,19 @@
 
   .document-info h3 {
     margin: 0 0 0.5rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 1.25rem;
   }
 
   .description {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     margin-bottom: 1rem;
     font-size: 0.875rem;
   }
 
   .document-meta {
     font-size: 0.875rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     margin-bottom: 1rem;
   }
 
@@ -482,26 +483,26 @@
 
   .status {
     display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    padding: 0.25rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 700;
     text-transform: uppercase;
   }
 
   .status-active {
-    background-color: #dcfce7;
-    color: #166534;
+    background-color: var(--arc-chip-green-bg, #dcfce7);
+    color: var(--arc-chip-green-ink, #166534);
   }
 
   .status-archived {
-    background-color: #f3f4f6;
-    color: #4b5563;
+    background-color: var(--arc-chip-slate-bg, #f1f5f9);
+    color: var(--arc-chip-slate-ink, #475569);
   }
 
   .status-pending_review {
-    background-color: #fef3c7;
-    color: #92400e;
+    background-color: var(--arc-chip-amber-bg, #fef3c7);
+    color: var(--arc-chip-amber-ink, #92400e);
   }
 
   .document-actions {
@@ -513,28 +514,30 @@
     flex: 1;
     padding: 0.5rem;
     border: none;
-    border-radius: 4px;
+    border-radius: 0.5rem;
     font-size: 0.875rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: background-color 0.2s;
+    box-shadow: none;
+    transition: all 0.2s ease;
   }
 
   .btn-download {
-    background-color: #3b82f6;
+    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
     color: white;
   }
 
   .btn-download:hover {
-    background-color: #2563eb;
+    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
   }
 
   .btn-delete {
-    background-color: #ef4444;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
     color: white;
   }
 
   .btn-delete:hover {
-    background-color: #dc2626;
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
   }
 </style>
 

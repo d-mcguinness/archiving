@@ -111,6 +111,8 @@
     background: radial-gradient(120% 120% at 30% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%);
     color: #e2e8f0;
     display: flex;
+    /* Stays dark in both themes; hairline keeps it from dissolving into a dark ground. */
+    border-right: 1px solid var(--arc-line);
   }
 
   .auth-aurora {
@@ -286,14 +288,14 @@
     align-items: center;
     justify-content: center;
     padding: 3rem 1.5rem;
-    background: #f8fafc;
+    background: var(--arc-ground);
   }
 
   .auth-card {
     width: 100%;
     max-width: 27rem;
-    background: white;
-    border: 1px solid #e8edf3;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line);
     border-radius: 1.1rem;
     box-shadow: 0 24px 60px -28px rgba(15, 23, 42, 0.35);
     padding: 2.75rem;
@@ -304,7 +306,7 @@
     font-family: 'Space Grotesk', 'Inter', sans-serif;
     font-size: 1.4rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--arc-ink);
     text-decoration: none;
     letter-spacing: -0.02em;
     margin-bottom: 1.5rem;
@@ -315,13 +317,13 @@
     font-size: 1.7rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: #0f172a;
+    color: var(--arc-ink);
     margin: 0 0 0.5rem;
   }
 
   .auth-subtitle {
     margin: 0 0 1.9rem;
-    color: #64748b;
+    color: var(--arc-muted);
     font-size: 0.98rem;
     line-height: 1.55;
   }
@@ -345,24 +347,24 @@
     margin-bottom: 0.45rem;
     font-weight: 600;
     font-size: 0.875rem;
-    color: #334155;
+    color: var(--arc-body);
   }
 
   .auth-shell :global(.auth-input) {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 1.5px solid #e2e8f0;
+    border: 1.5px solid var(--arc-line-strong);
     border-radius: 0.6rem;
     font-size: 0.97rem;
     font-family: inherit;
-    color: #0f172a;
-    background: #fff;
+    color: var(--arc-ink);
+    background: var(--arc-input-bg);
     transition: border-color 0.18s ease, box-shadow 0.18s ease;
     box-sizing: border-box;
   }
 
   .auth-shell :global(.auth-input::placeholder) {
-    color: #94a3b8;
+    color: var(--arc-faint);
   }
 
   .auth-shell :global(.auth-input:focus) {
@@ -372,7 +374,7 @@
   }
 
   .auth-shell :global(.auth-input:disabled) {
-    background: #f1f5f9;
+    background: var(--arc-card-2);
     cursor: not-allowed;
   }
 
@@ -381,10 +383,10 @@
     align-items: center;
     gap: 0.6rem;
     padding: 0.85rem 1rem;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
+    background: var(--arc-alert-red-bg);
+    border: 1px solid var(--arc-alert-red-border);
     border-radius: 0.6rem;
-    color: #991b1b;
+    color: var(--arc-alert-red-ink);
     font-size: 0.9rem;
     margin-bottom: 1.4rem;
   }
@@ -434,12 +436,12 @@
   .auth-shell :global(.auth-alt) {
     text-align: center;
     margin: 1.6rem 0 0;
-    color: #64748b;
+    color: var(--arc-muted);
     font-size: 0.9rem;
   }
 
   .auth-shell :global(.auth-alt a) {
-    color: #6366f1;
+    color: var(--arc-link);
     font-weight: 600;
     text-decoration: none;
   }
@@ -452,7 +454,7 @@
   .auth-shell :global(.auth-demo) {
     margin-top: 1.6rem;
     padding-top: 1.5rem;
-    border-top: 1px solid #eef2f7;
+    border-top: 1px solid var(--arc-line);
   }
 
   .auth-shell :global(.auth-demo-title) {
@@ -462,7 +464,7 @@
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--arc-faint);
   }
 
   .auth-shell :global(.auth-demo-grid) {
@@ -472,23 +474,23 @@
 
   .auth-shell :global(.auth-demo-card) {
     flex: 1;
-    background: #f8fafc;
+    background: var(--arc-card-2);
     padding: 0.6rem;
     border-radius: 0.5rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--arc-line-strong);
     transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
     cursor: pointer;
     text-align: center;
     font-family: inherit;
     font-size: 0.8rem;
     font-weight: 700;
-    color: #475569;
+    color: var(--arc-body);
   }
 
   .auth-shell :global(.auth-demo-card:hover:not(:disabled)) {
-    border-color: #818cf8;
-    background: #eef2ff;
-    color: #4f46e5;
+    border-color: var(--arc-hover-border);
+    background: var(--arc-chip-soft-indigo-bg);
+    color: var(--arc-link);
     transform: translateY(-1px);
   }
 
@@ -518,7 +520,7 @@
     .auth-card {
       padding: 2rem 1.4rem;
       box-shadow: none;
-      border-color: #e8edf3;
+      border-color: var(--arc-line);
     }
   }
 

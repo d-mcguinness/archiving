@@ -89,22 +89,22 @@
   }
 
   .breadcrumb a {
-    color: #3b82f6;
+    color: var(--arc-link, #4f46e5);
     text-decoration: none;
     font-weight: 500;
-    transition: color 0.2s;
+    transition: color 0.2s ease;
   }
 
   .breadcrumb a:hover {
-    color: #2563eb;
+    color: var(--arc-eyebrow-ink, #7c3aed);
   }
 
   .sep {
-    color: #94a3b8;
+    color: var(--arc-faint, #94a3b8);
   }
 
   .current {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-weight: 600;
   }
 </style>

@@ -76,11 +76,16 @@
 
 <style>
   .element-node {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.375rem;
+    background: var(--arc-card, #fff);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 0.75rem;
     padding: 0.75rem;
     margin-bottom: 0.75rem;
+    transition: border-color 0.18s ease;
+  }
+
+  .element-node:hover {
+    border-color: var(--arc-hover-border, #c7d2fe);
   }
 
   .element-header {
@@ -108,7 +113,7 @@
 
   .element-title {
     font-weight: 600;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     margin-bottom: 0.25rem;
   }
 
@@ -119,38 +124,40 @@
   }
 
   .element-id {
-    color: #3b82f6;
+    color: var(--arc-indigo-deep, #4f46e5);
     font-family: monospace;
   }
 
   .element-type {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
   .element-status {
-    padding: 0.125rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 600;
+    padding: 0.125rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   .element-status.status-opprettet {
-    background: #dbeafe;
-    color: #1e40af;
+    background: var(--arc-chip-indigo-bg, #e0e7ff);
+    color: var(--arc-chip-indigo-ink, #4338ca);
   }
 
   .element-status.status-avsluttet {
-    background: #dcfce7;
-    color: #166534;
+    background: var(--arc-chip-green-bg, #dcfce7);
+    color: var(--arc-chip-green-ink, #166534);
   }
 
   .element-description {
     margin-top: 0.5rem;
     padding-top: 0.5rem;
-    border-top: 1px solid #f1f5f9;
-    color: #64748b;
+    border-top: 1px solid var(--arc-line, #f1f5f9);
+    color: var(--arc-muted, #64748b);
     font-size: 0.8125rem;
     line-height: 1.4;
   }
@@ -164,35 +171,38 @@
     width: 2rem;
     height: 2rem;
     padding: 0;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.25rem;
+    background: var(--arc-ground, #f8fafc);
+    border: 1px solid var(--arc-line-strong, #e2e8f0);
+    border-radius: 0.5rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: all 0.18s ease;
     font-size: 1rem;
+    box-shadow: none;
   }
 
   .btn-icon:hover {
-    background: #e2e8f0;
+    background: var(--arc-chip-soft-indigo-bg, #eef2ff);
+    border-color: var(--arc-hover-border, #c7d2fe);
+    transform: none;
   }
 
   .btn-icon.btn-edit:hover {
-    background: #dbeafe;
-    border-color: #bfdbfe;
+    background: var(--arc-chip-indigo-bg, #e0e7ff);
+    border-color: var(--arc-hover-border, #c7d2fe);
   }
 
   .btn-icon.btn-danger:hover {
-    background: #fef2f2;
-    border-color: #fecaca;
+    background: var(--arc-alert-red-bg, #fef2f2);
+    border-color: var(--arc-alert-red-border, #fecaca);
   }
 
   .element-children {
     margin-top: 0.75rem;
     padding-top: 0.75rem;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--arc-line, #f1f5f9);
   }
 </style>
 

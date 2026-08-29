@@ -85,14 +85,17 @@
   <!-- PUBLIC INFO PAGE -->
   <div class="public-page">
     <section class="hero">
-      {#if oaisStep}
-        <div class="hero-badge" style="color: {accentColor}; background: color-mix(in srgb, {accentColor} 10%, white);">{oaisStep}</div>
-      {/if}
-      <h1>{title}</h1>
-      <p class="hero-subtitle">{heroDescription}</p>
-      <div class="hero-actions">
-        <a href="/login" class="btn-cta">Sign In to Create {packageAbbr[packageType]}s</a>
-        <a href="#standards" class="btn-outline">View Standards</a>
+      <div class="hero-aurora" aria-hidden="true"></div>
+      <div class="hero-inner">
+        {#if oaisStep}
+          <div class="hero-badge" style="color: color-mix(in srgb, {accentColor} 45%, white); background: color-mix(in srgb, {accentColor} 22%, transparent);">{oaisStep}</div>
+        {/if}
+        <h1>{title}</h1>
+        <p class="hero-subtitle">{heroDescription}</p>
+        <div class="hero-actions">
+          <a href="/login" class="btn-cta">Sign In to Create {packageAbbr[packageType]}s</a>
+          <a href="#standards" class="btn-outline">View Standards</a>
+        </div>
       </div>
     </section>
 
@@ -136,7 +139,7 @@
             {@const info = schemas[std.key]}
             <div class="standard-info-card">
               <div class="card-top">
-                <span class="badge" style="color: {accentColor}; background: color-mix(in srgb, {accentColor} 10%, white);">{std.label}</span>
+                <span class="badge" style="color: {accentColor}; background: color-mix(in srgb, {accentColor} 10%, var(--arc-card));">{std.label}</span>
                 {#if info?.version}<span class="ver">v{info.version}</span>{/if}
               </div>
               <h3>{info?.fullName || std.label}</h3>
@@ -160,6 +163,7 @@
   <div class="manage-page">
     <div class="page-header">
       <div>
+        {#if oaisStep}<span class="eyebrow">{oaisStep}</span>{/if}
         <h1>{title}</h1>
         <p class="page-subtitle">Select an archival standard to create {packageNames[packageType] === 'Intake package' ? 'an' : 'a'} {packageNames[packageType]}.</p>
       </div>
@@ -195,30 +199,51 @@
   /* ── Public page ── */
   .public-page { text-align: center; }
 
-  .hero { padding: 4rem 2rem 3rem; }
+  .hero {
+    position: relative;
+    overflow: hidden;
+    background: var(--arc-grad-dark, radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%));
+    border: 1px solid var(--arc-line);
+    border-radius: 1.25rem;
+    padding: 4.5rem 2rem 4rem;
+    margin-bottom: 3rem;
+  }
+
+  .hero-aurora {
+    position: absolute;
+    inset: -30% -10% auto -10%;
+    height: 80%;
+    background:
+      radial-gradient(40% 60% at 20% 30%, rgba(99, 102, 241, 0.45), transparent 70%),
+      radial-gradient(40% 60% at 80% 20%, rgba(139, 92, 246, 0.4), transparent 70%),
+      radial-gradient(35% 50% at 60% 60%, rgba(6, 182, 212, 0.3), transparent 70%);
+    filter: blur(30px);
+    pointer-events: none;
+  }
+
+  .hero-inner { position: relative; }
 
   .hero-badge {
     display: inline-block;
     padding: 0.4rem 1rem;
-    border-radius: 2rem;
-    font-size: 0.8rem;
+    border-radius: 9999px;
+    font-size: 0.78rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.14em;
     margin-bottom: 1.25rem;
   }
 
   .hero h1 {
     font-size: 3rem;
-    font-weight: 800;
-    color: #0f172a;
+    font-weight: 700;
+    color: #f8fafc;
     margin: 0 0 1rem;
-    letter-spacing: -0.03em;
   }
 
   .hero-subtitle {
     font-size: 1.1rem;
-    color: #475569;
+    color: #cbd5e1;
     max-width: 620px;
     margin: 0 auto 2.5rem;
     line-height: 1.7;
@@ -229,37 +254,43 @@
   .btn-cta, .btn-cta-inv {
     display: inline-block;
     padding: 0.85rem 2rem;
-    background: linear-gradient(135deg, #3b82f6, #7c3aed);
+    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
     color: white;
-    border-radius: 0.5rem;
+    border-radius: 0.65rem;
     text-decoration: none;
     font-weight: 700;
     font-size: 0.95rem;
-    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
   }
 
   .btn-cta:hover, .btn-cta-inv:hover {
+    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+    box-shadow: var(--arc-shadow-btn-hover, 0 16px 40px -8px rgba(124, 58, 237, 0.75));
   }
 
   .btn-outline {
     display: inline-block;
     padding: 0.85rem 2rem;
-    background: transparent;
-    color: #1e293b;
-    border: 2px solid #cbd5e1;
-    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.06);
+    color: #e2e8f0;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    border-radius: 0.65rem;
     text-decoration: none;
     font-weight: 700;
     font-size: 0.95rem;
-    transition: border-color 0.2s;
+    transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
   }
 
-  .btn-outline:hover { border-color: #64748b; }
+  .btn-outline:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(226, 232, 240, 0.7);
+    transform: translateY(-2px);
+  }
 
-  .section-title { font-size: 1.75rem; font-weight: 800; color: #0f172a; margin: 0 0 0.5rem; }
-  .section-desc { color: #64748b; font-size: 1rem; margin: 0 auto 2rem; max-width: 520px; }
+  .section-title { font-size: 1.75rem; font-weight: 700; color: var(--arc-ink); margin: 0 0 0.5rem; }
+  .section-desc { color: var(--arc-muted); font-size: 1rem; margin: 0 auto 2rem; max-width: 520px; }
 
   .how-it-works { margin-bottom: 4rem; }
 
@@ -272,10 +303,18 @@
   }
 
   .step-card {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.75rem;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line);
+    border-radius: 1rem;
     padding: 1.75rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .step-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--arc-hover-border);
+    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
   }
 
   .step-number {
@@ -287,8 +326,8 @@
     margin-bottom: 1rem;
   }
 
-  .step-card h3 { margin: 0 0 0.5rem; color: #0f172a; font-size: 1.05rem; }
-  .step-card p { margin: 0; color: #64748b; font-size: 0.875rem; line-height: 1.55; }
+  .step-card h3 { margin: 0 0 0.5rem; color: var(--arc-ink); font-size: 1.05rem; }
+  .step-card p { margin: 0; color: var(--arc-muted); font-size: 0.875rem; line-height: 1.55; }
 
   .capabilities { margin-bottom: 4rem; }
 
@@ -302,17 +341,18 @@
   .cap-item {
     display: flex; gap: 0.75rem; align-items: center;
     padding: 1rem;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line);
+    border-radius: 0.75rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
     font-size: 0.875rem;
-    color: #334155;
+    color: var(--arc-body);
   }
 
   .cap-icon {
     flex-shrink: 0;
     width: 1.5rem; height: 1.5rem;
-    background: #dcfce7; color: #16a34a;
+    background: var(--arc-chip-green-bg); color: var(--arc-chip-green-ink);
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 0.75rem; font-weight: 800;
@@ -328,47 +368,55 @@
   }
 
   .standard-info-card {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.75rem;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line);
+    border-radius: 1rem;
     padding: 1.5rem;
-    transition: border-color 0.2s;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .standard-info-card:hover { border-color: #93c5fd; }
+  .standard-info-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--arc-hover-border);
+    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
+  }
 
   .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
 
   .badge {
-    font-size: 0.7rem; font-weight: 800;
+    font-size: 0.72rem; font-weight: 700;
     letter-spacing: 0.08em; text-transform: uppercase;
-    padding: 0.25rem 0.625rem; border-radius: 0.25rem;
+    padding: 0.25rem 0.75rem; border-radius: 9999px;
   }
 
-  .ver { font-size: 0.7rem; color: #94a3b8; font-weight: 600; }
+  .ver { font-size: 0.7rem; color: var(--arc-faint); font-weight: 600; }
 
-  .standard-info-card h3 { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 700; color: #0f172a; line-height: 1.3; }
-  .standard-info-card p { margin: 0 0 0.5rem; color: #64748b; font-size: 0.825rem; line-height: 1.5; }
-  .ref { display: block; font-size: 0.7rem; color: #94a3b8; font-family: monospace; }
+  .standard-info-card h3 { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 700; color: var(--arc-ink); line-height: 1.3; }
+  .standard-info-card p { margin: 0 0 0.5rem; color: var(--arc-muted); font-size: 0.825rem; line-height: 1.5; }
+  .ref { display: block; font-size: 0.7rem; color: var(--arc-faint); font-family: monospace; }
 
   .cta-section {
-    background: linear-gradient(135deg, #1e293b, #334155);
-    color: white;
+    background: var(--arc-grad-dark, radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%));
+    color: #f8fafc;
     padding: 3.5rem 2rem;
-    border-radius: 1rem;
+    border: 1px solid var(--arc-line);
+    border-radius: 1.25rem;
     margin-bottom: 2rem;
   }
 
-  .cta-section h2 { margin: 0 0 0.5rem; font-size: 1.75rem; font-weight: 800; }
-  .cta-section p { margin: 0 0 2rem; color: #94a3b8; font-size: 1.05rem; }
+  .cta-section h2 { margin: 0 0 0.5rem; font-size: 1.75rem; font-weight: 700; color: #f8fafc; }
+  .cta-section p { margin: 0 0 2rem; color: #cbd5e1; font-size: 1.05rem; }
 
   .cta-section .btn-cta-inv {
     background: white;
     color: #1e293b;
+    box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.4);
   }
 
   .cta-section .btn-cta-inv:hover {
-    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15);
+    background: white;
+    box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.5);
   }
 
   /* ── Authenticated page ── */
@@ -379,22 +427,22 @@
     margin-bottom: 2.5rem; gap: 1rem;
   }
 
-  .page-header h1 { margin: 0 0 0.5rem; color: #0f172a; font-size: 2rem; font-weight: 800; }
-  .page-subtitle { margin: 0; color: #64748b; font-size: 1.05rem; }
+  .page-header h1 { margin: 0 0 0.5rem; color: var(--arc-ink); font-size: 2rem; font-weight: 700; }
+  .page-subtitle { margin: 0; color: var(--arc-muted); font-size: 1.05rem; }
 
   .btn-secondary {
     display: inline-block;
     padding: 0.65rem 1.25rem;
-    background: #f1f5f9; color: #475569;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
+    background: var(--arc-card); color: var(--arc-ink);
+    border: 1.5px solid var(--arc-line-strong);
+    border-radius: 0.65rem;
     text-decoration: none;
-    font-weight: 600; font-size: 0.875rem;
-    transition: background 0.2s;
+    font-weight: 700; font-size: 0.875rem;
+    transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
     white-space: nowrap;
   }
 
-  .btn-secondary:hover { background: #e2e8f0; }
+  .btn-secondary:hover { border-color: var(--arc-indigo); color: var(--arc-link); transform: translateY(-2px); }
 
   .standards-grid {
     display: grid;
@@ -407,18 +455,30 @@
 
   .spinner {
     width: 2.5rem; height: 2.5rem;
-    border: 3px solid #e2e8f0;
+    border: 3px solid var(--arc-line-strong);
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .loading p { color: #64748b; font-size: 0.875rem; }
+  .loading p { color: var(--arc-muted); font-size: 0.875rem; }
 
   @media (max-width: 768px) {
     .standards-grid, .standards-info-grid { grid-template-columns: 1fr; }
     .page-header { flex-direction: column; }
     .hero h1 { font-size: 2.25rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spinner { animation: none; }
+    .btn-cta, .btn-cta-inv, .btn-outline, .btn-secondary,
+    .step-card, .standard-info-card {
+      transition: none;
+    }
+    .btn-cta:hover, .btn-cta-inv:hover, .btn-outline:hover, .btn-secondary:hover,
+    .step-card:hover, .standard-info-card:hover {
+      transform: none;
+    }
   }
 </style>

@@ -102,6 +102,7 @@
 
 <div class="delete-page">
   <div class="page-header">
+    <span class="eyebrow">Archives</span>
     <h1>Delete Archive</h1>
   </div>
 
@@ -182,17 +183,8 @@
 
   .page-header h1 {
     margin: 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 2rem;
-  }
-
-  .error {
-    background: #fee;
-    color: #c00;
-    padding: 1rem;
-    border-radius: 0.375rem;
-    margin-bottom: 1rem;
-    border: 1px solid #fcc;
   }
 
   .loading {
@@ -205,12 +197,12 @@
 
   .loading p {
     margin-top: 1rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
   }
 
   .spinner {
-    border: 4px solid #f3f4f6;
-    border-top: 4px solid #3b82f6;
+    border: 4px solid var(--arc-line-strong, #e2e8f0);
+    border-top: 4px solid var(--arc-indigo, #6366f1);
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -222,19 +214,26 @@
     100% { transform: rotate(360deg); }
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .spinner {
+      animation: none;
+    }
+  }
+
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    background: #f9fafb;
-    border-radius: 0.5rem;
-    color: #64748b;
+    background: var(--arc-card, #fff);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
+    color: var(--arc-muted, #64748b);
   }
 
   .confirmation-card {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
+    background: var(--arc-card, #fff);
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    border: 1px solid var(--arc-line, #e8edf3);
     padding: 2rem;
     text-align: center;
   }
@@ -246,19 +245,19 @@
 
   .confirmation-card h2 {
     margin: 0 0 1rem 0;
-    color: #dc2626;
+    color: var(--arc-alert-red-ink, #dc2626);
     font-size: 1.5rem;
   }
 
   .warning-text {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     margin-bottom: 2rem;
     line-height: 1.6;
   }
 
   .archive-details {
-    background: #f8fafc;
-    border-radius: 0.375rem;
+    background: var(--arc-ground, #f8fafc);
+    border-radius: 0.75rem;
     padding: 1.5rem;
     margin-bottom: 2rem;
     text-align: left;
@@ -266,7 +265,7 @@
 
   .archive-details h3 {
     margin: 0 0 1rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 1rem;
     font-weight: 600;
   }
@@ -275,7 +274,7 @@
     display: flex;
     justify-content: space-between;
     padding: 0.5rem 0;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--arc-line, #e8edf3);
   }
 
   .detail-item:last-child {
@@ -284,45 +283,45 @@
 
   .detail-label {
     font-weight: 500;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
   }
 
   .detail-value {
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 0.875rem;
   }
 
   .badge {
     display: inline-block;
     padding: 0.25rem 0.75rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 600;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.025em;
+    letter-spacing: 0.04em;
   }
 
   .badge.active,
   .badge.published {
-    background: #dcfce7;
-    color: #166534;
+    background: var(--arc-chip-green-bg, #dcfce7);
+    color: var(--arc-chip-green-ink, #166534);
   }
 
   .badge.draft {
-    background: #f3f4f6;
-    color: #6b7280;
+    background: var(--arc-chip-slate-bg, #f1f5f9);
+    color: var(--arc-chip-slate-ink, #475569);
   }
 
   .badge.archived,
   .badge.deleted {
-    background: #fef3c7;
-    color: #92400e;
+    background: var(--arc-chip-amber-bg, #fef3c7);
+    color: var(--arc-chip-amber-ink, #92400e);
   }
 
   .standard-badge {
-    background: #e0e7ff;
-    color: #4338ca;
+    background: var(--arc-chip-indigo-bg, #e0e7ff);
+    color: var(--arc-chip-indigo-ink, #4338ca);
   }
 
   .actions {
@@ -334,10 +333,10 @@
   .btn {
     padding: 0.75rem 2rem;
     border: none;
-    border-radius: 0.25rem;
-    font-weight: 500;
+    border-radius: 0.65rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
     font-size: 1rem;
   }
 
@@ -347,21 +346,27 @@
   }
 
   .btn-secondary {
-    background: #e2e8f0;
-    color: #475569;
+    background: var(--arc-card, #fff);
+    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
+    color: var(--arc-ink, #1e293b);
+    box-shadow: none;
   }
 
   .btn-secondary:hover:not(:disabled) {
-    background: #cbd5e1;
+    background: var(--arc-card, #fff);
+    border-color: var(--arc-indigo, #6366f1);
+    color: var(--arc-link, #4f46e5);
   }
 
   .btn-danger {
-    background: #dc2626;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
     color: white;
+    box-shadow: 0 10px 30px -8px rgba(220, 38, 38, 0.5);
   }
 
   .btn-danger:hover:not(:disabled) {
-    background: #b91c1c;
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px);
   }
 </style>
 
