@@ -465,10 +465,6 @@ function goBack() {
     font-family: 'Monaco', 'Menlo', monospace;
   }
 
-  .form-container {
-    padding: 2rem;
-  }
-
   .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -500,13 +496,10 @@ function goBack() {
     font-style: italic;
   }
 
+  /* Global .form-actions footer, right-aligned instead of split. */
   .form-actions {
-    display: flex;
     justify-content: flex-end;
-    gap: 1rem;
     margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--arc-line-strong);
   }
 
   @media (max-width: 768px) {

@@ -197,7 +197,7 @@
         <span class="eyebrow">Admin console</span>
         <h1>Tenants</h1>
       </div>
-      <a href="/tenants/create" class="add-tenant-btn">Add Tenant</a>
+      <a href="/tenants/create" class="add-tenant-btn btn-primary">Add Tenant</a>
     </div>
 
     {#if error}
@@ -215,8 +215,8 @@
         <p>No tenants found. Create your first tenant to get started!</p>
       </div>
     {:else}
-      <div class="table-container">
-      <table class="data-table">
+      <div class="table-container table-card">
+      <table class="data-table arc-table">
         <thead>
           <tr>
             <th>ID</th>
@@ -254,35 +254,35 @@
               <td class="date-cell">{tenant.updatedAt ? new Date(tenant.updatedAt).toLocaleDateString() : '-'}</td>
               <td class="actions-cell">
                 <button
-                  class="btn-action btn-mimic"
+                  class="btn-action btn-mimic btn-chip violet"
                   on:click={() => mimicTenant(tenant)}
                   title="Sign in as this tenant"
                 >
                   🎭 Mimic
                 </button>
                 <button
-                  class="btn-action btn-edit"
+                  class="btn-action btn-edit btn-chip"
                   on:click={() => openEditModal(tenant)}
                   title="Edit tenant"
                 >
                   ✏️ Edit
                 </button>
-                <a href="/tenants/delete?tenantId={tenant.id}" class="btn-action btn-delete">
+                <a href="/tenants/delete?tenantId={tenant.id}" class="btn-action btn-delete btn-chip red">
                   🗑️ Delete
                 </a>
-                <a href="/tenants/{tenant.id}/users" class="btn-action btn-users">
+                <a href="/tenants/{tenant.id}/users" class="btn-action btn-users btn-chip slate">
                   👥 Users
                 </a>
-                <a href="/tenants/{tenant.id}/archives" class="btn-action btn-archives">
+                <a href="/tenants/{tenant.id}/archives" class="btn-action btn-archives btn-chip cyan">
                   📁 Archives
                 </a>
-                <a href="/tenants/{tenant.id}/intakes" class="btn-action btn-sips">
+                <a href="/tenants/{tenant.id}/intakes" class="btn-action btn-sips btn-chip pink">
                   📦 Intakes
                 </a>
-                <a href="/tenants/{tenant.id}/preservations" class="btn-action btn-aips">
+                <a href="/tenants/{tenant.id}/preservations" class="btn-action btn-aips btn-chip indigo">
                   🏗️ Preservations
                 </a>
-                <a href="/tenants/{tenant.id}/releases" class="btn-action btn-dips">
+                <a href="/tenants/{tenant.id}/releases" class="btn-action btn-dips btn-chip orange">
                   📤 Releases
                 </a>
               </td>
@@ -298,7 +298,7 @@
 <!-- Edit Modal -->
 {#if showEditModal && editingTenant}
   <div class="modal-overlay" on:click={closeEditModal}>
-    <div class="modal-content" on:click|stopPropagation>
+    <div class="modal-content modal" on:click|stopPropagation>
       <div class="modal-header">
         <h2>Edit Tenant</h2>
         <button class="modal-close" on:click={closeEditModal}>✕</button>
@@ -426,51 +426,9 @@
     font-size: 2rem;
   }
 
-  .add-tenant-btn {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.65rem;
-    text-decoration: none;
-    font-weight: 700;
-    transition: all 0.2s ease;
-    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
-  }
-
-  .add-tenant-btn:hover {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-    box-shadow: var(--arc-shadow-btn-hover, 0 16px 40px -8px rgba(124, 58, 237, 0.75));
-  }
-
-  .error {
-    background: var(--arc-alert-red-bg, #fef2f2);
-    color: var(--arc-alert-red-ink, #991b1b);
-    padding: 1rem;
-    border-radius: 0.375rem;
-    margin-bottom: 1rem;
-    border: 1px solid var(--arc-alert-red-border, #fecaca);
-  }
-
+  /* .add-tenant-btn, .error, .loading and .spinner use the global kit (app.css). */
   .loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 400px;
-  }
-
-  .spinner {
-    border: 4px solid var(--arc-line-strong, #e2e8f0);
-    border-top: 4px solid var(--arc-indigo, #6366f1);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
   }
 
   .empty-state {
@@ -522,53 +480,18 @@
     50% { opacity: 0.5; }
   }
 
-  /* Table Styles */
+  /* Table chrome comes from .table-card / table.arc-table; only the
+     page-specific scroll + column sizing stays local. */
   .table-container {
-    background: var(--arc-card, #fff);
-    border-radius: 1rem;
-    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
     overflow-x: auto;
-    border: 1px solid var(--arc-line, #e8edf3);
   }
 
   .data-table {
-    width: 100%;
-    border-collapse: collapse;
     min-width: 1200px;
   }
 
-  .data-table thead {
-    background: var(--arc-card-2, #f8fafc);
-    border-bottom: 1px solid var(--arc-line, #e8edf3);
-  }
-
   .data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 700;
-    color: var(--arc-muted, #64748b);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
     white-space: nowrap;
-  }
-
-  .data-table tbody tr {
-    border-bottom: 1px solid var(--arc-line, #e8edf3);
-    transition: background-color 0.15s;
-  }
-
-  .data-table tbody tr:hover {
-    background: var(--arc-card-2, #f8fafc);
-  }
-
-  .data-table tbody tr:last-child {
-    border-bottom: none;
-  }
-
-  .data-table td {
-    padding: 1rem;
-    color: var(--arc-ink, #0f172a);
   }
 
   .id-cell {
@@ -611,16 +534,7 @@
     white-space: nowrap;
   }
 
-  .badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
+  /* .badge base is global; these tenant status/plan hues are page-specific. */
   .status-active {
     background: var(--arc-chip-green-bg, #dcfce7);
     color: var(--arc-chip-green-ink, #166534);
@@ -694,29 +608,12 @@
     width: 280px;
   }
 
+  /* Row actions ride on .btn-chip; only the row spacing is local. */
   .btn-action {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
     margin-left: 0.5rem;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    box-shadow: none;
   }
 
-  .btn-mimic {
-    background: var(--arc-chip-violet-bg, #ede9fe);
-    color: var(--arc-chip-violet-ink, #5b21b6);
-  }
-
-  .btn-mimic:hover {
-    background: var(--arc-chip-violet-hover, #ddd6fe);
-  }
-
+  /* Edit is an outlined chip rather than a tinted one. */
   .btn-edit {
     background: var(--arc-card, #fff);
     border: 1.5px solid var(--arc-line-strong, #cbd5e1);
@@ -729,84 +626,11 @@
     background: var(--arc-card, #fff);
   }
 
-  .btn-users {
-    background: var(--arc-chip-slate-bg, #f1f5f9);
-    color: var(--arc-chip-slate-ink, #334155);
-  }
-
-  .btn-users:hover {
-    background: var(--arc-chip-slate-hover, #e2e8f0);
-  }
-
-  .btn-archives {
-    background: var(--arc-chip-cyan-bg, #cffafe);
-    color: var(--arc-chip-cyan-ink, #155e75);
-  }
-
-  .btn-archives:hover {
-    background: var(--arc-chip-cyan-hover, #a5f3fc);
-  }
-
-  .btn-sips {
-    background: var(--arc-chip-pink-bg, #fce7f3);
-    color: var(--arc-chip-pink-ink, #9d174d);
-  }
-
-  .btn-sips:hover {
-    background: var(--arc-chip-pink-hover, #fbcfe8);
-  }
-
-  .btn-aips {
-    background: var(--arc-chip-indigo-bg, #e0e7ff);
-    color: var(--arc-chip-indigo-ink, #4338ca);
-  }
-
-  .btn-aips:hover {
-    background: var(--arc-chip-indigo-hover, #c7d2fe);
-  }
-
-  .btn-dips {
-    background: var(--arc-chip-orange-bg, #ffedd5);
-    color: var(--arc-chip-orange-ink, #9a3412);
-  }
-
-  .btn-dips:hover {
-    background: var(--arc-chip-orange-hover, #fed7aa);
-  }
-
-  .btn-delete {
-    background: var(--arc-chip-red-bg, #fee2e2);
-    color: var(--arc-chip-red-ink, #b91c1c);
-  }
-
-  .btn-delete:hover {
-    background: var(--arc-chip-red-hover, #fecaca);
-  }
-
-  /* Modal Styles */
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--arc-overlay, rgba(15, 23, 42, 0.55));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 1rem;
-  }
-
-  .modal-content {
-    background: var(--arc-card, #fff);
-    border: 1px solid var(--arc-line, #e8edf3);
-    border-radius: 1rem;
-    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
+  /* Modal Styles — .modal-overlay/.modal come from app.css; this dialog
+     is wider and pads its own header/body sections. */
+  .modal {
+    padding: 0;
     max-width: 600px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
   }
 
   .modal-header {
@@ -847,14 +671,6 @@
     margin-bottom: 1.5rem;
   }
 
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: var(--arc-body, #475569);
-    font-size: 0.875rem;
-  }
-
   .form-group input:disabled,
   .form-group textarea:disabled,
   .form-group select:disabled {
@@ -875,52 +691,7 @@
     border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
-  .btn-primary,
-  .btn-secondary {
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.65rem;
-    font-weight: 700;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: none;
-  }
-
-  .btn-primary {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
-
-  .btn-primary:disabled {
-    background: var(--arc-disabled-bg, #c7cdd8);
-    color: var(--arc-disabled-ink, #fff);
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-
-  .btn-secondary {
-    background: var(--arc-card, #fff);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    color: var(--arc-ink, #1e293b);
-    box-shadow: none;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-link, #4f46e5);
-    background: var(--arc-card, #fff);
-  }
-
-  .btn-secondary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  /* .btn-primary / .btn-secondary come from the global kit. */
 
   /* No blue chip token exists — dark-theme override keeps the blue hue readable */
   :global(html[data-theme='dark']) .status-trial,

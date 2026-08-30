@@ -307,7 +307,7 @@
   {/if}
 
   {#if loading}
-    <div class="loading-state">
+    <div class="loading-state loading">
       <div class="spinner"></div>
       <p>Loading...</p>
     </div>
@@ -363,7 +363,7 @@
 
       {#if loadingSchema}
         <section class="form-section">
-          <div class="loading-state">
+          <div class="loading-state loading">
             <div class="spinner"></div>
             <p>Loading {selectedStandard?.label} schema...</p>
           </div>
@@ -466,9 +466,9 @@
   .alert-error { background: var(--arc-alert-red-bg); color: var(--arc-alert-red-ink); border: 1px solid var(--arc-alert-red-border); }
   .alert button { background: none; border: none; box-shadow: none; color: inherit; font-size: 1.25rem; cursor: pointer; padding: 0 0.25rem; }
   .alert button:hover { background: none; transform: none; box-shadow: none; }
-  .loading-state { display: flex; flex-direction: column; align-items: center; padding: 3rem 2rem; gap: 1rem; }
-  .loading-state .spinner { width: 2.5rem; height: 2.5rem; border: 3px solid var(--arc-line-strong); border-top-color: var(--arc-indigo); border-radius: 50%; animation: spin 1s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  /* .loading + .spinner come from the global kit; only the column stack and
+     the roomier padding are page-specific. */
+  .loading-state { flex-direction: column; padding: 3rem 2rem; gap: 1rem; }
   .loading-state p { color: var(--arc-muted); font-size: 0.875rem; }
   .form-section { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--arc-line); }
   .form-section:last-of-type { border-bottom: none; }
@@ -508,17 +508,14 @@
   .child-tag-clickable { border: 1px solid var(--arc-hover-border); cursor: pointer; transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease; }
   .child-tag-clickable:hover:not(:disabled) { background: #6366f1; color: white; border-color: #6366f1; transform: none; box-shadow: none; }
   .child-tag-clickable:disabled { opacity: 0.5; cursor: not-allowed; }
-  .form-actions { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--arc-line); }
-  .btn { padding: 0.75rem 2rem; border: none; border-radius: 0.65rem; font-weight: 700; cursor: pointer; transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease; font-size: 0.875rem; }
-  .btn-primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6); }
-  .btn-primary:hover:not(:disabled) { background: linear-gradient(135deg, #4f46e5, #7c3aed); transform: translateY(-2px); }
-  .btn-primary:disabled { background: var(--arc-disabled-bg); box-shadow: none; cursor: not-allowed; transform: none; }
-  .btn-secondary { background: var(--arc-card); border: 1.5px solid var(--arc-line-strong); color: var(--arc-ink); box-shadow: none; }
-  .btn-secondary:hover { background: var(--arc-card); border-color: var(--arc-indigo); color: var(--arc-link); transform: none; box-shadow: none; }
+  /* .form-actions + .btn-primary/.btn-secondary come from the kit; this form
+     sits a little lower, on a softer hairline, with wider buttons. */
+  .form-actions { margin-top: 2rem; border-top-color: var(--arc-line); }
+  .btn { padding: 0.75rem 2rem; border: none; font-size: 0.875rem; }
+  .btn-secondary { border: 1.5px solid var(--arc-line-strong); }
   @media (max-width: 768px) { .sip-container { margin: 1rem; padding: 1.5rem; } .form-row, .fields-grid { grid-template-columns: 1fr; } }
 
   @media (prefers-reduced-motion: reduce) {
-    .loading-state .spinner { animation: none; }
     .btn, .btn-defaults, .child-tag-clickable, .toggle-icon { transition: none; }
     .btn-primary:hover:not(:disabled) { transform: none; }
   }

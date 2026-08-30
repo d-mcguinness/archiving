@@ -106,25 +106,14 @@
     font-weight: 600;
   }
 
+  /* Compact icon+label version of the global gradient button. */
   .btn-add {
     padding: 0.5rem 1rem;
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    border: none;
-    border-radius: 0.65rem;
-    font-weight: 700;
     font-size: 0.875rem;
-    cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
-  }
-
-  .btn-add:hover {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
   }
 
   /* Canvas */

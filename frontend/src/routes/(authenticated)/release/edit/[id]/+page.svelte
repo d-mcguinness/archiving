@@ -408,7 +408,7 @@
           <span class="eyebrow">Release</span>
           <h1>{dip.title}</h1>
           <div class="header-meta">
-            <span class="badge standard-badge">{dip.standard}</span>
+            <span class="badge orange">{dip.standard}</span>
             <span class="badge {getStatusClass(dip.status)}">{dip.status}</span>
             <span class="meta-text">ID: #{dip.id}</span>
             {#if dip.sourcePreservationId}
@@ -498,7 +498,7 @@
           {#if dip.rootElement.fields && dip.rootElement.fields.length > 0}
             <h3 class="fields-title">Fields ({dip.rootElement.fields.length})</h3>
             <div class="fields-table">
-              <table>
+              <table class="arc-table">
                 <thead><tr><th>Name</th><th>Value</th><th>Type</th></tr></thead>
                 <tbody>
                   {#each dip.rootElement.fields as field}
@@ -720,25 +720,20 @@
     padding: 2rem;
   }
 
+  /* .loading and .spinner come from the global kit (app.css); this loader
+     only stacks a caption under a slightly larger, slower spinner. */
   .loading {
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     min-height: 400px;
     gap: 1rem;
   }
 
   .spinner {
-    border: 4px solid var(--arc-line-strong);
-    border-top: 4px solid var(--arc-indigo, #6366f1);
-    border-radius: 50%;
+    border-width: 4px;
     width: 40px;
     height: 40px;
     animation: spin 1s linear infinite;
   }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
 
   .error-state {
     text-align: center;
@@ -807,26 +802,17 @@
     flex-shrink: 0;
   }
 
-  /* Buttons */
+  /* Buttons — .btn-primary, .btn-secondary and .btn-danger come from the
+     global kit (app.css); only this page's compact size, its shared
+     disabled treatment and the bespoke variants below stay local. */
   .btn {
     padding: 0.625rem 1.25rem;
-    border: none;
-    border-radius: 0.65rem;
-    font-weight: 700;
-    cursor: pointer;
     font-size: 0.85rem;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   }
 
   .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-  .btn-secondary { background: var(--arc-card); border: 1.5px solid var(--arc-line-strong); color: var(--arc-ink); box-shadow: none; }
-  .btn-secondary:hover:not(:disabled) { background: var(--arc-card); border-color: var(--arc-indigo, #6366f1); color: var(--arc-indigo-deep, #4f46e5); transform: none; box-shadow: none; }
-  .btn-primary { background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6)); color: white; box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6)); }
-  .btn-primary:hover:not(:disabled) { background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed)); transform: translateY(-2px); }
   .btn-generate { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; box-shadow: none; }
   .btn-generate:hover:not(:disabled) { background: linear-gradient(135deg, #4f46e5, #7c3aed); transform: translateY(-2px); box-shadow: none; }
-  .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; box-shadow: none; }
-  .btn-danger:hover:not(:disabled) { background: linear-gradient(135deg, #dc2626, #b91c1c); transform: translateY(-2px); box-shadow: none; }
 
   .btn-add-child {
     padding: 0.5rem 1rem;
@@ -881,23 +867,15 @@
 
   .btn-fill-defaults:hover { background: var(--arc-chip-indigo-bg); }
 
-  /* Badges */
-  .badge {
-    display: inline-block;
-    padding: 0.2rem 0.6rem;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
+  /* Badges — the .badge base and hue variants are global; only this page's
+     tighter pill and the Release-specific statuses stay local. */
+  .badge { padding: 0.2rem 0.6rem; }
 
-  .standard-badge { background: var(--arc-chip-orange-bg); color: var(--arc-chip-orange-ink); }
-  .draft { background: var(--arc-chip-amber-bg); color: var(--arc-chip-amber-ink); }
-  .prepared { background: var(--arc-chip-indigo-bg); color: var(--arc-chip-indigo-ink); }
-  .disseminated { background: var(--arc-chip-green-bg); color: var(--arc-chip-green-ink); }
-  .expired { background: var(--arc-chip-slate-bg); color: var(--arc-chip-slate-ink); }
-  .rejected { background: var(--arc-chip-red-bg); color: var(--arc-chip-red-ink); }
+  .badge.draft { background: var(--arc-chip-amber-bg); color: var(--arc-chip-amber-ink); }
+  .badge.prepared { background: var(--arc-chip-indigo-bg); color: var(--arc-chip-indigo-ink); }
+  .badge.disseminated { background: var(--arc-chip-green-bg); color: var(--arc-chip-green-ink); }
+  .badge.expired { background: var(--arc-chip-slate-bg); color: var(--arc-chip-slate-ink); }
+  .badge.rejected { background: var(--arc-chip-red-bg); color: var(--arc-chip-red-ink); }
 
   /* Grid */
   .content-grid {
@@ -969,16 +947,8 @@
 
   .status-controls select {
     padding: 0.375rem 0.625rem;
-    border: 1.5px solid var(--arc-line-strong, #e2e8f0);
-    border-radius: 0.6rem;
     font-size: 0.85rem;
     cursor: pointer;
-  }
-
-  .status-controls select:focus {
-    outline: none;
-    border-color: var(--arc-indigo, #6366f1);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.16);
   }
 
   .updating-indicator { color: var(--arc-faint); font-size: 0.75rem; font-style: italic; }
@@ -991,39 +961,21 @@
     font-weight: 600;
   }
 
+  /* Table chrome comes from table.arc-table; this panel wraps it in a thin
+     outlined box instead of a .table-card, and runs a compact cell scale. */
   .fields-table {
     overflow-x: auto;
     border: 1px solid var(--arc-line-strong);
     border-radius: 0.5rem;
   }
 
-  .fields-table table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.825rem;
-  }
-
-  .fields-table thead { background: var(--arc-card-2); }
-
-  .fields-table th {
-    padding: 0.5rem 0.75rem;
-    text-align: left;
-    font-weight: 700;
-    color: var(--arc-muted);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border-bottom: 1px solid var(--arc-line, #e8edf3);
-  }
+  .fields-table th { padding: 0.5rem 0.75rem; }
 
   .fields-table td {
     padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid var(--arc-line, #e8edf3);
+    font-size: 0.825rem;
     color: var(--arc-ink);
   }
-
-  .fields-table tbody tr:last-child td { border-bottom: none; }
-  .fields-table tbody tr:hover { background: var(--arc-card-2); }
 
   .field-name { font-weight: 500; white-space: nowrap; }
   .field-value { word-break: break-word; max-width: 300px; }
@@ -1148,17 +1100,8 @@
     word-break: break-word;
   }
 
-  /* Modal */
-  .modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--arc-overlay);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-
+  /* Modal — .modal-overlay comes from the global kit (app.css). The panel
+     below is a header/body/footer stack, not the kit's padded .modal. */
   .modal-content {
     background: var(--arc-card);
     border-radius: 1rem;
@@ -1310,11 +1253,8 @@
     grid-column: 1 / -1;
   }
 
-  /* Form */
-  .form-group {
-    margin-bottom: 1rem;
-  }
-
+  /* Form — .form-group spacing and input chrome (width, border, radius,
+     focus ring) come from app.css; only the compact scale stays local. */
   .form-group label {
     display: flex;
     align-items: center;
@@ -1337,20 +1277,8 @@
 
   .form-group input,
   .form-group textarea {
-    width: 100%;
     padding: 0.5rem 0.625rem;
-    border: 1.5px solid var(--arc-line-strong, #e2e8f0);
-    border-radius: 0.6rem;
     font-size: 0.825rem;
-    transition: border-color 0.18s ease, box-shadow 0.18s ease;
-    font-family: inherit;
-  }
-
-  .form-group input:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: var(--arc-indigo, #6366f1);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.16);
   }
 
   .form-group textarea { resize: vertical; }

@@ -745,17 +745,12 @@
     gap: 1rem;
   }
 
+  /* .spinner chrome (ring, colors, keyframes) comes from the global kit in
+     app.css; this page only scales it up and slows it down slightly. */
   .loading-state .spinner {
     width: 2.5rem;
     height: 2.5rem;
-    border: 3px solid var(--arc-line-strong, #e2e8f0);
-    border-top-color: var(--arc-indigo, #6366f1);
-    border-radius: 50%;
     animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
   }
 
   .loading-state p {
@@ -892,29 +887,17 @@
     margin-left: auto;
   }
 
+  /* Input chrome (width, border, radius, focus ring) comes from the global
+     rules in app.css; only this page's tighter scale is layered on top. */
   .form-group input,
   .form-group select,
   .form-group textarea {
-    width: 100%;
     padding: 0.625rem 0.75rem;
-    border: 1.5px solid var(--arc-line-strong, #e2e8f0);
-    border-radius: 0.6rem;
     font-size: 0.875rem;
-    transition: border-color 0.18s ease, box-shadow 0.18s ease;
-    background: var(--arc-input-bg);
-  }
-
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: var(--arc-indigo, #6366f1);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.16);
   }
 
   .form-group textarea {
     resize: vertical;
-    font-family: inherit;
   }
 
   /* Entity info */
@@ -1058,56 +1041,17 @@
     font-style: italic;
   }
 
-  /* Actions */
+  /* Actions — .form-actions, .btn-primary and .btn-secondary come from the
+     global kit in app.css; only the taller footer and this page's wider
+     buttons are layered on top. */
   .form-actions {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
     margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--arc-line, #e8edf3);
+    border-top-color: var(--arc-line, #e8edf3);
   }
 
   .btn {
     padding: 0.75rem 2rem;
-    border: none;
-    border-radius: 0.65rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
     font-size: 0.875rem;
-  }
-
-  .btn-primary {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
-
-  .btn-primary:disabled {
-    background: var(--arc-disabled-bg);
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
-  }
-
-  .btn-secondary {
-    background: var(--arc-card);
-    border: 1.5px solid var(--arc-line-strong);
-    color: var(--arc-ink);
-    box-shadow: none;
-  }
-
-  .btn-secondary:hover {
-    background: var(--arc-card);
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-indigo-deep, #4f46e5);
-    box-shadow: none;
   }
 
   /* Responsive */

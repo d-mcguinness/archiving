@@ -397,20 +397,16 @@
     gap: 1rem;
   }
 
+  /* Page loader — global .spinner chrome, scaled up for the empty page. */
   .spinner {
     border: 4px solid var(--arc-line-strong);
     border-top: 4px solid var(--arc-indigo, #6366f1);
-    border-radius: 50%;
     width: 40px;
     height: 40px;
     animation: spin 1s linear infinite;
   }
 
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
+  /* Scoped animation outranks the global reduced-motion rule, so repeat it. */
   @media (prefers-reduced-motion: reduce) {
     .spinner {
       animation: none;
@@ -418,11 +414,7 @@
   }
 
   .error {
-    background: var(--arc-alert-red-bg);
-    color: var(--arc-alert-red-ink);
     padding: 1rem;
-    border-radius: 0.6rem;
-    border: 1px solid var(--arc-alert-red-border);
   }
 
   .tenant-info {
@@ -477,58 +469,6 @@
     text-transform: uppercase;
     letter-spacing: 0.025em;
     color: white;
-  }
-
-  .info-section {
-    background: var(--arc-card);
-    padding: 1.5rem;
-    border-radius: 0.75rem;
-    box-shadow: var(--arc-shadow-card, 0 1px 3px rgba(0, 0, 0, 0.1));
-    border: 1px solid var(--arc-line-strong);
-  }
-
-  .info-section h3 {
-    margin: 0 0 1.5rem 0;
-    color: var(--arc-ink);
-    font-size: 1.25rem;
-  }
-
-  .info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.25rem;
-  }
-
-  .info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .info-label {
-    color: var(--arc-muted);
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .info-value {
-    color: var(--arc-ink);
-    font-size: 1rem;
-    font-weight: 500;
-  }
-
-  .description {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--arc-line-strong);
-  }
-
-  .description p {
-    margin: 0.5rem 0 0 0;
-    color: var(--arc-body);
-    line-height: 1.6;
   }
 
   /* Stats */
@@ -789,14 +729,6 @@
     .tenant-header-card {
       flex-direction: column;
       text-align: center;
-    }
-
-    .info-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .action-buttons {
-      grid-template-columns: 1fr;
     }
   }
 </style>

@@ -197,7 +197,7 @@
       <p>Loading document...</p>
     </div>
   {:else if error}
-    <div class="error-msg">❌ {error}</div>
+    <div class="error-msg error">❌ {error}</div>
   {:else if doc}
     <Breadcrumb
       context={{ tenantId: data.tenantId, userId: data.userId }}
@@ -208,14 +208,14 @@
       <div class="header-content">
         <span class="eyebrow">Document</span>
         <h1>{doc.title || doc.fileName}</h1>
-        <span class="status-badge status-{doc.status?.toLowerCase()}">{doc.status}</span>
+        <span class="status-badge badge status-{doc.status?.toLowerCase()}">{doc.status}</span>
       </div>
       <div class="header-actions">
         <button class="btn-download" on:click={handleDownload}>📥 Download</button>
         {#if !editing}
-          <button class="btn-edit" on:click={startEdit}>✏️ Edit</button>
+          <button class="btn-edit btn-chip indigo" on:click={startEdit}>✏️ Edit</button>
         {/if}
-        <button class="btn-delete" on:click={handleDelete}>🗑️ Delete</button>
+        <button class="btn-delete btn-chip red" on:click={handleDelete}>🗑️ Delete</button>
       </div>
     </div>
 
@@ -271,7 +271,7 @@
           <div class="info-item">
             <span class="info-label">Status</span>
             <span class="info-value">
-              <span class="status-badge status-{doc.status?.toLowerCase()}">{doc.status}</span>
+              <span class="status-badge badge status-{doc.status?.toLowerCase()}">{doc.status}</span>
             </span>
           </div>
           <div class="info-item">
@@ -324,26 +324,7 @@
     display: flex; flex-direction: column; align-items: center;
     justify-content: center; min-height: 400px; gap: 1rem;
   }
-  .spinner {
-    border: 4px solid var(--arc-line-strong, #e2e8f0); border-top: 4px solid var(--arc-indigo, #6366f1);
-    border-radius: 50%; width: 40px; height: 40px;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .error-msg {
-    background: var(--arc-alert-red-bg, #fee2e2); color: var(--arc-alert-red-ink, #991b1b); padding: 1rem;
-    border-radius: 0.5rem; border: 1px solid var(--arc-alert-red-border, #fca5a5);
-  }
-
-  .breadcrumb {
-    display: flex; align-items: center; gap: 0.5rem;
-    margin-bottom: 1.5rem; font-size: 0.875rem; flex-wrap: wrap;
-  }
-  .breadcrumb a { color: var(--arc-link, #4f46e5); text-decoration: none; font-weight: 500; }
-  .breadcrumb a:hover { color: var(--arc-eyebrow-ink, #7c3aed); }
-  .sep { color: var(--arc-faint, #94a3b8); }
-  .breadcrumb > span:last-child { color: var(--arc-muted, #64748b); }
+  /* .spinner and the .error alert panel come from the global kit in app.css */
 
   .page-header {
     display: flex; justify-content: space-between; align-items: flex-start;
@@ -357,15 +338,13 @@
 
   .header-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
 
+  /* .btn-download inherits the global brand-gradient button styling from app.css;
+     .btn-edit / .btn-delete use the global .btn-chip indigo / red kit. All three
+     share one size in this header row. */
   .btn-download, .btn-edit, .btn-delete {
-    padding: 0.6rem 1rem; border: none; border-radius: 0.65rem;
-    font-weight: 600; font-size: 0.85rem; cursor: pointer;
+    padding: 0.6rem 1rem; border-radius: 0.65rem;
+    font-weight: 600; font-size: 0.85rem;
   }
-  /* .btn-download inherits the global brand-gradient button styling from app.css */
-  .btn-edit { background: var(--arc-chip-indigo-bg, #e0e7ff); color: var(--arc-chip-indigo-ink, #4338ca); box-shadow: none; transition: background 0.2s ease; }
-  .btn-edit:hover { background: var(--arc-chip-indigo-hover, #c7d2fe); box-shadow: none; }
-  .btn-delete { background: var(--arc-chip-red-bg, #fee2e2); color: var(--arc-chip-red-ink, #dc2626); box-shadow: none; transition: background 0.2s ease; }
-  .btn-delete:hover { background: var(--arc-chip-red-hover, #fecaca); box-shadow: none; }
 
   .panel {
     background: var(--arc-card, #fff); border: 1px solid var(--arc-line, #e8edf3); border-radius: 1rem;
@@ -389,10 +368,8 @@
   .info-value { font-size: 0.95rem; color: var(--arc-ink, #0f172a); }
   .mono { font-family: monospace; color: var(--arc-body, #475569); font-size: 0.85rem; }
 
-  .status-badge {
-    display: inline-block; padding: 0.2rem 0.6rem; border-radius: 9999px;
-    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-  }
+  /* .status-badge pill chrome comes from the global .badge kit; the hues below
+     cover document statuses the global kit doesn't define. */
   .status-active { background: var(--arc-chip-green-bg, #dcfce7); color: var(--arc-chip-green-ink, #166534); }
   .status-archived { background: var(--arc-chip-slate-bg, #f1f5f9); color: var(--arc-chip-slate-ink, #475569); }
   .status-deleted { background: var(--arc-chip-red-bg, #fee2e2); color: var(--arc-chip-red-ink, #991b1b); }
@@ -400,7 +377,6 @@
   .status-approved { background: var(--arc-chip-indigo-bg, #e0e7ff); color: var(--arc-chip-indigo-ink, #4338ca); }
   .status-rejected { background: var(--arc-chip-red-bg, #fee2e2); color: var(--arc-chip-red-ink, #991b1b); }
 
-  .form-group { margin-bottom: 1rem; }
   .form-group label {
     display: block; margin-bottom: 0.35rem;
     font-weight: 600; color: var(--arc-body, #475569); font-size: 0.85rem;
@@ -411,19 +387,7 @@
     background: var(--arc-card-2, #f1f5f9); cursor: not-allowed;
   }
 
-  .form-actions { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
-  .btn-primary, .btn-secondary {
-    padding: 0.6rem 1.2rem; border-radius: 0.65rem;
-    font-weight: 600; cursor: pointer;
-  }
-  /* .btn-primary inherits the global brand-gradient button styling from app.css */
-  .btn-secondary {
-    background: var(--arc-card, #fff); color: var(--arc-ink, #1e293b); border: 1.5px solid var(--arc-line-strong, #cbd5e1); box-shadow: none;
-    transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
-  }
-  .btn-secondary:hover:not(:disabled) {
-    background: var(--arc-card, #fff); border-color: var(--arc-indigo, #6366f1); color: var(--arc-link, #4f46e5);
-  }
+  /* .form-actions, .btn-primary and .btn-secondary come from the global kit in app.css */
 
   @media (max-width: 640px) {
     .page-header { flex-direction: column; }

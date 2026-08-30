@@ -94,7 +94,7 @@
       <span class="eyebrow">Admin console</span>
       <h1>📤 Release packages</h1>
     </div>
-    <a href="/release/create" class="btn-create">+ Create Release</a>
+    <a href="/release/create" class="btn-create btn-primary">+ Create Release</a>
   </div>
 
   {#if error}
@@ -113,7 +113,7 @@
       <span class="empty-icon">📤</span>
       <h3>No Releases found</h3>
       <p>Create your first Release package to get started.</p>
-      <a href="/release/create" class="btn-primary-link">Create Release</a>
+      <a href="/release/create" class="btn-primary-link btn-primary">Create Release</a>
     </div>
   {:else}
     <div class="dips-count">
@@ -121,8 +121,8 @@
       <span class="count-value">{dips.length}</span>
     </div>
 
-    <div class="table-container">
-      <table class="data-table">
+    <div class="table-container table-card">
+      <table class="data-table arc-table">
         <thead>
           <tr>
             <th>ID</th>
@@ -148,7 +148,7 @@
                 </div>
               </td>
               <td class="standard-cell">
-                <span class="badge standard-badge">{dip.standard}</span>
+                <span class="badge orange">{dip.standard}</span>
               </td>
               <td class="entity-cell">
                 {#if dip.rootElement}
@@ -169,7 +169,7 @@
               <td class="owner-cell">{getUserName(dip.ownerId)}</td>
               <td class="date-cell">{new Date(dip.createdAt).toLocaleDateString()}</td>
               <td class="actions-cell">
-                <a href="/release/edit/{dip.id}" class="btn-action btn-edit">Edit</a>
+                <a href="/release/edit/{dip.id}" class="btn-action btn-edit btn-chip indigo">Edit</a>
               </td>
             </tr>
           {/each}
@@ -199,50 +199,13 @@
     font-size: 2rem;
   }
 
-  .btn-create {
-    padding: 0.75rem 1.5rem;
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    border-radius: 0.65rem;
-    text-decoration: none;
-    font-weight: 700;
-    transition: all 0.2s ease;
-    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
-  }
-
-  .btn-create:hover {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
-
-  .error {
-    background: var(--arc-alert-red-bg, #fee2e2);
-    color: var(--arc-alert-red-ink, #991b1b);
-    padding: 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--arc-alert-red-border, #fca5a5);
-    margin-bottom: 1.5rem;
-  }
-
+  /* .btn-create, .error and .spinner use the global kit (app.css);
+     this loader stacks a caption under the spinner. */
   .loading {
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     min-height: 400px;
     gap: 1rem;
   }
-
-  .spinner {
-    border: 4px solid var(--arc-line-strong, #e2e8f0);
-    border-top: 4px solid var(--arc-indigo, #6366f1);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
 
   .empty-state {
     text-align: center;
@@ -256,23 +219,6 @@
   .empty-icon { font-size: 5rem; display: block; margin-bottom: 1rem; }
   .empty-state h3 { margin: 0 0 0.5rem 0; color: var(--arc-ink, #0f172a); }
   .empty-state p { margin: 0 0 1.5rem 0; color: var(--arc-muted, #64748b); }
-
-  .btn-primary-link {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    text-decoration: none;
-    border-radius: 0.65rem;
-    font-weight: 700;
-    transition: all 0.2s ease;
-    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
-  }
-
-  .btn-primary-link:hover {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
 
   .dips-count {
     display: flex;
@@ -301,42 +247,10 @@
     font-size: 1.25rem;
   }
 
-  .table-container {
-    background: var(--arc-card, #fff);
-    border-radius: 1rem;
-    overflow-x: auto;
-    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
-    border: 1px solid var(--arc-line, #e8edf3);
-  }
+  /* Table chrome comes from .table-card / table.arc-table. */
+  .table-container { overflow-x: auto; }
 
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 900px;
-  }
-
-  .data-table thead {
-    background: var(--arc-card-2, #f8fafc);
-    border-bottom: 1px solid var(--arc-line, #e8edf3);
-  }
-
-  .data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 700;
-    color: var(--arc-muted, #64748b);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .data-table td {
-    padding: 1rem;
-    border-bottom: 1px solid var(--arc-line, #e8edf3);
-  }
-
-  .data-table tbody tr:last-child td { border-bottom: none; }
-  .data-table tbody tr:hover { background: var(--arc-card-2, #f8fafc); }
+  .data-table { min-width: 900px; }
 
   .id-cell { color: var(--arc-muted, #64748b); font-family: monospace; font-size: 0.875rem; width: 60px; }
 
@@ -345,17 +259,7 @@
   .dip-title { font-weight: 600; color: var(--arc-ink, #1e293b); }
   .dip-description { font-size: 0.875rem; color: var(--arc-muted, #64748b); }
 
-  .badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  .standard-badge { background: var(--arc-chip-orange-bg, #ffedd5); color: var(--arc-chip-orange-ink, #9a3412); }
-
+  /* .badge base + hues are global; these Release statuses are page-specific. */
   .badge.status-draft { background: var(--arc-chip-amber-bg, #fef3c7); color: var(--arc-chip-amber-ink, #92400e); }
   .badge.status-prepared { background: #dbeafe; color: #1e40af; }
   .badge.status-disseminated { background: var(--arc-chip-green-bg, #dcfce7); color: var(--arc-chip-green-ink, #166534); }
@@ -373,21 +277,7 @@
   .date-cell { color: var(--arc-muted, #64748b); font-size: 0.875rem; white-space: nowrap; }
   .actions-cell { white-space: nowrap; }
 
-  .btn-action {
-    display: inline-block;
-    padding: 0.375rem 0.75rem;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    box-shadow: none;
-    transition: all 0.2s ease;
-  }
-
-  .btn-edit { background: var(--arc-chip-indigo-bg, #e0e7ff); color: var(--arc-chip-indigo-ink, #4338ca); }
-  .btn-edit:hover { background: var(--arc-chip-indigo-hover, #c7d2fe); }
+  /* Row actions ride on .btn-chip (app.css). */
 
   @media (max-width: 768px) {
     .dips-page { padding: 1rem; }

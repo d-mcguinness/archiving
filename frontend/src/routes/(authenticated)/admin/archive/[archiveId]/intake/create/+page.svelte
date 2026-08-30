@@ -442,9 +442,8 @@
   .alert button { background: none; border: none; color: inherit; font-size: 1.25rem; cursor: pointer; padding: 0 0.25rem; box-shadow: none; }
   .alert button:hover { background: none; transform: none; box-shadow: none; }
   .loading-state { display: flex; flex-direction: column; align-items: center; padding: 3rem 2rem; gap: 1rem; }
-  .loading-state .spinner { width: 2.5rem; height: 2.5rem; border: 3px solid var(--arc-line-strong); border-top-color: var(--arc-indigo, #6366f1); border-radius: 50%; animation: spin 1s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) { .loading-state .spinner { animation: none; } }
+  /* Spinner chrome + reduced-motion come from the global .spinner; only size/speed differ. */
+  .loading-state .spinner { width: 2.5rem; height: 2.5rem; animation-duration: 1s; }
   .loading-state p { color: var(--arc-muted); font-size: 0.875rem; }
   .form-section { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--arc-line, #e8edf3); }
   .form-section:last-of-type { border-bottom: none; }
@@ -485,10 +484,9 @@
   .child-tag-clickable { border: 1px solid var(--arc-hover-border); cursor: pointer; transition: all 0.18s ease; }
   .child-tag-clickable:hover:not(:disabled) { background: var(--arc-indigo, #6366f1); color: white; border-color: var(--arc-indigo, #6366f1); }
   .child-tag-clickable:disabled { opacity: 0.5; cursor: not-allowed; }
-  /* Primary button styling (brand gradient) comes from the global button rules in app.css */
-  .form-actions { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--arc-line, #e8edf3); }
+  /* .form-actions, .btn-primary and .btn-secondary come from the global kit in app.css;
+     only the taller footer and this page's wider buttons are layered on top. */
+  .form-actions { margin-top: 2rem; border-top-color: var(--arc-line, #e8edf3); }
   .btn { padding: 0.75rem 2rem; font-size: 0.925rem; }
-  .btn-secondary { background: var(--arc-card); border: 1.5px solid var(--arc-line-strong); color: var(--arc-ink); box-shadow: none; }
-  .btn-secondary:hover { background: var(--arc-card); border-color: var(--arc-indigo, #6366f1); color: var(--arc-indigo-deep, #4f46e5); box-shadow: none; }
   @media (max-width: 768px) { .sip-container { margin: 1rem; padding: 1.5rem; } .form-row, .fields-grid { grid-template-columns: 1fr; } }
 </style>

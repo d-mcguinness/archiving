@@ -25,7 +25,7 @@
   <div class="element-card" class:nested={depth > 0}>
     <div class="element-card-header">
       <div class="element-card-info">
-        <span class="element-entity-badge">{element.entityName}</span>
+        <span class="element-entity-badge badge indigo">{element.entityName}</span>
         <strong class="element-title">{element.title}</strong>
         <span class="element-id">({element.elementIdentifier})</span>
       </div>
@@ -100,15 +100,11 @@
     flex-wrap: wrap;
   }
 
+  /* Compact variant of the global .badge pill (tint comes from .badge.indigo). */
   .element-entity-badge {
     font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--arc-chip-indigo-ink, #4338ca);
-    background: var(--arc-chip-indigo-bg, #e0e7ff);
     padding: 0.2rem 0.6rem;
-    border-radius: 9999px;
   }
 
   .element-title {

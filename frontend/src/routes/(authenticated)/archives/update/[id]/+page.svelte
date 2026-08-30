@@ -725,7 +725,7 @@
         <div class="card-header-with-actions">
           <h2>Archive Information</h2>
           {#if !isEditMode}
-            <button class="btn btn-edit-toggle" on:click={enableEditMode}>
+            <button class="btn btn-edit-toggle btn-primary" on:click={enableEditMode}>
               ✏️ Edit
             </button>
           {/if}
@@ -802,7 +802,7 @@
             </div>
             <div class="info-item">
               <span class="info-label">Standard:</span>
-              <span class="badge standard-badge">{archive.standard}</span>
+              <span class="badge indigo">{archive.standard}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Owner:</span>
@@ -1163,37 +1163,15 @@
     font-size: 2rem;
   }
 
+  /* Layout on top of the global .loading/.spinner kit */
   .loading {
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     min-height: 400px;
   }
 
   .loading p {
     margin-top: 1rem;
     color: var(--arc-muted, #64748b);
-  }
-
-  .spinner {
-    border: 4px solid var(--arc-line-strong, #e2e8f0);
-    border-top: 4px solid var(--arc-indigo, #6366f1);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .spinner {
-      animation: none;
-    }
   }
 
   .empty-state {
@@ -1219,14 +1197,7 @@
     border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
-  .card {
-    background: var(--arc-card, #fff);
-    border-radius: 1rem;
-    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
-    border: 1px solid var(--arc-line, #e8edf3);
-    padding: 1.5rem;
-  }
-
+  /* Cards use the global .card surface; only their headings differ. */
   .card h2 {
     margin: 0 0 1.5rem 0;
     color: var(--arc-ink, #0f172a);
@@ -1259,22 +1230,9 @@
     font-weight: 600;
   }
 
+  /* Compact version of the global .btn-primary. */
   .btn-edit-toggle {
     padding: 0.5rem 1rem;
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    border: none;
-    border-radius: 0.65rem;
-    font-size: 0.875rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-    box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
-  }
-
-  .btn-edit-toggle:hover {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
   }
 
   .edit-form {
@@ -1303,19 +1261,13 @@
     border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
+  /* Smaller type than the global button kit. */
   .btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 0.65rem;
     font-size: 0.875rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   }
 
   .btn:disabled {
     opacity: 0.5;
-    cursor: not-allowed;
   }
 
   .btn-sm {
@@ -1332,30 +1284,6 @@
 
   .btn-defaults:hover {
     background: #d97706;
-  }
-
-  .btn-primary {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
-
-  .btn-secondary {
-    background: var(--arc-card, #fff);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    color: var(--arc-ink, #1e293b);
-    box-shadow: none;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    background: var(--arc-card, #fff);
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-link, #4f46e5);
   }
 
   .info-grid {
@@ -1398,37 +1326,22 @@
     white-space: pre-wrap;
   }
 
+  /* Global .badge pill, kept from stretching inside the info grid. */
   .badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
     width: fit-content;
   }
 
-  .badge.active,
+  /* Archive statuses the global kit does not cover
+     (published is green here, not the global indigo). */
   .badge.published {
     background: var(--arc-chip-green-bg, #dcfce7);
     color: var(--arc-chip-green-ink, #166534);
-  }
-
-  .badge.draft {
-    background: var(--arc-chip-slate-bg, #f1f5f9);
-    color: var(--arc-chip-slate-ink, #475569);
   }
 
   .badge.archived,
   .badge.deleted {
     background: var(--arc-chip-amber-bg, #fef3c7);
     color: var(--arc-chip-amber-ink, #92400e);
-  }
-
-  .standard-badge {
-    background: var(--arc-chip-indigo-bg, #e0e7ff);
-    color: var(--arc-chip-indigo-ink, #4338ca);
   }
 
   .users-list {
@@ -1544,29 +1457,15 @@
     margin-bottom: 0;
   }
 
-  /* Modal styles */
+  /* Modal — global .modal-overlay / .modal kit, sized for these dialogs. */
   .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--arc-overlay, rgba(15, 23, 42, 0.55));
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: 1000;
   }
 
   .modal {
-    background: var(--arc-card, #fff);
-    border: 1px solid var(--arc-line, #e8edf3);
-    border-radius: 1rem;
     min-width: 400px;
     max-width: 90vw;
-    max-height: 90vh;
     overflow: auto;
-    box-shadow: var(--arc-shadow-lift, 0 24px 60px -16px rgba(15, 23, 42, 0.35));
   }
 
   .modal-header {
@@ -1630,47 +1529,11 @@
 
   .btn {
     padding: 0.5rem 1.5rem;
-    border: none;
-    border-radius: 0.65rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   }
 
   .btn-sm {
     padding: 0.375rem 1rem;
     font-size: 0.875rem;
-  }
-
-  .btn-primary {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
-  }
-
-  .btn-primary:hover {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
-
-  .btn-primary:disabled {
-    background: var(--arc-disabled-bg, #c7cdd8);
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
-  }
-
-  .btn-secondary {
-    background: var(--arc-card, #fff);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    color: var(--arc-ink, #1e293b);
-    box-shadow: none;
-  }
-
-  .btn-secondary:hover {
-    background: var(--arc-card, #fff);
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-link, #4f46e5);
   }
 
   .element-modal {

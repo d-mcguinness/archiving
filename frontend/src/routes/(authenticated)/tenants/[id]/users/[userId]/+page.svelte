@@ -210,16 +210,16 @@
         <span class="eyebrow">User profile</span>
         <h1>👤 {user.name}</h1>
         {#if tenant}
-          <div class="tenant-badge">
+          <div class="tenant-badge badge indigo">
             <span>🏢</span>
             <span>{tenant.displayName || tenant.name}</span>
           </div>
         {/if}
       </div>
       <div class="header-actions">
-        <a href="/tenants/{data.tenantId}/users/{data.userId}/edit" class="btn-edit-profile">✏️ Edit Profile</a>
-        <button class="btn-mimic" on:click={mimicUser}>🎭 Mimic</button>
-        <a href="/tenants/{data.tenantId}/users/{data.userId}/documents" class="btn-docs">📄 Documents</a>
+        <a href="/tenants/{data.tenantId}/users/{data.userId}/edit" class="btn-edit-profile btn-secondary">✏️ Edit Profile</a>
+        <button class="btn-mimic btn-chip violet" on:click={mimicUser}>🎭 Mimic</button>
+        <a href="/tenants/{data.tenantId}/users/{data.userId}/documents" class="btn-docs btn-primary">📄 Documents</a>
       </div>
     </div>
 
@@ -228,7 +228,7 @@
       <div class="panel-header">
         <h2>User Information</h2>
         {#if !editing}
-          <button class="btn-edit" on:click={startEdit}>✏️ Edit</button>
+          <button class="btn-edit btn-chip indigo" on:click={startEdit}>✏️ Edit</button>
         {/if}
       </div>
 
@@ -294,7 +294,7 @@
                 <span class="doc-title">{doc.title || doc.fileName}</span>
                 <span class="doc-meta">{formatFileSize(doc.fileSize)} &middot; {formatDate(doc.uploadedAt)}</span>
               </div>
-              <span class="doc-status status-{doc.status?.toLowerCase()}">{doc.status}</span>
+              <span class="doc-status badge status-{doc.status?.toLowerCase()}">{doc.status}</span>
             </div>
           {/each}
         </div>
@@ -325,26 +325,7 @@
     display: flex; flex-direction: column; align-items: center;
     justify-content: center; min-height: 400px; gap: 1rem;
   }
-  .spinner {
-    border: 4px solid var(--arc-line-strong, #e2e8f0); border-top: 4px solid var(--arc-indigo, #6366f1);
-    border-radius: 50%; width: 40px; height: 40px;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .error {
-    background: var(--arc-alert-red-bg, #fee2e2); color: var(--arc-alert-red-ink, #991b1b); padding: 1rem;
-    border-radius: 0.5rem; border: 1px solid var(--arc-alert-red-border, #fca5a5);
-  }
-
-  .breadcrumb {
-    display: flex; align-items: center; gap: 0.5rem;
-    margin-bottom: 1.5rem; font-size: 0.875rem;
-  }
-  .breadcrumb a { color: var(--arc-link, #4f46e5); text-decoration: none; font-weight: 500; }
-  .breadcrumb a:hover { color: var(--arc-eyebrow-ink, #7c3aed); }
-  .sep { color: var(--arc-faint, #94a3b8); }
-  .breadcrumb span:last-child { color: var(--arc-muted, #64748b); }
+  /* .spinner and .error come from the global kit in app.css */
 
   .page-header {
     display: flex; justify-content: space-between; align-items: flex-start;
@@ -353,46 +334,22 @@
   .header-content { flex: 1; }
   .page-header h1 { margin: 0 0 0.5rem; color: var(--arc-ink, #0f172a); font-size: 2rem; }
 
+  /* Pill chrome comes from the global .badge kit; only the icon layout is local. */
   .tenant-badge {
     display: inline-flex; align-items: center; gap: 0.4rem;
-    padding: 0.3rem 0.8rem; background: var(--arc-chip-indigo-bg, #e0e7ff);
-    color: var(--arc-chip-indigo-ink, #4338ca); border-radius: 9999px; font-weight: 700; font-size: 0.72rem;
-    text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 0.3rem 0.8rem;
   }
 
   .header-actions { display: flex; gap: 0.5rem; }
 
-  .btn-edit-profile {
-    padding: 0.6rem 1.2rem; background: var(--arc-card, #fff); color: var(--arc-ink, #1e293b);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    border-radius: 0.65rem; font-weight: 600; text-decoration: none;
-    transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  /* Header actions use the global .btn-secondary / .btn-chip / .btn-primary kit,
+     sized as one row here. */
+  .btn-edit-profile, .btn-mimic, .btn-docs {
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.65rem;
+    font-size: 1rem;
   }
-  .btn-edit-profile:hover {
-    border-color: var(--arc-indigo, #6366f1); color: var(--arc-link, #4f46e5);
-    transform: translateY(-2px);
-  }
-
-  .btn-mimic {
-    padding: 0.6rem 1.2rem; background: var(--arc-chip-violet-bg, #ede9fe); color: var(--arc-chip-violet-ink, #6d28d9);
-    border: none; border-radius: 0.65rem; font-weight: 600;
-    cursor: pointer; transition: background 0.18s ease, transform 0.18s ease;
-    box-shadow: none;
-  }
-  .btn-mimic:hover { background: var(--arc-chip-violet-hover, #ddd6fe); box-shadow: none; }
-
-  .btn-docs {
-    display: inline-block;
-    padding: 0.6rem 1.2rem; background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    border-radius: 0.65rem; font-weight: 700; text-decoration: none;
-    box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-  }
-  .btn-docs:hover {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
+  .btn-edit-profile, .btn-mimic { font-weight: 600; }
 
   .panel {
     background: var(--arc-card, #fff); border: 1px solid var(--arc-line, #e8edf3); border-radius: 1rem;
@@ -406,13 +363,7 @@
   }
   .panel-header h2 { margin: 0; font-size: 1.15rem; color: var(--arc-ink, #0f172a); }
 
-  .btn-edit {
-    padding: 0.4rem 0.9rem; background: var(--arc-chip-indigo-bg, #e0e7ff); color: var(--arc-chip-indigo-ink, #4338ca);
-    border: none; border-radius: 0.5rem; font-weight: 600;
-    font-size: 0.8rem; cursor: pointer; transition: background 0.2s ease;
-    box-shadow: none;
-  }
-  .btn-edit:hover { background: var(--arc-chip-indigo-hover, #c7d2fe); box-shadow: none; }
+  /* .btn-edit uses the global .btn-chip indigo kit from app.css */
 
   .btn-link {
     color: var(--arc-link, #4f46e5); text-decoration: none; font-weight: 600;
@@ -438,19 +389,7 @@
   /* inputs inherit the global Arcana input styling from app.css */
   .form-group input:disabled { background: var(--arc-card-2, #f1f5f9); cursor: not-allowed; }
 
-  .form-actions { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
-  .btn-primary, .btn-secondary {
-    padding: 0.6rem 1.2rem; border-radius: 0.65rem;
-    font-weight: 600; cursor: pointer;
-  }
-  /* .btn-primary inherits the global brand-gradient button styling from app.css */
-  .btn-secondary {
-    background: var(--arc-card, #fff); color: var(--arc-ink, #1e293b); border: 1.5px solid var(--arc-line-strong, #cbd5e1); box-shadow: none;
-    transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
-  }
-  .btn-secondary:hover:not(:disabled) {
-    background: var(--arc-card, #fff); border-color: var(--arc-indigo, #6366f1); color: var(--arc-link, #4f46e5);
-  }
+  /* .form-actions, .btn-primary and .btn-secondary come from the global kit in app.css */
 
   .muted { color: var(--arc-faint, #94a3b8); font-size: 0.875rem; margin: 0; }
 
@@ -464,10 +403,8 @@
   .doc-title { font-weight: 500; color: var(--arc-ink, #0f172a); font-size: 0.9rem; }
   .doc-meta { font-size: 0.75rem; color: var(--arc-faint, #94a3b8); }
 
-  .doc-status {
-    padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.7rem;
-    font-weight: 700; text-transform: uppercase;
-  }
+  /* .doc-status pill chrome comes from the global .badge kit; the status hues
+     below cover document statuses the global kit doesn't define. */
   .status-active { background: var(--arc-chip-green-bg, #dcfce7); color: var(--arc-chip-green-ink, #166534); }
   .status-archived { background: var(--arc-chip-slate-bg, #f1f5f9); color: var(--arc-chip-slate-ink, #475569); }
   .status-pending_review { background: var(--arc-chip-amber-bg, #fef3c7); color: var(--arc-chip-amber-ink, #92400e); }

@@ -366,49 +366,7 @@
     border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
-  .btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 0.65rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-
-  .btn-primary {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
-
-  .btn-secondary {
-    background: var(--arc-card, #fff);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    color: var(--arc-ink, #1e293b);
-    box-shadow: none;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-indigo-deep, #4f46e5);
-    transform: none;
-  }
+  /* Buttons use the global .btn-primary / .btn-secondary kit. */
 
   @media (prefers-reduced-motion: reduce) {
     .btn {

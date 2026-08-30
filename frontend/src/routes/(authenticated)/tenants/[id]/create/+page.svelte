@@ -526,13 +526,11 @@
     line-height: 1.5;
   }
 
+  /* Global .form-actions footer, right-aligned instead of split. */
   .form-actions {
-    display: flex;
     justify-content: flex-end;
-    gap: 1rem;
     margin-top: 2rem;
     padding-top: 2rem;
-    border-top: 1px solid var(--arc-line-strong);
   }
 
   .btn-primary,

@@ -367,7 +367,7 @@
         <span class="empty-icon">📁</span>
         <h3>No archives found</h3>
         <p>This tenant doesn't have any archives yet.</p>
-        <a href="/archives/create" class="btn-create">Create First Archive</a>
+        <a href="/archives/create" class="btn-create btn-primary">Create First Archive</a>
       </div>
     {:else}
       <div class="archives-count">
@@ -375,8 +375,8 @@
         <span class="count-value">{archives.length}</span>
       </div>
 
-      <div class="table-container">
-        <table class="data-table">
+      <div class="table-container table-card">
+        <table class="data-table arc-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -405,7 +405,7 @@
                   <span class="badge {getStatusBadgeClass(archive.status)}">{archive.status}</span>
                 </td>
                 <td class="standard-cell">
-                  <span class="badge standard-badge">{archive.standard}</span>
+                  <span class="badge indigo standard-badge">{archive.standard}</span>
                 </td>
                 <td class="date-cell">{new Date(archive.createdAt).toLocaleDateString()}</td>
                 <td class="date-cell">{new Date(archive.updatedAt).toLocaleDateString()}</td>
@@ -424,28 +424,28 @@
                   {/if}
                 </td>
                 <td class="actions-cell">
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/update" class="btn-action btn-edit">
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/update" class="btn-action btn-edit btn-chip indigo">
                     ✏️ Edit
                   </a>
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/intakes" class="btn-action btn-sips">
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/intakes" class="btn-action btn-sips btn-chip pink">
                     📦 Intakes
                   </a>
                   <a href="/tenants/{data.tenantId}/archives/{archive.id}/preservations" class="btn-action btn-aips">
                     🏗️ Preservations
                   </a>
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/releases" class="btn-action btn-dips">
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/releases" class="btn-action btn-dips btn-chip orange">
                     📤 Releases
                   </a>
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/users" class="btn-action btn-users">
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/users" class="btn-action btn-users btn-chip amber">
                     👥 Users
                   </a>
                   {#if currentRole === 'ADMIN'}
-                    <a href="/archives/delete/{archive.id}" class="btn-action btn-delete">
+                    <a href="/archives/delete/{archive.id}" class="btn-action btn-delete btn-chip red">
                       🗑️ Delete
                     </a>
                     <a
                       href="/tenants/{data.tenantId}/archives/{archive.id}/extract"
-                      class="btn-action btn-extract"
+                      class="btn-action btn-extract btn-chip green"
                       title="Extract archive as JSON"
                     >
                       📥 Extract
@@ -472,7 +472,7 @@
 <!-- Extract Password Dialog -->
 {#if showExtractDialog}
   <div class="modal-overlay" on:click={closeExtractDialog} role="dialog" aria-modal="true">
-    <div class="modal-content" on:click|stopPropagation role="document">
+    <div class="modal-content modal" on:click|stopPropagation role="document">
       <div class="modal-header">
         <h3>🔐 Extract Archive</h3>
         <button class="modal-close" on:click={closeExtractDialog} aria-label="Close">×</button>
@@ -523,7 +523,7 @@
 <!-- Create Archive Modal -->
 {#if showCreateModal}
   <div class="modal-overlay" on:click={closeCreateModal} role="dialog" aria-modal="true">
-    <div class="modal-content modal-wide" on:click|stopPropagation role="document">
+    <div class="modal-content modal modal-wide" on:click|stopPropagation role="document">
       <div class="modal-header">
         <h3>Create New Archive</h3>
         <div class="modal-header-actions">
@@ -689,38 +689,19 @@
     white-space: nowrap;
   }
 
-  /* Loading */
+  /* .error, .loading and .spinner come from the global kit (app.css); this
+     loader only stacks a caption under a slightly larger, slower spinner. */
   .loading {
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     min-height: 400px;
     gap: 1rem;
   }
 
   .spinner {
-    border: 4px solid var(--arc-line-strong);
-    border-top: 4px solid #6366f1;
-    border-radius: 50%;
+    border-width: 4px;
     width: 40px;
     height: 40px;
     animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  /* Error */
-  .error {
-    background: var(--arc-alert-red-bg);
-    color: var(--arc-alert-red-ink);
-    padding: 1rem;
-    border-radius: 0.6rem;
-    border: 1px solid var(--arc-alert-red-border);
-    margin-bottom: 1.5rem;
   }
 
   /* Empty State — dark hero panel */
@@ -748,22 +729,7 @@
     color: #cbd5e1;
   }
 
-  .btn-create {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    text-decoration: none;
-    border-radius: 0.65rem;
-    font-weight: 700;
-    box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
-    transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
-  }
-
-  .btn-create:hover {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
+  /* .btn-create rides on the global .btn-primary. */
 
   /* Archives Count */
   .archives-count {
@@ -795,46 +761,10 @@
     letter-spacing: -0.02em;
   }
 
-  /* Table */
+  /* Table chrome comes from .table-card / table.arc-table; only the
+     page-specific scroll + column sizing stays local. */
   .table-container {
-    background: var(--arc-card);
-    border-radius: 1rem;
     overflow-x: auto;
-    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
-    border: 1px solid var(--arc-line);
-  }
-
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .data-table thead {
-    background: var(--arc-card-2);
-  }
-
-  .data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 700;
-    color: var(--arc-muted);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border-bottom: 1px solid var(--arc-line);
-  }
-
-  .data-table td {
-    padding: 1rem;
-    border-bottom: 1px solid var(--arc-line);
-  }
-
-  .data-table tbody tr:last-child td {
-    border-bottom: none;
-  }
-
-  .data-table tbody tr:hover {
-    background: var(--arc-card-2);
   }
 
   .id-cell {
@@ -853,11 +783,6 @@
     gap: 0.25rem;
   }
 
-  .archive-title {
-    font-weight: 600;
-    color: var(--arc-ink);
-  }
-
   .archive-description {
     font-size: 0.875rem;
     color: var(--arc-muted);
@@ -869,16 +794,8 @@
     white-space: nowrap;
   }
 
-  .badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
+  /* .badge base and the indigo standard chip are global; these archive
+     status hues are page-specific. */
   .badge.published {
     background: var(--arc-chip-green-bg);
     color: var(--arc-chip-green-ink);
@@ -892,11 +809,6 @@
   .badge.archived {
     background: var(--arc-chip-slate-bg);
     color: var(--arc-chip-slate-ink);
-  }
-
-  .standard-badge {
-    background: var(--arc-chip-indigo-bg);
-    color: var(--arc-chip-indigo-ink);
   }
 
   .date-cell {
@@ -944,6 +856,8 @@
     white-space: nowrap;
   }
 
+  /* Row actions are global .btn-chip <hue>; only this table's tighter chip
+     size and spacing stay local (the two bespoke tints below opt out). */
   .btn-action {
     display: inline-block;
     padding: 0.375rem 0.75rem;
@@ -956,24 +870,6 @@
     cursor: pointer;
     box-shadow: none;
     transition: all 0.2s;
-  }
-
-  .btn-delete {
-    background: var(--arc-chip-red-bg);
-    color: var(--arc-chip-red-ink);
-  }
-
-  .btn-delete:hover {
-    background: var(--arc-chip-red-hover);
-  }
-
-  .btn-edit {
-    background: var(--arc-chip-indigo-bg);
-    color: var(--arc-chip-indigo-ink);
-  }
-
-  .btn-edit:hover {
-    background: var(--arc-chip-indigo-hover);
   }
 
   .header-buttons {
@@ -1007,50 +903,20 @@
   }
   .archive-title-link:hover { text-decoration: underline; }
 
-  .btn-sips { background: var(--arc-chip-pink-bg); color: var(--arc-chip-pink-ink); }
-  .btn-sips:hover { background: var(--arc-chip-pink-hover); }
-
+  /* Soft-indigo tint has no kit hue, so this chip stays local. */
   .btn-aips { background: var(--arc-chip-soft-indigo-bg); color: var(--arc-chip-indigo-ink); }
   .btn-aips:hover { background: var(--arc-chip-indigo-hover); }
 
-  .btn-dips { background: var(--arc-chip-orange-bg); color: var(--arc-chip-orange-ink); }
-  .btn-dips:hover { background: var(--arc-chip-orange-hover); }
-
-  .btn-users { background: var(--arc-chip-amber-bg); color: var(--arc-chip-amber-ink); }
-  .btn-users:hover { background: var(--arc-chip-amber-hover); }
-
-  .btn-extract {
-    background: var(--arc-chip-green-bg);
-    color: var(--arc-chip-green-ink);
-  }
-
-  .btn-extract:hover {
-    background: var(--arc-chip-green-hover);
-  }
-
-  /* Modal */
+  /* Modal chrome is global .modal-overlay / .modal; the narrower width and
+     the sectioned (self-padding) body stay local. */
   .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--arc-overlay);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: 1000;
   }
 
   .modal-content {
-    background: var(--arc-card);
-    border: 1px solid var(--arc-line);
-    border-radius: 1rem;
     max-width: 500px;
     width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
+    padding: 0;
   }
 
   .modal-wide {
@@ -1163,10 +1029,6 @@
     border: 1px solid var(--arc-alert-red-border);
   }
 
-  .form-group {
-    margin-bottom: 1rem;
-  }
-
   .form-group label {
     display: block;
     margin-bottom: 0.5rem;
@@ -1182,49 +1044,7 @@
     border-top: 1px solid var(--arc-line);
   }
 
-  .btn-secondary,
-  .btn-primary {
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.65rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-  }
-
-  .btn-secondary {
-    background: var(--arc-card);
-    color: var(--arc-ink);
-    border: 1.5px solid var(--arc-line-strong);
-    box-shadow: none;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    background: var(--arc-card);
-    border-color: var(--arc-indigo);
-    color: var(--arc-link);
-    transform: none;
-    box-shadow: none;
-  }
-
-  .btn-primary {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    border: none;
-    box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
-
-  .btn-primary:disabled,
-  .btn-secondary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
+  /* .btn-primary / .btn-secondary come from the global kit (app.css). */
 
   @media (max-width: 768px) {
     .tenant-archives-page {
@@ -1233,10 +1053,6 @@
 
     .page-header {
       flex-direction: column;
-    }
-
-    .table-container {
-      overflow-x: auto;
     }
 
     .data-table {

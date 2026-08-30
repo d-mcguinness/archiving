@@ -714,12 +714,6 @@
     border: 1px solid var(--arc-alert-red-border);
   }
 
-  .alert-info {
-    background: var(--arc-alert-indigo-bg);
-    color: var(--arc-alert-indigo-ink);
-    border: 1px solid var(--arc-alert-indigo-border);
-  }
-
   .alert button {
     background: none;
     border: none;
@@ -745,23 +739,12 @@
     gap: 1rem;
   }
 
+  /* Spinner chrome + reduced-motion handling come from the global .spinner;
+     this page's is only bigger and a touch slower. */
   .loading-state .spinner {
     width: 2.5rem;
     height: 2.5rem;
-    border: 3px solid var(--arc-line-strong);
-    border-top-color: var(--arc-indigo, #6366f1);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .loading-state .spinner {
-      animation: none;
-    }
+    animation-duration: 1s;
   }
 
   .loading-state p {
@@ -1035,40 +1018,16 @@
     cursor: not-allowed;
   }
 
-  .empty-state {
-    text-align: center;
-    color: var(--arc-faint);
-    padding: 2rem;
-    font-style: italic;
-  }
-
-  /* Actions — primary button styling (brand gradient) comes from the global button rules */
+  /* Actions — .form-actions, .btn-primary and .btn-secondary all come from the
+     global kit; only this page's taller footer and wider buttons sit on top. */
   .form-actions {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
     margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--arc-line, #e8edf3);
+    border-top-color: var(--arc-line, #e8edf3);
   }
 
   .btn {
     padding: 0.75rem 2rem;
     font-size: 0.925rem;
-  }
-
-  .btn-secondary {
-    background: var(--arc-card);
-    border: 1.5px solid var(--arc-line-strong);
-    color: var(--arc-ink);
-    box-shadow: none;
-  }
-
-  .btn-secondary:hover {
-    background: var(--arc-card);
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-indigo-deep, #4f46e5);
-    box-shadow: none;
   }
 
   /* Responsive */

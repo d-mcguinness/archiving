@@ -384,11 +384,8 @@
 
   .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
 
-  .badge {
-    font-size: 0.72rem; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    padding: 0.25rem 0.75rem; border-radius: 9999px;
-  }
+  /* Global .badge kit + wider tracking for the standards pills. */
+  .badge { letter-spacing: 0.08em; }
 
   .ver { font-size: 0.7rem; color: var(--arc-faint); font-weight: 600; }
 
@@ -430,19 +427,12 @@
   .page-header h1 { margin: 0 0 0.5rem; color: var(--arc-ink); font-size: 2rem; font-weight: 700; }
   .page-subtitle { margin: 0; color: var(--arc-muted); font-size: 1.05rem; }
 
+  /* Global .btn-secondary kit + a compact header-sized variant. */
   .btn-secondary {
-    display: inline-block;
     padding: 0.65rem 1.25rem;
-    background: var(--arc-card); color: var(--arc-ink);
-    border: 1.5px solid var(--arc-line-strong);
-    border-radius: 0.65rem;
-    text-decoration: none;
-    font-weight: 700; font-size: 0.875rem;
-    transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    font-size: 0.875rem;
     white-space: nowrap;
   }
-
-  .btn-secondary:hover { border-color: var(--arc-indigo); color: var(--arc-link); transform: translateY(-2px); }
 
   .standards-grid {
     display: grid;
@@ -451,16 +441,11 @@
   }
 
   /* ── Shared ── */
-  .loading { display: flex; flex-direction: column; align-items: center; padding: 4rem 2rem; gap: 1rem; }
+  /* Global .loading / .spinner kit + this page's stacked, larger, slower variant.
+     The spinner's border-top colour is set inline from accentColor. */
+  .loading { flex-direction: column; padding: 4rem 2rem; gap: 1rem; }
 
-  .spinner {
-    width: 2.5rem; height: 2.5rem;
-    border: 3px solid var(--arc-line-strong);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { width: 2.5rem; height: 2.5rem; animation-duration: 1s; }
 
   .loading p { color: var(--arc-muted); font-size: 0.875rem; }
 
@@ -471,7 +456,6 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .spinner { animation: none; }
     .btn-cta, .btn-cta-inv, .btn-outline, .btn-secondary,
     .step-card, .standard-info-card {
       transition: none;

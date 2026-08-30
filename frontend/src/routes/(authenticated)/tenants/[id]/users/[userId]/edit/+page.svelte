@@ -138,7 +138,7 @@
       <p>Loading profile...</p>
     </div>
   {:else if error}
-    <div class="error-msg">❌ {error}</div>
+    <div class="error-msg error">❌ {error}</div>
   {:else if user}
     <Breadcrumb
       context={{ tenantId: data.tenantId, tenantName: tenant?.displayName || tenant?.name, userId: data.userId, userName: user?.name }}
@@ -214,17 +214,7 @@
     display: flex; flex-direction: column; align-items: center;
     justify-content: center; min-height: 400px; gap: 1rem;
   }
-  .spinner {
-    border: 4px solid var(--arc-line-strong, #e2e8f0); border-top: 4px solid var(--arc-indigo, #6366f1);
-    border-radius: 50%; width: 40px; height: 40px;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .error-msg {
-    background: var(--arc-alert-red-bg, #fee2e2); color: var(--arc-alert-red-ink, #991b1b); padding: 1rem;
-    border-radius: 0.5rem; border: 1px solid var(--arc-alert-red-border, #fca5a5);
-  }
+  /* .spinner and the .error alert panel come from the global kit in app.css */
 
   .edit-card {
     background: var(--arc-card, #fff);
@@ -283,29 +273,5 @@
     background: var(--arc-ground, #f8fafc);
   }
 
-  .btn-primary, .btn-secondary {
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.65rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-  }
-
-  /* .btn-primary inherits the global brand-gradient button styling from app.css */
-
-  .btn-secondary {
-    background: var(--arc-card, #fff);
-    color: var(--arc-ink, #1e293b);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    box-shadow: none;
-    transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
-  }
-
-  .btn-secondary:hover {
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-link, #4f46e5);
-    transform: translateY(-2px);
-  }
+  /* .btn-primary and .btn-secondary come from the global button kit in app.css */
 </style>

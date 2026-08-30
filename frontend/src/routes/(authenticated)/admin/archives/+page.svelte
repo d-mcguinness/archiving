@@ -171,7 +171,7 @@
       <span class="eyebrow">Admin console</span>
       <h1>Archives Management</h1>
     </div>
-    <a href="/archives/create" class="add-archive-btn">+ Add Archive</a>
+    <a href="/archives/create" class="add-archive-btn btn-primary">+ Add Archive</a>
   </div>
 
   {#if error}
@@ -190,7 +190,7 @@
       <span class="empty-icon">📁</span>
       <h3>No archives found</h3>
       <p>Create your first archive to get started!</p>
-      <a href="/archives/create" class="btn-create">Create First Archive</a>
+      <a href="/archives/create" class="btn-create btn-primary">Create First Archive</a>
     </div>
   {:else}
     <div class="archives-count">
@@ -198,8 +198,8 @@
       <span class="count-value">{archives.length}</span>
     </div>
 
-    <div class="table-container">
-      <table class="data-table">
+    <div class="table-container table-card">
+      <table class="data-table arc-table">
         <thead>
           <tr>
             <th>ID</th>
@@ -249,7 +249,7 @@
                 <span class="badge {getStatusBadgeClass(archive.status)}">{archive.status}</span>
               </td>
               <td class="standard-cell">
-                <span class="badge standard-badge">{archive.standard}</span>
+                <span class="badge cyan standard-badge">{archive.standard}</span>
               </td>
               <td class="owner-cell">{getUserName(archive.ownerId)}</td>
               <td class="date-cell">{new Date(archive.createdAt).toLocaleDateString()}</td>
@@ -271,33 +271,33 @@
               <td class="actions-cell">
                 <a
                   href="/admin/archive/{archive.id}/intake/create"
-                  class="btn-action btn-sip"
+                  class="btn-action btn-sip btn-chip pink"
                   title="Create Intake from this archive"
                 >
                   📦 Create Intake
                 </a>
                 <a
                   href="/admin/archive/{archive.id}/preservation/create"
-                  class="btn-action btn-aip"
+                  class="btn-action btn-aip btn-chip indigo"
                   title="Create Preservation from this archive"
                 >
                   🏗️ Create Preservation
                 </a>
                 <a
                   href="/admin/archive/{archive.id}/release/create"
-                  class="btn-action btn-dip"
+                  class="btn-action btn-dip btn-chip orange"
                   title="Create Release from this archive"
                 >
                   📤 Create Release
                 </a>
-                <a href="/archives/delete/{archive.id}" class="btn-action btn-delete">
+                <a href="/archives/delete/{archive.id}" class="btn-action btn-delete btn-chip red">
                   🗑️ Delete
                 </a>
-                <a href="/archives/update/{archive.id}" class="btn-action btn-edit">
+                <a href="/archives/update/{archive.id}" class="btn-action btn-edit btn-chip slate">
                   ✏️ Edit
                 </a>
                 <button
-                  class="btn-action btn-extract"
+                  class="btn-action btn-extract btn-chip violet"
                   on:click={() => openExtractDialog(archive)}
                   title="Extract archive"
                 >
@@ -315,7 +315,7 @@
 <!-- Extract Password Dialog -->
 {#if showExtractDialog}
   <div class="modal-overlay" on:click={closeExtractDialog} role="dialog" aria-modal="true">
-    <div class="modal-content" on:click|stopPropagation role="document">
+    <div class="modal-content modal" on:click|stopPropagation role="document">
       <div class="modal-header">
         <h3>🔐 Extract Archive</h3>
         <button class="modal-close" on:click={closeExtractDialog} aria-label="Close">×</button>
@@ -394,53 +394,12 @@
     font-size: 2rem;
   }
 
-  .add-archive-btn {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.65rem;
-    text-decoration: none;
-    font-weight: 700;
-    transition: all 0.2s ease;
-    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
-  }
-
-  .add-archive-btn:hover {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-    box-shadow: var(--arc-shadow-btn-hover, 0 16px 40px -8px rgba(124, 58, 237, 0.75));
-  }
-
-  .error {
-    background: var(--arc-alert-red-bg, #fef2f2);
-    color: var(--arc-alert-red-ink, #991b1b);
-    padding: 1rem;
-    border-radius: 0.5rem;
-    margin-bottom: 1.5rem;
-    border: 1px solid var(--arc-alert-red-border, #fecaca);
-  }
-
+  /* .add-archive-btn, .btn-create, .error, .loading and .spinner use the
+     global kit (app.css); only the column stack under the spinner is local. */
   .loading {
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     min-height: 400px;
     gap: 1rem;
-  }
-
-  .spinner {
-    border: 4px solid var(--arc-line-strong, #e2e8f0);
-    border-top: 4px solid var(--arc-indigo, #6366f1);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
   }
 
   .empty-state {
@@ -466,23 +425,6 @@
   .empty-state p {
     margin: 0 0 1.5rem 0;
     color: var(--arc-muted, #64748b);
-  }
-
-  .btn-create {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    text-decoration: none;
-    border-radius: 0.65rem;
-    font-weight: 700;
-    transition: all 0.2s ease;
-    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
-  }
-
-  .btn-create:hover {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
   }
 
   .archives-count {
@@ -512,52 +454,18 @@
     font-size: 1.25rem;
   }
 
+  /* Table chrome comes from .table-card / table.arc-table; only the
+     page-specific scroll + column sizing stays local. */
   .table-container {
-    background: var(--arc-card, #fff);
-    border-radius: 1rem;
-    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
     overflow-x: auto;
-    border: 1px solid var(--arc-line, #e8edf3);
   }
 
   .data-table {
-    width: 100%;
-    border-collapse: collapse;
     min-width: 1400px;
   }
 
-  .data-table thead {
-    background: var(--arc-card-2, #f8fafc);
-  }
-
   .data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 700;
-    color: var(--arc-muted, #64748b);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
     white-space: nowrap;
-    border-bottom: 1px solid var(--arc-line, #e8edf3);
-  }
-
-  .data-table tbody tr {
-    border-bottom: 1px solid var(--arc-line, #e8edf3);
-    transition: background-color 0.15s;
-  }
-
-  .data-table tbody tr:hover {
-    background: var(--arc-card-2, #f8fafc);
-  }
-
-  .data-table tbody tr:last-child {
-    border-bottom: none;
-  }
-
-  .data-table td {
-    padding: 1rem;
-    color: var(--arc-ink, #0f172a);
   }
 
   .id-cell {
@@ -630,16 +538,7 @@
     white-space: nowrap;
   }
 
-  .badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
+  /* .badge base is global; these archive status hues are page-specific. */
   .badge.active,
   .badge.published {
     background: var(--arc-chip-green-bg, #dcfce7);
@@ -655,11 +554,6 @@
   .badge.deleted {
     background: var(--arc-chip-red-bg, #fee2e2);
     color: var(--arc-chip-red-ink, #991b1b);
-  }
-
-  .standard-badge {
-    background: var(--arc-chip-cyan-bg, #cffafe);
-    color: var(--arc-chip-cyan-ink, #155e75);
   }
 
   .owner-cell {
@@ -717,98 +611,26 @@
     width: 440px;
   }
 
+  /* Row actions are global .btn-chip <hue>; only this table's chip
+     spacing and slightly larger hit area stay local. */
   .btn-action {
     display: inline-block;
     padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
     font-size: 0.875rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
     margin-left: 0.5rem;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    box-shadow: none;
   }
 
-  .btn-edit {
-    background: var(--arc-chip-slate-bg, #f1f5f9);
-    color: var(--arc-chip-slate-ink, #475569);
-  }
-
-  .btn-edit:hover {
-    background: var(--arc-chip-slate-hover, #e2e8f0);
-  }
-
-  .btn-sip {
-    background: var(--arc-chip-pink-bg, #fce7f3);
-    color: var(--arc-chip-pink-ink, #9d174d);
-  }
-
-  .btn-sip:hover {
-    background: var(--arc-chip-pink-hover, #fbcfe8);
-  }
-
-  .btn-aip {
-    background: var(--arc-chip-indigo-bg, #e0e7ff);
-    color: var(--arc-chip-indigo-ink, #4338ca);
-  }
-
-  .btn-aip:hover {
-    background: var(--arc-chip-indigo-hover, #c7d2fe);
-  }
-
-  .btn-dip {
-    background: var(--arc-chip-orange-bg, #ffedd5);
-    color: var(--arc-chip-orange-ink, #9a3412);
-  }
-
-  .btn-dip:hover {
-    background: var(--arc-chip-orange-hover, #fed7aa);
-  }
-
-  .btn-extract {
-    background: var(--arc-chip-violet-bg, #ede9fe);
-    color: var(--arc-chip-violet-ink, #6d28d9);
-  }
-
-  .btn-extract:hover {
-    background: var(--arc-chip-violet-hover, #ddd6fe);
-  }
-
-  .btn-delete {
-    background: var(--arc-chip-red-bg, #fee2e2);
-    color: var(--arc-chip-red-ink, #991b1b);
-  }
-
-  .btn-delete:hover {
-    background: var(--arc-chip-red-hover, #fecaca);
-  }
-
-  /* Modal Styles */
+  /* Modal chrome is global .modal-overlay / .modal; the blur, the narrower
+     width and the sectioned (self-padding) body stay local. */
   .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--arc-overlay, rgba(15, 23, 42, 0.55));
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: 1000;
     backdrop-filter: blur(2px);
   }
 
   .modal-content {
-    background: var(--arc-card, #fff);
-    border: 1px solid var(--arc-line, #e8edf3);
-    border-radius: 1rem;
-    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
     max-width: 500px;
     width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
+    padding: 0;
   }
 
   .modal-header {
@@ -869,10 +691,6 @@
     line-height: 1.5;
   }
 
-  .form-group {
-    margin-bottom: 1rem;
-  }
-
   .form-group label {
     display: block;
     margin-bottom: 0.5rem;
@@ -920,45 +738,7 @@
     border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
-  .btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 0.65rem;
-    font-weight: 700;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  .btn-primary {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
-
-  .btn-secondary {
-    background: var(--arc-card, #fff);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    color: var(--arc-ink, #1e293b);
-    box-shadow: none;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-link, #4f46e5);
-    background: var(--arc-card, #fff);
-  }
+  /* .btn-primary / .btn-secondary come from the global kit (app.css). */
 
   @media (max-width: 768px) {
     .archives-page {

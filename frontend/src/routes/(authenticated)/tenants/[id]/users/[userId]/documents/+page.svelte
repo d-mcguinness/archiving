@@ -482,7 +482,7 @@
                       </div>
                       <div class="meta-item">
                         <span class="meta-label">Status:</span>
-                        <span class="status status-{document.status?.toLowerCase() || 'unknown'}">
+                        <span class="status badge status-{document.status?.toLowerCase() || 'unknown'}">
                           {document.status || 'Unknown'}
                         </span>
                       </div>
@@ -501,7 +501,7 @@
 <!-- Upload Document Modal -->
 {#if showUploadModal}
   <div class="modal-overlay" on:click={closeUploadModal} role="dialog" aria-modal="true">
-    <div class="modal-content" on:click|stopPropagation role="document">
+    <div class="modal-content modal" on:click|stopPropagation role="document">
       <div class="modal-header">
         <h3>📄 Add Document</h3>
         <button class="modal-close" on:click={closeUploadModal} aria-label="Close">×</button>
@@ -710,28 +710,12 @@
     gap: 1rem;
   }
 
-  .spinner {
-    border: 4px solid var(--arc-line-strong, #e2e8f0);
-    border-top: 4px solid var(--arc-indigo, #6366f1);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-  }
+  /* .spinner comes from the global loading pattern in app.css */
 
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  /* Error */
+  /* Error — panel colors come from the global .error kit; only layout is local */
   .error {
-    background: var(--arc-alert-red-bg, #fef2f2);
-    color: var(--arc-alert-red-ink, #991b1b);
     padding: 2rem;
-    border-radius: 0.6rem;
     text-align: center;
-    border: 1px solid var(--arc-alert-red-border, #fecaca);
   }
 
   .error p {
@@ -881,15 +865,8 @@
     font-weight: 400;
   }
 
-  .status {
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
+  /* .status pill chrome comes from the global .badge kit; the hues below cover
+     document statuses the global kit doesn't define. */
   .status-active,
   .status-approved {
     background: var(--arc-chip-green-bg, #dcfce7);
@@ -912,26 +889,11 @@
     color: var(--arc-chip-slate-ink, #64748b);
   }
 
-  /* Modal */
-  .modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--arc-overlay, rgba(0, 0, 0, 0.5));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-
+  /* Modal — surface comes from the global .modal-overlay / .modal kit in app.css */
   .modal-content {
-    background: var(--arc-card, #fff);
-    border: 1px solid var(--arc-line, #e8edf3);
-    border-radius: 1rem;
+    padding: 0;
     max-width: 550px;
     width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
   }
 
   .modal-header {
@@ -1069,8 +1031,6 @@
   .btn-remove-file:hover { background: var(--arc-chip-red-hover, #fca5a5); transform: none; box-shadow: none; }
 
   /* Form */
-  .form-group { margin-bottom: 1rem; }
-
   .form-group label {
     display: block;
     margin-bottom: 0.5rem;
@@ -1210,28 +1170,7 @@
     cursor: not-allowed;
   }
 
-  /* .btn-primary inherits the global brand-gradient button styling from app.css */
-  .btn-secondary, .btn-primary {
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.65rem;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  .btn-secondary {
-    background: var(--arc-card, #fff);
-    color: var(--arc-ink, #1e293b);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    box-shadow: none;
-    transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
-  }
-  .btn-secondary:hover:not(:disabled) {
-    background: var(--arc-card, #fff);
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-link, #4f46e5);
-  }
-
-  .btn-primary:disabled, .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+  /* .btn-primary and .btn-secondary come from the global button kit in app.css */
 
   @media (max-width: 768px) {
     .user-documents-page {

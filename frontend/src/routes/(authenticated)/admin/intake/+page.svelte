@@ -152,7 +152,7 @@
       <span class="eyebrow">Admin console</span>
       <h1>📦 Intake packages</h1>
     </div>
-    <a href="/admin/intake/create" class="btn-create">+ Create Intake</a>
+    <a href="/admin/intake/create" class="btn-create btn-primary">+ Create Intake</a>
   </div>
 
   {#if error}
@@ -171,7 +171,7 @@
       <span class="empty-icon">📦</span>
       <h3>No Intakes found</h3>
       <p>Create your first Intake package to get started.</p>
-      <a href="/admin/intake/create" class="btn-primary-link">Create Intake</a>
+      <a href="/admin/intake/create" class="btn-primary-link btn-primary">Create Intake</a>
     </div>
   {:else}
     <div class="sips-count">
@@ -179,8 +179,8 @@
       <span class="count-value">{sips.length}</span>
     </div>
 
-    <div class="table-container">
-      <table class="data-table">
+    <div class="table-container table-card">
+      <table class="data-table arc-table">
         <thead>
           <tr>
             <th>ID</th>
@@ -206,7 +206,7 @@
                 </div>
               </td>
               <td class="standard-cell">
-                <span class="badge standard-badge">{sip.standard}</span>
+                <span class="badge pink standard-badge">{sip.standard}</span>
               </td>
               <td class="entity-cell">
                 {#if sip.rootElement}
@@ -227,10 +227,10 @@
               <td class="owner-cell">{getUserName(sip.ownerId)}</td>
               <td class="date-cell">{new Date(sip.createdAt).toLocaleDateString()}</td>
               <td class="actions-cell">
-                <a href="/intake/edit/{sip.id}" class="btn-action btn-edit">
+                <a href="/intake/edit/{sip.id}" class="btn-action btn-edit btn-chip indigo">
                   ✏️ Edit
                 </a>
-                <button class="btn-action btn-extract" on:click={() => openExtractDialog(sip)}>
+                <button class="btn-action btn-extract btn-chip violet" on:click={() => openExtractDialog(sip)}>
                   📥 Extract
                 </button>
               </td>
@@ -245,7 +245,7 @@
 <!-- Extract Dialog -->
 {#if showExtractDialog}
   <div class="modal-overlay" on:click={closeExtractDialog} role="dialog" aria-modal="true">
-    <div class="modal-content" on:click|stopPropagation role="document">
+    <div class="modal-content modal" on:click|stopPropagation role="document">
       <div class="modal-header">
         <h3>📥 Extract Intake</h3>
         <button class="modal-close" on:click={closeExtractDialog} aria-label="Close">×</button>
@@ -293,50 +293,13 @@
     font-size: 2rem;
   }
 
-  .btn-create {
-    padding: 0.75rem 1.5rem;
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    border-radius: 0.65rem;
-    text-decoration: none;
-    font-weight: 700;
-    transition: all 0.2s ease;
-    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
-  }
-
-  .btn-create:hover {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
-
-  .error {
-    background: var(--arc-alert-red-bg, #fee2e2);
-    color: var(--arc-alert-red-ink, #991b1b);
-    padding: 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--arc-alert-red-border, #fca5a5);
-    margin-bottom: 1.5rem;
-  }
-
+  /* .btn-create, .btn-primary-link, .error, .loading and .spinner use the
+     global kit (app.css); only the column stack under the spinner is local. */
   .loading {
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     min-height: 400px;
     gap: 1rem;
   }
-
-  .spinner {
-    border: 4px solid var(--arc-line-strong, #e2e8f0);
-    border-top: 4px solid var(--arc-indigo, #6366f1);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
 
   .empty-state {
     text-align: center;
@@ -350,23 +313,6 @@
   .empty-icon { font-size: 5rem; display: block; margin-bottom: 1rem; }
   .empty-state h3 { margin: 0 0 0.5rem 0; color: var(--arc-ink, #0f172a); }
   .empty-state p { margin: 0 0 1.5rem 0; color: var(--arc-muted, #64748b); }
-
-  .btn-primary-link {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    text-decoration: none;
-    border-radius: 0.65rem;
-    font-weight: 700;
-    transition: all 0.2s ease;
-    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
-  }
-
-  .btn-primary-link:hover {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
 
   .sips-count {
     display: flex;
@@ -395,42 +341,15 @@
     font-size: 1.25rem;
   }
 
+  /* Table chrome comes from .table-card / table.arc-table; only the
+     page-specific scroll + column sizing stays local. */
   .table-container {
-    background: var(--arc-card, #fff);
-    border-radius: 1rem;
     overflow-x: auto;
-    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
-    border: 1px solid var(--arc-line, #e8edf3);
   }
 
   .data-table {
-    width: 100%;
-    border-collapse: collapse;
     min-width: 1000px;
   }
-
-  .data-table thead {
-    background: var(--arc-card-2, #f8fafc);
-    border-bottom: 1px solid var(--arc-line, #e8edf3);
-  }
-
-  .data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 700;
-    color: var(--arc-muted, #64748b);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .data-table td {
-    padding: 1rem;
-    border-bottom: 1px solid var(--arc-line, #e8edf3);
-  }
-
-  .data-table tbody tr:last-child td { border-bottom: none; }
-  .data-table tbody tr:hover { background: var(--arc-card-2, #f8fafc); }
 
   .id-cell { color: var(--arc-muted, #64748b); font-family: monospace; font-size: 0.875rem; width: 60px; }
 
@@ -439,17 +358,8 @@
   .sip-title { font-weight: 600; color: var(--arc-ink, #1e293b); }
   .sip-description { font-size: 0.875rem; color: var(--arc-muted, #64748b); }
 
-  .badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
-  .standard-badge { background: var(--arc-chip-pink-bg, #fce7f3); color: var(--arc-chip-pink-ink, #9d174d); }
-
+  /* .badge base and the pink standard chip are global; these Intake status
+     hues are page-specific. */
   .badge.draft { background: var(--arc-chip-amber-bg, #fef3c7); color: var(--arc-chip-amber-ink, #92400e); }
   .badge.published { background: var(--arc-chip-green-bg, #dcfce7); color: var(--arc-chip-green-ink, #166534); }
   .badge.archived { background: var(--arc-chip-slate-bg, #f1f5f9); color: var(--arc-chip-slate-ink, #475569); }
@@ -466,37 +376,23 @@
 
   .actions-cell { white-space: nowrap; }
 
+  /* Row actions are global .btn-chip <hue>; only this table's tighter
+     chip size and spacing stay local. */
   .btn-action {
     display: inline-block;
     padding: 0.375rem 0.75rem;
     margin: 0 0.25rem;
-    border: none;
-    border-radius: 0.5rem;
     font-size: 0.75rem;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    box-shadow: none;
-    transition: all 0.2s ease;
   }
 
-  .btn-edit { background: var(--arc-chip-indigo-bg, #e0e7ff); color: var(--arc-chip-indigo-ink, #4338ca); }
-  .btn-edit:hover { background: var(--arc-chip-indigo-hover, #c7d2fe); }
-  .btn-extract { background: var(--arc-chip-violet-bg, #ede9fe); color: var(--arc-chip-violet-ink, #5b21b6); }
-  .btn-extract:hover { background: var(--arc-chip-violet-hover, #ddd6fe); }
-
-  /* Modal */
+  /* Modal chrome is global .modal-overlay / .modal; the narrower width and
+     the sectioned (self-padding) body stay local. */
   .modal-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--arc-overlay, rgba(15, 23, 42, 0.55));
-    display: flex; align-items: center; justify-content: center;
     z-index: 1000;
   }
 
   .modal-content {
-    background: var(--arc-card, #fff); border: 1px solid var(--arc-line, #e8edf3); border-radius: 1rem;
-    max-width: 500px; width: 90%;
-    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
+    max-width: 500px; width: 90%; padding: 0;
   }
 
   .modal-header {
@@ -518,7 +414,6 @@
   .alert { padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
   .alert-error { background: var(--arc-alert-red-bg, #fee2e2); color: var(--arc-alert-red-ink, #991b1b); border: 1px solid var(--arc-alert-red-border, #fca5a5); }
 
-  .form-group { margin-bottom: 1rem; }
   .form-group label { display: block; margin-bottom: 0.5rem; color: var(--arc-ink, #1e293b); font-weight: 600; }
 
   .modal-footer {
@@ -526,24 +421,7 @@
     padding: 1.5rem; border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
-  .btn-secondary, .btn-primary {
-    padding: 0.75rem 1.5rem; border: none; border-radius: 0.65rem;
-    font-weight: 700; cursor: pointer; transition: all 0.2s ease;
-  }
-
-  .btn-secondary { background: var(--arc-card, #fff); border: 1.5px solid var(--arc-line-strong, #cbd5e1); color: var(--arc-ink, #1e293b); box-shadow: none; }
-  .btn-secondary:hover:not(:disabled) { border-color: var(--arc-indigo, #6366f1); color: var(--arc-link, #4f46e5); background: var(--arc-card, #fff); }
-
-  .btn-primary {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
-  }
-  .btn-primary:hover:not(:disabled) {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
-  .btn-primary:disabled, .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  /* .btn-primary / .btn-secondary come from the global kit (app.css). */
 
   @media (max-width: 768px) {
     .sips-page { padding: 1rem; }

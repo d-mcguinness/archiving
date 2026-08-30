@@ -220,7 +220,7 @@
   </div>
 
   {#if showUploadForm}
-    <div class="upload-form">
+    <div class="upload-form form-container">
       <h2>Upload New Document</h2>
       <form on:submit|preventDefault={handleUpload}>
         <div class="form-group">
@@ -310,7 +310,7 @@
                 <p><strong>Size:</strong> {formatFileSize(document.fileSize)}</p>
                 <p><strong>Type:</strong> {document.contentType || 'Unknown'}</p>
                 <p><strong>Uploaded:</strong> {formatDate(document.uploadedAt)}</p>
-                <p><strong>Status:</strong> <span class="status status-{document.status.toLowerCase()}">{document.status}</span></p>
+                <p><strong>Status:</strong> <span class="badge status status-{document.status.toLowerCase()}">{document.status}</span></p>
               </div>
             </div>
             <div class="document-actions">
@@ -350,15 +350,7 @@
     margin: 0;
   }
 
-  .upload-form {
-    background: var(--arc-card, #fff);
-    border: 1px solid var(--arc-line, #e8edf3);
-    border-radius: 1rem;
-    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
-    padding: 2rem;
-    margin-bottom: 2rem;
-  }
-
+  /* The panel itself is the global .form-container (app.css). */
   .upload-form h2 {
     margin-top: 0;
     color: var(--arc-ink, #0f172a);
@@ -368,49 +360,14 @@
     margin-bottom: 1.5rem;
   }
 
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: var(--arc-body, #475569);
-  }
-
   .file-info {
     margin-top: 0.5rem;
     color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
   }
 
-  .form-actions {
-    display: flex;
-    gap: 1rem;
-  }
-
-  /* .btn-primary inherits the global brand-gradient button styling from app.css */
-
-  .btn-secondary {
-    padding: 0.75rem 1.5rem;
-    background: var(--arc-card, #fff);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    border-radius: 0.65rem;
-    color: var(--arc-ink, #1e293b);
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: none;
-    transition: all 0.2s ease;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-link, #4f46e5);
-    background: var(--arc-card, #fff);
-  }
-
-  .btn-secondary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  /* .form-actions, .btn-primary and .btn-secondary come from the global
+     kit (app.css). */
 
   .loading, .error, .empty-state {
     text-align: center;
@@ -481,15 +438,7 @@
     margin: 0.25rem 0;
   }
 
-  .status {
-    display: inline-block;
-    padding: 0.25rem 0.6rem;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-
+  /* .badge base is global; these document status hues are page-specific. */
   .status-active {
     background-color: var(--arc-chip-green-bg, #dcfce7);
     color: var(--arc-chip-green-ink, #166534);

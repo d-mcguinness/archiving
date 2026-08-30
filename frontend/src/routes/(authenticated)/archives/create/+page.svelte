@@ -763,7 +763,7 @@
 <!-- Element Form Modal -->
 {#if showElementForm}
   <div class="modal-overlay" on:click={cancelElementForm} role="dialog" aria-modal="true">
-    <div class="modal-content" on:click|stopPropagation role="document">
+    <div class="modal modal-content" on:click|stopPropagation role="document">
       <div class="modal-header">
         <h3>
           {#if selectedScheme}
@@ -916,14 +916,10 @@
 
 
 <style>
+  /* Global .form-container card surface, centred at a fixed width. */
   .form-container {
     max-width: 900px;
     margin: 2rem auto;
-    background: var(--arc-card, #fff);
-    padding: 2rem;
-    border-radius: 1rem;
-    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
-    border: 1px solid var(--arc-line, #e8edf3);
   }
 
   .form-header {
@@ -1092,25 +1088,6 @@
     gap: 1rem;
   }
 
-  .loading-scheme .spinner {
-    width: 3rem;
-    height: 3rem;
-    border: 4px solid var(--arc-line-strong, #e2e8f0);
-    border-top-color: var(--arc-indigo, #6366f1);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .loading-scheme .spinner {
-      animation: none;
-    }
-  }
-
   .loading-scheme p {
     color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
@@ -1144,28 +1121,16 @@
   }
 
 
-  /* Modal */
+  /* Modal — global .modal-overlay / .modal kit, sized for this form
+     and unpadded because the header/body/footer carry their own. */
   .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--arc-overlay, rgba(15, 23, 42, 0.55));
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: 1000;
   }
 
   .modal-content {
-    background: var(--arc-card, #fff);
-    border: 1px solid var(--arc-line, #e8edf3);
-    border-radius: 1rem;
-    box-shadow: var(--arc-shadow-lift, 0 24px 60px -16px rgba(15, 23, 42, 0.35));
     max-width: 500px;
     width: 90%;
-    max-height: 90vh;
+    padding: 0;
     overflow: auto;
   }
 
@@ -1276,55 +1241,16 @@
     gap: 0.75rem;
   }
 
-  /* Form Actions */
+  /* Form Actions — global .form-actions with a roomier top margin. */
   .form-actions {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
     margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--arc-line, #e8edf3);
+    border-top-color: var(--arc-line, #e8edf3);
   }
 
+  /* Compact size on top of the global button kit. */
   .btn {
     padding: 0.625rem 1.5rem;
-    border: none;
-    border-radius: 0.65rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
     font-size: 0.875rem;
-  }
-
-  .btn-primary {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
-
-  .btn-primary:disabled {
-    background: var(--arc-disabled-bg, #c7cdd8);
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
-  }
-
-  .btn-secondary {
-    background: var(--arc-card, #fff);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    color: var(--arc-ink, #1e293b);
-    box-shadow: none;
-  }
-
-  .btn-secondary:hover {
-    background: var(--arc-card, #fff);
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-link, #4f46e5);
   }
 
   @media (max-width: 768px) {

@@ -188,7 +188,7 @@
       <span class="eyebrow">Admin console</span>
       <h1>Users</h1>
     </div>
-    <a href="/users/create" class="add-user-btn">Add User</a>
+    <a href="/users/create" class="add-user-btn btn-primary">Add User</a>
   </div>
 
   <!-- File Upload Section -->
@@ -212,14 +212,14 @@
       </div>
 
       {#if uploadMessage}
-        <div class="upload-success">
+        <div class="upload-success success">
           <span class="success-icon">✅</span>
           <span>{uploadMessage}</span>
         </div>
       {/if}
 
       {#if uploadError}
-        <div class="upload-error">
+        <div class="upload-error error">
           <span class="error-icon">❌</span>
           <span>{uploadError}</span>
         </div>
@@ -250,8 +250,8 @@
       <p>No users found. Create your first user to get started!</p>
     </div>
   {:else}
-    <div class="table-container">
-      <table class="data-table">
+    <div class="table-container table-card">
+      <table class="data-table arc-table">
         <thead>
           <tr>
             <th>ID</th>
@@ -273,20 +273,20 @@
               <td class="age-cell">{user.age || '-'}</td>
               <td class="actions-cell">
                 <button
-                  class="btn-action btn-mimic"
+                  class="btn-action btn-mimic btn-chip violet"
                   on:click={() => mimicUser(user)}
                   title="Sign in as this user"
                 >
                   🎭 Mimic
                 </button>
                 <button
-                  class="btn-action btn-edit"
+                  class="btn-action btn-edit btn-chip indigo"
                   on:click={() => openEditModal(user)}
                   title="Edit user"
                 >
                   ✏️ Edit
                 </button>
-                <a href="/users/delete?userId={user.id}" class="btn-action btn-delete">
+                <a href="/users/delete?userId={user.id}" class="btn-action btn-delete btn-chip red">
                   🗑️ Delete
                 </a>
               </td>
@@ -301,7 +301,7 @@
 <!-- Edit Modal -->
 {#if showEditModal && editingUser}
   <div class="modal-overlay" on:click={closeEditModal}>
-    <div class="modal-content" on:click|stopPropagation>
+    <div class="modal-content modal" on:click|stopPropagation>
       <div class="modal-header">
         <h2>Edit User</h2>
         <button class="modal-close" on:click={closeEditModal}>✕</button>
@@ -387,51 +387,9 @@
     font-size: 2rem;
   }
 
-  .add-user-btn {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.65rem;
-    text-decoration: none;
-    font-weight: 700;
-    transition: all 0.2s ease;
-    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
-  }
-
-  .add-user-btn:hover {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-    box-shadow: var(--arc-shadow-btn-hover, 0 16px 40px -8px rgba(124, 58, 237, 0.75));
-  }
-
-  .error {
-    background: var(--arc-alert-red-bg, #fef2f2);
-    color: var(--arc-alert-red-ink, #991b1b);
-    padding: 1rem;
-    border-radius: 0.375rem;
-    margin-bottom: 1rem;
-    border: 1px solid var(--arc-alert-red-border, #fecaca);
-  }
-
+  /* .add-user-btn, .error, .loading and .spinner use the global kit (app.css). */
   .loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 400px;
-  }
-
-  .spinner {
-    border: 4px solid var(--arc-line-strong, #e2e8f0);
-    border-top: 4px solid var(--arc-indigo, #6366f1);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
   }
 
   .empty-state {
@@ -497,32 +455,16 @@
     font-weight: 500;
   }
 
-  .upload-success {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: var(--arc-alert-green-bg, #f0fdf4);
-    border: 1px solid var(--arc-alert-green-border, #bbf7d0);
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    color: var(--arc-alert-green-ink, #166534);
-  }
-
-  .success-icon {
-    font-size: 1.25rem;
-  }
-
+  /* Upload feedback rows are the global .success / .error panels with an icon. */
+  .upload-success,
   .upload-error {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 1rem;
-    background: var(--arc-alert-red-bg, #fee2e2);
-    border: 1px solid var(--arc-alert-red-border, #fca5a5);
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    color: var(--arc-alert-red-ink, #991b1b);
+  }
+
+  .success-icon {
+    font-size: 1.25rem;
   }
 
   .error-icon {
@@ -534,53 +476,18 @@
     width: 100%;
   }
 
-  /* Table Styles */
+  /* Table chrome comes from .table-card / table.arc-table; only the
+     page-specific scroll + column sizing stays local. */
   .table-container {
-    background: var(--arc-card, #fff);
-    border-radius: 1rem;
-    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
     overflow-x: auto;
-    border: 1px solid var(--arc-line, #e8edf3);
   }
 
   .data-table {
-    width: 100%;
-    border-collapse: collapse;
     min-width: 800px;
   }
 
-  .data-table thead {
-    background: var(--arc-card-2, #f8fafc);
-    border-bottom: 1px solid var(--arc-line, #e8edf3);
-  }
-
   .data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 700;
-    color: var(--arc-muted, #64748b);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
     white-space: nowrap;
-  }
-
-  .data-table tbody tr {
-    border-bottom: 1px solid var(--arc-line, #e8edf3);
-    transition: background-color 0.15s;
-  }
-
-  .data-table tbody tr:hover {
-    background: var(--arc-card-2, #f8fafc);
-  }
-
-  .data-table tbody tr:last-child {
-    border-bottom: none;
-  }
-
-  .data-table td {
-    padding: 1rem;
-    color: var(--arc-ink, #0f172a);
   }
 
   .id-cell {
@@ -624,72 +531,16 @@
     width: 200px;
   }
 
+  /* Row actions ride on .btn-chip; only the row spacing is local. */
   .btn-action {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
     margin-left: 0.5rem;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    box-shadow: none;
   }
 
-
-  .btn-edit {
-    background: var(--arc-chip-indigo-bg, #e0e7ff);
-    color: var(--arc-chip-indigo-ink, #4338ca);
-  }
-
-  .btn-edit:hover {
-    background: var(--arc-chip-indigo-hover, #c7d2fe);
-  }
-
-  .btn-delete {
-    background: var(--arc-chip-red-bg, #fee2e2);
-    color: var(--arc-chip-red-ink, #b91c1c);
-  }
-
-  .btn-delete:hover {
-    background: var(--arc-chip-red-hover, #fecaca);
-  }
-
-  .btn-mimic {
-    background: var(--arc-chip-violet-bg, #ede9fe);
-    color: var(--arc-chip-violet-ink, #5b21b6);
-  }
-
-  .btn-mimic:hover {
-    background: var(--arc-chip-violet-hover, #ddd6fe);
-  }
-
-  /* Modal Styles */
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--arc-overlay, rgba(15, 23, 42, 0.55));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 1rem;
-  }
-
-  .modal-content {
-    background: var(--arc-card, #fff);
-    border: 1px solid var(--arc-line, #e8edf3);
-    border-radius: 1rem;
-    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
+  /* Modal Styles — .modal-overlay/.modal come from app.css; this dialog
+     pads its own header/body sections. */
+  .modal {
+    padding: 0;
     max-width: 500px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
   }
 
   .modal-header {
@@ -730,14 +581,6 @@
     margin-bottom: 1.5rem;
   }
 
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: var(--arc-body, #475569);
-    font-size: 0.875rem;
-  }
-
   .form-group input:disabled {
     background: var(--arc-card-2, #f1f5f9);
     cursor: not-allowed;
@@ -751,52 +594,7 @@
     border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
-  .btn-primary,
-  .btn-secondary {
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.65rem;
-    font-weight: 700;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: none;
-  }
-
-  .btn-primary {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
-
-  .btn-primary:disabled {
-    background: var(--arc-disabled-bg, #c7cdd8);
-    color: var(--arc-disabled-ink, #fff);
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-
-  .btn-secondary {
-    background: var(--arc-card, #fff);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    color: var(--arc-ink, #1e293b);
-    box-shadow: none;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-link, #4f46e5);
-    background: var(--arc-card, #fff);
-  }
-
-  .btn-secondary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  /* .btn-primary / .btn-secondary come from the global kit. */
 </style>
 
 

@@ -219,25 +219,11 @@
     padding: 2rem;
   }
 
+  /* .loading + .spinner come from the global kit; only the tall centered
+     column layout is page-specific. */
   .loading {
-    display: flex; flex-direction: column; align-items: center;
-    justify-content: center; min-height: 400px; gap: 1rem;
+    flex-direction: column; min-height: 400px; gap: 1rem;
   }
-  .spinner {
-    border: 4px solid var(--arc-line-strong); border-top: 4px solid var(--arc-indigo);
-    border-radius: 50%; width: 40px; height: 40px;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .breadcrumb {
-    display: flex; align-items: center; gap: 0.5rem;
-    margin-bottom: 1.5rem; font-size: 0.875rem; flex-wrap: wrap;
-  }
-  .breadcrumb a { color: var(--arc-link); text-decoration: none; font-weight: 500; }
-  .breadcrumb a:hover { color: var(--arc-eyebrow-ink); }
-  .sep { color: var(--arc-faint); }
-  .breadcrumb > span:last-child { color: var(--arc-muted); }
 
   .extract-card {
     background: var(--arc-card);
@@ -278,9 +264,9 @@
 
   .info-value { color: var(--arc-ink); font-size: 0.9rem; }
 
+  /* Pill geometry comes from the global .badge kit; indigo is the default
+     tint here, with the status names below overriding it. */
   .badge {
-    padding: 0.25rem 0.75rem; border-radius: 9999px;
-    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
     background: var(--arc-chip-indigo-bg); color: var(--arc-chip-indigo-ink);
   }
 
@@ -308,30 +294,10 @@
   }
   .form-group input:disabled { background: var(--arc-card-2); cursor: not-allowed; }
 
-  .form-actions { display: flex; justify-content: flex-end; gap: 0.75rem; }
-
-  .btn-primary, .btn-secondary {
-    padding: 0.75rem 1.5rem; border: none; border-radius: 0.65rem;
-    font-weight: 700; cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-    text-decoration: none; display: inline-block; font-size: 0.9rem;
-  }
-
-  .btn-primary {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white;
-    box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
-  }
-  .btn-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    transform: translateY(-2px);
-  }
-  .btn-primary:disabled { background: var(--arc-disabled-bg); box-shadow: none; cursor: not-allowed; }
-
-  .btn-secondary { background: var(--arc-card); border: 1.5px solid var(--arc-line-strong); color: var(--arc-ink); }
-  .btn-secondary:hover { border-color: var(--arc-indigo); color: var(--arc-link); }
+  /* This footer right-aligns its buttons instead of the kit's space-between. */
+  .form-actions { justify-content: flex-end; gap: 0.75rem; }
 
   @media (prefers-reduced-motion: reduce) {
-    .spinner { animation: none; }
     .btn-primary, .btn-secondary { transition: none; }
     .btn-primary:hover:not(:disabled) { transform: none; }
   }

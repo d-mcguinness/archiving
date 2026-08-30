@@ -124,10 +124,10 @@
   </div>
 
   <div class="card-actions">
-    <button class="btn btn-edit" on:click={handleEdit}>
+    <button class="btn btn-edit btn-primary" on:click={handleEdit}>
       ✏️ Edit
     </button>
-    <button class="btn btn-delete" on:click={handleDelete}>
+    <button class="btn btn-delete btn-danger" on:click={handleDelete}>
       🗑️ Delete
     </button>
   </div>
@@ -183,15 +183,8 @@
     flex-wrap: wrap;
   }
 
-  .badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
+  /* .badge base comes from the global kit; these tenant-specific
+     status/plan hues are not part of the global status list. */
   .status-active { background: var(--arc-chip-green-bg, #dcfce7); color: var(--arc-chip-green-ink, #166534); }
   .status-inactive { background: var(--arc-chip-slate-bg, #f1f5f9); color: var(--arc-chip-slate-ink, #475569); }
   .status-suspended { background: var(--arc-chip-red-bg, #fee2e2); color: var(--arc-chip-red-ink, #991b1b); }
@@ -296,46 +289,21 @@
     justify-content: flex-end;
   }
 
+  /* Colour/hover come from the global .btn-primary / .btn-danger kit;
+     card-footer actions are just a size down from the default. */
   .btn {
     padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 0.65rem;
     font-size: 0.875rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-  }
-
-  .btn-edit {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    box-shadow: 0 6px 18px -6px rgba(124, 58, 237, 0.45);
-  }
-
-  .btn-edit:hover {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
-
-  .btn-delete {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-    box-shadow: 0 6px 18px -6px rgba(220, 38, 38, 0.4);
-  }
-
-  .btn-delete:hover {
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    transform: translateY(-2px);
   }
 
   @media (prefers-reduced-motion: reduce) {
     .tenant-card, .btn {
       transition: none;
     }
-    .tenant-card:hover, .btn-edit:hover, .btn-delete:hover {
+    .tenant-card:hover, .card-actions .btn:hover {
       transform: none;
     }
   }

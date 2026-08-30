@@ -160,7 +160,7 @@
           </div>
         {/if}
       </div>
-      <a href="/tenants/{data.tenantId}/documents/create" class="btn-create">+ Upload Document</a>
+      <a href="/tenants/{data.tenantId}/documents/create" class="btn-create btn-primary">+ Upload Document</a>
     </div>
 
     {#if error}
@@ -225,7 +225,7 @@
                       </div>
                       <div class="meta-item">
                         <span class="meta-label">Status:</span>
-                        <span class="status status-{document.status?.toLowerCase() || 'unknown'}">
+                        <span class="badge status status-{document.status?.toLowerCase() || 'unknown'}">
                           {document.status || 'Unknown'}
                         </span>
                       </div>
@@ -303,21 +303,9 @@
     flex: 1;
   }
 
+  /* .btn-create rides on the global .btn-primary. */
   .btn-create {
-    padding: 0.75rem 1.5rem;
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    border-radius: 0.65rem;
-    text-decoration: none;
-    font-weight: 700;
-    box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
-    transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
     white-space: nowrap;
-  }
-
-  .btn-create:hover {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
   }
 
   .page-header h1 {
@@ -343,38 +331,19 @@
     font-size: 1.25rem;
   }
 
-  /* Loading */
+  /* .error, .loading and .spinner come from the global kit (app.css); this
+     loader only stacks a caption under a slightly larger, slower spinner. */
   .loading {
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     min-height: 400px;
     gap: 1rem;
   }
 
   .spinner {
-    border: 4px solid var(--arc-line-strong);
-    border-top: 4px solid #6366f1;
-    border-radius: 50%;
+    border-width: 4px;
     width: 40px;
     height: 40px;
     animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  /* Error */
-  .error {
-    background: var(--arc-alert-red-bg);
-    color: var(--arc-alert-red-ink);
-    padding: 1rem;
-    border-radius: 0.6rem;
-    border: 1px solid var(--arc-alert-red-border);
-    margin-bottom: 1.5rem;
   }
 
   /* Documents Section */
@@ -522,15 +491,8 @@
     font-weight: 400;
   }
 
-  .status {
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
+  /* Pill chrome is the global .badge; only these document status hues,
+     which the kit has no equivalents for, stay local. */
   .status-active,
   .status-approved {
     background: var(--arc-chip-green-bg);

@@ -166,7 +166,7 @@
 
 {#if show}
   <div class="modal-overlay" on:click={cancel} role="dialog" aria-modal="true">
-    <div class="modal-content" on:click|stopPropagation role="document">
+    <div class="modal modal-content" on:click|stopPropagation role="document">
       <div class="modal-header">
         <h3>
           {#if selectedScheme}
@@ -315,28 +315,16 @@
 {/if}
 
 <style>
+  /* Global .modal-overlay / .modal kit, widened for the field list and
+     unpadded because the header/body/footer carry their own padding. */
   .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--arc-overlay, rgba(15, 23, 42, 0.55));
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: 1000;
   }
 
   .modal-content {
-    background: var(--arc-card, #fff);
-    border: 1px solid var(--arc-line, #e8edf3);
-    border-radius: 1rem;
-    box-shadow: var(--arc-shadow-lift, 0 24px 60px -16px rgba(15, 23, 42, 0.35));
     max-width: 600px;
     width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
+    padding: 0;
   }
 
   .modal-header {
@@ -445,19 +433,13 @@
     gap: 0.5rem;
   }
 
+  /* Slightly smaller type than the global button kit. */
   .btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 0.65rem;
     font-size: 0.875rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   }
 
   .btn:disabled {
     opacity: 0.5;
-    cursor: not-allowed;
   }
 
   .btn-defaults {
@@ -469,30 +451,6 @@
 
   .btn-defaults:hover {
     background: #d97706;
-  }
-
-  .btn-primary {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
-
-  .btn-secondary {
-    background: var(--arc-card, #fff);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    color: var(--arc-ink, #1e293b);
-    box-shadow: none;
-  }
-
-  .btn-secondary:hover {
-    background: var(--arc-card, #fff);
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-link, #4f46e5);
   }
 </style>
 

@@ -147,12 +147,12 @@
         {/if}
         <div class="badges">
           <span class="badge status-{getStatusClass(archive.status)}">{archive.status}</span>
-          <span class="badge standard">{archive.standard}</span>
+          <span class="badge standard indigo">{archive.standard}</span>
         </div>
       </div>
       <div class="header-actions">
-        <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/update" class="btn btn-edit">✏️ Edit</a>
-        <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/extract" class="btn btn-extract">📥 Extract</a>
+        <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/update" class="btn btn-edit btn-secondary">✏️ Edit</a>
+        <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/extract" class="btn btn-extract btn-primary">📥 Extract</a>
       </div>
     </div>
 
@@ -293,28 +293,25 @@
 <style>
   .archive-detail { max-width: 1100px; margin: 0 auto; padding: 2rem; }
 
-  .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; gap: 1rem; }
-  .spinner { border: 4px solid var(--arc-line-strong); border-top: 4px solid var(--arc-indigo); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .error { background: var(--arc-alert-red-bg); border: 1px solid var(--arc-alert-red-border); color: var(--arc-alert-red-ink); padding: 1rem; border-radius: 0.6rem; }
+  /* .loading / .spinner / .error come from the global kit; only the tall
+     centered column layout is page-specific. */
+  .loading { flex-direction: column; min-height: 400px; gap: 1rem; }
 
   .archive-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 2rem; }
   .archive-header h1 { margin: 0 0 0.35rem; color: var(--arc-ink); font-size: 1.85rem; }
   .desc { margin: 0 0 0.75rem; color: var(--arc-muted); font-size: 0.9rem; }
   .badges { display: flex; gap: 0.5rem; }
 
-  .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+  /* Pill geometry + the indigo standard tint come from the global .badge kit;
+     these status names are page-specific. */
   .status-active, .status-published { background: var(--arc-chip-green-bg); color: var(--arc-chip-green-ink); }
   .status-draft { background: var(--arc-chip-amber-bg); color: var(--arc-chip-amber-ink); }
   .status-archived { background: var(--arc-chip-slate-bg); color: var(--arc-chip-slate-ink); }
-  .standard { background: var(--arc-chip-indigo-bg); color: var(--arc-chip-indigo-ink); }
 
   .header-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
-  .btn { padding: 0.6rem 1.1rem; border: none; border-radius: 0.65rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; text-decoration: none; transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease; }
-  .btn-edit { background: var(--arc-card); border: 1.5px solid var(--arc-line-strong); color: var(--arc-ink); }
-  .btn-edit:hover { border-color: var(--arc-indigo); color: var(--arc-link); transform: translateY(-2px); }
-  .btn-extract { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6); }
-  .btn-extract:hover { background: linear-gradient(135deg, #4f46e5, #7c3aed); transform: translateY(-2px); }
+  /* .btn-secondary / .btn-primary come from the kit; header actions run a
+     compact size. */
+  .btn { padding: 0.6rem 1.1rem; font-size: 0.85rem; }
 
   .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
   .stat-card { background: var(--arc-card); border: 1px solid var(--arc-line); border-radius: 1rem; padding: 1.25rem; text-align: center; text-decoration: none; color: inherit; box-shadow: var(--arc-shadow-card); transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease; }
@@ -346,7 +343,6 @@
   @media (max-width: 768px) { .archive-header { flex-direction: column; } .grid-2col { grid-template-columns: 1fr; } }
 
   @media (prefers-reduced-motion: reduce) {
-    .spinner { animation: none; }
     .btn, .stat-card, .link, .list-row-link { transition: none; }
     .btn:hover, .stat-card:hover { transform: none; }
   }

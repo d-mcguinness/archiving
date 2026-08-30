@@ -192,7 +192,7 @@
     </div>
   {/if}
 
-  <div class="upload-container">
+  <div class="upload-container form-container">
     <!-- Standard Selection -->
     <div class="form-section">
       <h2>1. Select Standard</h2>
@@ -364,13 +364,13 @@
       <h2>📚 Uploaded Documents ({uploadedDocuments.length})</h2>
       <div class="documents-list">
         {#each uploadedDocuments as doc}
-          <div class="document-card">
+          <div class="document-card card">
             <div class="document-header">
               <div class="document-icon">📄</div>
               <div class="document-info">
                 <h3>{doc.metadata.title}</h3>
                 <div class="document-meta">
-                  <span class="badge">{doc.standard}</span>
+                  <span class="badge indigo">{doc.standard}</span>
                   <span class="meta-item">📁 {doc.fileName}</span>
                   <span class="meta-item">💾 {formatFileSize(doc.fileSize)}</span>
                 </div>
@@ -407,7 +407,7 @@
 
   <!-- Bottom Navigation -->
   <div class="bottom-navigation">
-    <a href={archivesPath} class="back-button-bottom">← Back to Archives</a>
+    <a href={archivesPath} class="back-button-bottom btn-secondary">← Back to Archives</a>
   </div>
 </div>
 
@@ -505,15 +505,7 @@
     box-shadow: none;
   }
 
-  /* Upload Container */
-  .upload-container {
-    background: var(--arc-card, #fff);
-    border: 1px solid var(--arc-line, #e8edf3);
-    border-radius: 1rem;
-    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
-    padding: 2rem;
-    margin-bottom: 2rem;
-  }
+  /* Upload container uses the global .form-container card surface. */
 
   .form-section {
     margin-bottom: 2rem;
@@ -619,53 +611,21 @@
     font-weight: 500;
   }
 
-  /* Form Actions */
+  /* Form Actions — right-aligned variant of the global .form-actions */
   .form-actions {
-    display: flex;
-    gap: 1rem;
     justify-content: flex-end;
     margin-top: 2rem;
     padding-top: 2rem;
-    border-top: 1px solid var(--arc-line, #e8edf3);
+    border-top-color: var(--arc-line, #e8edf3);
   }
 
+  /* Slightly smaller type than the global button kit. */
   .btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 0.65rem;
-    font-weight: 700;
     font-size: 0.875rem;
-    cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   }
 
   .btn:disabled {
     opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .btn-primary {
-    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
-    color: white;
-    box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
-    transform: translateY(-2px);
-  }
-
-  .btn-secondary {
-    background: var(--arc-card, #fff);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    color: var(--arc-ink, #1e293b);
-    box-shadow: none;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    background: var(--arc-card, #fff);
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-link, #4f46e5);
   }
 
   /* Progress */
@@ -713,19 +673,13 @@
     gap: 1rem;
   }
 
+  /* Global .card surface; the list handles spacing, and these lift on hover. */
   .document-card {
-    background: var(--arc-card, #fff);
-    border: 1px solid var(--arc-line, #e8edf3);
-    border-radius: 1rem;
-    padding: 1.5rem;
-    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    margin-bottom: 0;
   }
 
   .document-card:hover {
     transform: translateY(-4px);
-    border-color: var(--arc-hover-border, #c7d2fe);
-    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -763,18 +717,6 @@
     flex-wrap: wrap;
     gap: 0.75rem;
     align-items: center;
-  }
-
-  .badge {
-    display: inline-block;
-    padding: 0.25rem 0.625rem;
-    background: var(--arc-chip-indigo-bg, #e0e7ff);
-    color: var(--arc-chip-indigo-ink, #4338ca);
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
   }
 
   .meta-item {
@@ -829,24 +771,12 @@
     justify-content: center;
   }
 
+  /* Global .btn-secondary chrome, with an arrow-friendly inline-flex box. */
   .back-button-bottom {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    background: var(--arc-card, #fff);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    color: var(--arc-ink, #1e293b);
-    text-decoration: none;
     font-weight: 600;
-    border-radius: 0.65rem;
-    transition: all 0.18s ease;
-  }
-
-  .back-button-bottom:hover {
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-link, #4f46e5);
-    transform: translateY(-2px);
   }
 
   /* Responsive */

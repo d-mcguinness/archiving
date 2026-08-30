@@ -207,17 +207,10 @@ async function updateUser() {
 {/if}
 
 <style>
-  h2 {
-    color: var(--arc-ink, #0f172a);
-  }
+  /* card chrome comes from the global .form-container; only sizing is page-specific */
   .form-container {
     max-width: 400px;
     margin: 2rem auto;
-    background: var(--arc-card, #fff);
-    padding: 2rem;
-    border-radius: 1rem;
-    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
-    border: 1px solid var(--arc-line, #e8edf3);
   }
   .form-group {
     margin-bottom: 1.5rem;

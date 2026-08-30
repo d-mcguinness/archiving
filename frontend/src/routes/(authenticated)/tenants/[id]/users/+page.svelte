@@ -176,7 +176,7 @@
       {/if}
     </div>
     <div class="header-actions">
-      <a href="/tenants/{data.tenantId}/users/create" class="btn-create">+ Create User</a>
+      <a href="/tenants/{data.tenantId}/users/create" class="btn-create btn-secondary">+ Create User</a>
       <button class="btn-primary" on:click={openAddUserDialog}>
         ➕ Add User to Tenant
       </button>
@@ -211,8 +211,8 @@
         </button>
       </div>
     {:else}
-      <div class="table-container">
-        <table class="data-table">
+      <div class="table-container table-card">
+        <table class="data-table arc-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -235,11 +235,11 @@
                 <td>{user.email}</td>
                 <td>{user.age || 'N/A'}</td>
                 <td class="actions-cell">
-                  <a href="/tenants/{data.tenantId}/users/{user.id}" class="btn-action btn-view">
+                  <a href="/tenants/{data.tenantId}/users/{user.id}" class="btn-action btn-view btn-chip indigo">
                     👤 View
                   </a>
                   <button
-                    class="btn-action btn-remove"
+                    class="btn-action btn-remove btn-chip red"
                     on:click={() => removeUserFromTenant(user.id, user.name)}
                   >
                     ✖️ Remove
@@ -257,8 +257,8 @@
 
 <!-- Add User Dialog -->
 {#if showAddUserDialog}
-  <div class="dialog-overlay" on:click={closeAddUserDialog}>
-    <div class="dialog" on:click|stopPropagation>
+  <div class="dialog-overlay modal-overlay" on:click={closeAddUserDialog}>
+    <div class="dialog modal" on:click|stopPropagation>
       <div class="dialog-header">
         <h2>Add User to Tenant</h2>
         <button class="dialog-close" on:click={closeAddUserDialog}>✕</button>
@@ -326,39 +326,7 @@
     flex-shrink: 0;
   }
 
-  .btn-create {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.65rem 1.25rem;
-    background: var(--arc-card, #fff);
-    color: var(--arc-ink, #1e293b);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    border-radius: 0.65rem;
-    text-decoration: none;
-    font-weight: 600;
-    transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
-  }
-
-  .btn-create:hover {
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-link, #4f46e5);
-    transform: translateY(-2px);
-  }
-
-  .btn-back {
-    padding: 0.5rem 1rem;
-    background: var(--arc-chip-slate-bg, #f1f5f9);
-    color: var(--arc-chip-slate-ink, #475569);
-    border-radius: 0.5rem;
-    text-decoration: none;
-    font-weight: 500;
-    transition: background 0.2s;
-  }
-
-  .btn-back:hover {
-    background: var(--arc-chip-slate-hover, #e2e8f0);
-  }
-
+  /* .btn-create uses the global .btn-secondary ghost button from app.css */
   /* .btn-primary inherits the global brand-gradient button styling from app.css */
 
   /* Access Denied */
@@ -400,22 +368,7 @@
     50% { opacity: 0.5; }
   }
 
-  .btn-secondary {
-    padding: 0.65rem 1.25rem;
-    background: var(--arc-card, #fff);
-    color: var(--arc-ink, #1e293b);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    border-radius: 0.65rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
-    box-shadow: none;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-link, #4f46e5);
-  }
+  /* .btn-secondary inherits the global ghost button styling from app.css */
 
   .stats-bar {
     background: var(--arc-card, #fff);
@@ -445,32 +398,12 @@
     font-size: 1.25rem;
   }
 
-  .loading {
-    text-align: center;
-    padding: 4rem 2rem;
-  }
+  /* .loading / .spinner use the global loading pattern from app.css */
 
-  .spinner {
-    width: 3rem;
-    height: 3rem;
-    border: 4px solid var(--arc-line-strong, #e2e8f0);
-    border-top-color: var(--arc-indigo, #6366f1);
-    border-radius: 50%;
-    margin: 0 auto 1rem;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
+  /* .error uses the global alert panel from app.css; only the layout differs here */
   .error {
     text-align: center;
     padding: 2rem;
-    background: var(--arc-alert-red-bg, #fee2e2);
-    border: 1px solid var(--arc-alert-red-border, #fca5a5);
-    border-radius: 0.5rem;
-    color: var(--arc-alert-red-ink, #991b1b);
   }
 
   .empty-state {
@@ -499,41 +432,9 @@
     margin-bottom: 2rem;
   }
 
+  /* Table chrome comes from the global .table-card / .arc-table kit in app.css */
   .table-container {
-    background: var(--arc-card, #fff);
-    border-radius: 1rem;
-    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
     overflow-x: auto;
-    border: 1px solid var(--arc-line, #e8edf3);
-  }
-
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .data-table thead {
-    background: var(--arc-card-2, #f8fafc);
-  }
-
-  .data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 700;
-    color: var(--arc-muted, #64748b);
-    border-bottom: 1px solid var(--arc-line, #e8edf3);
-  }
-
-  .data-table td {
-    padding: 1rem;
-    border-bottom: 1px solid var(--arc-line, #e8edf3);
-  }
-
-  .data-table tbody tr:hover {
-    background: var(--arc-card-2, #f8fafc);
   }
 
   .user-name {
@@ -551,68 +452,13 @@
     gap: 0.5rem;
   }
 
-  .btn-action {
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: none;
-  }
+  /* Row actions use the global .btn-chip kit (indigo / red) from app.css */
 
-  .btn-edit {
-    background: var(--arc-chip-indigo-bg, #e0e7ff);
-    color: var(--arc-chip-indigo-ink, #4338ca);
-  }
-
-  .btn-edit:hover {
-    background: var(--arc-chip-indigo-hover, #c7d2fe);
-  }
-
-  .btn-remove {
-    background: var(--arc-chip-red-bg, #fee2e2);
-    color: var(--arc-chip-red-ink, #991b1b);
-  }
-
-  .btn-remove:hover {
-    background: var(--arc-chip-red-hover, #fecaca);
-  }
-
-  .btn-view {
-    background: var(--arc-chip-indigo-bg, #e0e7ff);
-    color: var(--arc-chip-indigo-ink, #4338ca);
-  }
-
-  .btn-view:hover {
-    background: var(--arc-chip-indigo-hover, #c7d2fe);
-  }
-
-  /* Dialog Styles */
-  .dialog-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--arc-overlay, rgba(0, 0, 0, 0.5));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-
+  /* Dialog Styles — surface comes from the global .modal-overlay / .modal kit */
   .dialog {
-    background: var(--arc-card, #fff);
-    border: 1px solid var(--arc-line, #e8edf3);
-    border-radius: 1rem;
-    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
+    padding: 0;
     max-width: 500px;
     width: 90%;
-    max-height: 90vh;
-    overflow: auto;
   }
 
   .dialog-header {
@@ -654,10 +500,6 @@
 
   .dialog-body {
     padding: 1.5rem;
-  }
-
-  .form-group {
-    margin-bottom: 1rem;
   }
 
   .form-group label {

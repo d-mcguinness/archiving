@@ -204,8 +204,9 @@
   .alert button { background: none; border: none; padding: 0 0.25rem; box-shadow: none; color: inherit; font-size: 1.25rem; cursor: pointer; }
   .alert button:hover { background: none; transform: none; box-shadow: none; }
   .loading-state { display: flex; flex-direction: column; align-items: center; padding: 3rem 2rem; gap: 1rem; }
-  .loading-state .spinner { width: 2.5rem; height: 2.5rem; border: 3px solid var(--arc-line-strong); border-top-color: #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  /* Spinner chrome is the global .spinner; only the size, violet accent and
+     slower sweep are local. */
+  .loading-state .spinner { width: 2.5rem; height: 2.5rem; border-top-color: #8b5cf6; animation: spin 1s linear infinite; }
   .loading-state p { color: var(--arc-muted); font-size: 0.875rem; }
   .form-section { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--arc-line); }
   .form-section:last-of-type { border-bottom: none; }
@@ -226,11 +227,7 @@
   .req { color: #ef4444; font-weight: 600; }
   /* Inputs, selects & textareas are styled by the global app.css rules */
   .form-group textarea { resize: vertical; }
-  .form-actions { display: flex; justify-content: space-between; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--arc-line); }
-  .btn { padding: 0.75rem 2rem; border: none; border-radius: 0.65rem; font-weight: 700; cursor: pointer; transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease; font-size: 0.875rem; }
-  .btn-primary { background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6)); color: white; box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6); }
-  .btn-primary:hover:not(:disabled) { background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed)); transform: translateY(-2px); }
-  .btn-primary:disabled { background: var(--arc-disabled-bg); cursor: not-allowed; transform: none; box-shadow: none; }
-  .btn-secondary { background: var(--arc-card); color: var(--arc-ink); border: 1.5px solid var(--arc-line-strong); box-shadow: none; }
-  .btn-secondary:hover { background: var(--arc-card); border-color: var(--arc-indigo); color: var(--arc-link); transform: none; box-shadow: none; }
+  /* .form-actions, .btn-primary and .btn-secondary come from the global kit
+     (app.css); only this form's wider, smaller button size stays local. */
+  .btn { padding: 0.75rem 2rem; font-size: 0.875rem; }
 </style>

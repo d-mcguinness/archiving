@@ -367,18 +367,10 @@
     padding: 2rem;
   }
 
+  /* .loading and .spinner come from the global kit (app.css); only the
+     column stack under the spinner is page-specific. */
   .loading {
-    display: flex; flex-direction: column; align-items: center;
-    justify-content: center; min-height: 400px; gap: 1rem;
-  }
-  .spinner {
-    border: 4px solid var(--arc-line, #e8edf3); border-top: 4px solid var(--arc-indigo, #6366f1);
-    border-radius: 50%; width: 40px; height: 40px;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) {
-    .spinner { animation: none; }
+    flex-direction: column; min-height: 400px; gap: 1rem;
   }
 
   .page-header { margin-bottom: 2rem; }

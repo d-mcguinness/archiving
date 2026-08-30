@@ -150,7 +150,7 @@
         </div>
         <div class="detail-item">
           <span class="detail-label">Standard:</span>
-          <span class="badge standard-badge">{archive.standard}</span>
+          <span class="badge indigo">{archive.standard}</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">Created:</span>
@@ -187,37 +187,15 @@
     font-size: 2rem;
   }
 
+  /* Layout on top of the global .loading/.spinner kit */
   .loading {
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     min-height: 400px;
   }
 
   .loading p {
     margin-top: 1rem;
     color: var(--arc-muted, #64748b);
-  }
-
-  .spinner {
-    border: 4px solid var(--arc-line-strong, #e2e8f0);
-    border-top: 4px solid var(--arc-indigo, #6366f1);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .spinner {
-      animation: none;
-    }
   }
 
   .empty-state {
@@ -292,25 +270,11 @@
     font-size: 0.875rem;
   }
 
-  .badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
-  .badge.active,
+  /* Archive statuses the global .badge kit does not cover
+     (published is green here, not the global indigo). */
   .badge.published {
     background: var(--arc-chip-green-bg, #dcfce7);
     color: var(--arc-chip-green-ink, #166534);
-  }
-
-  .badge.draft {
-    background: var(--arc-chip-slate-bg, #f1f5f9);
-    color: var(--arc-chip-slate-ink, #475569);
   }
 
   .badge.archived,
@@ -319,54 +283,21 @@
     color: var(--arc-chip-amber-ink, #92400e);
   }
 
-  .standard-badge {
-    background: var(--arc-chip-indigo-bg, #e0e7ff);
-    color: var(--arc-chip-indigo-ink, #4338ca);
-  }
-
   .actions {
     display: flex;
     justify-content: center;
     gap: 1rem;
   }
 
+  /* Wider, larger confirmation buttons on top of the global
+     .btn-secondary / .btn-danger kit. */
   .btn {
     padding: 0.75rem 2rem;
-    border: none;
-    border-radius: 0.65rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
     font-size: 1rem;
   }
 
   .btn:disabled {
     opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .btn-secondary {
-    background: var(--arc-card, #fff);
-    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
-    color: var(--arc-ink, #1e293b);
-    box-shadow: none;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    background: var(--arc-card, #fff);
-    border-color: var(--arc-indigo, #6366f1);
-    color: var(--arc-link, #4f46e5);
-  }
-
-  .btn-danger {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-    box-shadow: 0 10px 30px -8px rgba(220, 38, 38, 0.5);
-  }
-
-  .btn-danger:hover:not(:disabled) {
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    transform: translateY(-2px);
   }
 </style>
 

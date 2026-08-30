@@ -139,18 +139,14 @@
   .alert-error { background: var(--arc-alert-red-bg, #fef2f2); color: var(--arc-alert-red-ink, #dc2626); border: 1px solid var(--arc-alert-red-border, #fecaca); }
   .alert button { background: none; border: none; box-shadow: none; padding: 0; color: inherit; font-size: 1.25rem; cursor: pointer; }
   .alert button:hover { transform: none; box-shadow: none; }
+  /* .spinner comes from the global loading pattern in app.css */
   .loading-state { display: flex; flex-direction: column; align-items: center; padding: 3rem 2rem; gap: 1rem; }
-  .loading-state .spinner { width: 2.5rem; height: 2.5rem; border: 3px solid var(--arc-line-strong, #e2e8f0); border-top-color: var(--arc-indigo, #6366f1); border-radius: 50%; animation: spin 1s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
   .loading-state p { color: var(--arc-muted, #64748b); font-size: 0.875rem; }
   .form-section { margin-bottom: 2rem; }
   .form-group { margin-bottom: 1.25rem; }
   .form-group label { display: flex; align-items: center; gap: 0.375rem; margin-bottom: 0.5rem; color: var(--arc-ink, #0f172a); font-weight: 600; font-size: 0.85rem; }
   .req { color: #ef4444; font-weight: 600; }
   /* inputs inherit the global Arcana input styling from app.css */
-  .form-actions { display: flex; justify-content: space-between; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--arc-line, #e8edf3); }
-  .btn { padding: 0.75rem 2rem; border-radius: 0.65rem; font-weight: 700; cursor: pointer; font-size: 0.875rem; }
-  /* .btn-primary inherits the global brand-gradient button styling from app.css */
-  .btn-secondary { background: var(--arc-card, #fff); color: var(--arc-ink, #1e293b); border: 1.5px solid var(--arc-line-strong, #cbd5e1); box-shadow: none; transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease; }
-  .btn-secondary:hover { background: var(--arc-card, #fff); border-color: var(--arc-indigo, #6366f1); color: var(--arc-link, #4f46e5); }
+  /* .form-actions, .btn-primary and .btn-secondary come from the global kit in app.css */
+  .btn { padding: 0.75rem 2rem; font-size: 0.875rem; }
 </style>

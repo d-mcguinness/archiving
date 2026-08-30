@@ -153,11 +153,9 @@
   .drop-icon { font-size: 2rem; }
   .drop-text { margin: 0; color: var(--arc-body, #475569); font-weight: 500; font-size: 0.9rem; }
   .drop-hint { margin: 0; color: var(--arc-faint, #94a3b8); font-size: 0.75rem; }
-  .spinner { width: 1.5rem; height: 1.5rem; border: 2px solid var(--arc-line-strong, #e2e8f0); border-top-color: var(--arc-indigo, #6366f1); border-radius: 50%; animation: spin 1s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) {
-    .spinner { animation: none; }
-  }
+  /* Compact variant of the global .spinner (2rem / 3px); colors, ring shape,
+     @keyframes spin and the reduced-motion stop all come from app.css. */
+  .spinner { width: 1.5rem; height: 1.5rem; border-width: 2px; animation-duration: 1s; }
   .file-list { width: 100%; display: flex; flex-direction: column; gap: 0.5rem; }
   .file-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: var(--arc-card, #fff); border: 1px solid var(--arc-line, #e8edf3); border-radius: 0.5rem; }
   .file-icon { font-size: 1rem; }
