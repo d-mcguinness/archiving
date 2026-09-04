@@ -1,5 +1,6 @@
-# Use OpenJDK 17 as the base image
-FROM openjdk:17-jdk-slim
+# Build and run on the JDK the pom targets (<java.version> in pom.xml).
+# openjdk:* is deprecated on Docker Hub; eclipse-temurin is its replacement.
+FROM eclipse-temurin:21-jdk
 
 # Set the working directory inside the container
 WORKDIR /app
