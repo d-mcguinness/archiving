@@ -1,0 +1,73 @@
+name: CI
+
+# Gate pull requests (and verify pushes to main) with the backend test suite and
+# a frontend build. Make these required checks in branch protection to enforce it.
+#
+# Deliberately no `paths:` filters. A required check that is skipped by a path
+# filter never reports a status, so a PR touching only unfiltered files sits
+# "Expected — waiting for status" forever and cannot merge. Both jobs are cheap
+# enough to always run.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A new push to the same branch makes the in-flight run obsolete.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Java 21 · Maven)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # Uses ./mvnw, not the runner's `mvn`, so CI builds with the same Maven
+      # version as everyone's machine. ubuntu-latest ships a working Docker
+      # daemon, which Testcontainers needs: FlywaySchemaValidationTest boots a
+      # real Postgres to prove the migrations and Hibernate's `validate` agree —
+      # the one thing the H2 tests cannot check.
+      - name: Test
+        run: ./mvnw -B test
+
+  frontend:
+    name: Frontend (Node 22)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      # Informational only: svelte-check currently reports 62 errors and 90
+      # warnings across 29 files, all pre-existing. Failing on that would block
+      # every PR from day one, so surface it without gating. Flip this to a hard
+      # failure once the count reaches zero.
+      - name: Type check (informational)
+        run: npm run check
+        continue-on-error: true
+
+      - name: Build
+        run: npm run build
