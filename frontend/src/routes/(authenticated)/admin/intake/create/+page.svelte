@@ -4,7 +4,7 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { client } from '$lib/apollo';
-  import { GET_ALL_USERS, CREATE_INTAKE, GET_ALL_INTAKES_V2, GET_ALL_ARCHIVES, GET_ARCHIVES_BY_TENANT } from '$lib/graphql/queries';
+  import { GET_ALL_USERS, CREATE_INTAKE, GET_ALL_INTAKES_V2, GET_ALL_ARCHIVES, GET_ARCHIVES_BY_TENANT, GET_ALL_TENANTS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
   import { standards, graphqlToKey } from '$lib/standards';
@@ -20,7 +20,9 @@
   let fieldValues: Record<string, string> = {};
   let users: any[] = [];
   let archives: any[] = [];
+  let tenants: any[] = [];
   let selectedUserId = '';
+  let selectedTenantId = '';
   let selectedArchiveId = '';
   let sipTitle = '';
   let sipDescription = '';
@@ -38,13 +40,32 @@
   $: requiredFields = intakeEntityDef?.fields?.filter((f: any) => f.required) || [];
   $: optionalFields = intakeEntityDef?.fields?.filter((f: any) => !f.required) || [];
 
-  // Filter archives by the standard from the URL query param
-  $: filteredArchives = filterStandard
-    ? archives.filter((a: any) => {
-        const match = standards.find(s => s.key === filterStandard);
-        return match ? a.standard === match.graphql : true;
-      })
-    : archives;
+  // Only admins choose a tenant; a TENANT-role user's archives are already scoped.
+  $: isAdmin = $auth?.role === 'ADMIN';
+
+  // Narrow the archive list by the selected tenant, then by the standard from the
+  // URL query param. Reactive, so changing the tenant re-filters the select at once.
+  $: filteredArchives = archives.filter((a: any) => {
+    if (selectedTenantId && String(a.tenantId) !== String(selectedTenantId)) return false;
+    if (filterStandard) {
+      const match = standards.find(s => s.key === filterStandard);
+      if (match && a.standard !== match.graphql) return false;
+    }
+    return true;
+  });
+
+  async function onTenantSelect() {
+    // Drop a selection that the new tenant no longer offers, and reset everything
+    // derived from it. Checked against `archives` rather than `filteredArchives`
+    // so it does not depend on when the reactive statement above re-runs.
+    if (!selectedArchiveId) return;
+    const current = archives.find((a: any) => a.id === selectedArchiveId);
+    const stillVisible = current && (!selectedTenantId || String(current.tenantId) === String(selectedTenantId));
+    if (!stillVisible) {
+      selectedArchiveId = '';
+      await onArchiveSelect();
+    }
+  }
 
   async function onArchiveSelect() {
     if (!selectedArchiveId) {
@@ -91,16 +112,20 @@
     loading = true;
     try {
       const authState = get(auth);
-      const [usersResult, archivesResult] = await Promise.all([
+      const isTenantScoped = authState.role === 'TENANT' && authState.tenantId;
+      const [usersResult, archivesResult, tenantsResult] = await Promise.all([
         client.query({ query: GET_ALL_USERS }),
-        authState.role === 'TENANT' && authState.tenantId
+        isTenantScoped
           ? client.query({ query: GET_ARCHIVES_BY_TENANT, variables: { tenantId: authState.tenantId.toString() } })
-          : client.query({ query: GET_ALL_ARCHIVES })
+          : client.query({ query: GET_ALL_ARCHIVES }),
+        // Only admins pick a tenant, so only they need the list.
+        isTenantScoped ? Promise.resolve(null) : client.query({ query: GET_ALL_TENANTS })
       ]);
       users = usersResult?.data?.getAllUsers || [];
-      archives = (authState.role === 'TENANT' && authState.tenantId)
+      archives = isTenantScoped
         ? archivesResult?.data?.getArchivesByTenant || []
         : archivesResult?.data?.getAllArchives || [];
+      tenants = tenantsResult?.data?.getAllTenants || [];
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to load data';
     } finally {
@@ -118,6 +143,8 @@
     if (qArchiveId) {
       const match = archives.find((a: any) => a.id === qArchiveId);
       if (match) {
+        // Show the owning tenant rather than leaving the select on "All tenants".
+        if (match.tenantId != null) selectedTenantId = String(match.tenantId);
         selectedArchiveId = qArchiveId;
         await onArchiveSelect();
       }
@@ -448,6 +475,21 @@
       <section class="form-section">
         <h2 class="section-title">1. Select Archive</h2>
 
+        {#if isAdmin}
+          <div class="form-group">
+            <label for="tenantSelect">Tenant</label>
+            <select id="tenantSelect" bind:value={selectedTenantId} on:change={onTenantSelect}>
+              <option value="">-- All tenants --</option>
+              {#each tenants as tenant}
+                <option value={String(tenant.id)}>
+                  {tenant.displayName || tenant.name}{tenant.domain ? ` (${tenant.domain})` : ''}
+                </option>
+              {/each}
+            </select>
+            <span class="field-hint">Narrows the archive list below to a single tenant.</span>
+          </div>
+        {/if}
+
         <div class="form-group">
           <label for="archiveSelect">Archive for Submission <span class="req">*</span></label>
           <select id="archiveSelect" bind:value={selectedArchiveId} on:change={onArchiveSelect} required>
@@ -458,7 +500,9 @@
               </option>
             {/each}
           </select>
-          {#if filterStandard}
+          {#if selectedTenantId && filteredArchives.length === 0}
+            <span class="field-hint">No archives for this tenant{filterStandard ? ` using the ${filterStandard} standard` : ''}. <button type="button" class="link-btn" on:click={() => { selectedTenantId = ''; onTenantSelect(); }}>Show all tenants</button></span>
+          {:else if filterStandard}
             <span class="field-hint">Showing archives using the {filterStandard} standard. <button type="button" class="link-btn" on:click={() => filterStandard = null}>Show all</button></span>
           {:else}
             <span class="field-hint">The standard, title, and description will be derived from the selected archive.</span>
