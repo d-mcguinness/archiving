@@ -169,22 +169,22 @@
         <span class="stat-num">{stats.totalArchives}</span>
         <span class="stat-label">Archives</span>
       </a>
-      <div class="stat-card">
+      <a href="/admin/intake" class="stat-card">
         <span class="stat-num">{totalIntakes}</span>
         <span class="stat-label">Intakes</span>
-      </div>
-      <div class="stat-card">
+      </a>
+      <a href="/admin/preservation" class="stat-card">
         <span class="stat-num">{totalPreservations}</span>
         <span class="stat-label">Preservations</span>
-      </div>
-      <div class="stat-card">
+      </a>
+      <a href="/admin/release" class="stat-card">
         <span class="stat-num">{totalReleases}</span>
         <span class="stat-label">Releases</span>
-      </div>
-      <div class="stat-card">
+      </a>
+      <a href="/admin/documents" class="stat-card">
         <span class="stat-num">{totalDocuments}</span>
         <span class="stat-label">Documents</span>
-      </div>
+      </a>
     </div>
 
     <div class="grid-2col">
