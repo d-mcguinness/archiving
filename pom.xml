@@ -116,6 +116,16 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
             <version>2.20.26</version>
+                <!-- apache-client -> httpclient drags in commons-logging, which clashes
+                 with Spring's spring-jcl bridge ("please remove commons-logging.jar
+                 from classpath"). spring-jcl already provides the org.apache.commons
+                 .logging API and routes it to Logback, so drop the real one. -->
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Stripe metered billing. API version >= 2025-03-31.basil (legacy usage
              records removed); 33.x is the current stable line. -->
