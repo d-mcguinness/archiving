@@ -124,10 +124,10 @@
   </div>
 
   <div class="card-actions">
-    <button class="btn btn-edit" on:click={handleEdit}>
+    <button class="btn btn-edit btn-primary" on:click={handleEdit}>
       ✏️ Edit
     </button>
-    <button class="btn btn-delete" on:click={handleDelete}>
+    <button class="btn btn-delete btn-danger" on:click={handleDelete}>
       🗑️ Delete
     </button>
   </div>
@@ -135,23 +135,24 @@
 
 <style>
   .tenant-card {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--arc-card, #fff);
+    border: 1px solid var(--arc-line, #e8edf3);
     border-radius: 1rem;
     overflow: hidden;
-    transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
   }
 
   .tenant-card:hover {
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
+    border-color: var(--arc-hover-border, #c7d2fe);
+    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
+    transform: translateY(-4px);
   }
 
   .card-header {
     padding: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-bottom: 1px solid var(--arc-line, #e8edf3);
+    background: var(--arc-ground, #f8fafc);
   }
 
   .title-section {
@@ -162,15 +163,15 @@
     margin: 0 0 0.25rem 0;
     font-size: 1.25rem;
     font-weight: 700;
-    color: #1a202c;
+    color: var(--arc-ink, #0f172a);
   }
 
   .tenant-domain {
     margin: 0;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
     font-family: monospace;
-    background: #f1f5f9;
+    background: var(--arc-card-2, #f1f5f9);
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
     display: inline-block;
@@ -182,27 +183,20 @@
     flex-wrap: wrap;
   }
 
-  .badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
+  /* .badge base comes from the global kit; these tenant-specific
+     status/plan hues are not part of the global status list. */
+  .status-active { background: var(--arc-chip-green-bg, #dcfce7); color: var(--arc-chip-green-ink, #166534); }
+  .status-inactive { background: var(--arc-chip-slate-bg, #f1f5f9); color: var(--arc-chip-slate-ink, #475569); }
+  .status-suspended { background: var(--arc-chip-red-bg, #fee2e2); color: var(--arc-chip-red-ink, #991b1b); }
+  .status-pending { background: var(--arc-chip-amber-bg, #fef3c7); color: var(--arc-chip-amber-ink, #92400e); }
+  .status-trial { background: var(--arc-chip-indigo-bg, #e0e7ff); color: var(--arc-chip-indigo-ink, #4338ca); }
+  .status-expired { background: var(--arc-chip-red-bg, #fecaca); color: var(--arc-chip-red-ink, #dc2626); }
 
-  .status-active { background: #dcfce7; color: #166534; }
-  .status-inactive { background: #f3f4f6; color: #374151; }
-  .status-suspended { background: #fed7d7; color: #c53030; }
-  .status-pending { background: #fef3c7; color: #92400e; }
-  .status-trial { background: #dbeafe; color: #1d4ed8; }
-  .status-expired { background: #fecaca; color: #dc2626; }
-
-  .plan-free { background: #f3f4f6; color: #374151; }
-  .plan-basic { background: #dbeafe; color: #1e40af; }
-  .plan-professional { background: #dcfce7; color: #166534; }
-  .plan-enterprise { background: #fef3c7; color: #92400e; }
-  .plan-custom { background: #e9d5ff; color: #7c2d12; }
+  .plan-free { background: var(--arc-chip-slate-bg, #f1f5f9); color: var(--arc-chip-slate-ink, #475569); }
+  .plan-basic { background: var(--arc-chip-indigo-bg, #e0e7ff); color: var(--arc-chip-indigo-ink, #4338ca); }
+  .plan-professional { background: var(--arc-chip-green-bg, #dcfce7); color: var(--arc-chip-green-ink, #166534); }
+  .plan-enterprise { background: var(--arc-chip-amber-bg, #fef3c7); color: var(--arc-chip-amber-ink, #92400e); }
+  .plan-custom { background: var(--arc-chip-violet-bg, #ede9fe); color: var(--arc-chip-violet-ink, #6d28d9); }
 
   .card-body {
     padding: 1.5rem;
@@ -210,12 +204,12 @@
 
   .description {
     margin: 0 0 1.5rem 0;
-    color: #4b5563;
+    color: var(--arc-body, #334155);
     line-height: 1.6;
   }
 
   .description.placeholder {
-    color: #9ca3af;
+    color: var(--arc-faint, #94a3b8);
     font-style: italic;
   }
 
@@ -230,7 +224,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 0;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--arc-line, #f1f5f9);
   }
 
   .detail-item:last-child {
@@ -239,29 +233,29 @@
 
   .label {
     font-weight: 600;
-    color: #6b7280;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
   }
 
   .value {
-    color: #1f2937;
+    color: var(--arc-body, #334155);
     font-size: 0.875rem;
     text-align: right;
     word-break: break-word;
   }
 
   .settings-summary {
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid var(--arc-line, #e8edf3);
     padding-top: 1rem;
   }
 
   .settings-summary h4 {
     margin: 0 0 0.75rem 0;
     font-size: 0.875rem;
-    font-weight: 600;
-    color: #374151;
+    font-weight: 700;
+    color: var(--arc-muted, #64748b);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
   }
 
   .settings-grid {
@@ -277,55 +271,41 @@
   }
 
   .setting-label {
-    color: #6b7280;
+    color: var(--arc-muted, #64748b);
     font-weight: 500;
   }
 
   .setting-value {
-    color: #1f2937;
+    color: var(--arc-body, #334155);
     font-weight: 600;
   }
 
   .card-actions {
     padding: 1rem 1.5rem;
-    background: #f8fafc;
-    border-top: 1px solid #e2e8f0;
+    background: var(--arc-ground, #f8fafc);
+    border-top: 1px solid var(--arc-line, #e8edf3);
     display: flex;
     gap: 0.75rem;
     justify-content: flex-end;
   }
 
+  /* Colour/hover come from the global .btn-primary / .btn-danger kit;
+     card-footer actions are just a size down from the default. */
   .btn {
     padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 0.5rem;
     font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
   }
 
-  .btn-edit {
-    background: #3b82f6;
-    color: white;
-  }
-
-  .btn-edit:hover {
-    background: #2563eb;
-    transform: translateY(-1px);
-  }
-
-  .btn-delete {
-    background: #ef4444;
-    color: white;
-  }
-
-  .btn-delete:hover {
-    background: #dc2626;
-    transform: translateY(-1px);
+  @media (prefers-reduced-motion: reduce) {
+    .tenant-card, .btn {
+      transition: none;
+    }
+    .tenant-card:hover, .card-actions .btn:hover {
+      transform: none;
+    }
   }
 
   @media (max-width: 480px) {

@@ -76,13 +76,13 @@ public class ArchiveController extends BaseGraphQlController {
     }
 
     @QueryMapping
-    public List<Archive> getAllSips() {
-        return archiveService.getAllSips();
+    public List<Archive> getAllIntakes() {
+        return archiveService.getAllIntakes();
     }
 
     @QueryMapping
-    public List<Archive> getSipsByTenant(@Argument Long tenantId) {
-        return archiveService.getSipsByTenant(tenantId);
+    public List<Archive> getIntakesByTenant(@Argument Long tenantId) {
+        return archiveService.getIntakesByTenant(tenantId);
     }
 
     // New query methods for user assignments

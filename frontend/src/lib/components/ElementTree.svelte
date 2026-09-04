@@ -25,7 +25,7 @@
   <div class="element-card" class:nested={depth > 0}>
     <div class="element-card-header">
       <div class="element-card-info">
-        <span class="element-entity-badge">{element.entityName}</span>
+        <span class="element-entity-badge badge indigo">{element.entityName}</span>
         <strong class="element-title">{element.title}</strong>
         <span class="element-id">({element.elementIdentifier})</span>
       </div>
@@ -71,16 +71,18 @@
 
 <style>
   .element-card {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
+    background: var(--arc-card, #fff);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 0.75rem;
     padding: 1rem;
     margin-bottom: 0.75rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
   }
 
   .element-card.nested {
-    background: #f8fafc;
-    border-color: #e2e8f0;
+    background: var(--arc-ground, #f8fafc);
+    border-color: var(--arc-line-strong, #e2e8f0);
+    box-shadow: none;
   }
 
   .element-card-header {
@@ -98,24 +100,20 @@
     flex-wrap: wrap;
   }
 
+  /* Compact variant of the global .badge pill (tint comes from .badge.indigo). */
   .element-entity-badge {
     font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #6366f1;
-    background: #eef2ff;
-    padding: 0.2rem 0.5rem;
-    border-radius: 0.25rem;
+    padding: 0.2rem 0.6rem;
   }
 
   .element-title {
-    color: #0f172a;
+    color: var(--arc-ink, #0f172a);
     font-size: 0.95rem;
   }
 
   .element-id {
-    color: #94a3b8;
+    color: var(--arc-faint, #94a3b8);
     font-size: 0.75rem;
   }
 
@@ -128,33 +126,35 @@
     padding: 0.25rem 0.6rem;
     font-size: 0.75rem;
     border: none;
-    border-radius: 0.25rem;
+    border-radius: 0.4rem;
+    box-shadow: none;
+    transform: none;
     cursor: pointer;
     font-weight: 600;
-    transition: background 0.15s;
+    transition: background 0.18s ease;
   }
 
   .btn-add {
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: var(--arc-chip-indigo-bg, #e0e7ff);
+    color: var(--arc-chip-indigo-ink, #4338ca);
   }
 
   .btn-add:hover {
-    background: #bfdbfe;
+    background: var(--arc-chip-indigo-hover, #c7d2fe);
   }
 
   .btn-delete {
-    background: #fee2e2;
-    color: #dc2626;
+    background: var(--arc-chip-red-bg, #fee2e2);
+    color: var(--arc-chip-red-ink, #991b1b);
   }
 
   .btn-delete:hover {
-    background: #fecaca;
+    background: var(--arc-chip-red-hover, #fecaca);
   }
 
   .element-description {
     margin: 0.5rem 0 0;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.825rem;
     line-height: 1.4;
   }
@@ -171,17 +171,17 @@
   }
 
   .ef-label {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-weight: 600;
   }
 
   .ef-value {
-    color: #0f172a;
+    color: var(--arc-ink, #0f172a);
   }
 
   .nested-children {
     margin-top: 0.75rem;
     padding-left: 1rem;
-    border-left: 2px solid #e2e8f0;
+    border-left: 2px solid var(--arc-hover-border, #c7d2fe);
   }
 </style>

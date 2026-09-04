@@ -13,9 +13,9 @@ import java.util.Map;
 /**
  * Shared serialisation + upload pipeline for SIP/AIP/DIP generators.
  *
- * <P> the package entity (Sip, Aip, Dip)
+ * <P> the package entity (Intake, Preservation, Release)
  * <S> the value passed to {@link #buildPayload} — for SIP this is a
- *     SipSnapshot; for AIP/DIP it's the entity itself.
+ *     IntakeSnapshot; for AIP/DIP it's the entity itself.
  *
  * Subclasses implement EITHER {@link #buildPayload} (full control over bytes,
  * filename, content-type — use this for XML/ZIP/binary output) OR the

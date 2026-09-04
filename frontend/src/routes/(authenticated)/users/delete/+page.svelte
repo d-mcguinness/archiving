@@ -39,6 +39,7 @@ function handleCancel() {
 }
 </script>
 
+<span class="eyebrow">Users</span>
 <h2>Delete User</h2>
 {#if userId}
   <p>Are you sure you want to delete this user?</p>
@@ -46,53 +47,28 @@ function handleCancel() {
     <div class="error">Error: {error}</div>
   {/if}
   <div class="actions">
-    <button on:click={handleDelete} disabled={deleting} class="delete-btn">
+    <button on:click={handleDelete} disabled={deleting} class="delete-btn btn-danger">
       {deleting ? 'Deleting...' : 'Delete'}
     </button>
-    <button on:click={handleCancel} disabled={deleting} class="cancel-btn">Cancel</button>
+    <button on:click={handleCancel} disabled={deleting} class="cancel-btn btn-secondary">Cancel</button>
   </div>
 {:else}
   <p>No user selected for deletion.</p>
 {/if}
 
 <style>
+  /* Buttons use the global .btn-danger / .btn-secondary kit. */
   .actions {
     margin-top: 2rem;
     display: flex;
     gap: 1rem;
   }
-  .delete-btn {
-    background: #f44336;
-    color: white;
-    padding: 0.5rem 1.5rem;
-    border-radius: 0.25rem;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .delete-btn:disabled {
-    background: #e57373;
-    cursor: not-allowed;
-  }
-  .delete-btn:hover:not(:disabled) {
-    background: #c62828;
-  }
-  .cancel-btn {
-    background: #e0e0e0;
-    color: #333;
-    padding: 0.5rem 1.5rem;
-    border-radius: 0.25rem;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .cancel-btn:hover:not(:disabled) {
-    background: #bdbdbd;
-  }
-  .error {
-    color: #f44336;
-    margin-top: 1rem;
+  @media (prefers-reduced-motion: reduce) {
+    .delete-btn, .cancel-btn {
+      transition: none;
+    }
+    .delete-btn:hover:not(:disabled) {
+      transform: none;
+    }
   }
 </style>

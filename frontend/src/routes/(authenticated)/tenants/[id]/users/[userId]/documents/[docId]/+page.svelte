@@ -197,7 +197,7 @@
       <p>Loading document...</p>
     </div>
   {:else if error}
-    <div class="error-msg">❌ {error}</div>
+    <div class="error-msg error">❌ {error}</div>
   {:else if doc}
     <Breadcrumb
       context={{ tenantId: data.tenantId, userId: data.userId }}
@@ -206,15 +206,16 @@
 
     <div class="page-header">
       <div class="header-content">
+        <span class="eyebrow">Document</span>
         <h1>{doc.title || doc.fileName}</h1>
-        <span class="status-badge status-{doc.status?.toLowerCase()}">{doc.status}</span>
+        <span class="status-badge badge status-{doc.status?.toLowerCase()}">{doc.status}</span>
       </div>
       <div class="header-actions">
         <button class="btn-download" on:click={handleDownload}>📥 Download</button>
         {#if !editing}
-          <button class="btn-edit" on:click={startEdit}>✏️ Edit</button>
+          <button class="btn-edit btn-chip indigo" on:click={startEdit}>✏️ Edit</button>
         {/if}
-        <button class="btn-delete" on:click={handleDelete}>🗑️ Delete</button>
+        <button class="btn-delete btn-chip red" on:click={handleDelete}>🗑️ Delete</button>
       </div>
     </div>
 
@@ -270,7 +271,7 @@
           <div class="info-item">
             <span class="info-label">Status</span>
             <span class="info-value">
-              <span class="status-badge status-{doc.status?.toLowerCase()}">{doc.status}</span>
+              <span class="status-badge badge status-{doc.status?.toLowerCase()}">{doc.status}</span>
             </span>
           </div>
           <div class="info-item">
@@ -293,10 +294,10 @@
               <span class="info-value mono">{doc.archiveId}</span>
             </div>
           {/if}
-          {#if doc.sipId}
+          {#if doc.intakeId}
             <div class="info-item">
-              <span class="info-label">SIP ID</span>
-              <span class="info-value mono">{doc.sipId}</span>
+              <span class="info-label">Intake ID</span>
+              <span class="info-value mono">{doc.intakeId}</span>
             </div>
           {/if}
         </div>
@@ -317,32 +318,13 @@
     justify-content: center; min-height: 400px; text-align: center;
   }
   .access-denied-icon { font-size: 5rem; margin-bottom: 1.5rem; }
-  .access-denied h1 { margin: 0; color: #1e293b; }
+  .access-denied h1 { margin: 0; color: var(--arc-ink, #0f172a); }
 
   .loading {
     display: flex; flex-direction: column; align-items: center;
     justify-content: center; min-height: 400px; gap: 1rem;
   }
-  .spinner {
-    border: 4px solid #f3f4f6; border-top: 4px solid #8b5cf6;
-    border-radius: 50%; width: 40px; height: 40px;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .error-msg {
-    background: #fee2e2; color: #991b1b; padding: 1rem;
-    border-radius: 0.5rem; border: 1px solid #fca5a5;
-  }
-
-  .breadcrumb {
-    display: flex; align-items: center; gap: 0.5rem;
-    margin-bottom: 1.5rem; font-size: 0.875rem; flex-wrap: wrap;
-  }
-  .breadcrumb a { color: #3b82f6; text-decoration: none; font-weight: 500; }
-  .breadcrumb a:hover { color: #2563eb; }
-  .sep { color: #94a3b8; }
-  .breadcrumb > span:last-child { color: #64748b; }
+  /* .spinner and the .error alert panel come from the global kit in app.css */
 
   .page-header {
     display: flex; justify-content: space-between; align-items: flex-start;
@@ -350,30 +332,28 @@
   }
   .header-content { flex: 1; }
   .page-header h1 {
-    margin: 0 0 0.5rem; color: #1e293b; font-size: 1.75rem;
+    margin: 0 0 0.5rem; color: var(--arc-ink, #0f172a); font-size: 1.75rem;
     word-break: break-word;
   }
 
   .header-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
 
+  /* .btn-download inherits the global brand-gradient button styling from app.css;
+     .btn-edit / .btn-delete use the global .btn-chip indigo / red kit. All three
+     share one size in this header row. */
   .btn-download, .btn-edit, .btn-delete {
-    padding: 0.6rem 1rem; border: none; border-radius: 0.5rem;
-    font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: background 0.2s;
+    padding: 0.6rem 1rem; border-radius: 0.65rem;
+    font-weight: 600; font-size: 0.85rem;
   }
-  .btn-download { background: #3b82f6; color: white; }
-  .btn-download:hover { background: #2563eb; }
-  .btn-edit { background: #dbeafe; color: #1e40af; }
-  .btn-edit:hover { background: #bfdbfe; }
-  .btn-delete { background: #fee2e2; color: #dc2626; }
-  .btn-delete:hover { background: #fecaca; }
 
   .panel {
-    background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem;
+    background: var(--arc-card, #fff); border: 1px solid var(--arc-line, #e8edf3); border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
     padding: 1.5rem; margin-bottom: 1.5rem;
   }
   .panel h2 {
-    margin: 0 0 1.25rem; font-size: 1.1rem; color: #1e293b;
-    padding-bottom: 0.75rem; border-bottom: 1px solid #f1f5f9;
+    margin: 0 0 1.25rem; font-size: 1.1rem; color: var(--arc-ink, #0f172a);
+    padding-bottom: 0.75rem; border-bottom: 1px solid var(--arc-line, #e8edf3);
   }
 
   .info-grid {
@@ -382,51 +362,32 @@
   }
   .info-item { display: flex; flex-direction: column; gap: 0.25rem; }
   .info-label {
-    font-size: 0.7rem; font-weight: 600; color: #64748b;
+    font-size: 0.7rem; font-weight: 600; color: var(--arc-muted, #64748b);
     text-transform: uppercase; letter-spacing: 0.05em;
   }
-  .info-value { font-size: 0.95rem; color: #1e293b; }
-  .mono { font-family: monospace; color: #475569; font-size: 0.85rem; }
+  .info-value { font-size: 0.95rem; color: var(--arc-ink, #0f172a); }
+  .mono { font-family: monospace; color: var(--arc-body, #475569); font-size: 0.85rem; }
 
-  .status-badge {
-    display: inline-block; padding: 0.2rem 0.6rem; border-radius: 0.25rem;
-    font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
-  }
-  .status-active { background: #dcfce7; color: #166534; }
-  .status-archived { background: #f3f4f6; color: #4b5563; }
-  .status-deleted { background: #fee2e2; color: #991b1b; }
-  .status-pending_review { background: #fef3c7; color: #92400e; }
-  .status-approved { background: #dbeafe; color: #1e40af; }
-  .status-rejected { background: #fee2e2; color: #991b1b; }
+  /* .status-badge pill chrome comes from the global .badge kit; the hues below
+     cover document statuses the global kit doesn't define. */
+  .status-active { background: var(--arc-chip-green-bg, #dcfce7); color: var(--arc-chip-green-ink, #166534); }
+  .status-archived { background: var(--arc-chip-slate-bg, #f1f5f9); color: var(--arc-chip-slate-ink, #475569); }
+  .status-deleted { background: var(--arc-chip-red-bg, #fee2e2); color: var(--arc-chip-red-ink, #991b1b); }
+  .status-pending_review { background: var(--arc-chip-amber-bg, #fef3c7); color: var(--arc-chip-amber-ink, #92400e); }
+  .status-approved { background: var(--arc-chip-indigo-bg, #e0e7ff); color: var(--arc-chip-indigo-ink, #4338ca); }
+  .status-rejected { background: var(--arc-chip-red-bg, #fee2e2); color: var(--arc-chip-red-ink, #991b1b); }
 
-  .form-group { margin-bottom: 1rem; }
   .form-group label {
     display: block; margin-bottom: 0.35rem;
-    font-weight: 600; color: #475569; font-size: 0.85rem;
+    font-weight: 600; color: var(--arc-body, #475569); font-size: 0.85rem;
   }
-  .form-group input, .form-group textarea, .form-group select {
-    width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1;
-    border-radius: 0.375rem; font-size: 0.95rem; box-sizing: border-box;
-  }
+  /* inputs, selects and textareas inherit the global Arcana input styling from app.css */
   .form-group textarea { resize: vertical; }
-  .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-    outline: none; border-color: #8b5cf6;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-  }
   .form-group input:disabled, .form-group textarea:disabled, .form-group select:disabled {
-    background: #f1f5f9; cursor: not-allowed;
+    background: var(--arc-card-2, #f1f5f9); cursor: not-allowed;
   }
 
-  .form-actions { display: flex; gap: 0.5rem; margin-top: 1.25rem; }
-  .btn-primary, .btn-secondary {
-    padding: 0.6rem 1.2rem; border: none; border-radius: 0.375rem;
-    font-weight: 600; cursor: pointer; transition: all 0.2s;
-  }
-  .btn-primary { background: #8b5cf6; color: white; }
-  .btn-primary:hover:not(:disabled) { background: #7c3aed; }
-  .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
-  .btn-secondary { background: #e2e8f0; color: #475569; }
-  .btn-secondary:hover:not(:disabled) { background: #cbd5e1; }
+  /* .form-actions, .btn-primary and .btn-secondary come from the global kit in app.css */
 
   @media (max-width: 640px) {
     .page-header { flex-direction: column; }

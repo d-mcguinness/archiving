@@ -4,7 +4,7 @@
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
   import { authHeaders, API_BASE } from '$lib/api';
-  import { GET_DASHBOARD_STATS, GET_ALL_TENANTS, GET_ALL_USERS, GET_ALL_SIPS_V2, GET_ALL_AIPS, GET_ALL_DIPS } from '$lib/graphql/queries';
+  import { GET_DASHBOARD_STATS, GET_ALL_TENANTS, GET_ALL_USERS, GET_ALL_INTAKES_V2, GET_ALL_PRESERVATIONS, GET_ALL_RELEASES } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
@@ -19,14 +19,14 @@
     archivedArchives: 0,
   };
 
-  let totalSips = 0;
-  let totalAips = 0;
-  let totalDips = 0;
+  let totalIntakes = 0;
+  let totalPreservations = 0;
+  let totalReleases = 0;
   let totalDocuments = 0;
 
   let tenants: any[] = [];
   let recentUsers: any[] = [];
-  let recentSips: any[] = [];
+  let recentIntakes: any[] = [];
 
   // Status breakdowns
   let sipStatuses: Record<string, number> = {};
@@ -51,9 +51,9 @@
         client.query({ query: GET_DASHBOARD_STATS, fetchPolicy: 'network-only' }),
         client.query({ query: GET_ALL_TENANTS, fetchPolicy: 'network-only' }),
         client.query({ query: GET_ALL_USERS, fetchPolicy: 'network-only' }),
-        client.query({ query: GET_ALL_SIPS_V2, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAllSipsV2: [] } })),
-        client.query({ query: GET_ALL_AIPS, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAllAips: [] } })),
-        client.query({ query: GET_ALL_DIPS, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAllDips: [] } })),
+        client.query({ query: GET_ALL_INTAKES_V2, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAllIntakesV2: [] } })),
+        client.query({ query: GET_ALL_PRESERVATIONS, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAllPreservations: [] } })),
+        client.query({ query: GET_ALL_RELEASES, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAllReleases: [] } })),
         fetch(`${API_BASE}/api/documents?role=ADMIN`, { headers: { ...authHeaders() } }).then(r => r.json()).catch(() => ({ documents: [] })),
       ]);
 
@@ -72,17 +72,17 @@
       tenants = tenantsResult?.data?.getAllTenants || [];
       recentUsers = (usersResult?.data?.getAllUsers || []).slice(0, 5);
 
-      const sips = sipsResult?.data?.getAllSipsV2 || [];
-      totalSips = sips.length;
-      recentSips = sips.slice(0, 5);
+      const sips = sipsResult?.data?.getAllIntakesV2 || [];
+      totalIntakes = sips.length;
+      recentIntakes = sips.slice(0, 5);
       sipStatuses = countBy(sips, 'status');
 
-      const aips = aipsResult?.data?.getAllAips || [];
-      totalAips = aips.length;
+      const aips = aipsResult?.data?.getAllPreservations || [];
+      totalPreservations = aips.length;
       aipStatuses = countBy(aips, 'status');
 
-      const dips = dipsResult?.data?.getAllDips || [];
-      totalDips = dips.length;
+      const dips = dipsResult?.data?.getAllReleases || [];
+      totalReleases = dips.length;
       dipStatuses = countBy(dips, 'status');
 
       totalDocuments = docsResult?.documents?.length || docsResult?.count || 0;
@@ -113,7 +113,7 @@
 
   function statusColor(status: string): string {
     const map: Record<string, string> = {
-      DRAFT: '#f59e0b', SUBMITTED: '#3b82f6', VALIDATED: '#06b6d4',
+      DRAFT: '#f59e0b', SUBMITTED: '#6366f1', VALIDATED: '#06b6d4',
       ACCEPTED: '#10b981', REJECTED: '#ef4444', ACTIVE: '#10b981',
       ARCHIVED: '#64748b', PUBLISHED: '#10b981', PENDING: '#f59e0b',
     };
@@ -122,7 +122,7 @@
 
   function planColor(plan: string): string {
     const map: Record<string, string> = {
-      FREE: '#9ca3af', BASIC: '#3b82f6', PROFESSIONAL: '#6366f1',
+      FREE: '#94a3b8', BASIC: '#06b6d4', PROFESSIONAL: '#6366f1',
       ENTERPRISE: '#8b5cf6', CUSTOM: '#f59e0b',
     };
     return map[plan] || '#94a3b8';
@@ -130,8 +130,8 @@
 
   function tenantStatusColor(status: string): string {
     const map: Record<string, string> = {
-      ACTIVE: '#10b981', INACTIVE: '#6b7280', SUSPENDED: '#ef4444',
-      TRIAL: '#3b82f6', PENDING_ACTIVATION: '#f59e0b',
+      ACTIVE: '#10b981', INACTIVE: '#64748b', SUSPENDED: '#ef4444',
+      TRIAL: '#6366f1', PENDING_ACTIVATION: '#f59e0b',
     };
     return map[status] || '#94a3b8';
   }
@@ -150,6 +150,7 @@
   {:else}
     <Breadcrumb items={[{ label: 'Dashboard' }]} />
     <div class="page-header">
+      <span class="eyebrow">Admin console</span>
       <h1>Admin Dashboard</h1>
       <p class="subtitle">System-wide overview and statistics</p>
     </div>
@@ -169,16 +170,16 @@
         <span class="stat-label">Archives</span>
       </a>
       <div class="stat-card">
-        <span class="stat-num">{totalSips}</span>
-        <span class="stat-label">SIPs</span>
+        <span class="stat-num">{totalIntakes}</span>
+        <span class="stat-label">Intakes</span>
       </div>
       <div class="stat-card">
-        <span class="stat-num">{totalAips}</span>
-        <span class="stat-label">AIPs</span>
+        <span class="stat-num">{totalPreservations}</span>
+        <span class="stat-label">Preservations</span>
       </div>
       <div class="stat-card">
-        <span class="stat-num">{totalDips}</span>
-        <span class="stat-label">DIPs</span>
+        <span class="stat-num">{totalReleases}</span>
+        <span class="stat-label">Releases</span>
       </div>
       <div class="stat-card">
         <span class="stat-num">{totalDocuments}</span>
@@ -212,56 +213,56 @@
         </div>
       </div>
 
-      <!-- SIP Status Breakdown -->
+      <!-- Intake Status Breakdown -->
       <div class="panel">
-        <h2>SIP Status</h2>
+        <h2>Intake Status</h2>
         <div class="breakdown-list">
           {#each Object.entries(sipStatuses) as [status, count]}
             <div class="breakdown-item">
               <span class="breakdown-dot" style="background: {statusColor(status)}"></span>
               <span class="breakdown-label">{status}</span>
               <span class="breakdown-val">{count}</span>
-              <div class="breakdown-bar"><div class="bar-fill" style="width: {totalSips ? (count / totalSips * 100) : 0}%; background: {statusColor(status)}"></div></div>
+              <div class="breakdown-bar"><div class="bar-fill" style="width: {totalIntakes ? (count / totalIntakes * 100) : 0}%; background: {statusColor(status)}"></div></div>
             </div>
           {/each}
           {#if Object.keys(sipStatuses).length === 0}
-            <p class="muted">No SIPs yet</p>
+            <p class="muted">No Intakes yet</p>
           {/if}
         </div>
       </div>
 
-      <!-- AIP Status Breakdown -->
+      <!-- Preservation Status Breakdown -->
       <div class="panel">
-        <h2>AIP Status</h2>
+        <h2>Preservation Status</h2>
         <div class="breakdown-list">
           {#each Object.entries(aipStatuses) as [status, count]}
             <div class="breakdown-item">
               <span class="breakdown-dot" style="background: {statusColor(status)}"></span>
               <span class="breakdown-label">{status}</span>
               <span class="breakdown-val">{count}</span>
-              <div class="breakdown-bar"><div class="bar-fill" style="width: {totalAips ? (count / totalAips * 100) : 0}%; background: {statusColor(status)}"></div></div>
+              <div class="breakdown-bar"><div class="bar-fill" style="width: {totalPreservations ? (count / totalPreservations * 100) : 0}%; background: {statusColor(status)}"></div></div>
             </div>
           {/each}
           {#if Object.keys(aipStatuses).length === 0}
-            <p class="muted">No AIPs yet</p>
+            <p class="muted">No Preservations yet</p>
           {/if}
         </div>
       </div>
 
-      <!-- DIP Status Breakdown -->
+      <!-- Release Status Breakdown -->
       <div class="panel">
-        <h2>DIP Status</h2>
+        <h2>Release Status</h2>
         <div class="breakdown-list">
           {#each Object.entries(dipStatuses) as [status, count]}
             <div class="breakdown-item">
               <span class="breakdown-dot" style="background: {statusColor(status)}"></span>
               <span class="breakdown-label">{status}</span>
               <span class="breakdown-val">{count}</span>
-              <div class="breakdown-bar"><div class="bar-fill" style="width: {totalDips ? (count / totalDips * 100) : 0}%; background: {statusColor(status)}"></div></div>
+              <div class="breakdown-bar"><div class="bar-fill" style="width: {totalReleases ? (count / totalReleases * 100) : 0}%; background: {statusColor(status)}"></div></div>
             </div>
           {/each}
           {#if Object.keys(dipStatuses).length === 0}
-            <p class="muted">No DIPs yet</p>
+            <p class="muted">No Releases yet</p>
           {/if}
         </div>
       </div>
@@ -323,14 +324,14 @@
 
       <div class="panel">
         <div class="panel-header">
-          <h2>Recent SIPs</h2>
-          <a href="/admin/sip" class="panel-link">View All →</a>
+          <h2>Recent Intakes</h2>
+          <a href="/admin/intake" class="panel-link">View All →</a>
         </div>
-        {#if recentSips.length === 0}
-          <p class="muted">No SIPs yet</p>
+        {#if recentIntakes.length === 0}
+          <p class="muted">No Intakes yet</p>
         {:else}
           <div class="list">
-            {#each recentSips as sip}
+            {#each recentIntakes as sip}
               <div class="list-row">
                 <div class="list-info">
                   <span class="list-title">{sip.title}</span>
@@ -349,9 +350,9 @@
       <a href="/admin/tenants" class="qn-card">🏢 Manage Tenants</a>
       <a href="/admin/users" class="qn-card">👥 Manage Users</a>
       <a href="/admin/archives" class="qn-card">📁 All Archives</a>
-      <a href="/admin/sip" class="qn-card">📦 All SIPs</a>
-      <a href="/admin/aip" class="qn-card">🏗️ All AIPs</a>
-      <a href="/admin/dip" class="qn-card">📤 All DIPs</a>
+      <a href="/admin/intake" class="qn-card">📦 All Intakes</a>
+      <a href="/admin/preservation" class="qn-card">🏗️ All Preservations</a>
+      <a href="/admin/release" class="qn-card">📤 All Releases</a>
       <a href="/admin/documents" class="qn-card">📄 All Documents</a>
       <a href="/ingest" class="qn-card">Ingest Standards</a>
     </div>
@@ -366,20 +367,15 @@
     padding: 2rem;
   }
 
+  /* .loading and .spinner come from the global kit (app.css); only the
+     column stack under the spinner is page-specific. */
   .loading {
-    display: flex; flex-direction: column; align-items: center;
-    justify-content: center; min-height: 400px; gap: 1rem;
+    flex-direction: column; min-height: 400px; gap: 1rem;
   }
-  .spinner {
-    border: 4px solid #f3f4f6; border-top: 4px solid #3b82f6;
-    border-radius: 50%; width: 40px; height: 40px;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
 
   .page-header { margin-bottom: 2rem; }
-  .page-header h1 { margin: 0 0 0.25rem; color: #0f172a; font-size: 2rem; font-weight: 800; }
-  .subtitle { margin: 0; color: #64748b; font-size: 1rem; }
+  .page-header h1 { margin: 0 0 0.25rem; color: var(--arc-ink); font-size: 2rem; font-weight: 800; }
+  .subtitle { margin: 0; color: var(--arc-muted); font-size: 1rem; }
 
   /* Stats row */
   .stats-row {
@@ -390,34 +386,37 @@
   }
 
   .stat-card {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.75rem;
+    background: var(--arc-card, #fff);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
     padding: 1.25rem;
     text-align: center;
     text-decoration: none;
     color: inherit;
-    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   }
 
   a.stat-card:hover {
-    border-color: #3b82f6;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    border-color: var(--arc-hover-border);
+    transform: translateY(-4px);
+    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
   }
 
   .stat-num {
     display: block;
+    font-family: var(--arc-font-display, 'Space Grotesk', 'Inter', sans-serif);
+    letter-spacing: -0.02em;
     font-size: 2rem;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--arc-ink);
     line-height: 1;
     margin-bottom: 0.35rem;
   }
 
   .stat-label {
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--arc-muted);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -432,17 +431,18 @@
   }
 
   .panel {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.75rem;
+    background: var(--arc-card, #fff);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
     padding: 1.5rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
   }
 
   .panel h2 {
     margin: 0 0 1rem;
     font-size: 1rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--arc-ink);
   }
 
   .panel-header {
@@ -452,9 +452,9 @@
   .panel-header h2 { margin: 0; }
 
   .panel-link {
-    font-size: 0.8rem; color: #3b82f6; text-decoration: none; font-weight: 600;
+    font-size: 0.8rem; color: var(--arc-link); text-decoration: none; font-weight: 600;
   }
-  .panel-link:hover { color: #2563eb; }
+  .panel-link:hover { color: var(--arc-indigo-deep, #4f46e5); }
 
   /* Breakdown */
   .breakdown-list { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -473,35 +473,35 @@
   .breakdown-dot.draft { background: #f59e0b; }
   .breakdown-dot.archived { background: #64748b; }
 
-  .breakdown-label { font-size: 0.85rem; color: #334155; }
-  .breakdown-val { font-size: 0.85rem; font-weight: 700; color: #0f172a; text-align: right; }
+  .breakdown-label { font-size: 0.85rem; color: var(--arc-body); }
+  .breakdown-val { font-size: 0.85rem; font-weight: 700; color: var(--arc-ink); text-align: right; }
 
   .breakdown-bar {
-    height: 0.375rem; background: #f1f5f9; border-radius: 1rem; overflow: hidden;
+    height: 0.375rem; background: var(--arc-card-2); border-radius: 1rem; overflow: hidden;
   }
   .bar-fill { height: 100%; border-radius: 1rem; transition: width 0.5s ease; }
   .bar-fill.active { background: #10b981; }
   .bar-fill.draft { background: #f59e0b; }
   .bar-fill.archived { background: #64748b; }
 
-  .muted { color: #94a3b8; font-size: 0.85rem; margin: 0; }
+  .muted { color: var(--arc-faint); font-size: 0.85rem; margin: 0; }
 
   /* Lists */
   .list { display: flex; flex-direction: column; gap: 0.5rem; }
 
   .list-row {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 0.6rem 0.75rem; background: #f8fafc; border-radius: 0.375rem;
+    padding: 0.6rem 0.75rem; background: var(--arc-card-2); border-radius: 0.375rem;
   }
 
   .list-info { display: flex; flex-direction: column; gap: 0.1rem; }
-  .list-title { font-weight: 600; color: #1e293b; font-size: 0.875rem; }
-  .list-sub { color: #64748b; font-size: 0.75rem; }
-  .list-meta { color: #94a3b8; font-size: 0.75rem; font-family: monospace; }
+  .list-title { font-weight: 600; color: var(--arc-ink); font-size: 0.875rem; }
+  .list-sub { color: var(--arc-muted); font-size: 0.75rem; }
+  .list-meta { color: var(--arc-faint); font-size: 0.75rem; font-family: monospace; }
 
   .list-badge {
-    padding: 0.15rem 0.5rem; border-radius: 0.25rem;
-    font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+    padding: 0.15rem 0.6rem; border-radius: 9999px;
+    font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
   }
 
   /* Quick nav */
@@ -511,17 +511,24 @@
 
   .qn-card {
     padding: 0.6rem 1.25rem;
-    background: white; border: 1px solid #e2e8f0; border-radius: 0.5rem;
-    text-decoration: none; color: #334155; font-weight: 600; font-size: 0.85rem;
-    transition: border-color 0.2s, background 0.2s;
+    background: var(--arc-card, #fff); border: 1px solid var(--arc-line-strong, #e2e8f0); border-radius: 0.65rem;
+    text-decoration: none; color: var(--arc-body); font-weight: 600; font-size: 0.85rem;
+    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.2s ease;
   }
 
   .qn-card:hover {
-    border-color: #3b82f6; background: #eff6ff; color: #1e40af;
+    border-color: var(--arc-indigo, #6366f1); background: var(--arc-chip-soft-indigo-bg); color: var(--arc-link);
+    transform: translateY(-2px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .qn-card:hover, a.stat-card:hover { transform: none; }
   }
 
   @media (max-width: 768px) {
     .stats-row { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); }
     .grid-2col { grid-template-columns: 1fr; }
   }
+
+  :global(html[data-theme='dark']) .panel-link:hover { color: #c7d2fe; }
 </style>

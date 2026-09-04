@@ -124,6 +124,7 @@
     <Breadcrumb context={{ tenantId: data.tenantId, tenantName: tenant?.displayName || tenant?.name }} items={[{ label: 'Documents', href: `/tenants/${data.tenantId}/documents` }, { label: 'Upload' }]} />
 
     <div class="form-header">
+      <span class="eyebrow">Documents</span>
       <h1>Upload Document</h1>
       {#if tenant}<p class="subtitle">Tenant: {tenant.displayName || tenant.name}</p>{/if}
     </div>
@@ -190,46 +191,43 @@
 <style>
   .access-denied { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; text-align: center; padding: 3rem; }
   .access-denied-icon { font-size: 5rem; margin-bottom: 1.5rem; }
-  .access-denied h1 { margin: 0 0 1rem 0; color: #1e293b; font-size: 2rem; }
-  .access-denied p { margin: 0.5rem 0; color: #64748b; font-size: 1.125rem; }
-  .redirect-message { color: #3b82f6; font-weight: 500; animation: pulse 1.5s ease-in-out infinite; }
+  .access-denied h1 { margin: 0 0 1rem 0; color: var(--arc-ink); font-size: 2rem; }
+  .access-denied p { margin: 0.5rem 0; color: var(--arc-muted); font-size: 1.125rem; }
+  .redirect-message { color: var(--arc-link); font-weight: 500; animation: pulse 1.5s ease-in-out infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-  .upload-container { max-width: 700px; margin: 2rem auto; background: white; padding: 2.5rem; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; }
-  .form-header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; }
-  .form-header h1 { margin: 0 0 0.5rem 0; color: #1e293b; font-size: 1.75rem; font-weight: 700; }
-  .subtitle { margin: 0; color: #64748b; font-size: 0.925rem; }
+  .upload-container { max-width: 700px; margin: 2rem auto; background: var(--arc-card); padding: 2.5rem; border-radius: 1rem; box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04)); border: 1px solid var(--arc-line); }
+  .form-header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--arc-line); }
+  .form-header h1 { margin: 0 0 0.5rem 0; color: var(--arc-ink); font-size: 1.75rem; font-weight: 700; }
+  .subtitle { margin: 0; color: var(--arc-muted); font-size: 0.925rem; }
   .alert { padding: 0.875rem 1rem; border-radius: 0.375rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-  .alert-error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-  .alert button { background: none; border: none; color: inherit; font-size: 1.25rem; cursor: pointer; }
+  .alert-error { background: var(--arc-alert-red-bg); color: var(--arc-alert-red-ink); border: 1px solid var(--arc-alert-red-border); }
+  .alert button { background: none; border: none; padding: 0 0.25rem; box-shadow: none; color: inherit; font-size: 1.25rem; cursor: pointer; }
+  .alert button:hover { background: none; transform: none; box-shadow: none; }
   .loading-state { display: flex; flex-direction: column; align-items: center; padding: 3rem 2rem; gap: 1rem; }
-  .loading-state .spinner { width: 2.5rem; height: 2.5rem; border: 3px solid #e2e8f0; border-top-color: #8b5cf6; border-radius: 50%; animation: spin 1s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-state p { color: #64748b; font-size: 0.875rem; }
-  .form-section { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid #f1f5f9; }
+  /* Spinner chrome is the global .spinner; only the size, violet accent and
+     slower sweep are local. */
+  .loading-state .spinner { width: 2.5rem; height: 2.5rem; border-top-color: #8b5cf6; animation: spin 1s linear infinite; }
+  .loading-state p { color: var(--arc-muted); font-size: 0.875rem; }
+  .form-section { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--arc-line); }
   .form-section:last-of-type { border-bottom: none; }
-  .section-title { margin: 0 0 1.25rem 0; color: #1e293b; font-size: 1.15rem; font-weight: 600; }
-  .drop-zone { border: 2px dashed #cbd5e1; border-radius: 0.5rem; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; background: #f8fafc; }
-  .drop-zone:hover { border-color: #a78bfa; background: #faf5ff; }
+  .section-title { margin: 0 0 1.25rem 0; color: var(--arc-ink); font-size: 1.15rem; font-weight: 600; }
+  .drop-zone { border: 2px dashed var(--arc-line-strong); border-radius: 0.75rem; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--arc-card-2); }
+  .drop-zone:hover { border-color: #a78bfa; background: var(--arc-chip-violet-bg); }
   .file-input { display: none; }
   .drop-content { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
   .drop-icon { font-size: 2.5rem; }
-  .drop-text { margin: 0; color: #475569; font-weight: 500; }
+  .drop-text { margin: 0; color: var(--arc-body); font-weight: 500; }
   .file-preview { display: flex; align-items: center; gap: 1rem; text-align: left; }
   .file-icon { font-size: 2rem; }
   .file-details { display: flex; flex-direction: column; gap: 0.25rem; }
-  .file-name { font-weight: 600; color: #1e293b; font-size: 0.9rem; }
-  .file-size { color: #64748b; font-size: 0.8rem; }
+  .file-name { font-weight: 600; color: var(--arc-ink); font-size: 0.9rem; }
+  .file-size { color: var(--arc-muted); font-size: 0.8rem; }
   .form-group { margin-bottom: 1.25rem; }
-  .form-group label { display: flex; align-items: center; gap: 0.375rem; margin-bottom: 0.5rem; color: #1e293b; font-weight: 500; font-size: 0.85rem; }
+  .form-group label { display: flex; align-items: center; gap: 0.375rem; margin-bottom: 0.5rem; color: var(--arc-body); font-weight: 600; font-size: 0.85rem; }
   .req { color: #ef4444; font-weight: 600; }
-  .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.625rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; font-size: 0.875rem; transition: border-color 0.2s; background: white; }
-  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1); }
-  .form-group textarea { resize: vertical; font-family: inherit; }
-  .form-actions { display: flex; justify-content: space-between; gap: 1rem; padding-top: 1.5rem; border-top: 2px solid #e2e8f0; }
-  .btn { padding: 0.75rem 2rem; border: none; border-radius: 0.375rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.875rem; }
-  .btn-primary { background: #8b5cf6; color: white; }
-  .btn-primary:hover:not(:disabled) { background: #7c3aed; }
-  .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
-  .btn-secondary { background: #e2e8f0; color: #475569; }
-  .btn-secondary:hover { background: #cbd5e1; }
+  /* Inputs, selects & textareas are styled by the global app.css rules */
+  .form-group textarea { resize: vertical; }
+  /* .form-actions, .btn-primary and .btn-secondary come from the global kit
+     (app.css); only this form's wider, smaller button size stays local. */
+  .btn { padding: 0.75rem 2rem; font-size: 0.875rem; }
 </style>

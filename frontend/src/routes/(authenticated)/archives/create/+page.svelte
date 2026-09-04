@@ -605,6 +605,7 @@
 
 <div class="form-container">
   <div class="form-header">
+    <span class="eyebrow">Archives</span>
     <h1>Create New Archive</h1>
     <p class="form-description">Step {currentStep} of {totalSteps}</p>
     {#if currentStep === 1}
@@ -762,7 +763,7 @@
 <!-- Element Form Modal -->
 {#if showElementForm}
   <div class="modal-overlay" on:click={cancelElementForm} role="dialog" aria-modal="true">
-    <div class="modal-content" on:click|stopPropagation role="document">
+    <div class="modal modal-content" on:click|stopPropagation role="document">
       <div class="modal-header">
         <h3>
           {#if selectedScheme}
@@ -915,14 +916,10 @@
 
 
 <style>
+  /* Global .form-container card surface, centred at a fixed width. */
   .form-container {
     max-width: 900px;
     margin: 2rem auto;
-    background: white;
-    padding: 2rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
   }
 
   .form-header {
@@ -932,33 +929,34 @@
 
   .form-header h1 {
     margin: 0 0 0.5rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 1.875rem;
     font-weight: 700;
   }
 
   .form-description {
     margin: 0;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
   }
 
   .btn-fill {
     padding: 0.5rem 1rem;
-    background: #f0fdf4;
-    color: #16a34a;
-    border: 1px solid #bbf7d0;
-    border-radius: 0.375rem;
-    font-weight: 500;
+    background: var(--arc-chip-soft-indigo-bg, #eef2ff);
+    color: var(--arc-chip-indigo-ink, #4338ca);
+    border: 1px solid var(--arc-hover-border, #c7d2fe);
+    border-radius: 0.65rem;
+    font-weight: 600;
     font-size: 0.875rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.18s ease;
     margin-top: 0.75rem;
+    box-shadow: none;
   }
 
   .btn-fill:hover {
-    background: #dcfce7;
-    border-color: #86efac;
+    background: var(--arc-chip-indigo-bg, #e0e7ff);
+    border-color: var(--arc-hover-border, #a5b4fc);
   }
 
   /* Progress Steps */
@@ -981,18 +979,20 @@
     width: 2.5rem;
     height: 2.5rem;
     border-radius: 50%;
-    background: #e2e8f0;
-    color: #64748b;
+    background: var(--arc-line-strong, #e2e8f0);
+    color: var(--arc-muted, #64748b);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+    font-weight: 700;
+    font-family: var(--arc-font-display, 'Space Grotesk', 'Inter', sans-serif);
     transition: all 0.3s;
   }
 
   .step.active .step-number {
-    background: #3b82f6;
+    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
     color: white;
+    box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
   }
 
   .step.completed .step-number {
@@ -1002,19 +1002,19 @@
 
   .step-label {
     font-size: 0.875rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-weight: 500;
   }
 
   .step.active .step-label {
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-weight: 600;
   }
 
   .step-connector {
     width: 4rem;
     height: 2px;
-    background: #e2e8f0;
+    background: var(--arc-line-strong, #e2e8f0);
     margin: 0 1rem;
     transition: all 0.3s;
   }
@@ -1034,9 +1034,9 @@
   }
 
   .alert-error {
-    background: #fef2f2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
+    background: var(--arc-alert-red-bg, #fef2f2);
+    color: var(--arc-alert-red-ink, #dc2626);
+    border: 1px solid var(--arc-alert-red-border, #fecaca);
   }
 
   .alert button {
@@ -1048,6 +1048,13 @@
     padding: 0;
     width: 1.5rem;
     height: 1.5rem;
+    box-shadow: none;
+  }
+
+  .alert button:hover {
+    background: none;
+    transform: none;
+    box-shadow: none;
   }
 
   /* Form Fields */
@@ -1060,32 +1067,6 @@
 
   .form-group {
     margin-bottom: 1.5rem;
-  }
-
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #1e293b;
-    font-weight: 500;
-    font-size: 0.875rem;
-  }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    padding: 0.625rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    transition: border-color 0.2s;
-  }
-
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: #3b82f6;
   }
 
   .form-group textarea {
@@ -1107,30 +1088,17 @@
     gap: 1rem;
   }
 
-  .loading-scheme .spinner {
-    width: 3rem;
-    height: 3rem;
-    border: 4px solid #e2e8f0;
-    border-top-color: #3b82f6;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
   .loading-scheme p {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
   }
 
   .scheme-info {
     margin-bottom: 2rem;
     padding: 1rem;
-    background: #f8fafc;
-    border-radius: 0.375rem;
-    border-left: 4px solid #3b82f6;
+    background: var(--arc-ground, #f8fafc);
+    border-radius: 0.6rem;
+    border-left: 3px solid var(--arc-indigo, #6366f1);
   }
 
   .scheme-info-header {
@@ -1142,38 +1110,27 @@
 
   .scheme-info h2 {
     margin: 0 0 0.5rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 1.25rem;
   }
 
   .scheme-info p {
     margin: 0;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
   }
 
 
-  /* Modal */
+  /* Modal — global .modal-overlay / .modal kit, sized for this form
+     and unpadded because the header/body/footer carry their own. */
   .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: 1000;
   }
 
   .modal-content {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     max-width: 500px;
     width: 90%;
-    max-height: 90vh;
+    padding: 0;
     overflow: auto;
   }
 
@@ -1182,12 +1139,12 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--arc-line, #e8edf3);
   }
 
   .modal-header h3 {
     margin: 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 1.25rem;
     font-weight: 600;
   }
@@ -1196,7 +1153,7 @@
     background: none;
     border: none;
     font-size: 1.5rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     cursor: pointer;
     padding: 0;
     width: 2rem;
@@ -1204,13 +1161,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0.25rem;
-    transition: all 0.2s;
+    border-radius: 0.5rem;
+    transition: all 0.18s ease;
+    box-shadow: none;
   }
 
   .modal-close:hover {
-    background: #f1f5f9;
-    color: #1e293b;
+    background: var(--arc-card-2, #f1f5f9);
+    color: var(--arc-ink, #0f172a);
+    transform: none;
+    box-shadow: none;
   }
 
   .modal-body {
@@ -1219,19 +1179,19 @@
 
   .parent-info {
     padding: 0.75rem;
-    background: #f0f9ff;
-    border: 1px solid #bae6fd;
-    border-radius: 0.375rem;
+    background: var(--arc-alert-indigo-bg, #eef2ff);
+    border: 1px solid var(--arc-alert-indigo-border, #c7d2fe);
+    border-radius: 0.6rem;
     margin-bottom: 1rem;
     font-size: 0.875rem;
-    color: #0c4a6e;
+    color: var(--arc-alert-indigo-ink, #4338ca);
   }
 
   .helper-text {
     margin-top: 0.5rem;
     margin-bottom: 0;
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     line-height: 1.4;
   }
 
@@ -1244,19 +1204,19 @@
   .dynamic-fields-section {
     margin-top: 1.5rem;
     padding-top: 1.5rem;
-    border-top: 2px solid #e2e8f0;
+    border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
   .dynamic-fields-section h4 {
     margin: 0 0 1rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 1rem;
     font-weight: 600;
   }
 
   .field-type {
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-weight: 400;
     font-style: italic;
   }
@@ -1273,7 +1233,7 @@
     align-items: center;
     gap: 0.75rem;
     padding: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
   .button-group {
@@ -1281,47 +1241,16 @@
     gap: 0.75rem;
   }
 
-  /* Form Actions */
+  /* Form Actions — global .form-actions with a roomier top margin. */
   .form-actions {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
     margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    border-top-color: var(--arc-line, #e8edf3);
   }
 
+  /* Compact size on top of the global button kit. */
   .btn {
     padding: 0.625rem 1.5rem;
-    border: none;
-    border-radius: 0.375rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
     font-size: 0.875rem;
-  }
-
-  .btn-primary {
-    background: #3b82f6;
-    color: white;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-  }
-
-  .btn-primary:disabled {
-    background: #94a3b8;
-    cursor: not-allowed;
-  }
-
-  .btn-secondary {
-    background: #e2e8f0;
-    color: #475569;
-  }
-
-  .btn-secondary:hover {
-    background: #cbd5e1;
   }
 
   @media (max-width: 768px) {

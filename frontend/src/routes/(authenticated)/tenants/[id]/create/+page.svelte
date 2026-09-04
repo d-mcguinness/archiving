@@ -208,6 +208,7 @@
     <!-- Page Header -->
     <div class="page-header">
       <div class="header-content">
+        <span class="eyebrow">Archives</span>
         <h1>📁 Create New Archive</h1>
         <button type="button" class="btn-fill" on:click={fillRandom}>Fill Random</button>
         {#if tenant}
@@ -359,14 +360,14 @@
   }
 
   .breadcrumb a {
-    color: #3b82f6;
+    color: var(--arc-indigo, #6366f1);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s;
   }
 
   .breadcrumb a:hover {
-    color: #2563eb;
+    color: var(--arc-indigo-deep, #4f46e5);
   }
 
   /* Page Header */
@@ -382,7 +383,7 @@
 
   .page-header h1 {
     margin: 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 2rem;
   }
 
@@ -391,28 +392,31 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 0.5rem;
-    font-weight: 600;
+    background: var(--arc-chip-indigo-bg);
+    color: var(--arc-chip-indigo-ink);
+    border-radius: 9999px;
+    font-weight: 700;
     width: fit-content;
   }
 
   .btn-fill {
     padding: 0.5rem 1rem;
-    background: #f0fdf4;
-    color: #16a34a;
-    border: 1px solid #bbf7d0;
-    border-radius: 0.5rem;
+    background: var(--arc-chip-soft-indigo-bg);
+    color: var(--arc-chip-indigo-ink);
+    border: 1px solid var(--arc-hover-border);
+    border-radius: 0.6rem;
     font-weight: 600;
     font-size: 0.875rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: none;
+    width: fit-content;
   }
 
   .btn-fill:hover {
-    background: #dcfce7;
-    border-color: #86efac;
+    background: var(--arc-chip-indigo-bg);
+    border-color: var(--arc-hover-border);
+    box-shadow: none;
   }
 
   .tenant-icon {
@@ -437,18 +441,18 @@
 
   .access-denied h1 {
     margin: 0 0 1rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 2rem;
   }
 
   .access-denied p {
     margin: 0.5rem 0;
-    color: #64748b;
+    color: var(--arc-muted);
     font-size: 1.125rem;
   }
 
   .redirect-message {
-    color: #3b82f6;
+    color: var(--arc-indigo, #6366f1);
     font-weight: 500;
     animation: pulse 1.5s ease-in-out infinite;
   }
@@ -459,21 +463,13 @@
   }
 
   .error-banner {
-    background: #fee2e2;
-    border: 1px solid #fca5a5;
-    color: #991b1b;
+    background: var(--arc-alert-red-bg);
+    border: 1px solid var(--arc-alert-red-border);
+    color: var(--arc-alert-red-ink);
     padding: 1rem;
     border-radius: 0.5rem;
     margin-bottom: 1.5rem;
     text-align: center;
-  }
-
-  .form-container {
-    background: white;
-    padding: 2rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
   }
 
   .form-section {
@@ -482,7 +478,7 @@
 
   .form-section h3 {
     margin: 0 0 1.5rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 1.25rem;
   }
 
@@ -490,38 +486,10 @@
     margin-bottom: 1.5rem;
   }
 
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #475569;
-    font-weight: 600;
-    font-size: 0.875rem;
-  }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    font-family: inherit;
-  }
-
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-
   .form-group input:disabled,
   .form-group select:disabled,
   .form-group textarea:disabled {
-    background: #f1f5f9;
+    background: var(--arc-card-2);
     cursor: not-allowed;
   }
 
@@ -533,7 +501,7 @@
   .field-hint {
     display: block;
     margin-top: 0.375rem;
-    color: #64748b;
+    color: var(--arc-muted);
     font-size: 0.75rem;
   }
 
@@ -541,9 +509,9 @@
     display: flex;
     gap: 1rem;
     padding: 1rem;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 0.5rem;
+    background: var(--arc-alert-indigo-bg);
+    border: 1px solid var(--arc-alert-indigo-border);
+    border-radius: 0.75rem;
     margin-top: 1.5rem;
   }
 
@@ -553,57 +521,76 @@
   }
 
   .info-content {
-    color: #1e40af;
+    color: var(--arc-alert-indigo-ink);
     font-size: 0.875rem;
     line-height: 1.5;
   }
 
+  /* Global .form-actions footer, right-aligned instead of split. */
   .form-actions {
-    display: flex;
     justify-content: flex-end;
-    gap: 1rem;
     margin-top: 2rem;
     padding-top: 2rem;
-    border-top: 1px solid #e2e8f0;
   }
 
   .btn-primary,
   .btn-secondary {
     padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 0.65rem;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
   }
 
   .btn-primary {
-    background: #3b82f6;
+    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
     color: white;
+    font-weight: 700;
+    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
   }
 
   .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
+    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
+    transform: translateY(-2px);
   }
 
   .btn-primary:disabled {
-    background: #94a3b8;
+    background: var(--arc-disabled-bg);
     cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
   }
 
   .btn-secondary {
-    background: #e2e8f0;
-    color: #475569;
+    background: var(--arc-card);
+    border: 1.5px solid var(--arc-line-strong);
+    color: var(--arc-ink);
+    box-shadow: none;
   }
 
   .btn-secondary:hover:not(:disabled) {
-    background: #cbd5e1;
+    background: var(--arc-card);
+    border-color: var(--arc-indigo, #6366f1);
+    color: var(--arc-link);
+    box-shadow: none;
   }
 
   .btn-secondary:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .redirect-message {
+      animation: none;
+    }
+    .btn-primary,
+    .btn-secondary,
+    .btn-fill {
+      transition: none;
+    }
   }
 
   @media (max-width: 768px) {

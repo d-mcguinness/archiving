@@ -135,6 +135,7 @@ async function updateUser() {
 }
 </script>
 
+<span class="eyebrow">Users</span>
 <h2>Update User</h2>
 {#if loading}
   <div class="loading">Loading...</div>
@@ -206,52 +207,20 @@ async function updateUser() {
 {/if}
 
 <style>
+  /* card chrome comes from the global .form-container; only sizing is page-specific */
   .form-container {
     max-width: 400px;
     margin: 2rem auto;
-    background: #fff;
-    padding: 2rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    border: 1px solid #e2e8f0;
   }
   .form-group {
     margin-bottom: 1.5rem;
   }
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #1e293b;
-    font-weight: 500;
-  }
-  input {
-    width: 100%;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    border: 1px solid #e2e8f0;
-    font-size: 1rem;
-  }
-  button[type="submit"] {
-    background: #4caf50;
-    color: white;
-    padding: 0.5rem 1.5rem;
-    border-radius: 0.25rem;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  button[type="submit"]:disabled {
-    background: #a5d6a7;
-    cursor: not-allowed;
-  }
   .loading {
     text-align: center;
     margin: 2rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
   }
   .error {
-    color: #f44336;
     margin: 2rem 0;
     text-align: center;
   }
@@ -263,16 +232,16 @@ async function updateUser() {
 
   .upload-section h3 {
     margin-bottom: 1rem;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 1.25rem;
   }
 
   .upload-card {
-    background: white;
+    background: var(--arc-card, #fff);
     padding: 1.5rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    border: 1px solid var(--arc-line, #e8edf3);
   }
 
   .upload-area {
@@ -288,16 +257,16 @@ async function updateUser() {
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    border: 2px dashed #cbd5e1;
+    border: 2px dashed var(--arc-line-strong, #cbd5e1);
     border-radius: 0.5rem;
     cursor: pointer;
     transition: all 0.2s;
-    background: #f8fafc;
+    background: var(--arc-card-2, #f8fafc);
   }
 
   .file-label:hover {
-    border-color: #3b82f6;
-    background: #eff6ff;
+    border-color: var(--arc-indigo, #6366f1);
+    background: var(--arc-chip-soft-indigo-bg, #eef2ff);
   }
 
   .upload-icon {
@@ -305,7 +274,7 @@ async function updateUser() {
   }
 
   .upload-text {
-    color: #475569;
+    color: var(--arc-body, #475569);
     font-weight: 500;
     flex: 1;
     overflow: hidden;
@@ -318,11 +287,11 @@ async function updateUser() {
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem;
-    background: #dcfce7;
-    border: 1px solid #86efac;
+    background: var(--arc-alert-green-bg, #dcfce7);
+    border: 1px solid var(--arc-alert-green-border, #86efac);
     border-radius: 0.5rem;
     margin-bottom: 1rem;
-    color: #166534;
+    color: var(--arc-alert-green-ink, #166534);
     font-size: 0.875rem;
   }
 
@@ -335,11 +304,11 @@ async function updateUser() {
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem;
-    background: #fee2e2;
-    border: 1px solid #fca5a5;
+    background: var(--arc-alert-red-bg, #fee2e2);
+    border: 1px solid var(--arc-alert-red-border, #fca5a5);
     border-radius: 0.5rem;
     margin-bottom: 1rem;
-    color: #991b1b;
+    color: var(--arc-alert-red-ink, #991b1b);
     font-size: 0.875rem;
   }
 
@@ -349,23 +318,5 @@ async function updateUser() {
 
   .upload-button {
     width: 100%;
-    padding: 0.75rem 1.5rem;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .upload-button:hover:not(:disabled) {
-    background: #2563eb;
-  }
-
-  .upload-button:disabled {
-    background: #cbd5e1;
-    cursor: not-allowed;
   }
 </style>

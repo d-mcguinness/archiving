@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { client } from '$lib/apollo';
-  import { GET_TENANT, GET_TENANT_DASHBOARD_STATS, GET_SIPS_BY_TENANT_V2, GET_AIPS_BY_TENANT, GET_DIPS_BY_TENANT } from '$lib/graphql/queries';
+  import { GET_TENANT, GET_TENANT_DASHBOARD_STATS, GET_INTAKES_BY_TENANT_V2, GET_PRESERVATIONS_BY_TENANT, GET_RELEASES_BY_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { authHeaders, API_BASE } from '$lib/api';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
@@ -20,14 +20,14 @@
     draftArchives: 0,
     archivedArchives: 0,
   };
-  let totalSips = 0;
-  let totalAips = 0;
-  let totalDips = 0;
+  let totalIntakes = 0;
+  let totalPreservations = 0;
+  let totalReleases = 0;
   let totalDocuments = 0;
   let sipStatuses: Record<string, number> = {};
   let aipStatuses: Record<string, number> = {};
   let dipStatuses: Record<string, number> = {};
-  let recentSips: any[] = [];
+  let recentIntakes: any[] = [];
 
   $: tenantId = $page.params.id || '';
 
@@ -43,9 +43,9 @@
       const [tenantResult, statsResult, sipsResult, aipsResult, dipsResult, docsResult] = await Promise.all([
         client.query({ query: GET_TENANT, variables: { id: tenantId }, fetchPolicy: 'network-only' }),
         client.query({ query: GET_TENANT_DASHBOARD_STATS, variables: { tenantId }, fetchPolicy: 'network-only' }).catch(() => null),
-        client.query({ query: GET_SIPS_BY_TENANT_V2, variables: { tenantId }, fetchPolicy: 'network-only' }).catch(() => ({ data: { getSipsByTenantV2: [] } })),
-        client.query({ query: GET_AIPS_BY_TENANT, variables: { tenantId }, fetchPolicy: 'network-only' }).catch(() => ({ data: { getAipsByTenant: [] } })),
-        client.query({ query: GET_DIPS_BY_TENANT, variables: { tenantId }, fetchPolicy: 'network-only' }).catch(() => ({ data: { getDipsByTenant: [] } })),
+        client.query({ query: GET_INTAKES_BY_TENANT_V2, variables: { tenantId }, fetchPolicy: 'network-only' }).catch(() => ({ data: { getIntakesByTenantV2: [] } })),
+        client.query({ query: GET_PRESERVATIONS_BY_TENANT, variables: { tenantId }, fetchPolicy: 'network-only' }).catch(() => ({ data: { getPreservationsByTenant: [] } })),
+        client.query({ query: GET_RELEASES_BY_TENANT, variables: { tenantId }, fetchPolicy: 'network-only' }).catch(() => ({ data: { getReleasesByTenant: [] } })),
         fetch(`${API_BASE}/api/documents?role=TENANT&tenantId=${tenantId}`, { headers: { ...authHeaders() } }).then(r => r.json()).catch(() => ({ documents: [] })),
       ]);
 
@@ -62,17 +62,17 @@
         };
       }
 
-      const sips = sipsResult?.data?.getSipsByTenantV2 || [];
-      totalSips = sips.length;
-      recentSips = sips.slice(0, 5);
+      const sips = sipsResult?.data?.getIntakesByTenantV2 || [];
+      totalIntakes = sips.length;
+      recentIntakes = sips.slice(0, 5);
       sipStatuses = countBy(sips, 'status');
 
-      const aips = aipsResult?.data?.getAipsByTenant || [];
-      totalAips = aips.length;
+      const aips = aipsResult?.data?.getPreservationsByTenant || [];
+      totalPreservations = aips.length;
       aipStatuses = countBy(aips, 'status');
 
-      const dips = dipsResult?.data?.getDipsByTenant || [];
-      totalDips = dips.length;
+      const dips = dipsResult?.data?.getReleasesByTenant || [];
+      totalReleases = dips.length;
       dipStatuses = countBy(dips, 'status');
 
       totalDocuments = docsResult?.documents?.length || docsResult?.count || 0;
@@ -142,6 +142,7 @@
 
 <div class="tenant-detail-page">
   <div class="page-header">
+    <span class="eyebrow">Tenants</span>
     <h1>Tenant Details</h1>
   </div>
 
@@ -187,17 +188,17 @@
           <span class="stat-num">{tenantStats.totalArchives}</span>
           <span class="stat-label">Archives</span>
         </a>
-        <a href="/tenants/{tenantId}/sips" class="stat-card">
-          <span class="stat-num">{totalSips}</span>
-          <span class="stat-label">SIPs</span>
+        <a href="/tenants/{tenantId}/intakes" class="stat-card">
+          <span class="stat-num">{totalIntakes}</span>
+          <span class="stat-label">Intakes</span>
         </a>
-        <a href="/tenants/{tenantId}/aips" class="stat-card">
-          <span class="stat-num">{totalAips}</span>
-          <span class="stat-label">AIPs</span>
+        <a href="/tenants/{tenantId}/preservations" class="stat-card">
+          <span class="stat-num">{totalPreservations}</span>
+          <span class="stat-label">Preservations</span>
         </a>
-        <a href="/tenants/{tenantId}/dips" class="stat-card">
-          <span class="stat-num">{totalDips}</span>
-          <span class="stat-label">DIPs</span>
+        <a href="/tenants/{tenantId}/releases" class="stat-card">
+          <span class="stat-num">{totalReleases}</span>
+          <span class="stat-label">Releases</span>
         </a>
         <a href="/tenants/{tenantId}/documents" class="stat-card">
           <span class="stat-num">{totalDocuments}</span>
@@ -232,66 +233,66 @@
         </div>
 
         <div class="panel">
-          <h3>SIP Status</h3>
+          <h3>Intake Status</h3>
           <div class="breakdown-list">
             {#each Object.entries(sipStatuses) as [status, count]}
               <div class="breakdown-item">
                 <span class="breakdown-dot" style="background: {statusColor(status)};"></span>
                 <span class="bd-label">{status}</span>
                 <span class="bd-val">{count}</span>
-                <div class="bd-bar"><div class="bd-fill" style="width: {totalSips ? (count / totalSips * 100) : 0}%; background: {statusColor(status)};"></div></div>
+                <div class="bd-bar"><div class="bd-fill" style="width: {totalIntakes ? (count / totalIntakes * 100) : 0}%; background: {statusColor(status)};"></div></div>
               </div>
             {/each}
             {#if Object.keys(sipStatuses).length === 0}
-              <p class="muted">No SIPs yet</p>
+              <p class="muted">No Intakes yet</p>
             {/if}
           </div>
         </div>
 
         <div class="panel">
-          <h3>AIP Status</h3>
+          <h3>Preservation Status</h3>
           <div class="breakdown-list">
             {#each Object.entries(aipStatuses) as [status, count]}
               <div class="breakdown-item">
                 <span class="breakdown-dot" style="background: {statusColor(status)};"></span>
                 <span class="bd-label">{status}</span>
                 <span class="bd-val">{count}</span>
-                <div class="bd-bar"><div class="bd-fill" style="width: {totalAips ? (count / totalAips * 100) : 0}%; background: {statusColor(status)};"></div></div>
+                <div class="bd-bar"><div class="bd-fill" style="width: {totalPreservations ? (count / totalPreservations * 100) : 0}%; background: {statusColor(status)};"></div></div>
               </div>
             {/each}
             {#if Object.keys(aipStatuses).length === 0}
-              <p class="muted">No AIPs yet</p>
+              <p class="muted">No Preservations yet</p>
             {/if}
           </div>
         </div>
 
         <div class="panel">
-          <h3>DIP Status</h3>
+          <h3>Release Status</h3>
           <div class="breakdown-list">
             {#each Object.entries(dipStatuses) as [status, count]}
               <div class="breakdown-item">
                 <span class="breakdown-dot" style="background: {statusColor(status)};"></span>
                 <span class="bd-label">{status}</span>
                 <span class="bd-val">{count}</span>
-                <div class="bd-bar"><div class="bd-fill" style="width: {totalDips ? (count / totalDips * 100) : 0}%; background: {statusColor(status)};"></div></div>
+                <div class="bd-bar"><div class="bd-fill" style="width: {totalReleases ? (count / totalReleases * 100) : 0}%; background: {statusColor(status)};"></div></div>
               </div>
             {/each}
             {#if Object.keys(dipStatuses).length === 0}
-              <p class="muted">No DIPs yet</p>
+              <p class="muted">No Releases yet</p>
             {/if}
           </div>
         </div>
       </div>
 
-      <!-- Recent SIPs -->
-      {#if recentSips.length > 0}
+      <!-- Recent Intakes -->
+      {#if recentIntakes.length > 0}
         <div class="panel" style="margin-bottom: 2rem;">
           <div class="panel-header-row">
-            <h3>Recent SIPs</h3>
-            <a href="/tenants/{tenantId}/sips" class="panel-link">View All →</a>
+            <h3>Recent Intakes</h3>
+            <a href="/tenants/{tenantId}/intakes" class="panel-link">View All →</a>
           </div>
           <div class="recent-list">
-            {#each recentSips as sip}
+            {#each recentIntakes as sip}
               <div class="recent-row">
                 <div class="recent-info">
                   <span class="recent-title">{sip.title}</span>
@@ -324,27 +325,27 @@
             </div>
             <span class="nav-arrow">&rarr;</span>
           </a>
-          <a href="/tenants/{tenantId}/sips" class="nav-card sips">
+          <a href="/tenants/{tenantId}/intakes" class="nav-card sips">
             <span class="nav-icon">📦</span>
             <div class="nav-content">
-              <h4>SIPs</h4>
-              <p>Submission Information Packages</p>
+              <h4>Intakes</h4>
+              <p>Intake packages</p>
             </div>
             <span class="nav-arrow">&rarr;</span>
           </a>
-          <a href="/tenants/{tenantId}/aips" class="nav-card aips">
+          <a href="/tenants/{tenantId}/preservations" class="nav-card aips">
             <span class="nav-icon">🏗️</span>
             <div class="nav-content">
-              <h4>AIPs</h4>
-              <p>Archival Information Packages</p>
+              <h4>Preservations</h4>
+              <p>Preservation packages</p>
             </div>
             <span class="nav-arrow">&rarr;</span>
           </a>
-          <a href="/tenants/{tenantId}/dips" class="nav-card dips">
+          <a href="/tenants/{tenantId}/releases" class="nav-card dips">
             <span class="nav-icon">📤</span>
             <div class="nav-content">
-              <h4>DIPs</h4>
-              <p>Dissemination Information Packages</p>
+              <h4>Releases</h4>
+              <p>Release packages</p>
             </div>
             <span class="nav-arrow">&rarr;</span>
           </a>
@@ -383,7 +384,7 @@
 
   .page-header h1 {
     margin: 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 2rem;
   }
 
@@ -396,26 +397,24 @@
     gap: 1rem;
   }
 
+  /* Page loader — global .spinner chrome, scaled up for the empty page. */
   .spinner {
-    border: 4px solid #f3f4f6;
-    border-top: 4px solid #3b82f6;
-    border-radius: 50%;
+    border: 4px solid var(--arc-line-strong);
+    border-top: 4px solid var(--arc-indigo, #6366f1);
     width: 40px;
     height: 40px;
     animation: spin 1s linear infinite;
   }
 
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  /* Scoped animation outranks the global reduced-motion rule, so repeat it. */
+  @media (prefers-reduced-motion: reduce) {
+    .spinner {
+      animation: none;
+    }
   }
 
   .error {
-    background: #fee;
-    color: #c00;
     padding: 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid #fcc;
   }
 
   .tenant-info {
@@ -425,10 +424,11 @@
   }
 
   .tenant-header-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: var(--arc-grad-dark, radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%));
+    color: #cbd5e1;
     padding: 2rem;
-    border-radius: 0.75rem;
+    border-radius: 1rem;
+    border: 1px solid var(--arc-line);
     display: flex;
     align-items: center;
     gap: 1.5rem;
@@ -446,11 +446,12 @@
   .tenant-header-content h2 {
     margin: 0 0 0.5rem 0;
     font-size: 2rem;
+    color: #f8fafc;
   }
 
   .tenant-domain {
     margin: 0 0 1rem 0;
-    opacity: 0.9;
+    color: #cbd5e1;
     font-size: 1.125rem;
   }
 
@@ -470,58 +471,6 @@
     color: white;
   }
 
-  .info-section {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
-  }
-
-  .info-section h3 {
-    margin: 0 0 1.5rem 0;
-    color: #1e293b;
-    font-size: 1.25rem;
-  }
-
-  .info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.25rem;
-  }
-
-  .info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .info-label {
-    color: #64748b;
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .info-value {
-    color: #1e293b;
-    font-size: 1rem;
-    font-weight: 500;
-  }
-
-  .description {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e2e8f0;
-  }
-
-  .description p {
-    margin: 0.5rem 0 0 0;
-    color: #475569;
-    line-height: 1.6;
-  }
-
   /* Stats */
   .stats-row {
     display: grid;
@@ -531,34 +480,37 @@
   }
 
   .stat-card {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.75rem;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
     padding: 1.25rem;
     text-align: center;
     text-decoration: none;
     color: inherit;
-    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   }
 
   .stat-card:hover {
-    border-color: #3b82f6;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    border-color: var(--arc-hover-border);
+    transform: translateY(-4px);
+    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
   }
 
   .stat-num {
     display: block;
+    font-family: var(--arc-font-display, 'Space Grotesk', 'Inter', sans-serif);
+    letter-spacing: -0.02em;
     font-size: 2rem;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--arc-ink);
     line-height: 1;
     margin-bottom: 0.35rem;
   }
 
   .stat-label {
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--arc-muted);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -572,17 +524,18 @@
   }
 
   .panel {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.75rem;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
     padding: 1.5rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
   }
 
   .panel h3 {
     margin: 0 0 1rem;
     font-size: 1rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
   }
 
   .panel-header-row {
@@ -596,12 +549,12 @@
 
   .panel-link {
     font-size: 0.8rem;
-    color: #3b82f6;
+    color: var(--arc-indigo, #6366f1);
     text-decoration: none;
     font-weight: 600;
   }
 
-  .panel-link:hover { color: #2563eb; }
+  .panel-link:hover { color: var(--arc-indigo-deep, #4f46e5); }
 
   .breakdown-list { display: flex; flex-direction: column; gap: 0.75rem; }
 
@@ -613,12 +566,12 @@
   }
 
   .breakdown-dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; }
-  .bd-label { font-size: 0.85rem; color: #334155; }
-  .bd-val { font-size: 0.85rem; font-weight: 700; color: #0f172a; text-align: right; }
-  .bd-bar { height: 0.375rem; background: #f1f5f9; border-radius: 1rem; overflow: hidden; }
+  .bd-label { font-size: 0.85rem; color: var(--arc-body); }
+  .bd-val { font-size: 0.85rem; font-weight: 700; color: var(--arc-ink); text-align: right; }
+  .bd-bar { height: 0.375rem; background: var(--arc-card-2); border-radius: 1rem; overflow: hidden; }
   .bd-fill { height: 100%; border-radius: 1rem; transition: width 0.5s ease; }
 
-  .muted { color: #94a3b8; font-size: 0.85rem; margin: 0; }
+  .muted { color: var(--arc-faint); font-size: 0.85rem; margin: 0; }
 
   .recent-list { display: flex; flex-direction: column; gap: 0.5rem; }
 
@@ -627,21 +580,22 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.6rem 0.75rem;
-    background: #f8fafc;
+    background: var(--arc-card-2);
     border-radius: 0.375rem;
   }
 
   .recent-info { display: flex; flex-direction: column; gap: 0.1rem; }
-  .recent-title { font-weight: 600; color: #1e293b; font-size: 0.875rem; }
-  .recent-sub { color: #64748b; font-size: 0.75rem; }
+  .recent-title { font-weight: 600; color: var(--arc-ink); font-size: 0.875rem; }
+  .recent-sub { color: var(--arc-muted); font-size: 0.75rem; }
 
   .recent-badge {
-    padding: 0.15rem 0.5rem;
-    border-radius: 0.25rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 9999px;
     font-size: 0.65rem;
     font-weight: 700;
     color: white;
     text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   .nav-section {
@@ -650,7 +604,7 @@
 
   .nav-section h3 {
     margin: 0 0 1.25rem;
-    color: #64748b;
+    color: var(--arc-muted);
     font-size: 1rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -668,17 +622,18 @@
     align-items: center;
     gap: 1rem;
     padding: 1.25rem 1.5rem;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.75rem;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
     text-decoration: none;
     color: inherit;
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   }
 
   .nav-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    transform: translateY(-4px);
+    box-shadow: var(--arc-shadow-lift, 0 18px 40px -16px rgba(15, 23, 42, 0.18));
   }
 
   .nav-card.users:hover    { border-color: #f59e0b; }
@@ -701,35 +656,36 @@
 
   .nav-content h4 {
     margin: 0 0 0.2rem;
-    color: #0f172a;
+    color: var(--arc-ink);
     font-size: 1.05rem;
   }
 
   .nav-content p {
     margin: 0;
-    color: #64748b;
+    color: var(--arc-muted);
     font-size: 0.825rem;
     line-height: 1.4;
   }
 
   .nav-arrow {
     font-size: 1.25rem;
-    color: #cbd5e1;
+    color: var(--arc-faint);
     flex-shrink: 0;
     transition: color 0.2s, transform 0.2s;
   }
 
   .nav-card:hover .nav-arrow {
-    color: #475569;
+    color: var(--arc-indigo-deep, #4f46e5);
     transform: translateX(3px);
   }
 
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
   }
 
   .empty-icon {
@@ -740,27 +696,29 @@
 
   .empty-state h3 {
     margin: 0 0 1rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
   }
 
   .empty-state p {
     margin: 0 0 1.5rem 0;
-    color: #64748b;
+    color: var(--arc-muted);
   }
 
   .btn-back {
     display: inline-block;
     padding: 0.75rem 1.5rem;
-    background: #3b82f6;
+    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
     color: white;
     text-decoration: none;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    transition: background 0.2s;
+    border-radius: 0.65rem;
+    font-weight: 700;
+    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
+    transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
   }
 
   .btn-back:hover {
-    background: #2563eb;
+    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
+    transform: translateY(-2px);
   }
 
   @media (max-width: 768px) {
@@ -771,14 +729,6 @@
     .tenant-header-card {
       flex-direction: column;
       text-align: center;
-    }
-
-    .info-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .action-buttons {
-      grid-template-columns: 1fr;
     }
   }
 </style>

@@ -166,7 +166,7 @@
 
 {#if show}
   <div class="modal-overlay" on:click={cancel} role="dialog" aria-modal="true">
-    <div class="modal-content" on:click|stopPropagation role="document">
+    <div class="modal modal-content" on:click|stopPropagation role="document">
       <div class="modal-header">
         <h3>
           {#if selectedScheme}
@@ -315,27 +315,16 @@
 {/if}
 
 <style>
+  /* Global .modal-overlay / .modal kit, widened for the field list and
+     unpadded because the header/body/footer carry their own padding. */
   .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: 1000;
   }
 
   .modal-content {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     max-width: 600px;
     width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
+    padding: 0;
   }
 
   .modal-header {
@@ -343,12 +332,12 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--arc-line, #e8edf3);
   }
 
   .modal-header h3 {
     margin: 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 1.25rem;
     font-weight: 600;
   }
@@ -357,7 +346,7 @@
     background: none;
     border: none;
     font-size: 1.5rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     cursor: pointer;
     padding: 0;
     width: 2rem;
@@ -365,10 +354,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 0.5rem;
+    box-shadow: none;
   }
 
   .modal-close:hover {
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
+    background: var(--arc-card-2, #f1f5f9);
+    transform: none;
+    box-shadow: none;
   }
 
   .modal-body {
@@ -376,28 +370,21 @@
   }
 
   .parent-info {
-    background: #f1f5f9;
+    background: var(--arc-alert-indigo-bg, #eef2ff);
+    border: 1px solid var(--arc-alert-indigo-border, #c7d2fe);
     padding: 0.75rem 1rem;
-    border-radius: 0.25rem;
+    border-radius: 0.6rem;
     margin-bottom: 1.5rem;
     font-size: 0.875rem;
-    color: #475569;
+    color: var(--arc-alert-indigo-ink, #4338ca);
   }
 
   .form-group {
     margin-bottom: 1.25rem;
   }
 
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #1e293b;
-    font-size: 0.875rem;
-  }
-
   .field-type {
-    color: #94a3b8;
+    color: var(--arc-faint, #94a3b8);
     font-weight: 400;
     font-size: 0.75rem;
     margin-left: 0.25rem;
@@ -409,26 +396,10 @@
     margin-left: 0.125rem;
   }
 
-  .form-group input,
-  .form-group select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.25rem;
-    font-size: 1rem;
-    transition: border-color 0.2s;
-  }
-
-  .form-group input:focus,
-  .form-group select:focus {
-    outline: none;
-    border-color: #3b82f6;
-  }
-
   .helper-text {
     margin-top: 0.25rem;
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-style: italic;
   }
 
@@ -439,12 +410,12 @@
   .dynamic-fields-section {
     margin-top: 1.5rem;
     padding-top: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
   .dynamic-fields-section h4 {
     margin: 0 0 1rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 1rem;
     font-weight: 600;
   }
@@ -454,7 +425,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
   .button-group {
@@ -462,47 +433,24 @@
     gap: 0.5rem;
   }
 
+  /* Slightly smaller type than the global button kit. */
   .btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 0.25rem;
     font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
   }
 
   .btn:disabled {
     opacity: 0.5;
-    cursor: not-allowed;
   }
 
   .btn-defaults {
     background: #f59e0b;
     color: white;
     margin-right: auto;
+    box-shadow: none;
   }
 
   .btn-defaults:hover {
     background: #d97706;
-  }
-
-  .btn-primary {
-    background: #3b82f6;
-    color: white;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-  }
-
-  .btn-secondary {
-    background: #e2e8f0;
-    color: #1e293b;
-  }
-
-  .btn-secondary:hover {
-    background: #cbd5e1;
   }
 </style>
 

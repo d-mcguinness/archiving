@@ -56,7 +56,7 @@ public class ArchivalPackage {
     private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "stage", nullable = false, length = 10)
+    @Column(name = "stage", nullable = false, length = 20)
     private PackageStage stage;
 
     @Enumerated(EnumType.STRING)

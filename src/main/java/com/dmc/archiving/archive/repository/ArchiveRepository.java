@@ -80,7 +80,7 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long>, JpaSpec
 
     // Find SIPs by tenant
     @Query("SELECT a FROM Archive a WHERE a.tenantId = :tenantId AND a.rootElement IS NOT NULL")
-    List<Archive> findSipsByTenantId(@Param("tenantId") Long tenantId);
+    List<Archive> findIntakesByTenantId(@Param("tenantId") Long tenantId);
 
     // ========== Performance Optimization Queries ==========
 

@@ -167,8 +167,11 @@
 <div class="archives-page">
   <Breadcrumb items={[{ label: 'Admin', href: '/admin' }, { label: 'Archives' }]} />
   <div class="page-header">
-    <h1>Archives Management</h1>
-    <a href="/archives/create" class="add-archive-btn">+ Add Archive</a>
+    <div class="page-heading">
+      <span class="eyebrow">Admin console</span>
+      <h1>Archives Management</h1>
+    </div>
+    <a href="/archives/create" class="add-archive-btn btn-primary">+ Add Archive</a>
   </div>
 
   {#if error}
@@ -187,7 +190,7 @@
       <span class="empty-icon">📁</span>
       <h3>No archives found</h3>
       <p>Create your first archive to get started!</p>
-      <a href="/archives/create" class="btn-create">Create First Archive</a>
+      <a href="/archives/create" class="btn-create btn-primary">Create First Archive</a>
     </div>
   {:else}
     <div class="archives-count">
@@ -195,8 +198,8 @@
       <span class="count-value">{archives.length}</span>
     </div>
 
-    <div class="table-container">
-      <table class="data-table">
+    <div class="table-container table-card">
+      <table class="data-table arc-table">
         <thead>
           <tr>
             <th>ID</th>
@@ -246,7 +249,7 @@
                 <span class="badge {getStatusBadgeClass(archive.status)}">{archive.status}</span>
               </td>
               <td class="standard-cell">
-                <span class="badge standard-badge">{archive.standard}</span>
+                <span class="badge cyan standard-badge">{archive.standard}</span>
               </td>
               <td class="owner-cell">{getUserName(archive.ownerId)}</td>
               <td class="date-cell">{new Date(archive.createdAt).toLocaleDateString()}</td>
@@ -267,34 +270,34 @@
               </td>
               <td class="actions-cell">
                 <a
-                  href="/admin/archive/{archive.id}/sip/create"
-                  class="btn-action btn-sip"
-                  title="Create SIP from this archive"
+                  href="/admin/archive/{archive.id}/intake/create"
+                  class="btn-action btn-sip btn-chip pink"
+                  title="Create Intake from this archive"
                 >
-                  📦 Create SIP
+                  📦 Create Intake
                 </a>
                 <a
-                  href="/admin/archive/{archive.id}/aip/create"
-                  class="btn-action btn-aip"
-                  title="Create AIP from this archive"
+                  href="/admin/archive/{archive.id}/preservation/create"
+                  class="btn-action btn-aip btn-chip indigo"
+                  title="Create Preservation from this archive"
                 >
-                  🏗️ Create AIP
+                  🏗️ Create Preservation
                 </a>
                 <a
-                  href="/admin/archive/{archive.id}/dip/create"
-                  class="btn-action btn-dip"
-                  title="Create DIP from this archive"
+                  href="/admin/archive/{archive.id}/release/create"
+                  class="btn-action btn-dip btn-chip orange"
+                  title="Create Release from this archive"
                 >
-                  📤 Create DIP
+                  📤 Create Release
                 </a>
-                <a href="/archives/delete/{archive.id}" class="btn-action btn-delete">
+                <a href="/archives/delete/{archive.id}" class="btn-action btn-delete btn-chip red">
                   🗑️ Delete
                 </a>
-                <a href="/archives/update/{archive.id}" class="btn-action btn-edit">
+                <a href="/archives/update/{archive.id}" class="btn-action btn-edit btn-chip slate">
                   ✏️ Edit
                 </a>
                 <button
-                  class="btn-action btn-extract"
+                  class="btn-action btn-extract btn-chip violet"
                   on:click={() => openExtractDialog(archive)}
                   title="Extract archive"
                 >
@@ -312,7 +315,7 @@
 <!-- Extract Password Dialog -->
 {#if showExtractDialog}
   <div class="modal-overlay" on:click={closeExtractDialog} role="dialog" aria-modal="true">
-    <div class="modal-content" on:click|stopPropagation role="document">
+    <div class="modal-content modal" on:click|stopPropagation role="document">
       <div class="modal-header">
         <h3>🔐 Extract Archive</h3>
         <button class="modal-close" on:click={closeExtractDialog} aria-label="Close">×</button>
@@ -387,64 +390,25 @@
 
   .page-header h1 {
     margin: 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 2rem;
   }
 
-  .add-archive-btn {
-    background: #3b82f6;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.2s;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-
-  .add-archive-btn:hover {
-    background: #2563eb;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  .error {
-    background: #fee;
-    color: #c00;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    margin-bottom: 1.5rem;
-    border: 1px solid #fcc;
-  }
-
+  /* .add-archive-btn, .btn-create, .error, .loading and .spinner use the
+     global kit (app.css); only the column stack under the spinner is local. */
   .loading {
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     min-height: 400px;
     gap: 1rem;
-  }
-
-  .spinner {
-    border: 4px solid #f3f4f6;
-    border-top: 4px solid #3b82f6;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
   }
 
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: var(--arc-card, #fff);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
   }
 
   .empty-icon {
@@ -455,27 +419,12 @@
 
   .empty-state h3 {
     margin: 0 0 0.5rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
   }
 
   .empty-state p {
     margin: 0 0 1.5rem 0;
-    color: #64748b;
-  }
-
-  .btn-create {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: #3b82f6;
-    color: white;
-    text-decoration: none;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    transition: background 0.2s;
-  }
-
-  .btn-create:hover {
-    background: #2563eb;
+    color: var(--arc-muted, #64748b);
   }
 
   .archives-count {
@@ -484,76 +433,44 @@
     gap: 0.5rem;
     margin-bottom: 1.5rem;
     padding: 1rem 1.5rem;
-    background: #f8fafc;
-    border-radius: 0.5rem;
-    border: 1px solid #e2e8f0;
+    background: var(--arc-card, #fff);
+    border-radius: 0.75rem;
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-left: 3px solid var(--arc-cyan-deep, #06b6d4);
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
   }
 
   .count-label {
-    color: #64748b;
-    font-weight: 600;
+    color: var(--arc-muted, #64748b);
+    font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.875rem;
-    letter-spacing: 0.05em;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
   }
 
   .count-value {
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-weight: 700;
     font-size: 1.25rem;
   }
 
+  /* Table chrome comes from .table-card / table.arc-table; only the
+     page-specific scroll + column sizing stays local. */
   .table-container {
-    background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow-x: auto;
-    border: 1px solid #e2e8f0;
   }
 
   .data-table {
-    width: 100%;
-    border-collapse: collapse;
     min-width: 1400px;
   }
 
-  .data-table thead {
-    background: #f8fafc;
-  }
-
   .data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: #475569;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     white-space: nowrap;
-    border-bottom: 2px solid #e2e8f0;
-  }
-
-  .data-table tbody tr {
-    border-bottom: 1px solid #e2e8f0;
-    transition: background-color 0.15s;
-  }
-
-  .data-table tbody tr:hover {
-    background: #f8fafc;
-  }
-
-  .data-table tbody tr:last-child {
-    border-bottom: none;
-  }
-
-  .data-table td {
-    padding: 1rem;
-    color: #1e293b;
   }
 
   .id-cell {
     font-family: 'Monaco', 'Courier New', monospace;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
     width: 60px;
   }
@@ -571,18 +488,18 @@
 
   .archive-title {
     font-weight: 600;
-    color: #1e293b;
+    color: var(--arc-ink, #1e293b);
   }
 
   .archive-description {
     font-size: 0.875rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     line-height: 1.4;
   }
 
   .content-preview {
     font-size: 0.75rem;
-    color: #94a3b8;
+    color: var(--arc-faint, #94a3b8);
     font-family: 'Monaco', 'Courier New', monospace;
     line-height: 1.4;
     margin-top: 0.25rem;
@@ -601,18 +518,18 @@
 
   .tenant-name {
     font-weight: 600;
-    color: #1e293b;
+    color: var(--arc-ink, #1e293b);
     font-size: 0.875rem;
   }
 
   .tenant-domain {
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-family: 'Monaco', 'Courier New', monospace;
   }
 
   .no-tenant {
-    color: #cbd5e1;
+    color: var(--arc-faint, #94a3b8);
     font-style: italic;
   }
 
@@ -621,46 +538,32 @@
     white-space: nowrap;
   }
 
-  .badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 0.375rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
-  }
-
+  /* .badge base is global; these archive status hues are page-specific. */
   .badge.active,
   .badge.published {
-    background: #dcfce7;
-    color: #166534;
+    background: var(--arc-chip-green-bg, #dcfce7);
+    color: var(--arc-chip-green-ink, #166534);
   }
 
   .badge.draft {
-    background: #fef3c7;
-    color: #92400e;
+    background: var(--arc-chip-amber-bg, #fef3c7);
+    color: var(--arc-chip-amber-ink, #92400e);
   }
 
   .badge.archived,
   .badge.deleted {
-    background: #fee2e2;
-    color: #991b1b;
-  }
-
-  .standard-badge {
-    background: #dbeafe;
-    color: #1e40af;
+    background: var(--arc-chip-red-bg, #fee2e2);
+    color: var(--arc-chip-red-ink, #991b1b);
   }
 
   .owner-cell {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
     white-space: nowrap;
   }
 
   .date-cell {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
     white-space: nowrap;
     width: 120px;
@@ -679,25 +582,25 @@
   .user-badge {
     display: inline-block;
     padding: 0.125rem 0.5rem;
-    background: #e0e7ff;
-    color: #3730a3;
-    border-radius: 0.25rem;
+    background: var(--arc-chip-indigo-bg, #e0e7ff);
+    color: var(--arc-chip-indigo-ink, #4338ca);
+    border-radius: 9999px;
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 600;
   }
 
   .more-badge {
     display: inline-block;
     padding: 0.125rem 0.5rem;
-    background: #f1f5f9;
-    color: #64748b;
-    border-radius: 0.25rem;
+    background: var(--arc-chip-slate-bg, #f1f5f9);
+    color: var(--arc-chip-slate-ink, #475569);
+    border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
   }
 
   .no-users {
-    color: #cbd5e1;
+    color: var(--arc-faint, #94a3b8);
     font-style: italic;
     font-size: 0.875rem;
   }
@@ -708,96 +611,26 @@
     width: 440px;
   }
 
+  /* Row actions are global .btn-chip <hue>; only this table's chip
+     spacing and slightly larger hit area stay local. */
   .btn-action {
     display: inline-block;
     padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
     font-size: 0.875rem;
-    font-weight: 600;
-    transition: all 0.2s;
     margin-left: 0.5rem;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
   }
 
-  .btn-edit {
-    background: #f59e0b;
-    color: white;
-  }
-
-  .btn-edit:hover {
-    background: #d97706;
-  }
-
-  .btn-sip {
-    background: #ec4899;
-    color: white;
-  }
-
-  .btn-sip:hover {
-    background: #db2777;
-  }
-
-  .btn-aip {
-    background: #6366f1;
-    color: white;
-  }
-
-  .btn-aip:hover {
-    background: #4f46e5;
-  }
-
-  .btn-dip {
-    background: #f59e0b;
-    color: white;
-  }
-
-  .btn-dip:hover {
-    background: #d97706;
-  }
-
-  .btn-extract {
-    background: #8b5cf6;
-    color: white;
-  }
-
-  .btn-extract:hover {
-    background: #7c3aed;
-  }
-
-  .btn-delete {
-    background: #dc2626;
-    color: white;
-  }
-
-  .btn-delete:hover {
-    background: #b91c1c;
-  }
-
-  /* Modal Styles */
+  /* Modal chrome is global .modal-overlay / .modal; the blur, the narrower
+     width and the sectioned (self-padding) body stay local. */
   .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: 1000;
     backdrop-filter: blur(2px);
   }
 
   .modal-content {
-    background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     max-width: 500px;
     width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
+    padding: 0;
   }
 
   .modal-header {
@@ -805,12 +638,12 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--arc-line, #e8edf3);
   }
 
   .modal-header h3 {
     margin: 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 1.25rem;
     font-weight: 600;
   }
@@ -818,9 +651,10 @@
   .modal-close {
     background: none;
     border: none;
+    box-shadow: none;
     font-size: 1.75rem;
     cursor: pointer;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     padding: 0;
     width: 32px;
     height: 32px;
@@ -832,8 +666,8 @@
   }
 
   .modal-close:hover {
-    background: #f1f5f9;
-    color: #1e293b;
+    background: var(--arc-card-2, #f1f5f9);
+    color: var(--arc-ink, #1e293b);
   }
 
   .modal-body {
@@ -842,57 +676,38 @@
 
   .archive-info {
     margin: 0 0 1rem 0;
-    color: #475569;
+    color: var(--arc-body, #475569);
     font-size: 0.875rem;
   }
 
   .archive-info strong {
-    color: #1e293b;
+    color: var(--arc-ink, #1e293b);
   }
 
   .info-text {
     margin: 0 0 1.5rem 0;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
     line-height: 1.5;
-  }
-
-  .form-group {
-    margin-bottom: 1rem;
   }
 
   .form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #475569;
+    color: var(--arc-body, #475569);
     font-weight: 500;
     font-size: 0.875rem;
   }
 
-  .form-group input[type="password"] {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-
-  .form-group input[type="password"]:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-
   .form-group input[type="password"]:disabled {
-    background: #f1f5f9;
+    background: var(--arc-card-2, #f1f5f9);
     cursor: not-allowed;
   }
 
   .helper-text {
     display: block;
     margin-top: 0.375rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.75rem;
   }
 
@@ -906,9 +721,9 @@
   }
 
   .alert-error {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    color: #991b1b;
+    background: var(--arc-alert-red-bg, #fef2f2);
+    border: 1px solid var(--arc-alert-red-border, #fecaca);
+    color: var(--arc-alert-red-ink, #991b1b);
   }
 
   .alert-icon {
@@ -920,41 +735,10 @@
     gap: 0.75rem;
     justify-content: flex-end;
     padding: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
-  .btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .btn-primary {
-    background: #3b82f6;
-    color: white;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-  }
-
-  .btn-secondary {
-    background: #e2e8f0;
-    color: #475569;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    background: #cbd5e1;
-  }
+  /* .btn-primary / .btn-secondary come from the global kit (app.css). */
 
   @media (max-width: 768px) {
     .archives-page {

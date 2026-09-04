@@ -163,6 +163,7 @@
     />
     <div class="header">
     <div>
+      <span class="eyebrow">User management</span>
       <h1>Tenant Users</h1>
       {#if tenant}
         <p class="tenant-info">
@@ -175,7 +176,7 @@
       {/if}
     </div>
     <div class="header-actions">
-      <a href="/tenants/{data.tenantId}/users/create" class="btn-create">+ Create User</a>
+      <a href="/tenants/{data.tenantId}/users/create" class="btn-create btn-secondary">+ Create User</a>
       <button class="btn-primary" on:click={openAddUserDialog}>
         ➕ Add User to Tenant
       </button>
@@ -210,8 +211,8 @@
         </button>
       </div>
     {:else}
-      <div class="table-container">
-        <table class="data-table">
+      <div class="table-container table-card">
+        <table class="data-table arc-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -234,11 +235,11 @@
                 <td>{user.email}</td>
                 <td>{user.age || 'N/A'}</td>
                 <td class="actions-cell">
-                  <a href="/tenants/{data.tenantId}/users/{user.id}" class="btn-action btn-view">
+                  <a href="/tenants/{data.tenantId}/users/{user.id}" class="btn-action btn-view btn-chip indigo">
                     👤 View
                   </a>
                   <button
-                    class="btn-action btn-remove"
+                    class="btn-action btn-remove btn-chip red"
                     on:click={() => removeUserFromTenant(user.id, user.name)}
                   >
                     ✖️ Remove
@@ -256,8 +257,8 @@
 
 <!-- Add User Dialog -->
 {#if showAddUserDialog}
-  <div class="dialog-overlay" on:click={closeAddUserDialog}>
-    <div class="dialog" on:click|stopPropagation>
+  <div class="dialog-overlay modal-overlay" on:click={closeAddUserDialog}>
+    <div class="dialog modal" on:click|stopPropagation>
       <div class="dialog-header">
         <h2>Add User to Tenant</h2>
         <button class="dialog-close" on:click={closeAddUserDialog}>✕</button>
@@ -304,19 +305,19 @@
 
   h1 {
     margin: 0 0 0.5rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 2rem;
   }
 
   .tenant-info {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     margin: 0;
     font-size: 1rem;
   }
 
   .separator {
     margin: 0 0.5rem;
-    color: #cbd5e1;
+    color: var(--arc-faint, #cbd5e1);
   }
 
   .header-actions {
@@ -325,46 +326,8 @@
     flex-shrink: 0;
   }
 
-  .btn-create {
-    padding: 0.5rem 1rem;
-    background: #10b981;
-    color: white;
-    border-radius: 0.5rem;
-    text-decoration: none;
-    font-weight: 600;
-    transition: background 0.2s;
-  }
-
-  .btn-create:hover { background: #059669; }
-
-  .btn-back {
-    padding: 0.5rem 1rem;
-    background: #f1f5f9;
-    color: #475569;
-    border-radius: 0.5rem;
-    text-decoration: none;
-    font-weight: 500;
-    transition: background 0.2s;
-  }
-
-  .btn-back:hover {
-    background: #e2e8f0;
-  }
-
-  .btn-primary {
-    padding: 0.5rem 1rem;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-  }
+  /* .btn-create uses the global .btn-secondary ghost button from app.css */
+  /* .btn-primary inherits the global brand-gradient button styling from app.css */
 
   /* Access Denied */
   .access-denied {
@@ -384,18 +347,18 @@
 
   .access-denied h1 {
     margin: 0 0 1rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 2rem;
   }
 
   .access-denied p {
     margin: 0.5rem 0;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 1.125rem;
   }
 
   .redirect-message {
-    color: #3b82f6;
+    color: var(--arc-indigo, #6366f1);
     font-weight: 500;
     animation: pulse 1.5s ease-in-out infinite;
   }
@@ -405,32 +368,14 @@
     50% { opacity: 0.5; }
   }
 
-  .loading {
-    background: #cbd5e1;
-    cursor: not-allowed;
-  }
-
-  .btn-secondary {
-    padding: 0.5rem 1rem;
-    background: #f1f5f9;
-    color: #475569;
-    border: none;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    background: #e2e8f0;
-  }
+  /* .btn-secondary inherits the global ghost button styling from app.css */
 
   .stats-bar {
-    background: white;
+    background: var(--arc-card, #fff);
     padding: 1rem 1.5rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    border: 1px solid var(--arc-line, #e8edf3);
     margin-bottom: 1.5rem;
   }
 
@@ -441,51 +386,33 @@
   }
 
   .stat-label {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-weight: 500;
   }
 
   .stat-value {
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
+    font-family: var(--arc-font-display, 'Space Grotesk', 'Inter', sans-serif);
+    letter-spacing: -0.02em;
     font-weight: 700;
     font-size: 1.25rem;
   }
 
-  .loading {
-    text-align: center;
-    padding: 4rem 2rem;
-  }
+  /* .loading / .spinner use the global loading pattern from app.css */
 
-  .spinner {
-    width: 3rem;
-    height: 3rem;
-    border: 4px solid #f3f4f6;
-    border-top-color: #3b82f6;
-    border-radius: 50%;
-    margin: 0 auto 1rem;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
+  /* .error uses the global alert panel from app.css; only the layout differs here */
   .error {
     text-align: center;
     padding: 2rem;
-    background: #fee2e2;
-    border: 1px solid #fca5a5;
-    border-radius: 0.5rem;
-    color: #991b1b;
   }
 
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
+    background: var(--arc-card, #fff);
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    border: 1px solid var(--arc-line, #e8edf3);
   }
 
   .empty-icon {
@@ -496,47 +423,18 @@
   .empty-title {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     margin-bottom: 0.5rem;
   }
 
   .empty-description {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     margin-bottom: 2rem;
   }
 
+  /* Table chrome comes from the global .table-card / .arc-table kit in app.css */
   .table-container {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow-x: auto;
-    border: 1px solid #e2e8f0;
-  }
-
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .data-table thead {
-    background: #f8fafc;
-  }
-
-  .data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: #475569;
-    border-bottom: 1px solid #e2e8f0;
-  }
-
-  .data-table td {
-    padding: 1rem;
-    border-bottom: 1px solid #f1f5f9;
-  }
-
-  .data-table tbody tr:hover {
-    background: #f8fafc;
   }
 
   .user-name {
@@ -554,66 +452,13 @@
     gap: 0.5rem;
   }
 
-  .btn-action {
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
+  /* Row actions use the global .btn-chip kit (indigo / red) from app.css */
 
-  .btn-edit {
-    background: #3b82f6;
-    color: white;
-  }
-
-  .btn-edit:hover {
-    background: #2563eb;
-  }
-
-  .btn-remove {
-    background: #ef4444;
-    color: white;
-  }
-
-  .btn-remove:hover {
-    background: #dc2626;
-  }
-
-  .btn-view {
-    background: #f59e0b;
-    color: white;
-  }
-
-  .btn-view:hover {
-    background: #d97706;
-  }
-
-  /* Dialog Styles */
-  .dialog-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-
+  /* Dialog Styles — surface comes from the global .modal-overlay / .modal kit */
   .dialog {
-    background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    padding: 0;
     max-width: 500px;
     width: 90%;
-    max-height: 90vh;
-    overflow: auto;
   }
 
   .dialog-header {
@@ -621,20 +466,21 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--arc-line, #e8edf3);
   }
 
   .dialog-header h2 {
     margin: 0;
     font-size: 1.25rem;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
   }
 
   .dialog-close {
     background: none;
     border: none;
+    box-shadow: none;
     font-size: 1.5rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     cursor: pointer;
     padding: 0;
     width: 2rem;
@@ -642,43 +488,35 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0.25rem;
+    border-radius: 0.375rem;
     transition: background 0.2s;
   }
 
   .dialog-close:hover {
-    background: #f1f5f9;
+    background: var(--arc-card-2, #f1f5f9);
+    transform: none;
+    box-shadow: none;
   }
 
   .dialog-body {
     padding: 1.5rem;
   }
 
-  .form-group {
-    margin-bottom: 1rem;
-  }
-
   .form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #1e293b;
+    font-weight: 600;
+    color: var(--arc-ink, #0f172a);
   }
 
-  .form-group select {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-  }
+  /* select inherits the global Arcana input styling from app.css */
 
   .dialog-footer {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
     padding: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
   @media (max-width: 768px) {

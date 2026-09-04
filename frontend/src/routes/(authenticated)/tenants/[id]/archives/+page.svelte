@@ -337,6 +337,7 @@
     <!-- Page Header -->
     <div class="page-header">
       <div class="header-content">
+        <span class="eyebrow">Tenant workspace</span>
         <h1>📁 Archives</h1>
         {#if tenant}
           <div class="tenant-badge">
@@ -366,7 +367,7 @@
         <span class="empty-icon">📁</span>
         <h3>No archives found</h3>
         <p>This tenant doesn't have any archives yet.</p>
-        <a href="/archives/create" class="btn-create">Create First Archive</a>
+        <a href="/archives/create" class="btn-create btn-primary">Create First Archive</a>
       </div>
     {:else}
       <div class="archives-count">
@@ -374,8 +375,8 @@
         <span class="count-value">{archives.length}</span>
       </div>
 
-      <div class="table-container">
-        <table class="data-table">
+      <div class="table-container table-card">
+        <table class="data-table arc-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -404,7 +405,7 @@
                   <span class="badge {getStatusBadgeClass(archive.status)}">{archive.status}</span>
                 </td>
                 <td class="standard-cell">
-                  <span class="badge standard-badge">{archive.standard}</span>
+                  <span class="badge indigo standard-badge">{archive.standard}</span>
                 </td>
                 <td class="date-cell">{new Date(archive.createdAt).toLocaleDateString()}</td>
                 <td class="date-cell">{new Date(archive.updatedAt).toLocaleDateString()}</td>
@@ -423,28 +424,28 @@
                   {/if}
                 </td>
                 <td class="actions-cell">
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/update" class="btn-action btn-edit">
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/update" class="btn-action btn-edit btn-chip indigo">
                     ✏️ Edit
                   </a>
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/sips" class="btn-action btn-sips">
-                    📦 SIPs
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/intakes" class="btn-action btn-sips btn-chip pink">
+                    📦 Intakes
                   </a>
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/aips" class="btn-action btn-aips">
-                    🏗️ AIPs
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/preservations" class="btn-action btn-aips">
+                    🏗️ Preservations
                   </a>
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/dips" class="btn-action btn-dips">
-                    📤 DIPs
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/releases" class="btn-action btn-dips btn-chip orange">
+                    📤 Releases
                   </a>
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/users" class="btn-action btn-users">
+                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/users" class="btn-action btn-users btn-chip amber">
                     👥 Users
                   </a>
                   {#if currentRole === 'ADMIN'}
-                    <a href="/archives/delete/{archive.id}" class="btn-action btn-delete">
+                    <a href="/archives/delete/{archive.id}" class="btn-action btn-delete btn-chip red">
                       🗑️ Delete
                     </a>
                     <a
                       href="/tenants/{data.tenantId}/archives/{archive.id}/extract"
-                      class="btn-action btn-extract"
+                      class="btn-action btn-extract btn-chip green"
                       title="Extract archive as JSON"
                     >
                       📥 Extract
@@ -471,7 +472,7 @@
 <!-- Extract Password Dialog -->
 {#if showExtractDialog}
   <div class="modal-overlay" on:click={closeExtractDialog} role="dialog" aria-modal="true">
-    <div class="modal-content" on:click|stopPropagation role="document">
+    <div class="modal-content modal" on:click|stopPropagation role="document">
       <div class="modal-header">
         <h3>🔐 Extract Archive</h3>
         <button class="modal-close" on:click={closeExtractDialog} aria-label="Close">×</button>
@@ -522,7 +523,7 @@
 <!-- Create Archive Modal -->
 {#if showCreateModal}
   <div class="modal-overlay" on:click={closeCreateModal} role="dialog" aria-modal="true">
-    <div class="modal-content modal-wide" on:click|stopPropagation role="document">
+    <div class="modal-content modal modal-wide" on:click|stopPropagation role="document">
       <div class="modal-header">
         <h3>Create New Archive</h3>
         <div class="modal-header-actions">
@@ -627,18 +628,18 @@
 
   .access-denied h1 {
     margin: 0 0 1rem 0;
-    color: #1e293b;
+    color: var(--arc-ink);
     font-size: 2rem;
   }
 
   .access-denied p {
     margin: 0.5rem 0;
-    color: #64748b;
+    color: var(--arc-muted);
     font-size: 1.125rem;
   }
 
   .redirect-message {
-    color: #3b82f6;
+    color: var(--arc-link);
     font-weight: 500;
     animation: pulse 1.5s ease-in-out infinite;
   }
@@ -646,27 +647,6 @@
   @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
-  }
-
-  /* Breadcrumb */
-  .breadcrumb {
-    display: flex; align-items: center; gap: 0.5rem;
-    margin-bottom: 1.5rem; font-size: 0.875rem;
-  }
-
-  .breadcrumb a {
-    color: #3b82f6;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s;
-  }
-
-  .breadcrumb a:hover {
-    color: #2563eb;
-  }
-
-  .breadcrumb .sep { color: #94a3b8; }
-  .breadcrumb > span:last-child { color: #64748b; font-weight: 600;
   }
 
   /* Page Header */
@@ -684,7 +664,7 @@
 
   .page-header h1 {
     margin: 0 0 0.75rem 0;
-    color: #1e293b;
+    color: var(--arc-ink);
     font-size: 2rem;
   }
 
@@ -692,76 +672,45 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 0.5rem;
+    padding: 0.35rem 0.9rem;
+    background: var(--arc-chip-indigo-bg);
+    color: var(--arc-chip-indigo-ink);
+    border-radius: 9999px;
     font-weight: 600;
+    font-size: 0.9rem;
   }
 
   .tenant-icon {
     font-size: 1.25rem;
   }
 
+  /* Primary look comes from the global button styles */
   .add-archive-btn {
-    padding: 0.75rem 1.5rem;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
     white-space: nowrap;
   }
 
-  .add-archive-btn:hover {
-    background: #2563eb;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  /* Loading */
+  /* .error, .loading and .spinner come from the global kit (app.css); this
+     loader only stacks a caption under a slightly larger, slower spinner. */
   .loading {
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     min-height: 400px;
     gap: 1rem;
   }
 
   .spinner {
-    border: 4px solid #f3f4f6;
-    border-top: 4px solid #3b82f6;
-    border-radius: 50%;
+    border-width: 4px;
     width: 40px;
     height: 40px;
     animation: spin 1s linear infinite;
   }
 
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  /* Error */
-  .error {
-    background: #fee;
-    color: #c00;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid #fcc;
-    margin-bottom: 1.5rem;
-  }
-
-  /* Empty State */
+  /* Empty State — dark hero panel */
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: var(--arc-grad-dark, radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%));
+    border: 1px solid var(--arc-line);
+    border-radius: 1rem;
   }
 
   .empty-icon {
@@ -772,28 +721,15 @@
 
   .empty-state h3 {
     margin: 0 0 0.5rem 0;
-    color: #1e293b;
+    color: #f8fafc;
   }
 
   .empty-state p {
     margin: 0 0 1.5rem 0;
-    color: #64748b;
+    color: #cbd5e1;
   }
 
-  .btn-create {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: #3b82f6;
-    color: white;
-    text-decoration: none;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    transition: background 0.2s;
-  }
-
-  .btn-create:hover {
-    background: #2563eb;
-  }
+  /* .btn-create rides on the global .btn-primary. */
 
   /* Archives Count */
   .archives-count {
@@ -802,69 +738,37 @@
     gap: 0.5rem;
     margin-bottom: 1.5rem;
     padding: 1rem 1.5rem;
-    background: #f8fafc;
-    border-radius: 0.5rem;
-    border: 1px solid #e2e8f0;
+    background: var(--arc-card);
+    border-radius: 0.75rem;
+    border: 1px solid var(--arc-line);
+    border-left: 3px solid #6366f1;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
   }
 
   .count-label {
-    color: #64748b;
-    font-weight: 600;
+    color: var(--arc-muted);
+    font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.875rem;
-    letter-spacing: 0.05em;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
   }
 
   .count-value {
-    color: #1e293b;
+    color: var(--arc-ink);
     font-weight: 700;
     font-size: 1.25rem;
+    font-family: var(--arc-font-display, 'Space Grotesk', 'Inter', sans-serif);
+    letter-spacing: -0.02em;
   }
 
-  /* Table */
+  /* Table chrome comes from .table-card / table.arc-table; only the
+     page-specific scroll + column sizing stays local. */
   .table-container {
-    background: white;
-    border-radius: 0.75rem;
     overflow-x: auto;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
-  }
-
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .data-table thead {
-    background: #f8fafc;
-  }
-
-  .data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: #475569;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 2px solid #e2e8f0;
-  }
-
-  .data-table td {
-    padding: 1rem;
-    border-bottom: 1px solid #e2e8f0;
-  }
-
-  .data-table tbody tr:last-child td {
-    border-bottom: none;
-  }
-
-  .data-table tbody tr:hover {
-    background: #f8fafc;
   }
 
   .id-cell {
-    color: #64748b;
+    color: var(--arc-muted);
     font-weight: 500;
     width: 60px;
   }
@@ -879,14 +783,9 @@
     gap: 0.25rem;
   }
 
-  .archive-title {
-    font-weight: 600;
-    color: #1e293b;
-  }
-
   .archive-description {
     font-size: 0.875rem;
-    color: #64748b;
+    color: var(--arc-muted);
     line-height: 1.4;
   }
 
@@ -895,38 +794,25 @@
     white-space: nowrap;
   }
 
-  .badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 0.375rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
-  }
-
+  /* .badge base and the indigo standard chip are global; these archive
+     status hues are page-specific. */
   .badge.published {
-    background: #dcfce7;
-    color: #166534;
+    background: var(--arc-chip-green-bg);
+    color: var(--arc-chip-green-ink);
   }
 
   .badge.draft {
-    background: #fef3c7;
-    color: #92400e;
+    background: var(--arc-chip-amber-bg);
+    color: var(--arc-chip-amber-ink);
   }
 
   .badge.archived {
-    background: #f1f5f9;
-    color: #475569;
-  }
-
-  .standard-badge {
-    background: #dbeafe;
-    color: #1e40af;
+    background: var(--arc-chip-slate-bg);
+    color: var(--arc-chip-slate-ink);
   }
 
   .date-cell {
-    color: #64748b;
+    color: var(--arc-muted);
     font-size: 0.875rem;
     white-space: nowrap;
   }
@@ -944,9 +830,9 @@
   .user-badge {
     display: inline-block;
     padding: 0.125rem 0.5rem;
-    background: #e0e7ff;
-    color: #3730a3;
-    border-radius: 0.25rem;
+    background: var(--arc-chip-indigo-bg);
+    color: var(--arc-chip-indigo-ink);
+    border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 500;
   }
@@ -954,15 +840,15 @@
   .more-badge {
     display: inline-block;
     padding: 0.125rem 0.5rem;
-    background: #f1f5f9;
-    color: #64748b;
-    border-radius: 0.25rem;
+    background: var(--arc-chip-slate-bg);
+    color: var(--arc-chip-slate-ink);
+    border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
   }
 
   .no-users {
-    color: #94a3b8;
+    color: var(--arc-faint);
     font-size: 0.875rem;
   }
 
@@ -970,35 +856,20 @@
     white-space: nowrap;
   }
 
+  /* Row actions are global .btn-chip <hue>; only this table's tighter chip
+     size and spacing stay local (the two bespoke tints below opt out). */
   .btn-action {
     display: inline-block;
     padding: 0.375rem 0.75rem;
     margin: 0 0.25rem;
     border: none;
-    border-radius: 0.375rem;
+    border-radius: 0.45rem;
     font-size: 0.75rem;
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
+    box-shadow: none;
     transition: all 0.2s;
-  }
-
-  .btn-delete {
-    background: #fee;
-    color: #c00;
-  }
-
-  .btn-delete:hover {
-    background: #fcc;
-  }
-
-  .btn-edit {
-    background: #dbeafe;
-    color: #1e40af;
-  }
-
-  .btn-edit:hover {
-    background: #bfdbfe;
   }
 
   .header-buttons {
@@ -1014,6 +885,7 @@
 
   .btn-package:hover:not(:disabled) {
     background: #7c3aed;
+    transform: none;
   }
 
   .btn-package:disabled {
@@ -1022,58 +894,29 @@
   }
 
   .clickable-row { cursor: pointer; }
-  .clickable-row:hover { background: #f1f5f9 !important; }
+  .clickable-row:hover { background: var(--arc-card-2) !important; }
 
   .archive-title-link {
-    color: #1e40af;
+    color: var(--arc-link);
     text-decoration: none;
     font-weight: 600;
   }
   .archive-title-link:hover { text-decoration: underline; }
 
-  .btn-sips { background: #fce7f3; color: #9d174d; }
-  .btn-sips:hover { background: #fbcfe8; }
+  /* Soft-indigo tint has no kit hue, so this chip stays local. */
+  .btn-aips { background: var(--arc-chip-soft-indigo-bg); color: var(--arc-chip-indigo-ink); }
+  .btn-aips:hover { background: var(--arc-chip-indigo-hover); }
 
-  .btn-aips { background: #eef2ff; color: #3730a3; }
-  .btn-aips:hover { background: #c7d2fe; }
-
-  .btn-dips { background: #fff7ed; color: #9a3412; }
-  .btn-dips:hover { background: #fed7aa; }
-
-  .btn-users { background: #fef3c7; color: #92400e; }
-  .btn-users:hover { background: #fde68a; }
-
-  .btn-extract {
-    background: #dcfce7;
-    color: #166534;
-  }
-
-  .btn-extract:hover {
-    background: #bbf7d0;
-  }
-
-  /* Modal */
+  /* Modal chrome is global .modal-overlay / .modal; the narrower width and
+     the sectioned (self-padding) body stay local. */
   .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: 1000;
   }
 
   .modal-content {
-    background: white;
-    border-radius: 0.75rem;
     max-width: 500px;
     width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    padding: 0;
   }
 
   .modal-wide {
@@ -1088,19 +931,23 @@
 
   .btn-fill {
     padding: 0.375rem 0.75rem;
-    background: #f0fdf4;
-    color: #16a34a;
-    border: 1px solid #bbf7d0;
-    border-radius: 0.375rem;
+    background: var(--arc-card);
+    color: var(--arc-ink);
+    border: 1.5px solid var(--arc-line-strong);
+    border-radius: 0.45rem;
     font-weight: 600;
     font-size: 0.8rem;
     cursor: pointer;
-    transition: all 0.2s;
+    box-shadow: none;
+    transition: border-color 0.18s ease, color 0.18s ease;
   }
 
   .btn-fill:hover {
-    background: #dcfce7;
-    border-color: #86efac;
+    background: var(--arc-card);
+    border-color: var(--arc-indigo);
+    color: var(--arc-link);
+    transform: none;
+    box-shadow: none;
   }
 
   .form-row {
@@ -1109,27 +956,11 @@
     gap: 1rem;
   }
 
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-family: inherit;
-  }
-
-  .form-group select:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-
+  /* Inputs, selects & textareas are styled by the global app.css rules */
   .form-group select:disabled,
   .form-group textarea:disabled,
   .form-group input:disabled {
-    background: #f1f5f9;
+    background: var(--arc-card-2);
     cursor: not-allowed;
   }
 
@@ -1142,25 +973,30 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--arc-line);
   }
 
   .modal-header h3 {
     margin: 0;
-    color: #1e293b;
+    color: var(--arc-ink);
   }
 
   .modal-close {
     background: none;
     border: none;
+    padding: 0;
+    box-shadow: none;
     font-size: 1.5rem;
-    color: #64748b;
+    color: var(--arc-muted);
     cursor: pointer;
     transition: color 0.2s;
   }
 
   .modal-close:hover {
-    color: #1e293b;
+    background: none;
+    color: var(--arc-ink);
+    transform: none;
+    box-shadow: none;
   }
 
   .modal-body {
@@ -1169,12 +1005,12 @@
 
   .archive-info {
     margin: 0 0 1rem 0;
-    color: #1e293b;
+    color: var(--arc-ink);
   }
 
   .info-text {
     margin: 0 0 1.5rem 0;
-    color: #64748b;
+    color: var(--arc-muted);
     font-size: 0.875rem;
   }
 
@@ -1188,34 +1024,16 @@
   }
 
   .alert-error {
-    background: #fee;
-    color: #c00;
-    border: 1px solid #fcc;
-  }
-
-  .form-group {
-    margin-bottom: 1rem;
+    background: var(--arc-alert-red-bg);
+    color: var(--arc-alert-red-ink);
+    border: 1px solid var(--arc-alert-red-border);
   }
 
   .form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #1e293b;
+    color: var(--arc-ink);
     font-weight: 600;
-  }
-
-  .form-group input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-  }
-
-  .form-group input:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 
   .modal-footer {
@@ -1223,42 +1041,10 @@
     justify-content: flex-end;
     gap: 0.75rem;
     padding: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--arc-line);
   }
 
-  .btn-secondary,
-  .btn-primary {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn-secondary {
-    background: #f1f5f9;
-    color: #475569;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    background: #e2e8f0;
-  }
-
-  .btn-primary {
-    background: #3b82f6;
-    color: white;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-  }
-
-  .btn-primary:disabled,
-  .btn-secondary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  /* .btn-primary / .btn-secondary come from the global kit (app.css). */
 
   @media (max-width: 768px) {
     .tenant-archives-page {
@@ -1267,10 +1053,6 @@
 
     .page-header {
       flex-direction: column;
-    }
-
-    .table-container {
-      overflow-x: auto;
     }
 
     .data-table {

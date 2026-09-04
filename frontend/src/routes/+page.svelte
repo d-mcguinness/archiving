@@ -23,7 +23,7 @@
     {
       icon: '⟳',
       title: 'The complete OAIS workflow',
-      body: 'Carry every asset cleanly from SIP to AIP to DIP, with provenance, fixity, and integrity tracked at every step.'
+      body: 'Carry every asset cleanly from Intake to Preservation to Release, with provenance, fixity, and integrity tracked at every step.'
     },
     {
       icon: '⛉',
@@ -44,29 +44,29 @@
 
   const workflow = [
     {
-      stage: 'SIP',
+      stage: 'Intake',
       step: '01',
       kicker: 'Ingest',
       title: 'Submission packages',
-      body: 'Assemble and validate Submission Information Packages across all ten standards, with metadata captured at the door.',
+      body: 'Assemble and validate Intake packages across all ten standards, with metadata captured at the door.',
       href: '/ingest',
       tone: 'ingest'
     },
     {
-      stage: 'AIP',
+      stage: 'Preservation',
       step: '02',
       kicker: 'Preserve',
       title: 'Long-term storage',
-      body: 'Seal Archival Information Packages with full provenance, fixity checks, and format-migration readiness.',
+      body: 'Seal Preservation packages with full provenance, fixity checks, and format-migration readiness.',
       href: '/preserve',
       tone: 'preserve'
     },
     {
-      stage: 'DIP',
+      stage: 'Release',
       step: '03',
       kicker: 'Deliver',
       title: 'Access packages',
-      body: 'Produce Dissemination Information Packages tailored to each audience, with standard-compliant metadata and access control.',
+      body: 'Produce Release packages tailored to each audience, with standard-compliant metadata and access control.',
       href: '/deliver',
       tone: 'deliver'
     }
@@ -86,7 +86,7 @@
       price: '$0',
       cadence: 'forever',
       tagline: 'Explore the full archival workflow',
-      features: ['5 team members', '10 archives', '100 MB storage', 'All 10 open standards', 'SIP → AIP → DIP workflow'],
+      features: ['5 team members', '10 archives', '100 MB storage', 'All 10 open standards', 'Intake → Preservation → Release workflow'],
       cta: 'Start free',
       popular: false
     },
@@ -193,19 +193,19 @@
             </div>
             <div class="pc-flow">
               <div class="pc-node n-ingest">
-                <span class="pc-stage">SIP</span>
+                <span class="pc-stage">Intake</span>
                 <span class="pc-kicker">Ingest</span>
                 <span class="pc-state">validated</span>
               </div>
               <div class="pc-conn"><span class="pc-pulse"></span></div>
               <div class="pc-node n-preserve">
-                <span class="pc-stage">AIP</span>
+                <span class="pc-stage">Preservation</span>
                 <span class="pc-kicker">Preserve</span>
                 <span class="pc-state">sealed</span>
               </div>
               <div class="pc-conn"><span class="pc-pulse" style="animation-delay:.8s"></span></div>
               <div class="pc-node n-deliver">
-                <span class="pc-stage">DIP</span>
+                <span class="pc-stage">Release</span>
                 <span class="pc-kicker">Deliver</span>
                 <span class="pc-state">ready</span>
               </div>
@@ -368,6 +368,7 @@
   <!-- ═══════════════════════════════════════ -->
   <div class="home">
     <div class="welcome-banner">
+      <div class="banner-aurora" aria-hidden="true"></div>
       <div class="welcome-text">
         <h1>Welcome back, {currentUser?.name || 'User'}</h1>
         <p>
@@ -404,20 +405,20 @@
           <h3>Archives</h3>
           <p>Create and manage archival collections</p>
         </a>
-        <a href="/sip" class="nav-card sips">
+        <a href="/intake" class="nav-card sips">
           <span class="nav-icon">📦</span>
-          <h3>SIPs</h3>
-          <p>Build Submission Information Packages</p>
+          <h3>Intakes</h3>
+          <p>Build Intake packages</p>
         </a>
-        <a href="/aip" class="nav-card aips">
+        <a href="/preservation" class="nav-card aips">
           <span class="nav-icon">🏗️</span>
-          <h3>AIPs</h3>
-          <p>Manage Archival Information Packages</p>
+          <h3>Preservations</h3>
+          <p>Manage Preservation packages</p>
         </a>
-        <a href="/dip" class="nav-card dips">
+        <a href="/release" class="nav-card dips">
           <span class="nav-icon">📤</span>
-          <h3>DIPs</h3>
-          <p>Create Dissemination Information Packages</p>
+          <h3>Releases</h3>
+          <p>Create Release packages</p>
         </a>
       </RoleGate>
 
@@ -454,7 +455,7 @@
      ══════════════════════════════════════════ */
   .landing {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #0f172a;
+    color: var(--arc-ink);
   }
 
   /* The full-bleed sections span 100vw; guard against the scrollbar-gutter
@@ -496,7 +497,7 @@
   }
 
   .eyebrow-dark {
-    color: #7c3aed;
+    color: var(--arc-eyebrow-ink);
   }
 
   /* ── Hero ── */
@@ -796,7 +797,7 @@
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--arc-faint);
   }
 
   .trustbar-marquee {
@@ -825,17 +826,17 @@
     flex-shrink: 0;
     font-size: 0.82rem;
     font-weight: 600;
-    color: #475569;
-    background: white;
-    border: 1px solid #e2e8f0;
+    color: var(--arc-body);
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line-strong);
     border-radius: 0.5rem;
     padding: 0.45rem 0.9rem;
   }
 
   .trustbar-item.premium {
-    color: #6d28d9;
-    border-color: #ddd6fe;
-    background: #faf5ff;
+    color: var(--arc-chip-violet-ink);
+    border-color: var(--arc-chip-violet-hover);
+    background: var(--arc-chip-violet-bg);
   }
 
   /* ── Stats ── */
@@ -849,10 +850,10 @@
 
   .stat {
     padding: 1.5rem 1rem;
-    background: white;
-    border: 1px solid #e8edf3;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line);
     border-radius: 1rem;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    box-shadow: var(--arc-shadow-card);
   }
 
   .stat-num {
@@ -870,7 +871,7 @@
     display: block;
     margin-top: 0.55rem;
     font-size: 0.82rem;
-    color: #64748b;
+    color: var(--arc-muted);
     font-weight: 500;
   }
 
@@ -888,19 +889,19 @@
   .section-head h2 {
     font-size: clamp(1.8rem, 3.2vw, 2.5rem);
     font-weight: 700;
-    color: #0f172a;
+    color: var(--arc-ink);
     margin: 0 0 0.85rem;
   }
 
   .section-sub {
     font-size: 1.05rem;
-    color: #64748b;
+    color: var(--arc-muted);
     line-height: 1.6;
     margin: 0;
   }
 
   .section-sub strong {
-    color: #334155;
+    color: var(--arc-body);
   }
 
   /* ── Features ── */
@@ -911,8 +912,8 @@
   }
 
   .feature-card {
-    background: white;
-    border: 1px solid #e8edf3;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line);
     border-radius: 1rem;
     padding: 1.9rem 1.6rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
@@ -921,7 +922,7 @@
   .feature-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 18px 40px -16px rgba(79, 70, 229, 0.28);
-    border-color: #c7d2fe;
+    border-color: var(--arc-hover-border);
   }
 
   .feature-icon {
@@ -940,13 +941,13 @@
 
   .feature-card h3 {
     font-size: 1.15rem;
-    color: #0f172a;
+    color: var(--arc-ink);
     margin: 0 0 0.5rem;
   }
 
   .feature-card p {
     font-size: 0.92rem;
-    color: #64748b;
+    color: var(--arc-muted);
     line-height: 1.6;
     margin: 0;
   }
@@ -962,8 +963,8 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    background: white;
-    border: 1px solid #e8edf3;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line);
     border-radius: 1rem;
     padding: 1.9rem 1.6rem;
     text-decoration: none;
@@ -987,7 +988,7 @@
 
   .flow-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 18px 40px -16px rgba(15, 23, 42, 0.18);
+    box-shadow: var(--arc-shadow-lift);
   }
 
   .flow-top {
@@ -1001,13 +1002,13 @@
     font-family: 'Space Grotesk', sans-serif;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--arc-ink);
   }
 
   .flow-step {
     font-size: 0.8rem;
     font-weight: 700;
-    color: #cbd5e1;
+    color: var(--arc-faint);
   }
 
   .flow-kicker {
@@ -1015,18 +1016,18 @@
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #8b5cf6;
+    color: var(--arc-eyebrow-ink);
   }
 
   .flow-card h3 {
     font-size: 1.15rem;
-    color: #0f172a;
+    color: var(--arc-ink);
     margin: 0.35rem 0 0.5rem;
   }
 
   .flow-card p {
     font-size: 0.92rem;
-    color: #64748b;
+    color: var(--arc-muted);
     line-height: 1.6;
     margin: 0 0 1.1rem;
     flex: 1;
@@ -1035,7 +1036,7 @@
   .flow-link {
     font-size: 0.85rem;
     font-weight: 700;
-    color: #6366f1;
+    color: var(--arc-link);
   }
 
   /* ── Chips ── */
@@ -1050,25 +1051,25 @@
 
   .chip {
     padding: 0.5rem 1.1rem;
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line-strong);
     border-radius: 2rem;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #334155;
+    color: var(--arc-body);
     transition: border-color 0.2s, background 0.2s, transform 0.2s;
   }
 
   .chip:hover {
-    border-color: #818cf8;
-    background: #eef2ff;
+    border-color: var(--arc-hover-border);
+    background: var(--arc-chip-soft-indigo-bg);
     transform: translateY(-2px);
   }
 
   .chip.premium {
-    border-color: #c4b5fd;
-    background: linear-gradient(135deg, #faf5ff, #eef2ff);
-    color: #6d28d9;
+    border-color: var(--arc-chip-violet-hover);
+    background: linear-gradient(135deg, var(--arc-chip-violet-bg), var(--arc-chip-soft-indigo-bg));
+    color: var(--arc-chip-violet-ink);
     font-weight: 700;
   }
 
@@ -1083,7 +1084,7 @@
     text-align: center;
     margin: 1.4rem auto 0;
     font-size: 0.82rem;
-    color: #64748b;
+    color: var(--arc-muted);
   }
 
   /* ── Security ── */
@@ -1162,8 +1163,8 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    background: white;
-    border: 1px solid #e8edf3;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line);
     border-radius: 1rem;
     padding: 1.9rem 1.5rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
@@ -1171,7 +1172,7 @@
 
   .tier:hover {
     transform: translateY(-4px);
-    box-shadow: 0 18px 40px -16px rgba(15, 23, 42, 0.18);
+    box-shadow: var(--arc-shadow-lift);
   }
 
   .tier.popular {
@@ -1199,7 +1200,7 @@
     margin: 0 0 0.4rem;
     font-size: 1.15rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--arc-ink);
   }
 
   .tier-price {
@@ -1212,19 +1213,19 @@
   .tier-amount {
     font-size: 1.9rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--arc-ink);
   }
 
   .tier-cadence {
     font-size: 0.8rem;
-    color: #94a3b8;
+    color: var(--arc-faint);
     font-weight: 600;
   }
 
   .tier-tagline {
     margin: 0 0 1.2rem;
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--arc-muted);
     min-height: 2.4em;
   }
 
@@ -1239,8 +1240,8 @@
     position: relative;
     padding: 0.45rem 0 0.45rem 1.5rem;
     font-size: 0.875rem;
-    color: #334155;
-    border-bottom: 1px solid #f1f5f9;
+    color: var(--arc-body);
+    border-bottom: 1px solid var(--arc-line);
   }
 
   .tier-features li::before {
@@ -1259,14 +1260,14 @@
     text-decoration: none;
     font-weight: 700;
     font-size: 0.9rem;
-    border: 1.5px solid #cbd5e1;
-    color: #1e293b;
+    border: 1.5px solid var(--arc-line-strong);
+    color: var(--arc-ink);
     transition: border-color 0.2s, background 0.2s, color 0.2s, box-shadow 0.2s;
   }
 
   .tier-cta:hover {
-    border-color: #6366f1;
-    color: #4f46e5;
+    border-color: var(--arc-indigo);
+    color: var(--arc-link);
   }
 
   .tier.popular .tier-cta {
@@ -1285,26 +1286,26 @@
     max-width: 40rem;
     text-align: center;
     font-size: 0.875rem;
-    color: #475569;
-    background: #f8fafc;
-    border: 1px solid #e8edf3;
+    color: var(--arc-body);
+    background: var(--arc-card-2);
+    border: 1px solid var(--arc-line);
     border-radius: 0.7rem;
     padding: 0.9rem 1.25rem;
   }
 
   .pricing-usage strong {
-    color: #0f172a;
+    color: var(--arc-ink);
   }
 
   .pricing-custom {
     text-align: center;
     margin: 1rem 0 0;
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--arc-muted);
   }
 
   .pricing-custom a {
-    color: #6366f1;
+    color: var(--arc-link);
     font-weight: 600;
     text-decoration: none;
   }
@@ -1387,6 +1388,12 @@
       grid-template-columns: 1fr;
       gap: 2.5rem;
     }
+    /* Let the single column shrink to the container so hero text wraps
+       instead of being forced wide by the pipeline's intrinsic width. */
+    .hero-copy,
+    .hero-visual {
+      min-width: 0;
+    }
     .hero-visual {
       max-width: 28rem;
     }
@@ -1418,6 +1425,17 @@
     .hero {
       padding: 3.5rem 0 4rem;
     }
+    /* Stack the pipeline so its three nodes never force horizontal overflow. */
+    .pc-flow {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.45rem;
+    }
+    .pc-conn {
+      width: 2px;
+      height: 0.9rem;
+      align-self: center;
+    }
     .trustbar {
       flex-direction: column;
       align-items: flex-start;
@@ -1437,29 +1455,50 @@
   }
 
   .welcome-banner {
-    background: linear-gradient(135deg, #1e293b, #334155);
-    color: white;
-    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    background: var(--arc-grad-dark, radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%));
+    color: #cbd5e1;
+    padding: 2.75rem 2.5rem;
     border-radius: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.18);
     margin-bottom: 2.5rem;
+  }
+
+  .banner-aurora {
+    position: absolute;
+    inset: -40% -10% auto -10%;
+    height: 95%;
+    background:
+      radial-gradient(40% 60% at 18% 30%, rgba(99, 102, 241, 0.45), transparent 70%),
+      radial-gradient(40% 60% at 80% 20%, rgba(139, 92, 246, 0.4), transparent 70%),
+      radial-gradient(35% 50% at 60% 65%, rgba(6, 182, 212, 0.3), transparent 70%);
+    filter: blur(30px);
+    pointer-events: none;
+  }
+
+  .welcome-text {
+    position: relative;
   }
 
   .welcome-text h1 {
     margin: 0 0 0.35rem;
-    font-size: 1.75rem;
+    font-size: 1.9rem;
     font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #f8fafc;
   }
 
   .welcome-text p {
     margin: 0;
-    color: #94a3b8;
+    color: #cbd5e1;
     font-size: 1rem;
   }
 
   .nav-heading {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #64748b;
+    color: var(--arc-muted);
     margin: 0 0 1.25rem;
   }
 
@@ -1472,18 +1511,20 @@
   .nav-card {
     display: flex;
     flex-direction: column;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.75rem;
+    background: var(--arc-card, #fff);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
     padding: 1.5rem;
     text-decoration: none;
     color: inherit;
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    box-shadow: var(--arc-shadow-card);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   }
 
   .nav-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transform: translateY(-4px);
+    border-color: var(--arc-hover-border);
+    box-shadow: var(--arc-shadow-lift);
   }
 
   .nav-icon {
@@ -1498,21 +1539,21 @@
   .nav-card.deliver-nav .nav-icon {
     font-size: 0.7rem;
     font-weight: 800;
-    letter-spacing: 0.1em;
-    color: #64748b;
+    letter-spacing: 0.14em;
+    color: var(--arc-eyebrow-ink);
     margin-bottom: 0.75rem;
   }
 
   .nav-card h3 {
     margin: 0 0 0.35rem;
     font-size: 1.05rem;
-    color: #0f172a;
+    color: var(--arc-ink);
   }
 
   .nav-card p {
     margin: 0;
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--arc-muted);
     line-height: 1.45;
   }
 

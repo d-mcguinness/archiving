@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { client } from '$lib/apollo';
-  import { GET_TENANT, GET_ALL_USERS, GET_SIPS_BY_TENANT_V2, GET_AIPS_BY_TENANT, GET_DIPS_BY_TENANT } from '$lib/graphql/queries';
+  import { GET_TENANT, GET_ALL_USERS, GET_INTAKES_BY_TENANT_V2, GET_PRESERVATIONS_BY_TENANT, GET_RELEASES_BY_TENANT } from '$lib/graphql/queries';
   import { gql } from '@apollo/client/core';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
@@ -45,9 +45,9 @@
     await Promise.all([
       loadArchive(),
       loadTenant(),
-      loadSips(),
-      loadAips(),
-      loadDips(),
+      loadIntakes(),
+      loadPreservations(),
+      loadReleases(),
       loadDocuments(),
       loadUsers(),
     ]);
@@ -68,25 +68,25 @@
     } catch (e) { console.error('Failed to load tenant:', e); }
   }
 
-  async function loadSips() {
+  async function loadIntakes() {
     try {
-      const result = await client.query({ query: GET_SIPS_BY_TENANT_V2, variables: { tenantId: data.tenantId }, fetchPolicy: 'network-only' });
-      sips = result?.data?.getSipsByTenantV2 || [];
-    } catch (e) { console.error('Failed to load SIPs:', e); }
+      const result = await client.query({ query: GET_INTAKES_BY_TENANT_V2, variables: { tenantId: data.tenantId }, fetchPolicy: 'network-only' });
+      sips = result?.data?.getIntakesByTenantV2 || [];
+    } catch (e) { console.error('Failed to load Intakes:', e); }
   }
 
-  async function loadAips() {
+  async function loadPreservations() {
     try {
-      const result = await client.query({ query: GET_AIPS_BY_TENANT, variables: { tenantId: data.tenantId }, fetchPolicy: 'network-only' });
-      aips = result?.data?.getAipsByTenant || [];
-    } catch (e) { console.error('Failed to load AIPs:', e); }
+      const result = await client.query({ query: GET_PRESERVATIONS_BY_TENANT, variables: { tenantId: data.tenantId }, fetchPolicy: 'network-only' });
+      aips = result?.data?.getPreservationsByTenant || [];
+    } catch (e) { console.error('Failed to load Preservations:', e); }
   }
 
-  async function loadDips() {
+  async function loadReleases() {
     try {
-      const result = await client.query({ query: GET_DIPS_BY_TENANT, variables: { tenantId: data.tenantId }, fetchPolicy: 'network-only' });
-      dips = result?.data?.getDipsByTenant || [];
-    } catch (e) { console.error('Failed to load DIPs:', e); }
+      const result = await client.query({ query: GET_RELEASES_BY_TENANT, variables: { tenantId: data.tenantId }, fetchPolicy: 'network-only' });
+      dips = result?.data?.getReleasesByTenant || [];
+    } catch (e) { console.error('Failed to load Releases:', e); }
   }
 
   async function loadDocuments() {
@@ -114,9 +114,9 @@
 
   $: assignedUsers = archive?.assignedUsers || [];
   $: archiveDocuments = documents.filter((d: any) => d.archiveId?.toString() === data.archiveId);
-  $: archiveSips = archive?.standard ? sips.filter((s: any) => s.standard === archive.standard) : sips;
-  $: archiveAips = archive?.standard ? aips.filter((a: any) => a.standard === archive.standard) : aips;
-  $: archiveDips = archive?.standard ? dips.filter((d: any) => d.standard === archive.standard) : dips;
+  $: archiveIntakes = archive?.standard ? sips.filter((s: any) => s.standard === archive.standard) : sips;
+  $: archivePreservations = archive?.standard ? aips.filter((a: any) => a.standard === archive.standard) : aips;
+  $: archiveReleases = archive?.standard ? dips.filter((d: any) => d.standard === archive.standard) : dips;
 </script>
 
 <svelte:head>
@@ -140,34 +140,35 @@
     <!-- Archive Header -->
     <div class="archive-header">
       <div>
+        <span class="eyebrow">Archive</span>
         <h1>{archive.title}</h1>
         {#if archive.description}
           <p class="desc">{archive.description}</p>
         {/if}
         <div class="badges">
           <span class="badge status-{getStatusClass(archive.status)}">{archive.status}</span>
-          <span class="badge standard">{archive.standard}</span>
+          <span class="badge standard indigo">{archive.standard}</span>
         </div>
       </div>
       <div class="header-actions">
-        <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/update" class="btn btn-edit">✏️ Edit</a>
-        <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/extract" class="btn btn-extract">📥 Extract</a>
+        <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/update" class="btn btn-edit btn-secondary">✏️ Edit</a>
+        <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/extract" class="btn btn-extract btn-primary">📥 Extract</a>
       </div>
     </div>
 
     <!-- Stats Row -->
     <div class="stats-row">
-      <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/sips" class="stat-card">
-        <span class="stat-num">{archiveSips.length}</span>
-        <span class="stat-label">SIPs</span>
+      <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/intakes" class="stat-card">
+        <span class="stat-num">{archiveIntakes.length}</span>
+        <span class="stat-label">Intakes</span>
       </a>
-      <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/aips" class="stat-card">
-        <span class="stat-num">{archiveAips.length}</span>
-        <span class="stat-label">AIPs</span>
+      <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/preservations" class="stat-card">
+        <span class="stat-num">{archivePreservations.length}</span>
+        <span class="stat-label">Preservations</span>
       </a>
-      <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/dips" class="stat-card">
-        <span class="stat-num">{archiveDips.length}</span>
-        <span class="stat-label">DIPs</span>
+      <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/releases" class="stat-card">
+        <span class="stat-num">{archiveReleases.length}</span>
+        <span class="stat-label">Releases</span>
       </a>
       <a href="/tenants/{data.tenantId}/users" class="stat-card">
         <span class="stat-num">{assignedUsers.length}</span>
@@ -180,16 +181,16 @@
     </div>
 
     <div class="grid-2col">
-      <!-- Recent SIPs -->
+      <!-- Recent Intakes -->
       <div class="panel">
         <div class="panel-top">
-          <h2>📦 SIPs</h2>
-          <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/sips" class="link">View All →</a>
+          <h2>📦 Intakes</h2>
+          <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/intakes" class="link">View All →</a>
         </div>
-        {#if archiveSips.length === 0}
-          <p class="muted">No SIPs yet</p>
+        {#if archiveIntakes.length === 0}
+          <p class="muted">No Intakes yet</p>
         {:else}
-          {#each archiveSips.slice(0, 5) as sip}
+          {#each archiveIntakes.slice(0, 5) as sip}
             <div class="list-row">
               <div class="list-info">
                 <span class="list-title">{sip.title}</span>
@@ -201,16 +202,16 @@
         {/if}
       </div>
 
-      <!-- Recent AIPs -->
+      <!-- Recent Preservations -->
       <div class="panel">
         <div class="panel-top">
-          <h2>🏗️ AIPs</h2>
-          <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/aips" class="link">View All →</a>
+          <h2>🏗️ Preservations</h2>
+          <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/preservations" class="link">View All →</a>
         </div>
-        {#if archiveAips.length === 0}
-          <p class="muted">No AIPs yet</p>
+        {#if archivePreservations.length === 0}
+          <p class="muted">No Preservations yet</p>
         {:else}
-          {#each archiveAips.slice(0, 5) as aip}
+          {#each archivePreservations.slice(0, 5) as aip}
             <div class="list-row">
               <div class="list-info">
                 <span class="list-title">{aip.title}</span>
@@ -222,16 +223,16 @@
         {/if}
       </div>
 
-      <!-- Recent DIPs -->
+      <!-- Recent Releases -->
       <div class="panel">
         <div class="panel-top">
-          <h2>📤 DIPs</h2>
-          <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/dips" class="link">View All →</a>
+          <h2>📤 Releases</h2>
+          <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/releases" class="link">View All →</a>
         </div>
-        {#if archiveDips.length === 0}
-          <p class="muted">No DIPs yet</p>
+        {#if archiveReleases.length === 0}
+          <p class="muted">No Releases yet</p>
         {:else}
-          {#each archiveDips.slice(0, 5) as dip}
+          {#each archiveReleases.slice(0, 5) as dip}
             <div class="list-row">
               <div class="list-info">
                 <span class="list-title">{dip.title}</span>
@@ -292,55 +293,57 @@
 <style>
   .archive-detail { max-width: 1100px; margin: 0 auto; padding: 2rem; }
 
-  .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; gap: 1rem; }
-  .spinner { border: 4px solid #f3f4f6; border-top: 4px solid #06b6d4; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .error { background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 0.5rem; }
+  /* .loading / .spinner / .error come from the global kit; only the tall
+     centered column layout is page-specific. */
+  .loading { flex-direction: column; min-height: 400px; gap: 1rem; }
 
   .archive-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 2rem; }
-  .archive-header h1 { margin: 0 0 0.35rem; color: #0f172a; font-size: 1.75rem; }
-  .desc { margin: 0 0 0.75rem; color: #64748b; font-size: 0.9rem; }
+  .archive-header h1 { margin: 0 0 0.35rem; color: var(--arc-ink); font-size: 1.85rem; }
+  .desc { margin: 0 0 0.75rem; color: var(--arc-muted); font-size: 0.9rem; }
   .badges { display: flex; gap: 0.5rem; }
 
-  .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 0.25rem; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
-  .status-active, .status-published { background: #dcfce7; color: #166534; }
-  .status-draft { background: #fef3c7; color: #92400e; }
-  .status-archived { background: #f3f4f6; color: #4b5563; }
-  .standard { background: #eef2ff; color: #3730a3; }
+  /* Pill geometry + the indigo standard tint come from the global .badge kit;
+     these status names are page-specific. */
+  .status-active, .status-published { background: var(--arc-chip-green-bg); color: var(--arc-chip-green-ink); }
+  .status-draft { background: var(--arc-chip-amber-bg); color: var(--arc-chip-amber-ink); }
+  .status-archived { background: var(--arc-chip-slate-bg); color: var(--arc-chip-slate-ink); }
 
   .header-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
-  .btn { padding: 0.6rem 1.1rem; border: none; border-radius: 0.5rem; font-weight: 600; font-size: 0.85rem; cursor: pointer; text-decoration: none; transition: background 0.2s; }
-  .btn-edit { background: #dbeafe; color: #1e40af; }
-  .btn-edit:hover { background: #bfdbfe; }
-  .btn-extract { background: #dcfce7; color: #166534; }
-  .btn-extract:hover { background: #bbf7d0; }
+  /* .btn-secondary / .btn-primary come from the kit; header actions run a
+     compact size. */
+  .btn { padding: 0.6rem 1.1rem; font-size: 0.85rem; }
 
   .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-  .stat-card { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1.25rem; text-align: center; text-decoration: none; color: inherit; transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s; }
-  .stat-card:hover { border-color: #3b82f6; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
-  .stat-num { display: block; font-size: 2rem; font-weight: 800; color: #0f172a; line-height: 1; margin-bottom: 0.3rem; }
-  .stat-label { font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-card { background: var(--arc-card); border: 1px solid var(--arc-line); border-radius: 1rem; padding: 1.25rem; text-align: center; text-decoration: none; color: inherit; box-shadow: var(--arc-shadow-card); transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease; }
+  .stat-card:hover { border-color: var(--arc-hover-border); transform: translateY(-4px); box-shadow: var(--arc-shadow-lift); }
+  .stat-num { display: block; font-family: 'Space Grotesk', 'Inter', sans-serif; letter-spacing: -0.02em; font-size: 2rem; font-weight: 700; color: var(--arc-ink); line-height: 1; margin-bottom: 0.3rem; }
+  .stat-label { font-size: 0.72rem; color: var(--arc-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
 
   .grid-2col { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
 
-  .panel { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1.5rem; }
+  .panel { background: var(--arc-card); border: 1px solid var(--arc-line); border-radius: 1rem; padding: 1.5rem; box-shadow: var(--arc-shadow-card); }
   .panel-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-  .panel h2 { margin: 0; font-size: 1rem; font-weight: 700; color: #1e293b; }
-  .link { font-size: 0.8rem; color: #3b82f6; text-decoration: none; font-weight: 600; }
-  .link:hover { color: #2563eb; }
+  .panel h2 { margin: 0; font-size: 1rem; font-weight: 700; color: var(--arc-ink); }
+  .link { font-size: 0.8rem; color: var(--arc-link); text-decoration: none; font-weight: 600; transition: color 0.18s ease; }
+  .link:hover { color: var(--arc-eyebrow-ink); }
 
-  .list-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.75rem; background: #f8fafc; border-radius: 0.375rem; margin-bottom: 0.4rem; }
-  .list-row-link { text-decoration: none; color: inherit; transition: background 0.15s; }
-  .list-row-link:hover { background: #eff6ff; }
+  .list-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.75rem; background: var(--arc-card-2); border-radius: 0.5rem; margin-bottom: 0.4rem; }
+  .list-row-link { text-decoration: none; color: inherit; transition: background 0.18s ease; }
+  .list-row-link:hover { background: var(--arc-chip-soft-indigo-bg); }
   .list-info { display: flex; flex-direction: column; gap: 0.1rem; }
-  .list-title { font-weight: 600; color: #1e293b; font-size: 0.875rem; }
-  .list-sub { color: #64748b; font-size: 0.75rem; }
-  .muted { color: #94a3b8; font-size: 0.85rem; margin: 0; }
+  .list-title { font-weight: 600; color: var(--arc-ink); font-size: 0.875rem; }
+  .list-sub { color: var(--arc-muted); font-size: 0.75rem; }
+  .muted { color: var(--arc-faint); font-size: 0.85rem; margin: 0; }
 
   .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.5rem; }
-  .doc-card { padding: 0.6rem 0.75rem; background: #f8fafc; border-radius: 0.375rem; display: flex; flex-direction: column; gap: 0.15rem; }
-  .doc-title { font-weight: 500; color: #1e293b; font-size: 0.85rem; }
-  .doc-meta { color: #94a3b8; font-size: 0.7rem; }
+  .doc-card { padding: 0.6rem 0.75rem; background: var(--arc-card-2); border-radius: 0.375rem; display: flex; flex-direction: column; gap: 0.15rem; }
+  .doc-title { font-weight: 500; color: var(--arc-ink); font-size: 0.85rem; }
+  .doc-meta { color: var(--arc-faint); font-size: 0.7rem; }
 
   @media (max-width: 768px) { .archive-header { flex-direction: column; } .grid-2col { grid-template-columns: 1fr; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn, .stat-card, .link, .list-row-link { transition: none; }
+    .btn:hover, .stat-card:hover { transform: none; }
+  }
 </style>

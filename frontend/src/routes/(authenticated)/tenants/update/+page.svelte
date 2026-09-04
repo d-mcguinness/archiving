@@ -129,7 +129,10 @@ function goBack() {
 
 <div class="update-tenant-page">
   <div class="page-header">
-    <h1>{isCreateMode ? 'Create' : 'Update'} Tenant</h1>
+    <div class="header-text">
+      <span class="eyebrow">Tenants</span>
+      <h1>{isCreateMode ? 'Create' : 'Update'} Tenant</h1>
+    </div>
     <div class="actions">
       <button class="btn btn-secondary" on:click={goBack}>
         ← Back to Tenants
@@ -271,7 +274,7 @@ function goBack() {
     padding: 2rem;
     max-width: 800px;
     margin: 0 auto;
-    background: #f8fafc;
+    background: var(--arc-ground);
     min-height: 100vh;
   }
 
@@ -281,12 +284,12 @@ function goBack() {
     align-items: center;
     margin-bottom: 2rem;
     padding-bottom: 1rem;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 2px solid var(--arc-line-strong);
   }
 
   .page-header h1 {
     margin: 0;
-    color: #1a202c;
+    color: var(--arc-ink, #0f172a);
     font-size: 2.25rem;
     font-weight: 700;
   }
@@ -299,10 +302,10 @@ function goBack() {
   .btn {
     padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 0.65rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
@@ -311,35 +314,43 @@ function goBack() {
   }
 
   .btn-primary {
-    background: #3b82f6;
+    background: var(--arc-grad-brand, linear-gradient(135deg, #6366f1, #8b5cf6));
     color: white;
+    font-weight: 700;
+    box-shadow: var(--arc-shadow-btn, 0 10px 30px -8px rgba(124, 58, 237, 0.6));
   }
 
   .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-    transform: translateY(-1px);
+    background: var(--arc-grad-brand-hover, linear-gradient(135deg, #4f46e5, #7c3aed));
+    transform: translateY(-2px);
   }
 
   .btn-secondary {
-    background: #e2e8f0;
-    color: #475569;
+    background: var(--arc-card);
+    border: 1.5px solid var(--arc-line-strong);
+    color: var(--arc-ink);
+    box-shadow: none;
   }
 
   .btn-secondary:hover:not(:disabled) {
-    background: #cbd5e1;
+    background: var(--arc-card);
+    border-color: var(--arc-indigo, #6366f1);
+    color: var(--arc-link);
+    box-shadow: none;
   }
 
   .btn:disabled {
-    background: #94a3b8;
+    background: var(--arc-disabled-bg);
     cursor: not-allowed;
     transform: none;
     opacity: 0.6;
+    box-shadow: none;
   }
 
   .loading-container {
     text-align: center;
     padding: 4rem 2rem;
-    color: #64748b;
+    color: var(--arc-muted);
   }
 
   .loading-container p {
@@ -348,8 +359,8 @@ function goBack() {
   }
 
   .loading-spinner {
-    border: 4px solid #e2e8f0;
-    border-top: 4px solid #3b82f6;
+    border: 4px solid var(--arc-line-strong);
+    border-top: 4px solid var(--arc-indigo, #6366f1);
     border-radius: 50%;
     width: 3rem;
     height: 3rem;
@@ -369,17 +380,26 @@ function goBack() {
     100% { transform: rotate(360deg); }
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .loading-spinner {
+      animation: none;
+    }
+    .btn {
+      transition: none;
+    }
+  }
+
   .alert {
     padding: 1.5rem;
     border-radius: 0.75rem;
     margin-bottom: 2rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--arc-shadow-card, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
   }
 
   .alert-error {
-    background: #fef2f2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
+    background: var(--arc-alert-red-bg);
+    color: var(--arc-alert-red-ink);
+    border: 1px solid var(--arc-alert-red-border);
   }
 
   .alert-content {
@@ -402,11 +422,14 @@ function goBack() {
     align-items: center;
     justify-content: center;
     border-radius: 0.25rem;
+    box-shadow: none;
     transition: background 0.2s;
   }
 
   .alert-close:hover {
     background: rgba(0, 0, 0, 0.1);
+    transform: none;
+    box-shadow: none;
   }
 
   .alert-actions {
@@ -415,35 +438,31 @@ function goBack() {
   }
 
   .form-section {
-    background: white;
+    background: var(--arc-card);
     border-radius: 1rem;
     overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    border: 1px solid var(--arc-line, #e8edf3);
   }
 
   .tenant-info {
     padding: 1.5rem 2rem;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    border-bottom: 1px solid #e2e8f0;
+    background: linear-gradient(135deg, var(--arc-card-2) 0%, var(--arc-line-strong) 100%);
+    border-bottom: 1px solid var(--arc-line-strong);
   }
 
   .tenant-info h3 {
     margin: 0 0 0.5rem 0;
-    color: #1a202c;
+    color: var(--arc-ink, #0f172a);
     font-size: 1.25rem;
     font-weight: 700;
   }
 
   .tenant-id {
     margin: 0;
-    color: #64748b;
+    color: var(--arc-muted);
     font-size: 0.875rem;
     font-family: 'Monaco', 'Menlo', monospace;
-  }
-
-  .form-container {
-    padding: 2rem;
   }
 
   .form-row {
@@ -456,39 +475,11 @@ function goBack() {
     margin-bottom: 1.5rem;
   }
 
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #1a202c;
-    font-weight: 600;
-    font-size: 0.875rem;
-  }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid #e2e8f0;
-    font-size: 1rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    background: white;
-  }
-
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-
   .form-group input:disabled,
   .form-group select:disabled,
   .form-group textarea:disabled {
-    background: #f8fafc;
-    color: #94a3b8;
+    background: var(--arc-card-2);
+    color: var(--arc-faint);
     cursor: not-allowed;
   }
 
@@ -500,18 +491,15 @@ function goBack() {
   .field-note {
     display: block;
     margin-top: 0.5rem;
-    color: #64748b;
+    color: var(--arc-muted);
     font-size: 0.75rem;
     font-style: italic;
   }
 
+  /* Global .form-actions footer, right-aligned instead of split. */
   .form-actions {
-    display: flex;
     justify-content: flex-end;
-    gap: 1rem;
     margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e2e8f0;
   }
 
   @media (max-width: 768px) {

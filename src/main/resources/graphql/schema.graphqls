@@ -241,8 +241,8 @@ input UnassignUserInput {
     userId: ID!
 }
 
-# SIP Module Types
-type Sip {
+# INTAKE Module Types
+type Intake {
     id: ID!
     tenantId: ID!
     ownerId: ID!
@@ -253,13 +253,13 @@ type Sip {
     content: String
     createdAt: String!
     updatedAt: String
-    status: SipStatus!
+    status: IntakeStatus!
     standard: ArchiveStandard!
     rootElement: Element
     assignedUsers: [User!]!
 }
 
-enum SipStatus {
+enum IntakeStatus {
     DRAFT
     SUBMITTED
     VALIDATED
@@ -267,7 +267,7 @@ enum SipStatus {
     REJECTED
 }
 
-input CreateSipInput {
+input CreateIntakeInput {
     tenantId: ID
     ownerId: ID
     archiveId: ID!
@@ -287,8 +287,8 @@ input CreateSipInput {
     fields: [FieldInput!]
 }
 
-# AIP Module Types
-type Aip {
+# PRESERVATION Module Types
+type Preservation {
     id: ID!
     tenantId: ID!
     ownerId: ID!
@@ -298,14 +298,14 @@ type Aip {
     content: String
     createdAt: String!
     updatedAt: String
-    status: AipStatus!
+    status: PreservationStatus!
     standard: ArchiveStandard!
-    sourceSipId: ID
+    sourceIntakeId: ID
     rootElement: Element
     assignedUsers: [User!]!
 }
 
-enum AipStatus {
+enum PreservationStatus {
     DRAFT
     BUILDING
     VALIDATED
@@ -313,7 +313,7 @@ enum AipStatus {
     REJECTED
 }
 
-input CreateAipInput {
+input CreatePreservationInput {
     tenantId: ID
     ownerId: ID
     userId: ID!
@@ -321,7 +321,7 @@ input CreateAipInput {
     description: String
     content: String
     standard: ArchiveStandard!
-    sourceSipId: ID
+    sourceIntakeId: ID
     elementIdentifier: String!
     entityName: String!
     entityType: String!
@@ -333,8 +333,8 @@ input CreateAipInput {
     fields: [FieldInput!]
 }
 
-# DIP Module Types
-type Dip {
+# RELEASE Module Types
+type Release {
     id: ID!
     tenantId: ID!
     ownerId: ID!
@@ -344,14 +344,14 @@ type Dip {
     content: String
     createdAt: String!
     updatedAt: String
-    status: DipStatus!
+    status: ReleaseStatus!
     standard: ArchiveStandard!
-    sourceAipId: ID
+    sourcePreservationId: ID
     rootElement: Element
     assignedUsers: [User!]!
 }
 
-enum DipStatus {
+enum ReleaseStatus {
     DRAFT
     PREPARED
     DISSEMINATED
@@ -359,7 +359,7 @@ enum DipStatus {
     REJECTED
 }
 
-input CreateDipInput {
+input CreateReleaseInput {
     tenantId: ID
     ownerId: ID
     userId: ID!
@@ -367,7 +367,7 @@ input CreateDipInput {
     description: String
     content: String
     standard: ArchiveStandard!
-    sourceAipId: ID
+    sourcePreservationId: ID
     elementIdentifier: String!
     entityName: String!
     entityType: String!
@@ -421,7 +421,7 @@ type ArchivePage {
 
 # Root Query Type
 # Unified Package Types
-enum PackageStage { SIP, AIP, DIP }
+enum PackageStage { INTAKE, PRESERVATION, RELEASE }
 
 enum PackageStatus {
     DRAFT, SUBMITTED, VALIDATED, ACCEPTED, REJECTED,
@@ -504,8 +504,8 @@ type Query {
     getArchivesByUser(userId: ID!): [Archive!]!
     getArchivesByOwner(ownerId: ID!): [Archive!]!
     getArchivesByTenant(tenantId: ID!): [Archive!]!
-    getAllSips: [Archive!]!
-    getSipsByTenant(tenantId: ID!): [Archive!]!
+    getAllIntakes: [Archive!]!
+    getIntakesByTenant(tenantId: ID!): [Archive!]!
     getArchivesByUserAssignment(userId: ID!): [Archive!]!
 
     # Archive Paginated Queries (Recommended for scalability)
@@ -516,23 +516,23 @@ type Query {
     searchArchivesByTitlePaginated(title: String!, page: Int, size: Int, sortBy: String, sortDirection: String): ArchivePage!
 
 
-    # SIP Queries
-    getAllSipsV2: [Sip!]!
-    getSipsByTenantV2(tenantId: ID!): [Sip!]!
-    getSip(id: ID!): Sip
-    prefillSipFields(standard: ArchiveStandard!, fileMetadata: FileMetadataInput!): [PrefillField!]!
+    # INTAKE Queries
+    getAllIntakesV2: [Intake!]!
+    getIntakesByTenantV2(tenantId: ID!): [Intake!]!
+    getIntake(id: ID!): Intake
+    prefillIntakeFields(standard: ArchiveStandard!, fileMetadata: FileMetadataInput!): [PrefillField!]!
 
-    # AIP Queries
-    getAllAips: [Aip!]!
-    getAipsByTenant(tenantId: ID!): [Aip!]!
-    getAip(id: ID!): Aip
+    # PRESERVATION Queries
+    getAllPreservations: [Preservation!]!
+    getPreservationsByTenant(tenantId: ID!): [Preservation!]!
+    getPreservation(id: ID!): Preservation
 
-    # DIP Queries
-    getAllDips: [Dip!]!
-    getDipsByTenant(tenantId: ID!): [Dip!]!
-    getDip(id: ID!): Dip
+    # RELEASE Queries
+    getAllReleases: [Release!]!
+    getReleasesByTenant(tenantId: ID!): [Release!]!
+    getRelease(id: ID!): Release
 
-    # Package Queries (unified SIP/AIP/DIP)
+    # Package Queries (unified INTAKE/PRESERVATION/RELEASE)
     getAllPackages(stage: PackageStage): [ArchivalPackage!]!
     getPackagesByTenant(tenantId: ID!, stage: PackageStage): [ArchivalPackage!]!
     getPackage(id: ID!): ArchivalPackage
@@ -580,25 +580,25 @@ type Mutation {
     assignUserToArchive(input: AssignUserInput!): Archive!
     unassignUserFromArchive(input: UnassignUserInput!): Archive!
 
-    # SIP Mutations
-    createSipV2(input: CreateSipInput!): Sip!
-    generateSip(sipId: ID!): String!
-    updateSipStatusV2(sipId: ID!, status: SipStatus!): Sip
-    deleteSipV2(id: ID!): Boolean!
+    # INTAKE Mutations
+    createIntakeV2(input: CreateIntakeInput!): Intake!
+    generateIntake(intakeId: ID!): String!
+    updateIntakeStatusV2(intakeId: ID!, status: IntakeStatus!): Intake
+    deleteIntakeV2(id: ID!): Boolean!
 
-    # AIP Mutations
-    createAip(input: CreateAipInput!): Aip!
-    generateAip(aipId: ID!): String!
-    updateAipStatus(aipId: ID!, status: AipStatus!): Aip
-    deleteAip(id: ID!): Boolean!
+    # PRESERVATION Mutations
+    createPreservation(input: CreatePreservationInput!): Preservation!
+    generatePreservation(preservationId: ID!): String!
+    updatePreservationStatus(preservationId: ID!, status: PreservationStatus!): Preservation
+    deletePreservation(id: ID!): Boolean!
 
-    # DIP Mutations
-    createDip(input: CreateDipInput!): Dip!
-    generateDip(dipId: ID!): String!
-    updateDipStatus(dipId: ID!, status: DipStatus!): Dip
-    deleteDip(id: ID!): Boolean!
+    # RELEASE Mutations
+    createRelease(input: CreateReleaseInput!): Release!
+    generateRelease(releaseId: ID!): String!
+    updateReleaseStatus(releaseId: ID!, status: ReleaseStatus!): Release
+    deleteRelease(id: ID!): Boolean!
 
-    # Package Mutations (unified SIP/AIP/DIP)
+    # Package Mutations (unified INTAKE/PRESERVATION/RELEASE)
     createPackage(input: CreatePackageInput!): ArchivalPackage!
     updatePackageStatus(packageId: ID!, status: PackageStatus!): ArchivalPackage
     deletePackage(id: ID!): Boolean!

@@ -3,6 +3,7 @@
   import { goto } from '$app/navigation';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import AuthShell from '$lib/components/AuthShell.svelte';
 
   const devmode = import.meta.env.VITE_DEVMODE === 'true';
 
@@ -107,273 +108,69 @@
       handleLogin();
     }
   }
-
-
 </script>
 
 <svelte:head>
-  <title>Login - Archiving System</title>
+  <title>Sign in — Arcana</title>
 </svelte:head>
 
-<div class="login-page">
-  <div class="login-container">
-    <div class="login-header">
-      <h1>🔐 Archiving System</h1>
-      <p>Sign in to continue</p>
-    </div>
-
-    <form on:submit|preventDefault={handleLogin} class="login-form">
-      {#if error}
-        <div class="error-banner">
-          <span class="error-icon">❌</span>
-          <span>{error}</span>
-        </div>
-      {/if}
-
-      <div class="form-group">
-        <label for="username">Username</label>
-        <input
-          type="text"
-          id="username"
-          bind:value={username}
-          on:keypress={handleKeyPress}
-          disabled={loading}
-          placeholder="Enter your username"
-          autocomplete="username"
-        />
-      </div>
-
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          bind:value={password}
-          on:keypress={handleKeyPress}
-          disabled={loading}
-          placeholder="Enter your password"
-          autocomplete="current-password"
-        />
-      </div>
-
-      <button type="submit" class="login-button" disabled={loading}>
-        {#if loading}
-          <span class="spinner"></span>
-          <span>Signing in...</span>
-        {:else}
-          <span>Sign In</span>
-        {/if}
-      </button>
-    </form>
-
-    {#if devmode}
-      <div class="demo-credentials">
-        <p class="demo-title">Demo Accounts</p>
-        <div class="demo-grid">
-          <button class="demo-card" on:click={() => quickLogin('admin', 'admin123')} disabled={loading}>
-            <span class="demo-role">Admin</span>
-          </button>
-          <button class="demo-card" on:click={() => quickLogin('tenant', 'tenant123')} disabled={loading}>
-            <span class="demo-role">Tenant</span>
-          </button>
-          <button class="demo-card" on:click={() => quickLogin('user', 'user123')} disabled={loading}>
-            <span class="demo-role">User</span>
-          </button>
-        </div>
+<AuthShell title="Welcome back" subtitle="Sign in to continue to your Arcana archive.">
+  <form on:submit|preventDefault={handleLogin}>
+    {#if error}
+      <div class="auth-error" role="alert">
+        <span aria-hidden="true">⚠</span>
+        <span>{error}</span>
       </div>
     {/if}
 
-  </div>
-</div>
+    <div class="auth-field">
+      <label for="username">Username</label>
+      <input
+        class="auth-input"
+        type="text"
+        id="username"
+        bind:value={username}
+        on:keypress={handleKeyPress}
+        disabled={loading}
+        placeholder="Enter your username"
+        autocomplete="username"
+      />
+    </div>
 
-<style>
-  .login-page {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 2rem;
-  }
+    <div class="auth-field">
+      <label for="password">Password</label>
+      <input
+        class="auth-input"
+        type="password"
+        id="password"
+        bind:value={password}
+        on:keypress={handleKeyPress}
+        disabled={loading}
+        placeholder="Enter your password"
+        autocomplete="current-password"
+      />
+    </div>
 
-  .login-container {
-    background: white;
-    border-radius: 1rem;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    padding: 3rem;
-    max-width: 450px;
-    width: 100%;
-  }
+    <button type="submit" class="auth-submit" disabled={loading}>
+      {#if loading}
+        <span class="auth-spinner" aria-hidden="true"></span>
+        <span>Signing in…</span>
+      {:else}
+        <span>Sign In</span>
+      {/if}
+    </button>
+  </form>
 
-  .login-header {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
+  {#if devmode}
+    <div class="auth-demo">
+      <p class="auth-demo-title">Demo accounts</p>
+      <div class="auth-demo-grid">
+        <button class="auth-demo-card" on:click={() => quickLogin('admin', 'admin123')} disabled={loading}>Admin</button>
+        <button class="auth-demo-card" on:click={() => quickLogin('tenant', 'tenant123')} disabled={loading}>Tenant</button>
+        <button class="auth-demo-card" on:click={() => quickLogin('user', 'user123')} disabled={loading}>User</button>
+      </div>
+    </div>
+  {/if}
 
-  .login-header h1 {
-    margin: 0 0 0.5rem 0;
-    color: #1e293b;
-    font-size: 2rem;
-  }
-
-  .login-header p {
-    margin: 0;
-    color: #64748b;
-    font-size: 1rem;
-  }
-
-  .login-form {
-    margin-bottom: 2rem;
-  }
-
-  .error-banner {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: #fee2e2;
-    border: 1px solid #fca5a5;
-    border-radius: 0.5rem;
-    color: #991b1b;
-    margin-bottom: 1.5rem;
-  }
-
-  .error-icon {
-    font-size: 1.25rem;
-  }
-
-  .form-group {
-    margin-bottom: 1.5rem;
-  }
-
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: #1e293b;
-  }
-
-  .form-group input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    transition: all 0.2s;
-  }
-
-  .form-group input:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-  }
-
-  .form-group input:disabled {
-    background: #f1f5f9;
-    cursor: not-allowed;
-  }
-
-  .login-button {
-    width: 100%;
-    padding: 0.875rem 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-  }
-
-  .login-button:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-  }
-
-  .login-button:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  .spinner {
-    width: 1.25rem;
-    height: 1.25rem;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  .demo-credentials {
-    background: #f8fafc;
-    border-radius: 0.5rem;
-    padding: 1.25rem;
-    border: 1px solid #e2e8f0;
-  }
-
-  .demo-title {
-    margin: 0 0 0.75rem 0;
-    font-weight: 600;
-    color: #475569;
-    text-align: center;
-    font-size: 0.85rem;
-  }
-
-  .demo-grid {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .demo-card {
-    flex: 1;
-    background: white;
-    padding: 0.625rem;
-    border-radius: 0.375rem;
-    border: 1px solid #e2e8f0;
-    transition: all 0.2s;
-    cursor: pointer;
-    text-align: center;
-    font-family: inherit;
-  }
-
-  .demo-card:hover:not(:disabled) {
-    border-color: #667eea;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
-    transform: translateY(-1px);
-  }
-
-  .demo-card:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .demo-role {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #334155;
-  }
-
-  @media (max-width: 640px) {
-    .login-page {
-      padding: 1rem;
-    }
-
-    .login-container {
-      padding: 2rem 1.5rem;
-    }
-
-    .login-header h1 {
-      font-size: 1.5rem;
-    }
-  }
-</style>
+  <p class="auth-alt">New to Arcana? <a href="/register">Create an account</a></p>
+</AuthShell>

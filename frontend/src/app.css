@@ -1,3 +1,129 @@
+/* ═══════════════════════════════════════════════════════════
+   Arcana theme — shared design tokens & base styles.
+   Matches the landing page system: Space Grotesk display type,
+   Inter body type, indigo→violet→cyan brand accents.
+
+   Theming: every color flows through the custom properties
+   below. `:root` holds the light palette; `[data-theme='dark']`
+   swaps the surface/ink/line/chip tokens for the dark palette.
+   The active theme is stamped on <html data-theme="…"> before
+   first paint (inline script in app.html) and driven at runtime
+   by $lib/stores/themeStore.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  color-scheme: light;
+
+  /* Brand accents — theme-invariant */
+  --arc-indigo: #6366f1;
+  --arc-indigo-deep: #4f46e5;
+  --arc-violet: #8b5cf6;
+  --arc-violet-deep: #7c3aed;
+  --arc-cyan: #22d3ee;
+  --arc-cyan-deep: #06b6d4;
+
+  /* Ink & surfaces */
+  --arc-ink: #0f172a;
+  --arc-body: #334155;
+  --arc-muted: #64748b;
+  --arc-faint: #94a3b8;
+  --arc-line: #e8edf3;
+  --arc-line-strong: #e2e8f0;
+  --arc-ground: #f8fafc;
+  --arc-card: #ffffff;
+  --arc-card-2: #f8fafc;        /* nested surface: table headers, row hover, code blocks */
+  --arc-input-bg: #ffffff;
+  --arc-hover-border: #c7d2fe;  /* card/chip hover accent border */
+  --arc-overlay: rgba(15, 23, 42, 0.55);
+  --arc-eyebrow-ink: #7c3aed;
+  --arc-link: #4f46e5;
+  --arc-disabled-bg: #c7cdd8;
+  --arc-disabled-ink: #ffffff;
+
+  /* Dark chrome (nav) & hero panels — dark in BOTH themes */
+  --arc-dark: #0b1120;
+  --arc-dark-2: #1e293b;
+  --arc-dark-ink: #e2e8f0;
+  --arc-dark-muted: #94a3b8;
+  --arc-nav-bg: #1e293b;
+
+  /* Gradients — theme-invariant */
+  --arc-grad-brand: linear-gradient(135deg, #6366f1, #8b5cf6);
+  --arc-grad-brand-hover: linear-gradient(135deg, #4f46e5, #7c3aed);
+  --arc-grad-text: linear-gradient(110deg, #818cf8 0%, #c084fc 45%, #22d3ee 100%);
+  --arc-grad-dark: radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%);
+
+  /* Tinted chips: soft bg + deep ink, per hue */
+  --arc-chip-indigo-bg: #e0e7ff;   --arc-chip-indigo-ink: #4338ca;   --arc-chip-indigo-hover: #c7d2fe;
+  --arc-chip-soft-indigo-bg: #eef2ff;
+  --arc-chip-green-bg: #dcfce7;    --arc-chip-green-ink: #166534;    --arc-chip-green-hover: #bbf7d0;
+  --arc-chip-red-bg: #fee2e2;      --arc-chip-red-ink: #991b1b;      --arc-chip-red-hover: #fecaca;
+  --arc-chip-amber-bg: #fef3c7;    --arc-chip-amber-ink: #92400e;    --arc-chip-amber-hover: #fde68a;
+  --arc-chip-pink-bg: #fce7f3;     --arc-chip-pink-ink: #9d174d;     --arc-chip-pink-hover: #fbcfe8;
+  --arc-chip-orange-bg: #ffedd5;   --arc-chip-orange-ink: #9a3412;   --arc-chip-orange-hover: #fed7aa;
+  --arc-chip-cyan-bg: #cffafe;     --arc-chip-cyan-ink: #155e75;     --arc-chip-cyan-hover: #a5f3fc;
+  --arc-chip-violet-bg: #ede9fe;   --arc-chip-violet-ink: #6d28d9;   --arc-chip-violet-hover: #ddd6fe;
+  --arc-chip-slate-bg: #f1f5f9;    --arc-chip-slate-ink: #475569;    --arc-chip-slate-hover: #e2e8f0;
+
+  /* Alert panels */
+  --arc-alert-red-bg: #fef2f2;     --arc-alert-red-border: #fecaca;  --arc-alert-red-ink: #991b1b;
+  --arc-alert-green-bg: #f0fdf4;   --arc-alert-green-border: #bbf7d0; --arc-alert-green-ink: #166534;
+  --arc-alert-amber-bg: #fffbeb;   --arc-alert-amber-border: #fde68a; --arc-alert-amber-ink: #92400e;
+  --arc-alert-indigo-bg: #eef2ff;  --arc-alert-indigo-border: #c7d2fe; --arc-alert-indigo-ink: #4338ca;
+
+  /* Type */
+  --arc-font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --arc-font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Elevation */
+  --arc-shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --arc-shadow-lift: 0 18px 40px -16px rgba(15, 23, 42, 0.18);
+  --arc-shadow-btn: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
+  --arc-shadow-btn-hover: 0 16px 40px -8px rgba(124, 58, 237, 0.75);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --arc-ink: #f1f5f9;
+  --arc-body: #cbd5e1;
+  --arc-muted: #94a3b8;
+  --arc-faint: #64748b;
+  --arc-line: #1e2b47;
+  --arc-line-strong: #2b3a5c;
+  --arc-ground: #0b1120;
+  --arc-card: #111a2e;
+  --arc-card-2: #16213a;
+  --arc-input-bg: #0d1526;
+  --arc-hover-border: rgba(129, 140, 248, 0.55);
+  --arc-overlay: rgba(2, 6, 23, 0.72);
+  --arc-eyebrow-ink: #a78bfa;
+  --arc-link: #a5b4fc;
+  --arc-disabled-bg: #2b3a5c;
+  --arc-disabled-ink: #64748b;
+
+  --arc-nav-bg: #0f172a;
+
+  --arc-chip-indigo-bg: rgba(99, 102, 241, 0.18);   --arc-chip-indigo-ink: #a5b4fc;   --arc-chip-indigo-hover: rgba(99, 102, 241, 0.3);
+  --arc-chip-soft-indigo-bg: rgba(99, 102, 241, 0.12);
+  --arc-chip-green-bg: rgba(16, 185, 129, 0.15);    --arc-chip-green-ink: #6ee7b7;    --arc-chip-green-hover: rgba(16, 185, 129, 0.28);
+  --arc-chip-red-bg: rgba(239, 68, 68, 0.15);       --arc-chip-red-ink: #fca5a5;      --arc-chip-red-hover: rgba(239, 68, 68, 0.28);
+  --arc-chip-amber-bg: rgba(245, 158, 11, 0.15);    --arc-chip-amber-ink: #fcd34d;    --arc-chip-amber-hover: rgba(245, 158, 11, 0.28);
+  --arc-chip-pink-bg: rgba(236, 72, 153, 0.15);     --arc-chip-pink-ink: #f9a8d4;     --arc-chip-pink-hover: rgba(236, 72, 153, 0.28);
+  --arc-chip-orange-bg: rgba(249, 115, 22, 0.15);   --arc-chip-orange-ink: #fdba74;   --arc-chip-orange-hover: rgba(249, 115, 22, 0.28);
+  --arc-chip-cyan-bg: rgba(6, 182, 212, 0.15);      --arc-chip-cyan-ink: #67e8f9;     --arc-chip-cyan-hover: rgba(6, 182, 212, 0.28);
+  --arc-chip-violet-bg: rgba(139, 92, 246, 0.16);   --arc-chip-violet-ink: #c4b5fd;   --arc-chip-violet-hover: rgba(139, 92, 246, 0.3);
+  --arc-chip-slate-bg: rgba(148, 163, 184, 0.14);   --arc-chip-slate-ink: #cbd5e1;    --arc-chip-slate-hover: rgba(148, 163, 184, 0.26);
+
+  --arc-alert-red-bg: rgba(239, 68, 68, 0.12);      --arc-alert-red-border: rgba(239, 68, 68, 0.35);   --arc-alert-red-ink: #fca5a5;
+  --arc-alert-green-bg: rgba(16, 185, 129, 0.12);   --arc-alert-green-border: rgba(16, 185, 129, 0.35); --arc-alert-green-ink: #6ee7b7;
+  --arc-alert-amber-bg: rgba(245, 158, 11, 0.12);   --arc-alert-amber-border: rgba(245, 158, 11, 0.35); --arc-alert-amber-ink: #fcd34d;
+  --arc-alert-indigo-bg: rgba(99, 102, 241, 0.12);  --arc-alert-indigo-border: rgba(99, 102, 241, 0.4); --arc-alert-indigo-ink: #a5b4fc;
+
+  --arc-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --arc-shadow-lift: 0 18px 40px -16px rgba(0, 0, 0, 0.6);
+}
+
 /* Global styles */
 * {
   box-sizing: border-box;
@@ -5,18 +131,49 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background: #f8fafc;
-  color: #334155;
+  font-family: var(--arc-font-body);
+  background: var(--arc-ground);
+  color: var(--arc-body);
+  line-height: 1.6;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--arc-font-display);
+  letter-spacing: -0.02em;
+  color: var(--arc-ink);
+}
+
+/* Page header pattern — eyebrow kicker + display title + supporting line */
+.eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--arc-eyebrow-ink);
+  margin-bottom: 0.6rem;
+}
+
+.page-title {
+  font-family: var(--arc-font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--arc-ink);
+}
+
+.page-sub {
+  color: var(--arc-muted);
   line-height: 1.6;
 }
 
 /* Form styles */
 .form-container {
-  background: white;
+  background: var(--arc-card);
   padding: 2rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--arc-line);
+  border-radius: 1rem;
+  box-shadow: var(--arc-shadow-card);
   margin-bottom: 2rem;
 }
 
@@ -26,51 +183,305 @@ body {
 
 label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
+  margin-bottom: 0.45rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--arc-body);
 }
 
 input, select, textarea {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--arc-line-strong);
+  border-radius: 0.6rem;
+  font-size: 0.97rem;
+  font-family: inherit;
+  color: var(--arc-ink);
+  background: var(--arc-input-bg);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.25s ease;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--arc-faint);
 }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--arc-indigo);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.16);
 }
 
 button {
-  background: #3b82f6;
+  background: var(--arc-grad-brand);
   color: white;
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 0.375rem;
+  border-radius: 0.65rem;
   font-size: 1rem;
+  font-weight: 700;
+  font-family: inherit;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  box-shadow: 0 6px 18px -6px rgba(124, 58, 237, 0.45);
 }
 
 button:hover {
-  background: #2563eb;
+  background: var(--arc-grad-brand-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px -8px rgba(124, 58, 237, 0.6);
 }
 
 button:disabled {
-  background: #9ca3af;
+  background: var(--arc-disabled-bg);
+  color: var(--arc-disabled-ink);
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ── Shared button patterns ─────────────────────────────────
+   Work on <button> and <a> alike. Scoped page styles may layer
+   page-specific tweaks (width, size) on top of these. */
+.btn-primary {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--arc-grad-brand);
+  color: white;
+  border: none;
+  border-radius: 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: inherit;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  box-shadow: 0 6px 18px -6px rgba(124, 58, 237, 0.45);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--arc-grad-brand-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px -8px rgba(124, 58, 237, 0.6);
+}
+
+.btn-primary:disabled {
+  background: var(--arc-disabled-bg);
+  color: var(--arc-disabled-ink);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--arc-card);
+  color: var(--arc-ink);
+  border: 1.5px solid var(--arc-line-strong);
+  border-radius: 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: inherit;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+  box-shadow: none;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--arc-card);
+  border-color: var(--arc-indigo);
+  color: var(--arc-link);
+  transform: translateY(-2px);
+  box-shadow: none;
+}
+
+.btn-secondary:disabled {
+  background: var(--arc-card-2);
+  color: var(--arc-faint);
+  border-color: var(--arc-line);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-danger {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  border-radius: 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: inherit;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  box-shadow: 0 6px 18px -6px rgba(220, 38, 38, 0.45);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px -8px rgba(220, 38, 38, 0.55);
+}
+
+.btn-danger:disabled {
+  background: var(--arc-disabled-bg);
+  color: var(--arc-disabled-ink);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Tinted action chips — small row/inline actions (Edit, Mimic, View…). */
+.btn-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.45rem 0.9rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease;
+  box-shadow: none;
+}
+
+.btn-chip:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: none;
+}
+
+.btn-chip:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-chip.indigo { background: var(--arc-chip-indigo-bg); color: var(--arc-chip-indigo-ink); }
+.btn-chip.indigo:hover:not(:disabled) { background: var(--arc-chip-indigo-hover); }
+.btn-chip.green { background: var(--arc-chip-green-bg); color: var(--arc-chip-green-ink); }
+.btn-chip.green:hover:not(:disabled) { background: var(--arc-chip-green-hover); }
+.btn-chip.red { background: var(--arc-chip-red-bg); color: var(--arc-chip-red-ink); }
+.btn-chip.red:hover:not(:disabled) { background: var(--arc-chip-red-hover); }
+.btn-chip.amber { background: var(--arc-chip-amber-bg); color: var(--arc-chip-amber-ink); }
+.btn-chip.amber:hover:not(:disabled) { background: var(--arc-chip-amber-hover); }
+.btn-chip.pink { background: var(--arc-chip-pink-bg); color: var(--arc-chip-pink-ink); }
+.btn-chip.pink:hover:not(:disabled) { background: var(--arc-chip-pink-hover); }
+.btn-chip.orange { background: var(--arc-chip-orange-bg); color: var(--arc-chip-orange-ink); }
+.btn-chip.orange:hover:not(:disabled) { background: var(--arc-chip-orange-hover); }
+.btn-chip.cyan { background: var(--arc-chip-cyan-bg); color: var(--arc-chip-cyan-ink); }
+.btn-chip.cyan:hover:not(:disabled) { background: var(--arc-chip-cyan-hover); }
+.btn-chip.violet { background: var(--arc-chip-violet-bg); color: var(--arc-chip-violet-ink); }
+.btn-chip.violet:hover:not(:disabled) { background: var(--arc-chip-violet-hover); }
+.btn-chip.slate { background: var(--arc-chip-slate-bg); color: var(--arc-chip-slate-ink); }
+.btn-chip.slate:hover:not(:disabled) { background: var(--arc-chip-slate-hover); }
+
+/* ── Shared table pattern ───────────────────────────────────
+   <div class="table-card"><table class="arc-table">…  */
+.table-card {
+  background: var(--arc-card);
+  border: 1px solid var(--arc-line);
+  border-radius: 1rem;
+  box-shadow: var(--arc-shadow-card);
+  overflow: hidden;
+}
+
+table.arc-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table.arc-table th {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--arc-muted);
+  background: var(--arc-card-2);
+  border-bottom: 1px solid var(--arc-line);
+}
+
+table.arc-table td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--arc-line);
+  font-size: 0.9rem;
+  color: var(--arc-body);
+  vertical-align: middle;
+}
+
+table.arc-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+table.arc-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+table.arc-table tbody tr:hover {
+  background: var(--arc-card-2);
+}
+
+/* ── Shared modal pattern ───────────────────────────────────
+   <div class="modal-overlay"><div class="modal">…  */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--arc-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.modal {
+  background: var(--arc-card);
+  border: 1px solid var(--arc-line);
+  border-radius: 1rem;
+  box-shadow: var(--arc-shadow-lift);
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 32rem;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* ── Shared form footer ───────────────────────────────────── */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--arc-line-strong);
 }
 
 /* Card styles */
 .card {
-  background: white;
+  background: var(--arc-card);
   padding: 1.5rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--arc-line);
+  border-radius: 1rem;
+  box-shadow: var(--arc-shadow-card);
   margin-bottom: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.25s ease;
+}
+
+.card:hover {
+  border-color: var(--arc-hover-border);
+  box-shadow: var(--arc-shadow-lift);
 }
 
 .card-grid {
@@ -84,16 +495,28 @@ button:disabled {
   display: inline-block;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.badge.active { background: #dcfce7; color: #166534; }
-.badge.inactive { background: #fef3c7; color: #92400e; }
-.badge.suspended { background: #fee2e2; color: #991b1b; }
-.badge.draft { background: #f3f4f6; color: #374151; }
-.badge.published { background: #dbeafe; color: #1e40af; }
+.badge.active { background: var(--arc-chip-green-bg); color: var(--arc-chip-green-ink); }
+.badge.inactive { background: var(--arc-chip-amber-bg); color: var(--arc-chip-amber-ink); }
+.badge.suspended { background: var(--arc-chip-red-bg); color: var(--arc-chip-red-ink); }
+.badge.draft { background: var(--arc-chip-slate-bg); color: var(--arc-chip-slate-ink); }
+.badge.published { background: var(--arc-chip-indigo-bg); color: var(--arc-chip-indigo-ink); }
+
+/* Hue variants — entity/standard chips and non-status labels. */
+.badge.indigo { background: var(--arc-chip-indigo-bg); color: var(--arc-chip-indigo-ink); }
+.badge.green { background: var(--arc-chip-green-bg); color: var(--arc-chip-green-ink); }
+.badge.red { background: var(--arc-chip-red-bg); color: var(--arc-chip-red-ink); }
+.badge.amber { background: var(--arc-chip-amber-bg); color: var(--arc-chip-amber-ink); }
+.badge.pink { background: var(--arc-chip-pink-bg); color: var(--arc-chip-pink-ink); }
+.badge.orange { background: var(--arc-chip-orange-bg); color: var(--arc-chip-orange-ink); }
+.badge.cyan { background: var(--arc-chip-cyan-bg); color: var(--arc-chip-cyan-ink); }
+.badge.violet { background: var(--arc-chip-violet-bg); color: var(--arc-chip-violet-ink); }
+.badge.slate { background: var(--arc-chip-slate-bg); color: var(--arc-chip-slate-ink); }
 
 /* Loading spinner */
 .loading {
@@ -106,10 +529,10 @@ button:disabled {
 .spinner {
   width: 2rem;
   height: 2rem;
-  border: 2px solid #e5e7eb;
-  border-top: 2px solid #3b82f6;
+  border: 3px solid var(--arc-line-strong);
+  border-top: 3px solid var(--arc-indigo);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
@@ -118,18 +541,31 @@ button:disabled {
 
 /* Error message */
 .error {
-  background: #fee2e2;
-  color: #991b1b;
-  padding: 1rem;
-  border-radius: 0.375rem;
+  background: var(--arc-alert-red-bg);
+  border: 1px solid var(--arc-alert-red-border);
+  color: var(--arc-alert-red-ink);
+  padding: 0.9rem 1.1rem;
+  border-radius: 0.6rem;
   margin-bottom: 1rem;
+  font-size: 0.92rem;
 }
 
 /* Success message */
 .success {
-  background: #dcfce7;
-  color: #166534;
-  padding: 1rem;
-  border-radius: 0.375rem;
+  background: var(--arc-alert-green-bg);
+  border: 1px solid var(--arc-alert-green-border);
+  color: var(--arc-alert-green-ink);
+  padding: 0.9rem 1.1rem;
+  border-radius: 0.6rem;
   margin-bottom: 1rem;
+  font-size: 0.92rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+  button, .card, body, input, select, textarea {
+    transition: none;
+  }
 }

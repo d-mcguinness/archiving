@@ -87,6 +87,7 @@
     <Breadcrumb context={{ tenantId: data.tenantId, tenantName: tenant?.displayName || tenant?.name }} items={[{ label: 'Users', href: `/tenants/${data.tenantId}/users` }, { label: 'Create' }]} />
 
     <div class="form-header">
+      <span class="eyebrow">User management</span>
       <h1>Create User</h1>
       {#if tenant}<p class="subtitle">Tenant: {tenant.displayName || tenant.name}</p>{/if}
     </div>
@@ -126,32 +127,26 @@
 <style>
   .access-denied { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; text-align: center; padding: 3rem; }
   .access-denied-icon { font-size: 5rem; margin-bottom: 1.5rem; }
-  .access-denied h1 { margin: 0 0 1rem 0; color: #1e293b; font-size: 2rem; }
-  .access-denied p { margin: 0.5rem 0; color: #64748b; font-size: 1.125rem; }
-  .redirect-message { color: #3b82f6; font-weight: 500; animation: pulse 1.5s ease-in-out infinite; }
+  .access-denied h1 { margin: 0 0 1rem 0; color: var(--arc-ink, #0f172a); font-size: 2rem; }
+  .access-denied p { margin: 0.5rem 0; color: var(--arc-muted, #64748b); font-size: 1.125rem; }
+  .redirect-message { color: var(--arc-indigo, #6366f1); font-weight: 500; animation: pulse 1.5s ease-in-out infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-  .user-container { max-width: 600px; margin: 2rem auto; background: white; padding: 2.5rem; border-radius: 0.75rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; }
-  .form-header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; }
-  .form-header h1 { margin: 0 0 0.5rem 0; color: #1e293b; font-size: 1.75rem; font-weight: 700; }
-  .subtitle { margin: 0; color: #64748b; font-size: 0.925rem; }
+  .user-container { max-width: 600px; margin: 2rem auto; background: var(--arc-card, #fff); padding: 2.5rem; border-radius: 1rem; box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04)); border: 1px solid var(--arc-line, #e8edf3); }
+  .form-header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--arc-line, #e8edf3); }
+  .form-header h1 { margin: 0 0 0.5rem 0; color: var(--arc-ink, #0f172a); font-size: 1.75rem; font-weight: 700; }
+  .subtitle { margin: 0; color: var(--arc-muted, #64748b); font-size: 0.925rem; }
   .alert { padding: 0.875rem 1rem; border-radius: 0.375rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-  .alert-error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-  .alert button { background: none; border: none; color: inherit; font-size: 1.25rem; cursor: pointer; }
+  .alert-error { background: var(--arc-alert-red-bg, #fef2f2); color: var(--arc-alert-red-ink, #dc2626); border: 1px solid var(--arc-alert-red-border, #fecaca); }
+  .alert button { background: none; border: none; box-shadow: none; padding: 0; color: inherit; font-size: 1.25rem; cursor: pointer; }
+  .alert button:hover { transform: none; box-shadow: none; }
+  /* .spinner comes from the global loading pattern in app.css */
   .loading-state { display: flex; flex-direction: column; align-items: center; padding: 3rem 2rem; gap: 1rem; }
-  .loading-state .spinner { width: 2.5rem; height: 2.5rem; border: 3px solid #e2e8f0; border-top-color: #10b981; border-radius: 50%; animation: spin 1s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-state p { color: #64748b; font-size: 0.875rem; }
+  .loading-state p { color: var(--arc-muted, #64748b); font-size: 0.875rem; }
   .form-section { margin-bottom: 2rem; }
   .form-group { margin-bottom: 1.25rem; }
-  .form-group label { display: flex; align-items: center; gap: 0.375rem; margin-bottom: 0.5rem; color: #1e293b; font-weight: 500; font-size: 0.85rem; }
+  .form-group label { display: flex; align-items: center; gap: 0.375rem; margin-bottom: 0.5rem; color: var(--arc-ink, #0f172a); font-weight: 600; font-size: 0.85rem; }
   .req { color: #ef4444; font-weight: 600; }
-  .form-group input { width: 100%; padding: 0.625rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.375rem; font-size: 0.875rem; transition: border-color 0.2s; background: white; }
-  .form-group input:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
-  .form-actions { display: flex; justify-content: space-between; gap: 1rem; padding-top: 1.5rem; border-top: 2px solid #e2e8f0; }
-  .btn { padding: 0.75rem 2rem; border: none; border-radius: 0.375rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.875rem; }
-  .btn-primary { background: #10b981; color: white; }
-  .btn-primary:hover:not(:disabled) { background: #059669; }
-  .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
-  .btn-secondary { background: #e2e8f0; color: #475569; }
-  .btn-secondary:hover { background: #cbd5e1; }
+  /* inputs inherit the global Arcana input styling from app.css */
+  /* .form-actions, .btn-primary and .btn-secondary come from the global kit in app.css */
+  .btn { padding: 0.75rem 2rem; font-size: 0.875rem; }
 </style>

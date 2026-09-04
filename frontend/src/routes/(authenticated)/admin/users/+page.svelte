@@ -184,8 +184,11 @@
 <div class="users-page">
   <Breadcrumb items={[{ label: 'Admin', href: '/admin' }, { label: 'Users' }]} />
   <div class="page-header">
-    <h1>Users</h1>
-    <a href="/users/create" class="add-user-btn">Add User</a>
+    <div class="page-heading">
+      <span class="eyebrow">Admin console</span>
+      <h1>Users</h1>
+    </div>
+    <a href="/users/create" class="add-user-btn btn-primary">Add User</a>
   </div>
 
   <!-- File Upload Section -->
@@ -209,14 +212,14 @@
       </div>
 
       {#if uploadMessage}
-        <div class="upload-success">
+        <div class="upload-success success">
           <span class="success-icon">✅</span>
           <span>{uploadMessage}</span>
         </div>
       {/if}
 
       {#if uploadError}
-        <div class="upload-error">
+        <div class="upload-error error">
           <span class="error-icon">❌</span>
           <span>{uploadError}</span>
         </div>
@@ -247,8 +250,8 @@
       <p>No users found. Create your first user to get started!</p>
     </div>
   {:else}
-    <div class="table-container">
-      <table class="data-table">
+    <div class="table-container table-card">
+      <table class="data-table arc-table">
         <thead>
           <tr>
             <th>ID</th>
@@ -270,20 +273,20 @@
               <td class="age-cell">{user.age || '-'}</td>
               <td class="actions-cell">
                 <button
-                  class="btn-action btn-mimic"
+                  class="btn-action btn-mimic btn-chip violet"
                   on:click={() => mimicUser(user)}
                   title="Sign in as this user"
                 >
                   🎭 Mimic
                 </button>
                 <button
-                  class="btn-action btn-edit"
+                  class="btn-action btn-edit btn-chip indigo"
                   on:click={() => openEditModal(user)}
                   title="Edit user"
                 >
                   ✏️ Edit
                 </button>
-                <a href="/users/delete?userId={user.id}" class="btn-action btn-delete">
+                <a href="/users/delete?userId={user.id}" class="btn-action btn-delete btn-chip red">
                   🗑️ Delete
                 </a>
               </td>
@@ -298,7 +301,7 @@
 <!-- Edit Modal -->
 {#if showEditModal && editingUser}
   <div class="modal-overlay" on:click={closeEditModal}>
-    <div class="modal-content" on:click|stopPropagation>
+    <div class="modal-content modal" on:click|stopPropagation>
       <div class="modal-header">
         <h2>Edit User</h2>
         <button class="modal-close" on:click={closeEditModal}>✕</button>
@@ -380,62 +383,23 @@
 
   .page-header h1 {
     margin: 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 2rem;
   }
 
-  .add-user-btn {
-    background: #3b82f6;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.375rem;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.2s;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-
-  .add-user-btn:hover {
-    background: #2563eb;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  .error {
-    background: #fee;
-    color: #c00;
-    padding: 1rem;
-    border-radius: 0.375rem;
-    margin-bottom: 1rem;
-    border: 1px solid #fcc;
-  }
-
+  /* .add-user-btn, .error, .loading and .spinner use the global kit (app.css). */
   .loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 400px;
-  }
-
-  .spinner {
-    border: 4px solid #f3f4f6;
-    border-top: 4px solid #3b82f6;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
   }
 
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    background: #f9fafb;
-    border-radius: 0.5rem;
-    color: #64748b;
+    background: var(--arc-card, #fff);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    color: var(--arc-muted, #64748b);
   }
 
   /* File Upload Section */
@@ -445,16 +409,16 @@
 
   .file-upload-section h2 {
     margin-bottom: 1rem;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 1.25rem;
   }
 
   .upload-card {
-    background: white;
+    background: var(--arc-card, #fff);
     padding: 2rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    border: 1px solid var(--arc-line, #e8edf3);
   }
 
   .upload-area {
@@ -470,16 +434,16 @@
     align-items: center;
     gap: 1rem;
     padding: 1.5rem;
-    border: 2px dashed #cbd5e1;
-    border-radius: 0.5rem;
+    border: 2px dashed var(--arc-line-strong, #cbd5e1);
+    border-radius: 0.6rem;
     cursor: pointer;
-    transition: all 0.2s;
-    background: #f8fafc;
+    transition: all 0.2s ease;
+    background: var(--arc-card-2, #f8fafc);
   }
 
   .file-label:hover {
-    border-color: #3b82f6;
-    background: #eff6ff;
+    border-color: var(--arc-indigo, #6366f1);
+    background: var(--arc-chip-soft-indigo-bg, #eef2ff);
   }
 
   .upload-icon {
@@ -487,116 +451,48 @@
   }
 
   .upload-text {
-    color: #475569;
+    color: var(--arc-body, #475569);
     font-weight: 500;
   }
 
-  .upload-success {
+  /* Upload feedback rows are the global .success / .error panels with an icon. */
+  .upload-success,
+  .upload-error {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 1rem;
-    background: #dcfce7;
-    border: 1px solid #86efac;
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    color: #166534;
   }
 
   .success-icon {
     font-size: 1.25rem;
   }
 
-  .upload-error {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: #fee2e2;
-    border: 1px solid #fca5a5;
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    color: #991b1b;
-  }
-
   .error-icon {
     font-size: 1.25rem;
   }
 
+  /* .upload-button inherits the global brand-gradient button styling from app.css */
   .upload-button {
     width: 100%;
-    padding: 0.75rem 1.5rem;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
   }
 
-  .upload-button:hover:not(:disabled) {
-    background: #2563eb;
-  }
-
-  .upload-button:disabled {
-    background: #cbd5e1;
-    cursor: not-allowed;
-  }
-
-  /* Table Styles */
+  /* Table chrome comes from .table-card / table.arc-table; only the
+     page-specific scroll + column sizing stays local. */
   .table-container {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow-x: auto;
-    border: 1px solid #e2e8f0;
   }
 
   .data-table {
-    width: 100%;
-    border-collapse: collapse;
     min-width: 800px;
   }
 
-  .data-table thead {
-    background: #f8fafc;
-    border-bottom: 2px solid #e2e8f0;
-  }
-
   .data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: #475569;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     white-space: nowrap;
-  }
-
-  .data-table tbody tr {
-    border-bottom: 1px solid #e2e8f0;
-    transition: background-color 0.15s;
-  }
-
-  .data-table tbody tr:hover {
-    background: #f8fafc;
-  }
-
-  .data-table tbody tr:last-child {
-    border-bottom: none;
-  }
-
-  .data-table td {
-    padding: 1rem;
-    color: #1e293b;
   }
 
   .id-cell {
     font-family: 'Monaco', 'Courier New', monospace;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
     width: 60px;
   }
@@ -614,17 +510,17 @@
 
   .user-title {
     font-weight: 500;
-    color: #1e293b;
+    color: var(--arc-ink, #1e293b);
   }
 
   .user-email {
     font-size: 0.875rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     line-height: 1.4;
   }
 
   .age-cell {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
     width: 100px;
   }
@@ -635,70 +531,16 @@
     width: 200px;
   }
 
+  /* Row actions ride on .btn-chip; only the row spacing is local. */
   .btn-action {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s;
     margin-left: 0.5rem;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
   }
 
-
-  .btn-edit {
-    background: #3b82f6;
-    color: white;
-  }
-
-  .btn-edit:hover {
-    background: #2563eb;
-  }
-
-  .btn-delete {
-    background: #dc2626;
-    color: white;
-  }
-
-  .btn-delete:hover {
-    background: #b91c1c;
-  }
-
-  .btn-mimic {
-    background: #8b5cf6;
-    color: white;
-  }
-
-  .btn-mimic:hover {
-    background: #7c3aed;
-  }
-
-  /* Modal Styles */
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 1rem;
-  }
-
-  .modal-content {
-    background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  /* Modal Styles — .modal-overlay/.modal come from app.css; this dialog
+     pads its own header/body sections. */
+  .modal {
+    padding: 0;
     max-width: 500px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
   }
 
   .modal-header {
@@ -706,20 +548,21 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--arc-line, #e8edf3);
   }
 
   .modal-header h2 {
     margin: 0;
     font-size: 1.5rem;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
   }
 
   .modal-close {
     background: none;
     border: none;
+    box-shadow: none;
     font-size: 1.5rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     cursor: pointer;
     padding: 0.25rem;
     line-height: 1;
@@ -727,7 +570,7 @@
   }
 
   .modal-close:hover {
-    color: #1e293b;
+    color: var(--arc-ink, #1e293b);
   }
 
   .modal-content form {
@@ -738,31 +581,8 @@
     margin-bottom: 1.5rem;
   }
 
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: #475569;
-    font-size: 0.875rem;
-  }
-
-  .form-group input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    transition: border-color 0.2s;
-  }
-
-  .form-group input:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-
   .form-group input:disabled {
-    background: #f1f5f9;
+    background: var(--arc-card-2, #f1f5f9);
     cursor: not-allowed;
   }
 
@@ -771,47 +591,10 @@
     gap: 0.75rem;
     justify-content: flex-end;
     padding-top: 1rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
-  .btn-primary,
-  .btn-secondary {
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-  }
-
-  .btn-primary {
-    background: #3b82f6;
-    color: white;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-  }
-
-  .btn-primary:disabled {
-    background: #94a3b8;
-    cursor: not-allowed;
-  }
-
-  .btn-secondary {
-    background: #e2e8f0;
-    color: #475569;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    background: #cbd5e1;
-  }
-
-  .btn-secondary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  /* .btn-primary / .btn-secondary come from the global kit. */
 </style>
 
 

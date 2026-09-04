@@ -83,9 +83,11 @@
   /* Canvas Container */
   .canvas-container {
     margin-bottom: 2rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 0.5rem;
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
     overflow: hidden;
+    background: var(--arc-card, #fff);
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
   }
 
   .canvas-header {
@@ -93,42 +95,32 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
-    background: #f8fafc;
-    border-bottom: 2px solid #e2e8f0;
+    background: var(--arc-ground, #f8fafc);
+    border-bottom: 1px solid var(--arc-line, #e8edf3);
   }
 
   .canvas-header h3 {
     margin: 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 1rem;
     font-weight: 600;
   }
 
+  /* Compact icon+label version of the global gradient button. */
   .btn-add {
     padding: 0.5rem 1rem;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 0.375rem;
-    font-weight: 500;
     font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-  }
-
-  .btn-add:hover {
-    background: #2563eb;
-    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 10px 30px -8px rgba(124, 58, 237, 0.6);
   }
 
   /* Canvas */
   .canvas {
     min-height: 400px;
     padding: 2rem;
-    background: white;
+    background: var(--arc-card, #fff);
   }
 
   .canvas-empty {
@@ -148,14 +140,14 @@
 
   .canvas-empty h4 {
     margin: 0 0 0.5rem 0;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 1.125rem;
     font-weight: 600;
   }
 
   .canvas-empty p {
     margin: 0;
-    color: #94a3b8;
+    color: var(--arc-faint, #94a3b8);
     font-size: 0.875rem;
   }
 </style>

@@ -33,10 +33,10 @@ class PremiumPackageEventRepositoryTest {
 
     @Test
     void lifetimeCountIsPerTenant() {
-        record(TENANT, PremiumPackageType.AIP, "NOARK5", LocalDateTime.of(2026, 6, 5, 9, 0));
-        record(TENANT, PremiumPackageType.DIP, "NOARK5", LocalDateTime.of(2026, 6, 5, 10, 0));
-        record(TENANT, PremiumPackageType.AIP, "EARK", LocalDateTime.of(2026, 6, 6, 9, 0));
-        record(OTHER_TENANT, PremiumPackageType.AIP, "NOARK5", LocalDateTime.of(2026, 6, 5, 9, 0));
+        record(TENANT, PremiumPackageType.PRESERVATION, "NOARK5", LocalDateTime.of(2026, 6, 5, 9, 0));
+        record(TENANT, PremiumPackageType.RELEASE, "NOARK5", LocalDateTime.of(2026, 6, 5, 10, 0));
+        record(TENANT, PremiumPackageType.PRESERVATION, "EARK", LocalDateTime.of(2026, 6, 6, 9, 0));
+        record(OTHER_TENANT, PremiumPackageType.PRESERVATION, "NOARK5", LocalDateTime.of(2026, 6, 5, 9, 0));
 
         assertThat(events.countByTenantId(TENANT)).isEqualTo(3L);
         assertThat(events.countByTenantId(OTHER_TENANT)).isEqualTo(1L);
@@ -44,10 +44,10 @@ class PremiumPackageEventRepositoryTest {
 
     @Test
     void perPeriodWindowIsHalfOpenAndPerTenant() {
-        record(TENANT, PremiumPackageType.AIP, "NOARK5", LocalDateTime.of(2026, 6, 5, 9, 0));
-        record(TENANT, PremiumPackageType.DIP, "NOARK5", LocalDateTime.of(2026, 6, 5, 23, 59));
-        record(TENANT, PremiumPackageType.AIP, "EARK", LocalDateTime.of(2026, 6, 6, 0, 0)); // boundary: next period
-        record(OTHER_TENANT, PremiumPackageType.AIP, "NOARK5", LocalDateTime.of(2026, 6, 5, 12, 0));
+        record(TENANT, PremiumPackageType.PRESERVATION, "NOARK5", LocalDateTime.of(2026, 6, 5, 9, 0));
+        record(TENANT, PremiumPackageType.RELEASE, "NOARK5", LocalDateTime.of(2026, 6, 5, 23, 59));
+        record(TENANT, PremiumPackageType.PRESERVATION, "EARK", LocalDateTime.of(2026, 6, 6, 0, 0)); // boundary: next period
+        record(OTHER_TENANT, PremiumPackageType.PRESERVATION, "NOARK5", LocalDateTime.of(2026, 6, 5, 12, 0));
 
         LocalDateTime day5Start = LocalDateTime.of(2026, 6, 5, 0, 0);
         LocalDateTime day6Start = LocalDateTime.of(2026, 6, 6, 0, 0);

@@ -193,8 +193,11 @@
   {:else}
     <Breadcrumb items={[{ label: 'Admin', href: '/admin' }, { label: 'Tenants' }]} />
     <div class="page-header">
-      <h1>Tenants</h1>
-      <a href="/tenants/create" class="add-tenant-btn">Add Tenant</a>
+      <div class="page-heading">
+        <span class="eyebrow">Admin console</span>
+        <h1>Tenants</h1>
+      </div>
+      <a href="/tenants/create" class="add-tenant-btn btn-primary">Add Tenant</a>
     </div>
 
     {#if error}
@@ -212,8 +215,8 @@
         <p>No tenants found. Create your first tenant to get started!</p>
       </div>
     {:else}
-      <div class="table-container">
-      <table class="data-table">
+      <div class="table-container table-card">
+      <table class="data-table arc-table">
         <thead>
           <tr>
             <th>ID</th>
@@ -251,36 +254,36 @@
               <td class="date-cell">{tenant.updatedAt ? new Date(tenant.updatedAt).toLocaleDateString() : '-'}</td>
               <td class="actions-cell">
                 <button
-                  class="btn-action btn-mimic"
+                  class="btn-action btn-mimic btn-chip violet"
                   on:click={() => mimicTenant(tenant)}
                   title="Sign in as this tenant"
                 >
                   🎭 Mimic
                 </button>
                 <button
-                  class="btn-action btn-edit"
+                  class="btn-action btn-edit btn-chip"
                   on:click={() => openEditModal(tenant)}
                   title="Edit tenant"
                 >
                   ✏️ Edit
                 </button>
-                <a href="/tenants/delete?tenantId={tenant.id}" class="btn-action btn-delete">
+                <a href="/tenants/delete?tenantId={tenant.id}" class="btn-action btn-delete btn-chip red">
                   🗑️ Delete
                 </a>
-                <a href="/tenants/{tenant.id}/users" class="btn-action btn-users">
+                <a href="/tenants/{tenant.id}/users" class="btn-action btn-users btn-chip slate">
                   👥 Users
                 </a>
-                <a href="/tenants/{tenant.id}/archives" class="btn-action btn-archives">
+                <a href="/tenants/{tenant.id}/archives" class="btn-action btn-archives btn-chip cyan">
                   📁 Archives
                 </a>
-                <a href="/tenants/{tenant.id}/sips" class="btn-action btn-sips">
-                  📦 SIPs
+                <a href="/tenants/{tenant.id}/intakes" class="btn-action btn-sips btn-chip pink">
+                  📦 Intakes
                 </a>
-                <a href="/tenants/{tenant.id}/aips" class="btn-action btn-aips">
-                  🏗️ AIPs
+                <a href="/tenants/{tenant.id}/preservations" class="btn-action btn-aips btn-chip indigo">
+                  🏗️ Preservations
                 </a>
-                <a href="/tenants/{tenant.id}/dips" class="btn-action btn-dips">
-                  📤 DIPs
+                <a href="/tenants/{tenant.id}/releases" class="btn-action btn-dips btn-chip orange">
+                  📤 Releases
                 </a>
               </td>
             </tr>
@@ -295,7 +298,7 @@
 <!-- Edit Modal -->
 {#if showEditModal && editingTenant}
   <div class="modal-overlay" on:click={closeEditModal}>
-    <div class="modal-content" on:click|stopPropagation>
+    <div class="modal-content modal" on:click|stopPropagation>
       <div class="modal-header">
         <h2>Edit Tenant</h2>
         <button class="modal-close" on:click={closeEditModal}>✕</button>
@@ -419,62 +422,23 @@
 
   .page-header h1 {
     margin: 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 2rem;
   }
 
-  .add-tenant-btn {
-    background: #3b82f6;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.375rem;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.2s;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-
-  .add-tenant-btn:hover {
-    background: #2563eb;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  .error {
-    background: #fee;
-    color: #c00;
-    padding: 1rem;
-    border-radius: 0.375rem;
-    margin-bottom: 1rem;
-    border: 1px solid #fcc;
-  }
-
+  /* .add-tenant-btn, .error, .loading and .spinner use the global kit (app.css). */
   .loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 400px;
-  }
-
-  .spinner {
-    border: 4px solid #f3f4f6;
-    border-top: 4px solid #3b82f6;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
   }
 
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    background: #f9fafb;
-    border-radius: 0.5rem;
-    color: #64748b;
+    background: var(--arc-card, #fff);
+    border: 1px solid var(--arc-line, #e8edf3);
+    border-radius: 1rem;
+    box-shadow: var(--arc-shadow-card, 0 1px 2px rgba(15, 23, 42, 0.04));
+    color: var(--arc-muted, #64748b);
   }
 
   /* Access Denied */
@@ -495,18 +459,18 @@
 
   .access-denied h1 {
     margin: 0 0 1rem 0;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
     font-size: 2rem;
   }
 
   .access-denied p {
     margin: 0.5rem 0;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 1.125rem;
   }
 
   .redirect-message {
-    color: #3b82f6;
+    color: var(--arc-indigo, #6366f1);
     font-weight: 500;
     animation: pulse 1.5s ease-in-out infinite;
   }
@@ -516,58 +480,23 @@
     50% { opacity: 0.5; }
   }
 
-  /* Table Styles */
+  /* Table chrome comes from .table-card / table.arc-table; only the
+     page-specific scroll + column sizing stays local. */
   .table-container {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow-x: auto;
-    border: 1px solid #e2e8f0;
   }
 
   .data-table {
-    width: 100%;
-    border-collapse: collapse;
     min-width: 1200px;
   }
 
-  .data-table thead {
-    background: #f8fafc;
-    border-bottom: 2px solid #e2e8f0;
-  }
-
   .data-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: #475569;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     white-space: nowrap;
-  }
-
-  .data-table tbody tr {
-    border-bottom: 1px solid #e2e8f0;
-    transition: background-color 0.15s;
-  }
-
-  .data-table tbody tr:hover {
-    background: #f8fafc;
-  }
-
-  .data-table tbody tr:last-child {
-    border-bottom: none;
-  }
-
-  .data-table td {
-    padding: 1rem;
-    color: #1e293b;
   }
 
   .id-cell {
     font-family: 'Monaco', 'Courier New', monospace;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
     width: 60px;
   }
@@ -585,17 +514,17 @@
 
   .tenant-title {
     font-weight: 500;
-    color: #1e293b;
+    color: var(--arc-ink, #1e293b);
   }
 
   .tenant-description {
     font-size: 0.875rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     line-height: 1.4;
   }
 
   .domain-cell {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
     font-family: 'Monaco', 'Courier New', monospace;
   }
@@ -605,29 +534,20 @@
     white-space: nowrap;
   }
 
-  .badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
-  }
-
+  /* .badge base is global; these tenant status/plan hues are page-specific. */
   .status-active {
-    background: #dcfce7;
-    color: #166534;
+    background: var(--arc-chip-green-bg, #dcfce7);
+    color: var(--arc-chip-green-ink, #166534);
   }
 
   .status-inactive {
-    background: #f3f4f6;
-    color: #6b7280;
+    background: var(--arc-chip-slate-bg, #f1f5f9);
+    color: var(--arc-chip-slate-ink, #475569);
   }
 
   .status-suspended {
-    background: #fee2e2;
-    color: #991b1b;
+    background: var(--arc-chip-red-bg, #fee2e2);
+    color: var(--arc-chip-red-ink, #991b1b);
   }
 
   .status-trial {
@@ -636,18 +556,18 @@
   }
 
   .status-pending {
-    background: #fef3c7;
-    color: #92400e;
+    background: var(--arc-chip-amber-bg, #fef3c7);
+    color: var(--arc-chip-amber-ink, #92400e);
   }
 
   .status-expired {
-    background: #fecaca;
-    color: #7f1d1d;
+    background: var(--arc-chip-red-bg, #fecaca);
+    color: var(--arc-chip-red-ink, #7f1d1d);
   }
 
   .plan-free {
-    background: #f3f4f6;
-    color: #374151;
+    background: var(--arc-chip-slate-bg, #f1f5f9);
+    color: var(--arc-chip-slate-ink, #475569);
   }
 
   .plan-basic {
@@ -656,27 +576,27 @@
   }
 
   .plan-professional {
-    background: #e0e7ff;
-    color: #4338ca;
+    background: var(--arc-chip-indigo-bg, #e0e7ff);
+    color: var(--arc-chip-indigo-ink, #4338ca);
   }
 
   .plan-enterprise {
-    background: #fce7f3;
-    color: #9f1239;
+    background: var(--arc-chip-pink-bg, #fce7f3);
+    color: var(--arc-chip-pink-ink, #9f1239);
   }
 
   .plan-custom {
-    background: #f3e8ff;
-    color: #6b21a8;
+    background: var(--arc-chip-violet-bg, #f3e8ff);
+    color: var(--arc-chip-violet-ink, #6b21a8);
   }
 
   .owner-cell {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
   }
 
   .date-cell {
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
     white-space: nowrap;
     width: 120px;
@@ -688,114 +608,29 @@
     width: 280px;
   }
 
+  /* Row actions ride on .btn-chip; only the row spacing is local. */
   .btn-action {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s;
     margin-left: 0.5rem;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
   }
 
-  .btn-mimic {
-    background: #8b5cf6;
-    color: white;
-  }
-
-  .btn-mimic:hover {
-    background: #7c3aed;
-  }
-
+  /* Edit is an outlined chip rather than a tinted one. */
   .btn-edit {
-    background: #3b82f6;
-    color: white;
+    background: var(--arc-card, #fff);
+    border: 1.5px solid var(--arc-line-strong, #cbd5e1);
+    color: var(--arc-ink, #1e293b);
   }
 
   .btn-edit:hover {
-    background: #2563eb;
+    border-color: var(--arc-indigo, #6366f1);
+    color: var(--arc-link, #4f46e5);
+    background: var(--arc-card, #fff);
   }
 
-  .btn-users {
-    background: #f59e0b;
-    color: white;
-  }
-
-  .btn-users:hover {
-    background: #d97706;
-  }
-
-  .btn-archives {
-    background: #8b5cf6;
-    color: white;
-  }
-
-  .btn-archives:hover {
-    background: #7c3aed;
-  }
-
-  .btn-sips {
-    background: #ec4899;
-    color: white;
-  }
-
-  .btn-sips:hover {
-    background: #db2777;
-  }
-
-  .btn-aips {
-    background: #6366f1;
-    color: white;
-  }
-
-  .btn-aips:hover {
-    background: #4f46e5;
-  }
-
-  .btn-dips {
-    background: #f59e0b;
-    color: white;
-  }
-
-  .btn-dips:hover {
-    background: #d97706;
-  }
-
-  .btn-delete {
-    background: #dc2626;
-    color: white;
-  }
-
-  .btn-delete:hover {
-    background: #b91c1c;
-  }
-
-  /* Modal Styles */
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 1rem;
-  }
-
-  .modal-content {
-    background: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  /* Modal Styles — .modal-overlay/.modal come from app.css; this dialog
+     is wider and pads its own header/body sections. */
+  .modal {
+    padding: 0;
     max-width: 600px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
   }
 
   .modal-header {
@@ -803,20 +638,21 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--arc-line, #e8edf3);
   }
 
   .modal-header h2 {
     margin: 0;
     font-size: 1.5rem;
-    color: #1e293b;
+    color: var(--arc-ink, #0f172a);
   }
 
   .modal-close {
     background: none;
     border: none;
+    box-shadow: none;
     font-size: 1.5rem;
-    color: #64748b;
+    color: var(--arc-muted, #64748b);
     cursor: pointer;
     padding: 0.25rem;
     line-height: 1;
@@ -824,7 +660,7 @@
   }
 
   .modal-close:hover {
-    color: #1e293b;
+    color: var(--arc-ink, #1e293b);
   }
 
   .modal-content form {
@@ -835,38 +671,10 @@
     margin-bottom: 1.5rem;
   }
 
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: #475569;
-    font-size: 0.875rem;
-  }
-
-  .form-group input,
-  .form-group textarea,
-  .form-group select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    transition: border-color 0.2s;
-    font-family: inherit;
-  }
-
-  .form-group input:focus,
-  .form-group textarea:focus,
-  .form-group select:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-
   .form-group input:disabled,
   .form-group textarea:disabled,
   .form-group select:disabled {
-    background: #f1f5f9;
+    background: var(--arc-card-2, #f1f5f9);
     cursor: not-allowed;
   }
 
@@ -880,46 +688,16 @@
     gap: 0.75rem;
     justify-content: flex-end;
     padding-top: 1rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
-  .btn-primary,
-  .btn-secondary {
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-  }
+  /* .btn-primary / .btn-secondary come from the global kit. */
 
-  .btn-primary {
-    background: #3b82f6;
-    color: white;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-  }
-
-  .btn-primary:disabled {
-    background: #94a3b8;
-    cursor: not-allowed;
-  }
-
-  .btn-secondary {
-    background: #e2e8f0;
-    color: #475569;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    background: #cbd5e1;
-  }
-
-  .btn-secondary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  /* No blue chip token exists — dark-theme override keeps the blue hue readable */
+  :global(html[data-theme='dark']) .status-trial,
+  :global(html[data-theme='dark']) .plan-basic {
+    background: rgba(59, 130, 246, 0.18);
+    color: #93c5fd;
   }
 </style>
 

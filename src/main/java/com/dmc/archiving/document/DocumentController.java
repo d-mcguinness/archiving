@@ -81,7 +81,7 @@ public class DocumentController {
     public ResponseEntity<?> uploadDocument(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "tenantId", required = false) Long tenantId,   // treated as a claim, validated against membership
-            @RequestParam(value = "sipId", required = false) Long sipId,
+            @RequestParam(value = "intakeId", required = false) Long intakeId,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "description", required = false) String description,
             HttpServletRequest request) {
@@ -102,7 +102,7 @@ public class DocumentController {
 
         try {
             log.info("Uploading document for authenticated user {}, tenant {}, sip {}",
-                    ctx.userId(), resolvedTenantId, sipId);
+                    ctx.userId(), resolvedTenantId, intakeId);
 
             if (file.isEmpty()) {
                 return ResponseEntity
@@ -130,8 +130,8 @@ public class DocumentController {
             }
 
             // Associate with SIP if provided
-            if (sipId != null) {
-                document.setSipId(sipId);
+            if (intakeId != null) {
+                document.setIntakeId(intakeId);
                 document = documentService.saveDocument(document);
             }
 
@@ -157,7 +157,7 @@ public class DocumentController {
     @GetMapping
     public ResponseEntity<?> getDocuments(
             @RequestParam(value = "tenantId", required = false) Long tenantId,
-            @RequestParam(value = "sipId", required = false) Long sipId,
+            @RequestParam(value = "intakeId", required = false) Long intakeId,
             HttpServletRequest request) {
 
         try {
@@ -178,9 +178,9 @@ public class DocumentController {
             }
 
             // Optional SIP narrowing, applied within the caller's visible set.
-            if (sipId != null) {
+            if (intakeId != null) {
                 documents = documents.stream()
-                        .filter(d -> sipId.equals(d.getSipId()))
+                        .filter(d -> intakeId.equals(d.getIntakeId()))
                         .toList();
             }
 
@@ -399,9 +399,9 @@ public class DocumentController {
      * Associate document with SIP
      */
     @PostMapping("/{id}/associate-sip")
-    public ResponseEntity<?> associateWithSip(
+    public ResponseEntity<?> associateWithIntake(
             @PathVariable Long id,
-            @RequestParam Long sipId,
+            @RequestParam Long intakeId,
             HttpServletRequest request) {
 
         try {
@@ -409,7 +409,7 @@ public class DocumentController {
             if (existing == null) return notFound();
             if (!canAccess(caller(request), existing.getTenantId())) return forbidden();
 
-            Document document = documentService.associateWithSip(id, sipId);
+            Document document = documentService.associateWithIntake(id, intakeId);
 
             return ResponseEntity.ok(Map.of(
                 "success", true,
@@ -433,13 +433,13 @@ public class DocumentController {
      * Disassociate document from SIP
      */
     @PostMapping("/{id}/disassociate-sip")
-    public ResponseEntity<?> disassociateFromSip(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<?> disassociateFromIntake(@PathVariable Long id, HttpServletRequest request) {
         try {
             Document existing = documentService.getDocumentById(id).orElse(null);
             if (existing == null) return notFound();
             if (!canAccess(caller(request), existing.getTenantId())) return forbidden();
 
-            Document document = documentService.disassociateFromSip(id);
+            Document document = documentService.disassociateFromIntake(id);
 
             return ResponseEntity.ok(Map.of(
                 "success", true,
@@ -473,7 +473,7 @@ public class DocumentController {
         map.put("userId", document.getUserId());
         map.put("tenantId", document.getTenantId());
         map.put("archiveId", document.getArchiveId());
-        map.put("sipId", document.getSipId());
+        map.put("intakeId", document.getIntakeId());
         map.put("status", document.getStatus().name());
         map.put("createdAt", document.getCreatedAt().toString());
         map.put("updatedAt", document.getUpdatedAt() != null ? document.getUpdatedAt().toString() : null);
