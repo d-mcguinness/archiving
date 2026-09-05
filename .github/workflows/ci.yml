@@ -22,16 +22,20 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend (Java 21 · Maven)
+    # Version-agnostic on purpose: the job name is the required-status-check
+    # context, so baking the JDK number in means every future bump silently
+    # renames the check and leaves branch protection waiting on a name that no
+    # longer reports.
+    name: Backend (Maven)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '25'
           cache: maven
 
       # Uses ./mvnw, not the runner's `mvn`, so CI builds with the same Maven
