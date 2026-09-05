@@ -71,3 +71,28 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Builds the image the same way a deploy would, catching the class of bug
+      # that left the Dockerfile pinned to a JDK the pom had outgrown: nothing
+      # exercised it, so `release version 21 not supported` went unnoticed.
+      #
+      # Layers are cached in the Actions cache. The dependency:go-offline layer
+      # alone takes ~2 minutes cold and is keyed on pom.xml, so most runs reuse
+      # it instead of re-downloading the whole tree.
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: archiving:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
