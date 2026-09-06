@@ -2,7 +2,7 @@
 # Needs the full JDK (javac) and the Maven wrapper. None of this reaches the
 # final image. Build on the JDK the pom targets (<java.version> in pom.xml);
 # openjdk:* is deprecated on Docker Hub, eclipse-temurin is its replacement.
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:25-jdk AS build
 
 WORKDIR /build
 
@@ -27,7 +27,7 @@ RUN ./mvnw clean package -DskipTests
 
 # ---- Runtime stage ----------------------------------------------------------
 # Only a JRE and the jar: no compiler, no Maven, no ~/.m2 cache, no sources.
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:25-jre
 
 WORKDIR /app
 
