@@ -5,7 +5,7 @@ import com.dmc.archiving.tenancy.model.PremiumPackageEvent;
 import com.dmc.archiving.tenancy.repository.PremiumPackageEventRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.LocalDateTime;

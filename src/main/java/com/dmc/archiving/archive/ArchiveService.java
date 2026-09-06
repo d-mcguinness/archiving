@@ -255,15 +255,19 @@ public class ArchiveService {
     public Page<Archive> searchArchives(ArchiveSearchCriteria criteria, Pageable pageable) {
         log.debug("Searching archives with criteria: {}", criteria);
 
-        Specification<Archive> spec = Specification.where(
-                ArchiveSpecifications.hasTenantId(criteria.getTenantId()))
-                .and(ArchiveSpecifications.hasOwnerId(criteria.getOwnerId()))
-                .and(ArchiveSpecifications.hasStatus(criteria.getStatus()))
-                .and(ArchiveSpecifications.hasStandard(criteria.getStandard()))
-                .and(ArchiveSpecifications.searchByKeyword(criteria.getKeyword()))
-                .and(ArchiveSpecifications.createdAfter(criteria.getFromDate()))
-                .and(ArchiveSpecifications.createdBefore(criteria.getToDate()))
-                .and(ArchiveSpecifications.updatedAfter(criteria.getUpdatedAfter()));
+        // allOf() ANDs these exactly as the old where().and()... chain did.
+        // Each ArchiveSpecifications method always returns a non-null Specification
+        // whose *predicate* may be null when its criterion is unset, which Spring
+        // Data ignores -- so where()'s null-safety was never load-bearing here.
+        Specification<Archive> spec = Specification.allOf(
+                ArchiveSpecifications.hasTenantId(criteria.getTenantId()),
+                ArchiveSpecifications.hasOwnerId(criteria.getOwnerId()),
+                ArchiveSpecifications.hasStatus(criteria.getStatus()),
+                ArchiveSpecifications.hasStandard(criteria.getStandard()),
+                ArchiveSpecifications.searchByKeyword(criteria.getKeyword()),
+                ArchiveSpecifications.createdAfter(criteria.getFromDate()),
+                ArchiveSpecifications.createdBefore(criteria.getToDate()),
+                ArchiveSpecifications.updatedAfter(criteria.getUpdatedAfter()));
 
         // Handle array filters
         if (criteria.getStatuses() != null && criteria.getStatuses().length > 0) {
