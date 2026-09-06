@@ -47,7 +47,10 @@ jobs:
         run: ./mvnw -B test
 
   frontend:
-    name: Frontend (Node 22)
+    # Version-agnostic, for the same reason as the backend job above: the job
+    # name is the required-status-check context. The Node version stays
+    # visible in the "Set up Node" step below and in the logs.
+    name: Frontend (npm)
     runs-on: ubuntu-latest
     defaults:
       run:
