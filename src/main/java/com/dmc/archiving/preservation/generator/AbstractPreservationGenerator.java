@@ -1,11 +1,12 @@
 package com.dmc.archiving.preservation.generator;
 
-import com.dmc.archiving.preservation.model.Preservation;
 import com.dmc.archiving.pkg.generator.AbstractPackageGenerator;
+import com.dmc.archiving.pkg.generator.PackageSnapshot;
+import com.dmc.archiving.preservation.model.Preservation;
 import com.dmc.archiving.storage.CloudStorageService;
 
 public abstract class AbstractPreservationGenerator
-        extends AbstractPackageGenerator<Preservation, Preservation>
+        extends AbstractPackageGenerator<Preservation>
         implements PreservationGenerator {
 
     protected AbstractPreservationGenerator(CloudStorageService cloudStorageService) {
@@ -13,17 +14,17 @@ public abstract class AbstractPreservationGenerator
     }
 
     @Override
-    protected String packageType() {
+    public String packageType() {
         return "aip";
     }
 
     @Override
-    protected Long packageId(Preservation aip) {
-        return aip.getId();
-    }
-
-    @Override
-    protected Preservation toSnapshot(Preservation aip) {
-        return aip;
+    protected PackageSnapshot toSnapshot(Preservation aip) {
+        return PackageSnapshot.of(
+                aip.getId(), aip.getTitle(), aip.getDescription(),
+                aip.getStatus(), aip.getStandard(),
+                aip.getCreatedAtString(), aip.getUpdatedAtString(),
+                aip.getSourceIntakeId(),
+                aip.getRootElement());
     }
 }

@@ -1,34 +1,14 @@
 package com.dmc.archiving.release.generator;
 
-import com.dmc.archiving.archive.model.ArchiveStandard;
-import com.dmc.archiving.release.generator.impl.*;
+import com.dmc.archiving.pkg.generator.AbstractPackageGeneratorFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Component
-public class ReleaseGeneratorFactory {
+public class ReleaseGeneratorFactory extends AbstractPackageGeneratorFactory<ReleaseGenerator> {
 
-    private final Map<ArchiveStandard, ReleaseGenerator> generators;
-    private final DefaultReleaseGenerator defaultGenerator;
-
-    public ReleaseGeneratorFactory(
-            EarkReleaseGenerator earkReleaseGenerator,
-            Noark5ReleaseGenerator noark5ReleaseGenerator,
-            DefaultReleaseGenerator defaultGenerator) {
-
-        this.generators = new HashMap<>();
-        this.defaultGenerator = defaultGenerator;
-
-        generators.put(ArchiveStandard.EARK, earkReleaseGenerator);
-        generators.put(ArchiveStandard.NOARK5, noark5ReleaseGenerator);
-    }
-
-    public ReleaseGenerator getGenerator(ArchiveStandard standard) {
-        if (standard == null) {
-            return defaultGenerator;
-        }
-        return generators.getOrDefault(standard, defaultGenerator);
+    public ReleaseGeneratorFactory(List<ReleaseGenerator> generators) {
+        super(generators);
     }
 }

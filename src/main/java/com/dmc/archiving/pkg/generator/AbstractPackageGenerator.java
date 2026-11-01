@@ -1,5 +1,6 @@
 package com.dmc.archiving.pkg.generator;
 
+import com.dmc.archiving.archive.model.ArchiveStandard;
 import com.dmc.archiving.storage.CloudStorageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,18 +12,19 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 /**
- * Shared serialisation + upload pipeline for SIP/AIP/DIP generators.
+ * Shared serialisation + upload pipeline for Intake/Preservation/Release generators.
  *
- * <P> the package entity (Intake, Preservation, Release)
- * <S> the value passed to {@link #buildPayload} — for SIP this is a
- *     IntakeSnapshot; for AIP/DIP it's the entity itself.
+ * <P> the package entity (Intake, Preservation, Release). Every entity is first
+ * reduced to a {@link PackageSnapshot} via {@link #toSnapshot}, and everything
+ * from there on is entity-agnostic — which is what lets the unified package
+ * module reuse these generators through {@link #generate(PackageSnapshot)}.
  *
  * Subclasses implement EITHER {@link #buildPayload} (full control over bytes,
  * filename, content-type — use this for XML/ZIP/binary output) OR the
  * convenience {@link #buildPackage} which returns a JSON-serialisable Map and
  * lands at {std}_{type}.json.
  */
-public abstract class AbstractPackageGenerator<P, S> {
+public abstract class AbstractPackageGenerator<P> implements PackageGenerator<P> {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractPackageGenerator.class);
 
@@ -36,11 +38,16 @@ public abstract class AbstractPackageGenerator<P, S> {
         this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
+    @Override
     public String generate(P pkg) {
+        return generate(toSnapshot(pkg));
+    }
+
+    @Override
+    public String generate(PackageSnapshot snapshot) {
         try {
-            S snapshot = toSnapshot(pkg);
             PackagePayload payload = buildPayload(snapshot);
-            String fileKey = packageType() + "s/" + packageId(pkg) + "/" + payload.filename();
+            String fileKey = packageType() + "s/" + snapshot.id() + "/" + payload.filename();
             // Intentional (task #15): the generated artifact is uploaded to storage
             // but NOT recorded as a billable Document, so its bytes never enter the
             // storage meter. The per-package generation fee is all-in and covers the
@@ -49,7 +56,7 @@ public abstract class AbstractPackageGenerator<P, S> {
             return cloudStorageService.uploadBytes(payload.bytes(), fileKey, payload.contentType());
         } catch (Exception e) {
             log.error("Failed to generate {} package for id {}: {}",
-                    packageType().toUpperCase(), packageId(pkg), e.getMessage(), e);
+                    packageType().toUpperCase(), snapshot.id(), e.getMessage(), e);
             throw new RuntimeException("Failed to generate " + packageType().toUpperCase() + " package", e);
         }
     }
@@ -58,7 +65,7 @@ public abstract class AbstractPackageGenerator<P, S> {
      * Produce the raw payload for upload. Default implementation JSON-encodes
      * the result of {@link #buildPackage} — override directly for XML/ZIP/etc.
      */
-    protected PackagePayload buildPayload(S snapshot) {
+    protected PackagePayload buildPayload(PackageSnapshot snapshot) {
         Map<String, Object> data = buildPackage(snapshot);
         byte[] bytes;
         try {
@@ -74,20 +81,26 @@ public abstract class AbstractPackageGenerator<P, S> {
      * Convenience for generators that emit JSON. Either this or
      * {@link #buildPayload} must be overridden — the other can be left alone.
      */
-    public Map<String, Object> buildPackage(S snapshot) {
+    public Map<String, Object> buildPackage(PackageSnapshot snapshot) {
         throw new UnsupportedOperationException(
                 getClass().getSimpleName() + " must override buildPackage() or buildPayload()");
     }
 
-    /** Lifecycle marker — "sip", "aip", or "dip". Drives bucket prefix + filename suffix. */
-    protected abstract String packageType();
+    /**
+     * Resolved from {@link #getStandardName()}: a name matching an
+     * {@link ArchiveStandard} constant marks a dedicated generator; any other
+     * name (conventionally "DEFAULT") marks the fallback. Override to decouple
+     * the two if a generator's display name ever diverges from its enum.
+     */
+    @Override
+    public ArchiveStandard supportedStandard() {
+        String name = getStandardName();
+        for (ArchiveStandard s : ArchiveStandard.values()) {
+            if (s.name().equals(name)) return s;
+        }
+        return null;
+    }
 
-    /** Extract the package id (used in the S3 key). */
-    protected abstract Long packageId(P pkg);
-
-    /** Convert the package entity into whatever buildPayload/buildPackage expects. */
-    protected abstract S toSnapshot(P pkg);
-
-    /** The standard's name (e.g. "EARK") — used in the filename and for logging. */
-    public abstract String getStandardName();
+    /** Convert the package entity into the stage-agnostic snapshot generators consume. */
+    protected abstract PackageSnapshot toSnapshot(P pkg);
 }
