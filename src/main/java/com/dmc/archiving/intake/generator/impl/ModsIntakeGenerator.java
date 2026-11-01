@@ -1,7 +1,7 @@
 package com.dmc.archiving.intake.generator.impl;
 
 import com.dmc.archiving.intake.generator.AbstractIntakeGenerator;
-import com.dmc.archiving.intake.generator.IntakeSnapshot;
+import com.dmc.archiving.pkg.generator.PackageSnapshot;
 import com.dmc.archiving.intake.input.FileMetadataInput;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
@@ -22,7 +22,7 @@ public class ModsIntakeGenerator extends AbstractIntakeGenerator {
     }
 
     @Override
-    public Map<String, Object> buildPackage(IntakeSnapshot s) {
+    public Map<String, Object> buildPackage(PackageSnapshot s) {
         Map<String, Object> pkg = new LinkedHashMap<>();
         pkg.put("standard", "MODS");
         pkg.put("sipId", s.id());

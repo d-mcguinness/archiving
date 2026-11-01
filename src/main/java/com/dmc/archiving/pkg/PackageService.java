@@ -3,6 +3,8 @@ package com.dmc.archiving.pkg;
 import com.dmc.archiving.archive.element.Element;
 import com.dmc.archiving.archive.element.field.Field;
 import com.dmc.archiving.archive.model.ArchiveStandard;
+import com.dmc.archiving.pkg.generator.PackageGenerator;
+import com.dmc.archiving.pkg.generator.PackageSnapshot;
 import com.dmc.archiving.pkg.input.CreatePackageInput;
 import com.dmc.archiving.pkg.model.ArchivalPackage;
 import com.dmc.archiving.pkg.model.PackageStage;
@@ -25,11 +27,36 @@ public class PackageService {
     private final PackageRepository packageRepository;
     private final UserApi userApi;
     private final EntityManager entityManager;
+    private final PackageGeneratorRegistry generatorRegistry;
 
-    public PackageService(PackageRepository packageRepository, UserApi userApi, EntityManager entityManager) {
+    public PackageService(PackageRepository packageRepository, UserApi userApi, EntityManager entityManager,
+                          PackageGeneratorRegistry generatorRegistry) {
         this.packageRepository = packageRepository;
         this.userApi = userApi;
         this.entityManager = entityManager;
+        this.generatorRegistry = generatorRegistry;
+    }
+
+    /**
+     * Generate the stored artifact for a unified package, dispatching to the
+     * same standard-specific generator the package's stage module would use.
+     * Returns the artifact's storage URL.
+     */
+    @Transactional
+    public String generatePackage(Long id) {
+        ArchivalPackage pkg = packageRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Package not found: " + id));
+        PackageGenerator<?> generator = generatorRegistry.getGenerator(pkg.getStage(), pkg.getStandard());
+        return generator.generate(toSnapshot(pkg));
+    }
+
+    static PackageSnapshot toSnapshot(ArchivalPackage pkg) {
+        return PackageSnapshot.of(
+                pkg.getId(), pkg.getTitle(), pkg.getDescription(),
+                pkg.getStatus(), pkg.getStandard(),
+                pkg.getCreatedAtString(), pkg.getUpdatedAtString(),
+                pkg.getSourcePackageId(),
+                pkg.getRootElement());
     }
 
     @Transactional

@@ -1,8 +1,7 @@
 package com.dmc.archiving.release.generator;
 
+import com.dmc.archiving.pkg.generator.PackageGenerator;
 import com.dmc.archiving.release.model.Release;
 
-public interface ReleaseGenerator {
-    String generate(Release dip);
-    String getStandardName();
+public interface ReleaseGenerator extends PackageGenerator<Release> {
 }

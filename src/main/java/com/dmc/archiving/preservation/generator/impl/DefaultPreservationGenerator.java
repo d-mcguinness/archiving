@@ -1,14 +1,11 @@
 package com.dmc.archiving.preservation.generator.impl;
 
 import com.dmc.archiving.preservation.generator.AbstractPreservationGenerator;
-import com.dmc.archiving.preservation.model.Preservation;
-import com.dmc.archiving.archive.element.Element;
-import com.dmc.archiving.archive.element.field.Field;
+import com.dmc.archiving.pkg.generator.PackageSnapshot;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -24,33 +21,25 @@ public class DefaultPreservationGenerator extends AbstractPreservationGenerator 
     }
 
     @Override
-    public Map<String, Object> buildPackage(Preservation aip) {
+    public Map<String, Object> buildPackage(PackageSnapshot s) {
         Map<String, Object> pkg = new LinkedHashMap<>();
-        pkg.put("standard", aip.getStandard() != null ? aip.getStandard().name() : "UNKNOWN");
-        pkg.put("aipId", aip.getId());
-        pkg.put("title", aip.getTitle());
-        pkg.put("description", aip.getDescription());
-        pkg.put("status", aip.getStatus().name());
-        pkg.put("createdAt", aip.getCreatedAtString());
+        pkg.put("standard", s.standard());
+        pkg.put("aipId", s.id());
+        pkg.put("title", s.title());
+        pkg.put("description", s.description());
+        pkg.put("status", s.status());
+        pkg.put("createdAt", s.createdAt());
 
-        Element root = aip.getRootElement();
-        if (root != null) {
+        if (s.hasRootElement()) {
             Map<String, Object> rootElement = new LinkedHashMap<>();
-            rootElement.put("elementIdentifier", root.getElementIdentifier());
-            rootElement.put("entityName", root.getEntityName());
-            rootElement.put("entityType", root.getEntityType());
-            rootElement.put("title", root.getTitle());
-            rootElement.put("description", root.getDescription());
-
-            List<Field> fields = root.getFields();
-            if (fields != null && !fields.isEmpty()) {
-                Map<String, String> fieldMap = new LinkedHashMap<>();
-                for (Field field : fields) {
-                    fieldMap.put(field.getName(), field.getValue());
-                }
-                rootElement.put("fields", fieldMap);
+            rootElement.put("elementIdentifier", s.elementIdentifier());
+            rootElement.put("entityName", s.entityName());
+            rootElement.put("entityType", s.entityType());
+            rootElement.put("title", s.elementTitle());
+            rootElement.put("description", s.elementDescription());
+            if (s.hasFields()) {
+                rootElement.put("fields", s.fields());
             }
-
             pkg.put("rootElement", rootElement);
         }
 

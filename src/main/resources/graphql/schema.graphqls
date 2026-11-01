@@ -600,6 +600,7 @@ type Mutation {
 
     # Package Mutations (unified INTAKE/PRESERVATION/RELEASE)
     createPackage(input: CreatePackageInput!): ArchivalPackage!
+    generatePackage(packageId: ID!): String!
     updatePackageStatus(packageId: ID!, status: PackageStatus!): ArchivalPackage
     deletePackage(id: ID!): Boolean!
 
