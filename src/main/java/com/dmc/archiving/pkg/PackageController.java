@@ -65,6 +65,14 @@ public class PackageController {
     }
 
     @MutationMapping
+    public String generatePackage(@Argument String packageId, DataFetchingEnvironment env) {
+        AuthGuard.requireRole(env, "TENANT", "ADMIN");
+        Long id = Long.parseLong(packageId);
+        requireOwnership(env, id);
+        return packageService.generatePackage(id);
+    }
+
+    @MutationMapping
     public ArchivalPackage updatePackageStatus(@Argument String packageId, @Argument String status, DataFetchingEnvironment env) {
         AuthGuard.requireRole(env, "TENANT", "ADMIN");
         requireOwnership(env, Long.parseLong(packageId));

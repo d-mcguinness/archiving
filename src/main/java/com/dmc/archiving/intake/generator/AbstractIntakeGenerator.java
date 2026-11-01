@@ -1,6 +1,7 @@
 package com.dmc.archiving.intake.generator;
 
 import com.dmc.archiving.pkg.generator.AbstractPackageGenerator;
+import com.dmc.archiving.pkg.generator.PackageSnapshot;
 import com.dmc.archiving.intake.input.FileMetadataInput;
 import com.dmc.archiving.intake.model.Intake;
 import com.dmc.archiving.storage.CloudStorageService;
@@ -9,7 +10,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public abstract class AbstractIntakeGenerator
-        extends AbstractPackageGenerator<Intake, IntakeSnapshot>
+        extends AbstractPackageGenerator<Intake>
         implements IntakeGenerator {
 
     protected AbstractIntakeGenerator(CloudStorageService cloudStorageService) {
@@ -17,18 +18,18 @@ public abstract class AbstractIntakeGenerator
     }
 
     @Override
-    protected String packageType() {
+    public String packageType() {
         return "sip";
     }
 
     @Override
-    protected Long packageId(Intake sip) {
-        return sip.getId();
-    }
-
-    @Override
-    protected IntakeSnapshot toSnapshot(Intake sip) {
-        return IntakeSnapshot.from(sip);
+    protected PackageSnapshot toSnapshot(Intake sip) {
+        return PackageSnapshot.of(
+                sip.getId(), sip.getTitle(), sip.getDescription(),
+                sip.getStatus(), sip.getStandard(),
+                sip.getCreatedAtString(), sip.getUpdatedAtString(),
+                null,
+                sip.getRootElement());
     }
 
     protected record PrefillContext(

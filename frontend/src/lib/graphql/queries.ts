@@ -1366,6 +1366,12 @@ export const CREATE_PACKAGE: DocumentNode = gql`
   }
 `;
 
+export const GENERATE_PACKAGE: DocumentNode = gql`
+  mutation GeneratePackage($packageId: ID!) {
+    generatePackage(packageId: $packageId)
+  }
+`;
+
 export const UPDATE_PACKAGE_STATUS: DocumentNode = gql`
   mutation UpdatePackageStatus($packageId: ID!, $status: PackageStatus!) {
     updatePackageStatus(packageId: $packageId, status: $status) {

@@ -1,9 +1,7 @@
 package com.dmc.archiving.preservation.generator.impl;
 
 import com.dmc.archiving.preservation.generator.AbstractPreservationGenerator;
-import com.dmc.archiving.preservation.model.Preservation;
-import com.dmc.archiving.archive.element.Element;
-import com.dmc.archiving.archive.element.field.Field;
+import com.dmc.archiving.pkg.generator.PackageSnapshot;
 import com.dmc.archiving.storage.CloudStorageService;
 import org.springframework.stereotype.Component;
 
@@ -24,19 +22,19 @@ public class EarkPreservationGenerator extends AbstractPreservationGenerator {
     }
 
     @Override
-    public Map<String, Object> buildPackage(Preservation aip) {
+    public Map<String, Object> buildPackage(PackageSnapshot s) {
         Map<String, Object> pkg = new LinkedHashMap<>();
         pkg.put("standard", "EARK");
         pkg.put("standardVersion", "E-ARK CSIP 2.1.0");
-        pkg.put("aipId", aip.getId());
-        pkg.put("title", aip.getTitle());
-        pkg.put("description", aip.getDescription());
-        pkg.put("status", aip.getStatus().name());
-        pkg.put("createdAt", aip.getCreatedAtString());
+        pkg.put("aipId", s.id());
+        pkg.put("title", s.title());
+        pkg.put("description", s.description());
+        pkg.put("status", s.status());
+        pkg.put("createdAt", s.createdAt());
 
         // METS header
         Map<String, Object> metsHeader = new LinkedHashMap<>();
-        metsHeader.put("packageID", "AIP-" + aip.getId());
+        metsHeader.put("packageID", "AIP-" + s.id());
         metsHeader.put("contentInformationType", "MIXED");
         metsHeader.put("profile", "https://earkcsip.dilcis.eu/profile/E-ARK-CSIP.xml");
         metsHeader.put("oaisPackageType", "AIP");
@@ -47,22 +45,16 @@ public class EarkPreservationGenerator extends AbstractPreservationGenerator {
         structMap.put("type", "physical");
         structMap.put("label", "CSIP AIP Structure");
 
-        Element root = aip.getRootElement();
-        if (root != null) {
+        if (s.hasRootElement()) {
             Map<String, Object> rootElement = new LinkedHashMap<>();
-            rootElement.put("elementIdentifier", root.getElementIdentifier());
-            rootElement.put("entityName", root.getEntityName());
-            rootElement.put("entityType", root.getEntityType());
-            rootElement.put("title", root.getTitle());
-            rootElement.put("description", root.getDescription());
+            rootElement.put("elementIdentifier", s.elementIdentifier());
+            rootElement.put("entityName", s.entityName());
+            rootElement.put("entityType", s.entityType());
+            rootElement.put("title", s.elementTitle());
+            rootElement.put("description", s.elementDescription());
 
-            List<Field> fields = root.getFields();
-            if (fields != null && !fields.isEmpty()) {
-                Map<String, String> fieldMap = new LinkedHashMap<>();
-                for (Field field : fields) {
-                    fieldMap.put(field.getName(), field.getValue());
-                }
-                rootElement.put("fields", fieldMap);
+            if (s.hasFields()) {
+                rootElement.put("fields", s.fields());
             }
 
             structMap.put("rootElement", rootElement);
@@ -87,8 +79,8 @@ public class EarkPreservationGenerator extends AbstractPreservationGenerator {
         pkg.put("documentation", List.of("README.md", "submission_agreement.pdf"));
 
         // Source SIP reference
-        if (aip.getSourceIntakeId() != null) {
-            pkg.put("sourceIntakeId", aip.getSourceIntakeId());
+        if (s.sourceId() != null) {
+            pkg.put("sourceIntakeId", s.sourceId());
         }
 
         return pkg;
