@@ -101,8 +101,8 @@
     },
     {
       name: 'Professional',
-      price: 'Scale',
-      cadence: 'compliance',
+      price: '$249',
+      cadence: '/month',
       tagline: 'Compliance at scale',
       features: ['100 team members', '1,000 archives', '10 GB storage', '100 NOARK 5.5 / E-ARK packages / mo', 'Priority support'],
       cta: 'Choose Professional',
@@ -110,8 +110,8 @@
     },
     {
       name: 'Enterprise',
-      price: 'Custom',
-      cadence: 'unlimited',
+      price: '$1,499',
+      cadence: '/month',
       tagline: 'Unlimited preservation',
       features: ['Unlimited members & archives', 'Unlimited storage', 'Unlimited premium conformance', 'Audit logging & SSO-ready', 'Dedicated support'],
       cta: 'Contact sales',
