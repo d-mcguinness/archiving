@@ -11,7 +11,8 @@
   import ArchiveCanvas from '../../ArchiveCanvas.svelte';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
-  import { standardFileMap } from '$lib/standards';
+  import EntityForm from '$lib/components/EntityForm.svelte';
+  import { getScheme } from '$lib/schemes';
 
   const devmode = import.meta.env.VITE_DEVMODE === 'true';
 
@@ -122,22 +123,10 @@
     }
   }
 
-  async function loadSchemeDefinition(standard: string) {
-    try {
-      const fileName = standardFileMap[standard];
-      if (!fileName) {
-        console.warn(`No schema file mapped for standard: ${standard}`);
-        schemes = [];
-        return;
-      }
-      const response = await fetch(`/schemeDefintions/${fileName}`);
-      if (!response.ok) throw new Error(`Failed to fetch ${fileName}`);
-      const data = await response.json();
-      schemes = data.entities || [];
-    } catch (e) {
-      console.error('Failed to load scheme:', e);
-      schemes = [];
-    }
+  function loadSchemeDefinition(standard: string) {
+    const def = getScheme(standard);
+    if (!def) console.warn(`No scheme definition for standard: ${standard}`);
+    schemes = def?.entities ?? [];
   }
 
   async function loadArchiveStructure() {
@@ -1037,53 +1026,7 @@
           {#if scheme && scheme.fields && scheme.fields.length > 0}
             <div class="schema-fields-section">
               <h4>Schema Fields</h4>
-              <div class="form-fields">
-                {#each scheme.fields as field}
-                  <div class="form-group">
-                    <label for={`edit-field-${field.name}`}>
-                      {field.label || field.name}
-                      {#if field.type}
-                        <span class="field-type">({field.type})</span>
-                      {/if}
-                    </label>
-
-                    {#if field.type === 'date'}
-                      <input
-                        type="date"
-                        id={`edit-field-${field.name}`}
-                        value={elementForm.fieldValues[field.name] || ''}
-                        on:input={(e) => {
-                          elementForm.fieldValues[field.name] = e.currentTarget?.value || '';
-                          elementForm.fieldValues = elementForm.fieldValues;
-                        }}
-                        placeholder={`Enter ${field.label || field.name}`}
-                      />
-                    {:else if field.type === 'number'}
-                      <input
-                        type="number"
-                        id={`edit-field-${field.name}`}
-                        value={elementForm.fieldValues[field.name] || ''}
-                        on:input={(e) => {
-                          elementForm.fieldValues[field.name] = e.currentTarget?.value || '';
-                          elementForm.fieldValues = elementForm.fieldValues;
-                        }}
-                        placeholder={`Enter ${field.label || field.name}`}
-                      />
-                    {:else}
-                      <input
-                        type="text"
-                        id={`edit-field-${field.name}`}
-                        value={elementForm.fieldValues[field.name] || ''}
-                        on:input={(e) => {
-                          elementForm.fieldValues[field.name] = e.currentTarget?.value || '';
-                          elementForm.fieldValues = elementForm.fieldValues;
-                        }}
-                        placeholder={`Enter ${field.label || field.name}`}
-                      />
-                    {/if}
-                  </div>
-                {/each}
-              </div>
+              <EntityForm entity={scheme} bind:values={elementForm.fieldValues} grouped={false} showEntityInfo={false} idPrefix="edit-field" nativeRequired={false} />
             </div>
           {:else}
             <p class="no-fields">No additional schema fields available for this element type.</p>

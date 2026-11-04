@@ -8,6 +8,8 @@
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
   import { standards, graphqlToKey, type StandardDefinition } from '$lib/standards';
+  import EntityForm from '$lib/components/EntityForm.svelte';
+  import { getScheme, getStageEntity, emptyValues, validateRequired, toFieldInputs, deriveElementIdentifier, getStageDefaults, applyDefaults, type EntityDefinition, type SchemeDefinition } from '$lib/schemes';
 
   function getReleasesPath() {
     const { role } = get(auth);
@@ -17,8 +19,8 @@
 
   let selectedStandardKey = '';
   let selectedStandard: StandardDefinition | null = null;
-  let schemaData: any = null;
-  let releaseEntityDef: any = null;
+  let schemaData: SchemeDefinition | null = null;
+  let releaseEntityDef: EntityDefinition | null = null;
   let fieldValues: Record<string, string> = {};
   let users: any[] = [];
   let aips: any[] = [];
@@ -37,8 +39,6 @@
   let filterStandard: string | null = null;
 
   // Computed field groups
-  $: requiredFields = releaseEntityDef?.fields?.filter((f: any) => f.required) || [];
-  $: optionalFields = releaseEntityDef?.fields?.filter((f: any) => !f.required) || [];
 
   // Filter Preservations by the standard from the URL query param
   $: filteredPreservations = filterStandard
@@ -152,23 +152,12 @@
 
     loadingSchema = true;
     try {
-      const response = await fetch(`/schemeDefintions/${selectedStandard.file}`);
-      if (!response.ok) throw new Error(`Failed to load ${selectedStandard.file}`);
-      schemaData = await response.json();
-
-      // Find the Release root entity
-      const entity = schemaData.entities?.find((e: any) => e.name === selectedStandard!.releaseEntity);
+      schemaData = getScheme(selectedStandard.graphql) ?? null;
+      if (!schemaData) throw new Error(`No scheme definition for ${selectedStandard.label}`);
+      const entity = getStageEntity(selectedStandard.graphql, 'release');
       if (!entity) throw new Error(`Release entity "${selectedStandard.releaseEntity}" not found in schema`);
-
       releaseEntityDef = entity;
-
-      // Initialize field values
-      fieldValues = {};
-      if (entity.fields) {
-        entity.fields.forEach((field: any) => {
-          fieldValues[field.name] = '';
-        });
-      }
+      fieldValues = emptyValues(entity);
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to load schema';
       releaseEntityDef = null;
@@ -181,92 +170,6 @@
     return `Release-${sourcePreservationId || Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
   }
 
-  function getStandardDefaults(standardKey: string, title: string, description: string): Record<string, string> {
-    const today = new Date().toISOString().split('T')[0];
-    const id = genId();
-    const user = users.find((u: any) => u.id === selectedUserId);
-    const userName = user?.name || 'System';
-
-    const map: Record<string, Record<string, string>> = {
-      'E-ARK': {
-        packageID: id,
-        title: title || 'New Release package',
-        description: description || '',
-        profile: 'https://earkcsip.dilcis.eu/profile/E-ARK-CSIP.xml',
-        contentInformationType: 'MIXED',
-        oaisPackageType: 'DIP',
-        creationDate: today,
-        creator: userName,
-        accessRights: 'Public',
-        preservationLevel: 'reference',
-        representationCount: '1',
-      },
-      'NOARK5': {
-        systemID: id,
-        title: title || 'New Archive',
-        description: description || '',
-        archiveStatus: 'Created',
-        documentMedium: 'Electronic archive',
-        storageLocation: 'Default storage',
-        createdDate: today,
-        createdBy: userName,
-      },
-      'OAIS': {
-        aipID: id,
-        title: title || 'New Release package',
-        description: description || '',
-        creationDate: today,
-        version: '1.0',
-        accessRights: 'Public',
-        packageType: 'DIP',
-      },
-      'PREMIS': {
-        objectIdentifierType: 'local',
-        objectIdentifierValue: id,
-        objectCategory: 'Representation',
-        preservationLevelType: 'reference',
-        preservationLevelValue: 'reference copy',
-        preservationLevelRole: 'dissemination',
-        preservationLevelDateAssigned: today,
-        originalName: title || 'Untitled Object',
-      },
-      'Dublin Core': {
-        resourceIdentifier: id,
-        resourceType: 'Dataset',
-      },
-      'METS': {
-        metsID: id,
-        objID: `OBJ-${id}`,
-        label: title || 'New METS Document',
-        type: 'digital object',
-        profile: 'http://www.loc.gov/standards/mets/profiles',
-      },
-      'EAD': {
-        eadID: id,
-        audience: 'external',
-        relatedEncoding: 'Dublin Core',
-        lang: 'eng',
-        script: 'Latn',
-      },
-      'BagIt': {
-        bagName: (title || 'new-bag').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        payloadOxum: '0.0',
-        bagSize: '0 KB',
-        isComplete: 'true',
-        isValid: 'true',
-      },
-      'ISAD(G)': {
-        descriptionID: id,
-        levelOfDescription: 'Fonds',
-      },
-      'MODS': {
-        modsID: id,
-        version: '3.8',
-      },
-    };
-
-    return map[standardKey] || {};
-  }
 
   function applyAllDefaults() {
     if (!selectedUserId && users.length > 0) {
@@ -282,34 +185,26 @@
 
     if (!releaseEntityDef?.fields || !selectedStandard) return;
 
-    const defaults = getStandardDefaults(selectedStandard.key, dipTitle, dipDescription);
-
-    for (const field of releaseEntityDef.fields) {
-      const val = defaults[field.name];
-      if (val !== undefined) {
-        fieldValues[field.name] = val;
-      }
-    }
-
-    fieldValues = fieldValues;
+    const user = users.find((u: any) => u.id === selectedUserId);
+    const defaults = getStageDefaults(selectedStandard.key, 'release', {
+      id: genId(),
+      today: new Date().toISOString().split('T')[0],
+      userName: user?.name || 'System',
+      userEmail: user?.email,
+      title: dipTitle,
+      description: dipDescription
+    });
+    fieldValues = applyDefaults(releaseEntityDef, fieldValues, defaults);
   }
 
-  function updateField(name: string, value: string) {
-    fieldValues[name] = value;
-    fieldValues = fieldValues;
-  }
 
   function validateForm(): string | null {
     if (!selectedPreservationId) return 'Please select a source Preservation';
     if (!selectedUserId) return 'Please select an owner';
     if (!selectedStandard) return 'Please select a standard';
     if (!dipTitle.trim()) return 'Please enter a title';
-
-    for (const field of requiredFields) {
-      if (!fieldValues[field.name]?.trim()) {
-        return `Required field "${field.label}" is empty`;
-      }
-    }
+    const missing = validateRequired(releaseEntityDef, fieldValues);
+    if (missing) return missing;
     return null;
   }
 
@@ -327,18 +222,13 @@
       const dipContent = JSON.stringify({
         dipType: selectedStandard!.releaseLabel,
         standard: selectedStandard!.key,
-        entity: releaseEntityDef.name,
+        entity: releaseEntityDef!.name,
         fields: fieldValues
       }, null, 2);
 
-      const elementIdentifier = fieldValues['packageID'] || fieldValues['systemID'] || fieldValues['aipID'] || fieldValues['objectIdentifierValue'] || fieldValues['bagName'] || fieldValues['metsID'] || fieldValues['eadID'] || fieldValues['descriptionID'] || fieldValues['modsID'] || fieldValues['resourceIdentifier'] || `Release-${Date.now()}`;
+      const elementIdentifier = deriveElementIdentifier(fieldValues, `Release-${Date.now()}`);
 
-      const fields = releaseEntityDef.fields.map((fieldDef: any) => ({
-        name: fieldDef.name,
-        label: fieldDef.label,
-        type: fieldDef.type,
-        value: fieldValues[fieldDef.name] || ''
-      }));
+      const fields = toFieldInputs(releaseEntityDef!, fieldValues);
 
       const input: Record<string, any> = {
         userId: selectedUserId,
@@ -348,8 +238,8 @@
         standard: selectedStandard!.graphql,
         sourcePreservationId: sourcePreservationId || null,
         elementIdentifier,
-        entityName: releaseEntityDef.name,
-        entityType: releaseEntityDef.type,
+        entityName: releaseEntityDef!.name,
+        entityType: releaseEntityDef!.type,
         elementTitle: dipTitle,
         elementDescription: dipDescription || null,
         createdBy: selectedUserId,
@@ -504,113 +394,7 @@
               3. {selectedStandard?.releaseLabel} Fields
             </h2>
 
-            {#if releaseEntityDef.description}
-              <p class="entity-description">{releaseEntityDef.description}</p>
-            {/if}
-
-            {#if releaseEntityDef.note}
-              <div class="entity-note">
-                {releaseEntityDef.note}
-              </div>
-            {/if}
-
-            <!-- Required Fields -->
-            {#if requiredFields.length > 0}
-              <div class="fields-group">
-                <h3 class="fields-group-title">Required Fields</h3>
-                <div class="fields-grid">
-                  {#each requiredFields as field}
-                    <div class="form-group" class:full-width={field.type === 'text'}>
-                      <label for={`field-${field.name}`}>
-                        {field.label}
-                        <span class="req">*</span>
-                        <span class="field-type-tag">{field.type}</span>
-                      </label>
-                      {#if field.type === 'date'}
-                        <input
-                          type="date"
-                          id={`field-${field.name}`}
-                          value={fieldValues[field.name] || ''}
-                          required
-                          on:input={(e) => updateField(field.name, e.currentTarget?.value || '')}
-                        />
-                      {:else if field.type === 'number'}
-                        <input
-                          type="number"
-                          id={`field-${field.name}`}
-                          value={fieldValues[field.name] || ''}
-                          required
-                          on:input={(e) => updateField(field.name, e.currentTarget?.value || '')}
-                          placeholder={`Enter ${field.label}`}
-                        />
-                      {:else}
-                        <input
-                          type="text"
-                          id={`field-${field.name}`}
-                          value={fieldValues[field.name] || ''}
-                          required
-                          on:input={(e) => updateField(field.name, e.currentTarget?.value || '')}
-                          placeholder={`Enter ${field.label}`}
-                        />
-                      {/if}
-                    </div>
-                  {/each}
-                </div>
-              </div>
-            {/if}
-
-            <!-- Optional Fields (collapsible) -->
-            {#if optionalFields.length > 0}
-              <div class="fields-group optional-group">
-                <button
-                  type="button"
-                  class="fields-group-toggle"
-                  on:click={() => showOptionalFields = !showOptionalFields}
-                >
-                  <h3 class="fields-group-title">
-                    Optional Fields ({optionalFields.length})
-                  </h3>
-                  <span class="toggle-icon">{showOptionalFields ? 'v' : '>'}</span>
-                </button>
-
-                {#if showOptionalFields}
-                  <div class="fields-grid">
-                    {#each optionalFields as field}
-                      <div class="form-group" class:full-width={field.type === 'text'}>
-                        <label for={`field-${field.name}`}>
-                          {field.label}
-                          <span class="field-type-tag">{field.type}</span>
-                        </label>
-                        {#if field.type === 'date'}
-                          <input
-                            type="date"
-                            id={`field-${field.name}`}
-                            value={fieldValues[field.name] || ''}
-                            on:input={(e) => updateField(field.name, e.currentTarget?.value || '')}
-                          />
-                        {:else if field.type === 'number'}
-                          <input
-                            type="number"
-                            id={`field-${field.name}`}
-                            value={fieldValues[field.name] || ''}
-                            on:input={(e) => updateField(field.name, e.currentTarget?.value || '')}
-                            placeholder={`Enter ${field.label}`}
-                          />
-                        {:else}
-                          <input
-                            type="text"
-                            id={`field-${field.name}`}
-                            value={fieldValues[field.name] || ''}
-                            on:input={(e) => updateField(field.name, e.currentTarget?.value || '')}
-                            placeholder={`Enter ${field.label}`}
-                          />
-                        {/if}
-                      </div>
-                    {/each}
-                  </div>
-                {/if}
-              </div>
-            {/if}
+            <EntityForm entity={releaseEntityDef} bind:values={fieldValues} bind:showOptional={showOptionalFields} />
 
             <!-- Children preview -->
             {#if releaseEntityDef.children && releaseEntityDef.children.length > 0}
@@ -862,14 +646,6 @@
     box-shadow: none;
   }
 
-  .field-type-tag {
-    font-size: 0.65rem;
-    color: var(--arc-faint);
-    font-weight: 400;
-    font-style: italic;
-    margin-left: auto;
-  }
-
   /* Input chrome (width, border, radius, focus ring) comes from the global
      rules in app.css; only this page's tighter scale is layered on top. */
   .form-group input,
@@ -888,84 +664,11 @@
     resize: vertical;
   }
 
-  /* Entity info */
-  .entity-description {
-    margin: 0 0 1rem 0;
-    color: var(--arc-body);
-    font-size: 0.875rem;
-    line-height: 1.5;
-  }
-
-  .entity-note {
-    padding: 0.75rem 1rem;
-    background: var(--arc-alert-amber-bg);
-    border: 1px solid var(--arc-alert-amber-border);
-    border-radius: 0.375rem;
-    margin-bottom: 1.5rem;
-    font-size: 0.8rem;
-    color: var(--arc-alert-amber-ink);
-    line-height: 1.5;
-  }
-
-  /* Field Groups */
-  .fields-group {
-    margin-bottom: 1.5rem;
-  }
-
   .fields-group-title {
     margin: 0 0 1rem 0;
     color: var(--arc-body);
     font-size: 0.925rem;
     font-weight: 600;
-  }
-
-  .fields-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0 1rem;
-  }
-
-  .fields-grid .full-width {
-    grid-column: 1 / -1;
-  }
-
-  /* Optional fields toggle */
-  .optional-group {
-    border: 1px solid var(--arc-line-strong);
-    border-radius: 0.5rem;
-    padding: 1rem;
-    background: var(--arc-card-2);
-  }
-
-  .fields-group-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    margin-bottom: 0;
-    color: inherit;
-    box-shadow: none;
-  }
-
-  .fields-group-toggle:hover {
-    background: none;
-    transform: none;
-    box-shadow: none;
-  }
-
-  .fields-group-toggle .fields-group-title {
-    margin: 0;
-    color: var(--arc-muted);
-  }
-
-  .toggle-icon {
-    font-size: 1rem;
-    color: var(--arc-faint);
-    transition: transform 0.2s;
   }
 
   /* Children info */
@@ -1042,8 +745,7 @@
       padding: 1.5rem;
     }
 
-    .form-row,
-    .fields-grid {
+    .form-row {
       grid-template-columns: 1fr;
     }
   }

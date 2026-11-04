@@ -8,6 +8,8 @@
   import ArchiveCanvas from '../ArchiveCanvas.svelte';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import EntityForm from '$lib/components/EntityForm.svelte';
+  import { getScheme, type EntityDefinition } from '$lib/schemes';
 
   function getArchivesPath() {
     const { role } = get(auth);
@@ -98,52 +100,24 @@
     try {
       loadingSchemes = true;
 
-      // Fetch the JSON file based on standard
-      const fileNameMap: Record<string, string> = {
-        'NOARK5': 'noark5.json',
-        'OAIS': 'oais.json',
-        'PREMIS': 'premis.json',
-        'Dublin Core': 'dublincore.json',
-        'METS': 'mets.json',
-        'EAD': 'ead.json',
-        'BagIt': 'bagit.json',
-        'ISAD(G)': 'isadg.json',
-        'MODS': 'mods.json'
-      };
-      const fileName = fileNameMap[standard] || 'noark5.json';
-      const response = await fetch(`/schemeDefintions/${fileName}`);
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch ${fileName}`);
+      // Bundled definition for the standard (display key); NOARK5 when the standard is unknown
+      const schemeData = getScheme(standard) ?? getScheme('NOARK5');
+      if (!schemeData) {
+        throw new Error(`No scheme definition for standard ${standard}`);
       }
-
-      const schemeData = await response.json();
-
-      console.log('📦 Loaded scheme data:', {
-        standard,
-        entitiesCount: schemeData.entities?.length,
-        firstEntity: schemeData.entities?.[0],
-        firstEntityFields: schemeData.entities?.[0]?.fields
-      });
 
       // Transform entities to schemes array
       if (schemeData.entities && Array.isArray(schemeData.entities)) {
-        schemes = schemeData.entities.map((entity: any) => ({
+        schemes = schemeData.entities.map((entity: EntityDefinition) => ({
+          entity, // the definition itself, for EntityForm
           id: entity.name, // Use name as temporary ID
           entityName: entity.name,
-          norwegianName: entity.norwegianName || null,
-          englishName: entity.englishName || null,
           entityType: entity.type,
           description: entity.description,
           isRoot: entity.parent === null,
           children: entity.children || [], // Store allowed children
           fields: entity.fields || [] // Store field definitions
         }));
-
-        console.log('✅ Schemes loaded:', {
-          count: schemes.length,
-          schemes: schemes.map(s => ({ name: s.entityName, fieldCount: s.fields?.length }))
-        });
       }
 
       designedElements = [];
@@ -827,64 +801,7 @@
           {#key selectedScheme.entityName}
             <div class="dynamic-fields-section">
               <h4>Entity Fields</h4>
-              <p class="helper-text" style="margin-bottom: 1rem;">
-                Debug: {JSON.stringify(Object.keys(elementForm.fieldValues))}
-              </p>
-              {#each selectedScheme.fields as field}
-                <div class="form-group">
-                  <label for={`field-${field.name}`}>
-                    {field.label || field.name}
-                    {#if field.required}
-                      <span class="required-marker">*</span>
-                    {/if}
-                    {#if field.type === 'string' || field.type === 'date' || field.type === 'number'}
-                      <span class="field-type">({field.type})</span>
-                    {/if}
-                  </label>
-
-                  {#if field.type === 'date'}
-                    <input
-                      type="date"
-                      id={`field-${field.name}`}
-                      value={elementForm.fieldValues[field.name] || ''}
-                      required={field.required}
-                      on:input={(e) => {
-                        elementForm.fieldValues[field.name] = e.currentTarget?.value || '';
-                        elementForm.fieldValues = elementForm.fieldValues;
-                        console.log(`📝 Updated ${field.name}:`, e.currentTarget?.value);
-                      }}
-                      placeholder={`Enter ${field.label || field.name}`}
-                    />
-                  {:else if field.type === 'number'}
-                    <input
-                      type="number"
-                      id={`field-${field.name}`}
-                      value={elementForm.fieldValues[field.name] || ''}
-                      required={field.required}
-                      on:input={(e) => {
-                        elementForm.fieldValues[field.name] = e.currentTarget?.value || '';
-                        elementForm.fieldValues = elementForm.fieldValues;
-                        console.log(`📝 Updated ${field.name}:`, e.currentTarget?.value);
-                      }}
-                      placeholder={`Enter ${field.label || field.name}`}
-                    />
-                  {:else}
-                    <input
-                      type="text"
-                      id={`field-${field.name}`}
-                      value={elementForm.fieldValues[field.name] || ''}
-                      required={field.required}
-                      on:input={(e) => {
-                        elementForm.fieldValues[field.name] = e.currentTarget?.value || '';
-                        elementForm.fieldValues = elementForm.fieldValues;
-                        console.log(`📝 Updated ${field.name}:`, e.currentTarget?.value);
-                      }}
-                      placeholder={`Enter ${field.label || field.name}`}
-                    />
-                  {/if}
-                  <small class="helper-text">Value: {elementForm.fieldValues[field.name] || '(empty)'}</small>
-                </div>
-              {/each}
+              <EntityForm entity={selectedScheme.entity} bind:values={elementForm.fieldValues} grouped={false} showEntityInfo={false} nativeRequired={false} />
             </div>
           {/key}
         {/if}
@@ -1212,19 +1129,6 @@
     color: var(--arc-ink, #0f172a);
     font-size: 1rem;
     font-weight: 600;
-  }
-
-  .field-type {
-    font-size: 0.75rem;
-    color: var(--arc-muted, #64748b);
-    font-weight: 400;
-    font-style: italic;
-  }
-
-  .required-marker {
-    color: #ef4444;
-    font-weight: 600;
-    margin-left: 0.125rem;
   }
 
   .modal-footer {

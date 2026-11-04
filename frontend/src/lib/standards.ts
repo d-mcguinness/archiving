@@ -28,11 +28,6 @@ export const standards: StandardDefinition[] = [
   { key: 'E-ARK', label: 'E-ARK', file: 'eark.json', graphql: 'EARK', intakeEntity: 'Archival Information Package', intakeLabel: 'Archival Information Package', preservationEntity: 'Archival Information Package', preservationLabel: 'Archival Information Package', releaseEntity: 'Dissemination Information Package', releaseLabel: 'Dissemination Information Package' },
 ];
 
-/** Maps GraphQL enum value (e.g. 'NOARK5', 'EARK') to its schema JSON filename. */
-export const standardFileMap: Record<string, string> = Object.fromEntries(
-  standards.map(s => [s.graphql, s.file])
-);
-
 /** Maps GraphQL enum value to display key (e.g. 'EARK' → 'E-ARK'). */
 export const graphqlToKey: Record<string, string> = Object.fromEntries(
   standards.map(s => [s.graphql, s.key])
