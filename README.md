@@ -337,11 +337,11 @@ archiving/
 │   │   ├── routes/              # SvelteKit routes
 │   │   ├── lib/                 # Shared libraries
 │   │   │   ├── apollo.ts        # GraphQL client
-│   │   │   ├── components/      # Reusable components
+│   │   │   ├── components/      # Reusable components (EntityForm renders scheme fields)
+│   │   │   ├── schemes/         # Typed archive-standard definitions (JSON bundled at build)
 │   │   │   └── stores/          # State management
 │   │   └── app.css              # Global styles
 │   └── static/                  # Static assets
-│       └── schemeDefinitions/   # Archive standard schemas
 ├── pom.xml                      # Maven configuration
 ├── compose.yaml                 # Docker Compose
 ├── Dockerfile                   # Backend Docker image

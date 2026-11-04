@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { auth } from '$lib/stores/authStore';
   import { standards, type StandardDefinition } from '$lib/standards';
+  import { getScheme } from '$lib/schemes';
   import StandardCard from './StandardCard.svelte';
 
   /** Page title: "Ingest", "Preserve", "Deliver" */
@@ -55,26 +56,17 @@
     dip: 'Release',
   };
 
-  onMount(async () => {
-    const entries = await Promise.all(
-      standards.map(async (s) => {
-        try {
-          const res = await fetch(`/schemeDefintions/${s.file}`);
-          if (!res.ok) return null;
-          const data = await res.json();
-          return [s.key, {
-            fullName: data.fullName,
-            description: data.description,
-            reference: data.reference,
-            version: data.version,
-          }] as [string, SchemaInfo];
-        } catch {
-          return null;
-        }
-      })
-    );
-    for (const entry of entries) {
-      if (entry) schemas[entry[0]] = entry[1];
+  onMount(() => {
+    for (const s of standards) {
+      const def = getScheme(s.key);
+      if (def) {
+        schemas[s.key] = {
+          fullName: def.fullName,
+          description: def.description,
+          reference: def.reference,
+          version: def.version,
+        };
+      }
     }
     schemas = schemas;
     loading = false;

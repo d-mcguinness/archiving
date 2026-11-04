@@ -5,6 +5,8 @@
   import { GET_ALL_USERS, CREATE_PRESERVATION, GET_ALL_PRESERVATIONS, GET_INTAKES_BY_TENANT_V2, PREFILL_INTAKE_FIELDS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { standards } from '$lib/standards';
+  import EntityForm from '$lib/components/EntityForm.svelte';
+  import { getScheme, getStageEntity, emptyValues, validateRequired, toFieldInputs, deriveElementIdentifier, getStageDefaults, applyDefaults, type EntityDefinition, type SchemeDefinition } from '$lib/schemes';
   import { gql } from '@apollo/client/core';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
   import FileDropZone from '$lib/components/FileDropZone.svelte';
@@ -18,8 +20,8 @@
   let sips: any[] = [];
   let selectedIntakeId = '';
   let selectedStandard: typeof standards[0] | null = null;
-  let schemaData: any = null;
-  let preservationEntityDef: any = null;
+  let schemaData: SchemeDefinition | null = null;
+  let preservationEntityDef: EntityDefinition | null = null;
   let fieldValues: Record<string, string> = {};
   let users: any[] = [];
   let selectedUserId = '';
@@ -34,9 +36,6 @@
   let droppedFiles: File[] = [];
   let prefilling = false;
   let prefilledFromFiles = false;
-
-  $: requiredFields = preservationEntityDef?.fields?.filter((f: any) => f.required) || [];
-  $: optionalFields = preservationEntityDef?.fields?.filter((f: any) => !f.required) || [];
   $: filteredIntakes = archive ? sips.filter((s: any) => s.standard === archive.standard) : sips;
 
   onMount(async () => {
@@ -73,49 +72,36 @@
     if (!selectedStandard) return;
     loadingSchema = true;
     try {
-      const response = await fetch(`/schemeDefintions/${selectedStandard.file}`);
-      if (!response.ok) throw new Error(`Failed to load ${selectedStandard.file}`);
-      schemaData = await response.json();
-      const entity = schemaData.entities?.find((e: any) => e.name === selectedStandard!.preservationEntity);
+      schemaData = getScheme(selectedStandard.graphql) ?? null;
+      if (!schemaData) throw new Error(`No scheme definition for ${selectedStandard.label}`);
+      const entity = getStageEntity(selectedStandard.graphql, 'preservation');
       if (!entity) throw new Error(`Preservation entity "${selectedStandard.preservationEntity}" not found in schema`);
       preservationEntityDef = entity;
-      fieldValues = {};
-      if (entity.fields) entity.fields.forEach((field: any) => { fieldValues[field.name] = ''; });
+      fieldValues = emptyValues(entity);
     } catch (e) { error = e instanceof Error ? e.message : 'Failed to load schema'; preservationEntityDef = null; }
     finally { loadingSchema = false; }
   }
 
   function genId() { return `Preservation-${data.archiveId}-${Math.random().toString(36).substring(2, 8)}`; }
 
-  function getStandardDefaults(standardKey: string, title: string, description: string): Record<string, string> {
-    const today = new Date().toISOString().split('T')[0]; const id = genId();
-    const user = users.find((u: any) => u.id === selectedUserId); const userName = user?.name || 'System';
-    const map: Record<string, Record<string, string>> = {
-      'NOARK5': { systemID: id, title: title || 'New Archive', description: description || '', archiveStatus: 'Created', documentMedium: 'Electronic archive', storageLocation: 'Default storage', createdDate: today, createdBy: userName, closedDate: today, closedBy: userName },
-      'OAIS': { aipID: id, title: title || 'New Preservation package', description: description || '', creationDate: today, version: '1.0', accessRights: 'restricted', packageType: 'AIP' },
-      'PREMIS': { objectIdentifierType: 'local', objectIdentifierValue: id, objectCategory: 'Representation', preservationLevelType: 'full', preservationLevelValue: 'full preservation', preservationLevelRole: 'requirement', preservationLevelRationale: 'Default preservation policy', preservationLevelDateAssigned: today, significantPropertiesType: 'content', significantPropertiesValue: 'All content preserved', originalName: title || 'Untitled Object' },
-      'Dublin Core': { resourceIdentifier: id, resourceType: 'Dataset' },
-      'METS': { metsID: id, objID: `OBJ-${id}`, label: title || 'New METS Document', type: 'digital object', profile: 'http://www.loc.gov/standards/mets/profiles' },
-      'EAD': { eadID: id, audience: 'external', relatedEncoding: 'Dublin Core', lang: 'eng', script: 'Latn', base: '' },
-      'BagIt': { bagName: (title || 'new-bag').toLowerCase().replace(/[^a-z0-9]+/g, '-'), payloadOxum: '0.0', bagSize: '0 KB', isComplete: 'true', isValid: 'true' },
-      'ISAD(G)': { descriptionID: id, levelOfDescription: 'Fonds' },
-      'MODS': { modsID: id, version: '3.8' },
-      'E-ARK': { packageID: id, title: title || 'New Preservation package', description: description || '', profile: 'https://earkcsip.dilcis.eu/profile/E-ARK-CSIP.xml', contentInformationType: 'MIXED', oaisPackageType: 'AIP', creationDate: today, creator: userName, preservationLevel: 'full', representationCount: '1' },
-    };
-    return map[standardKey] || {};
-  }
 
   function applyAllDefaults() {
     if (!selectedUserId && users.length > 0) selectedUserId = users[0].id;
     if (!aipTitle) aipTitle = `${selectedStandard?.label || 'Archive'} Preservation - ${new Date().toLocaleDateString()}`;
     if (!aipDescription) aipDescription = `Preservation package created using the ${selectedStandard?.label || 'selected'} standard.`;
     if (!preservationEntityDef?.fields || !selectedStandard) return;
-    const defaults = getStandardDefaults(selectedStandard.key, aipTitle, aipDescription);
-    for (const field of preservationEntityDef.fields) { const val = defaults[field.name]; if (val !== undefined) fieldValues[field.name] = val; }
-    fieldValues = fieldValues;
+    const user = users.find((u: any) => u.id === selectedUserId);
+    const defaults = getStageDefaults(selectedStandard.key, 'preservation', {
+      id: genId(),
+      today: new Date().toISOString().split('T')[0],
+      userName: user?.name || 'System',
+      userEmail: user?.email,
+      title: aipTitle,
+      description: aipDescription
+    });
+    fieldValues = applyDefaults(preservationEntityDef, fieldValues, defaults);
   }
 
-  function updateField(name: string, value: string) { fieldValues[name] = value; fieldValues = fieldValues; }
 
   async function handleFilesProcessed(e: CustomEvent<{ files: File[], metadata: any }>) {
     const { files, metadata } = e.detail; droppedFiles = files;
@@ -137,7 +123,8 @@
   function validateForm(): string | null {
     if (!selectedUserId) return 'Please select an owner';
     if (!aipTitle.trim()) return 'Please enter a title';
-    for (const field of requiredFields) { if (!fieldValues[field.name]?.trim()) return `Required field "${field.label}" is empty`; }
+    const missing = validateRequired(preservationEntityDef, fieldValues);
+    if (missing) return missing;
     return null;
   }
 
@@ -145,10 +132,10 @@
     const validationError = validateForm(); if (validationError) { error = validationError; return; }
     submitting = true; error = null;
     try {
-      const aipContent = JSON.stringify({ aipType: selectedStandard!.preservationLabel, standard: selectedStandard!.key, entity: preservationEntityDef.name, fields: fieldValues }, null, 2);
-      const elementIdentifier = fieldValues['systemID'] || fieldValues['aipID'] || fieldValues['packageID'] || fieldValues['objectIdentifierValue'] || fieldValues['bagName'] || fieldValues['metsID'] || fieldValues['eadID'] || fieldValues['descriptionID'] || fieldValues['modsID'] || fieldValues['resourceIdentifier'] || `Preservation-${Date.now()}`;
-      const fields = preservationEntityDef.fields.map((fieldDef: any) => ({ name: fieldDef.name, label: fieldDef.label, type: fieldDef.type, value: fieldValues[fieldDef.name] || '' }));
-      const input: any = { userId: selectedUserId, title: aipTitle, description: aipDescription || null, content: aipContent, standard: selectedStandard!.graphql, elementIdentifier, entityName: preservationEntityDef.name, entityType: preservationEntityDef.type, elementTitle: aipTitle, elementDescription: aipDescription || null, createdBy: selectedUserId, fields };
+      const aipContent = JSON.stringify({ aipType: selectedStandard!.preservationLabel, standard: selectedStandard!.key, entity: preservationEntityDef!.name, fields: fieldValues }, null, 2);
+      const elementIdentifier = deriveElementIdentifier(fieldValues, `Preservation-${Date.now()}`);
+      const fields = toFieldInputs(preservationEntityDef!, fieldValues);
+      const input: any = { userId: selectedUserId, title: aipTitle, description: aipDescription || null, content: aipContent, standard: selectedStandard!.graphql, elementIdentifier, entityName: preservationEntityDef!.name, entityType: preservationEntityDef!.type, elementTitle: aipTitle, elementDescription: aipDescription || null, createdBy: selectedUserId, fields };
       if (selectedIntakeId) input.sourceIntakeId = selectedIntakeId;
       await client.mutate({ mutation: CREATE_PRESERVATION, variables: { input }, refetchQueries: [{ query: GET_ALL_PRESERVATIONS }], awaitRefetchQueries: true });
       toasts.add(`Preservation "${aipTitle}" created successfully using ${selectedStandard!.label}`, 'success');
@@ -195,10 +182,7 @@
       {:else if preservationEntityDef}
         <section class="form-section">
           <h2 class="section-title">{selectedStandard?.preservationLabel} Fields</h2>
-          {#if preservationEntityDef.description}<p class="entity-description">{preservationEntityDef.description}</p>{/if}
-          {#if preservationEntityDef.note}<div class="entity-note">{preservationEntityDef.note}</div>{/if}
-          {#if requiredFields.length > 0}<div class="fields-group"><h3 class="fields-group-title">Required Fields</h3><div class="fields-grid">{#each requiredFields as field}<div class="form-group" class:full-width={field.type === 'text'}><label for={`field-${field.name}`}>{field.label} <span class="req">*</span><span class="field-type-tag">{field.type}</span></label>{#if field.type === 'date'}<input type="date" id={`field-${field.name}`} value={fieldValues[field.name] || ''} required on:input={(e) => updateField(field.name, e.currentTarget?.value || '')} />{:else if field.type === 'number'}<input type="number" id={`field-${field.name}`} value={fieldValues[field.name] || ''} required on:input={(e) => updateField(field.name, e.currentTarget?.value || '')} placeholder={`Enter ${field.label}`} />{:else}<input type="text" id={`field-${field.name}`} value={fieldValues[field.name] || ''} required on:input={(e) => updateField(field.name, e.currentTarget?.value || '')} placeholder={`Enter ${field.label}`} />{/if}</div>{/each}</div></div>{/if}
-          {#if optionalFields.length > 0}<div class="fields-group optional-group"><button type="button" class="fields-group-toggle" on:click={() => showOptionalFields = !showOptionalFields}><h3 class="fields-group-title">Optional Fields ({optionalFields.length})</h3><span class="toggle-icon">{showOptionalFields ? 'v' : '>'}</span></button>{#if showOptionalFields}<div class="fields-grid">{#each optionalFields as field}<div class="form-group" class:full-width={field.type === 'text'}><label for={`field-${field.name}`}>{field.label}<span class="field-type-tag">{field.type}</span></label>{#if field.type === 'date'}<input type="date" id={`field-${field.name}`} value={fieldValues[field.name] || ''} on:input={(e) => updateField(field.name, e.currentTarget?.value || '')} />{:else if field.type === 'number'}<input type="number" id={`field-${field.name}`} value={fieldValues[field.name] || ''} on:input={(e) => updateField(field.name, e.currentTarget?.value || '')} placeholder={`Enter ${field.label}`} />{:else}<input type="text" id={`field-${field.name}`} value={fieldValues[field.name] || ''} on:input={(e) => updateField(field.name, e.currentTarget?.value || '')} placeholder={`Enter ${field.label}`} />{/if}</div>{/each}</div>{/if}</div>{/if}
+          <EntityForm entity={preservationEntityDef} bind:values={fieldValues} bind:showOptional={showOptionalFields} />
           {#if preservationEntityDef.children && preservationEntityDef.children.length > 0}<div class="children-info"><h3 class="fields-group-title">Available Child Entities</h3><p class="helper-text">Click to create Preservation and add a child element:</p><div class="children-tags">{#each preservationEntityDef.children as child}<button type="button" class="child-tag child-tag-clickable" on:click={() => handleCreateAndAddChild(child)} disabled={submitting}>{child}</button>{/each}</div></div>{/if}
         </section>
       {/if}
@@ -240,20 +224,9 @@
   .form-group { margin-bottom: 1.25rem; }
   .form-group label { display: flex; align-items: center; gap: 0.375rem; margin-bottom: 0.5rem; color: var(--arc-body, #334155); font-weight: 600; font-size: 0.85rem; }
   .req { color: #ef4444; font-weight: 600; }
-  .field-type-tag { font-size: 0.65rem; color: var(--arc-faint); font-weight: 400; font-style: italic; margin-left: auto; }
   /* Input chrome (border, radius, focus ring) comes from the global rules in app.css */
   .form-group textarea { resize: vertical; }
-  .entity-description { margin: 0 0 1rem 0; color: var(--arc-body); font-size: 0.875rem; line-height: 1.5; }
-  .entity-note { padding: 0.75rem 1rem; background: var(--arc-alert-amber-bg); border: 1px solid var(--arc-alert-amber-border); border-radius: 0.375rem; margin-bottom: 1.5rem; font-size: 0.8rem; color: var(--arc-alert-amber-ink); line-height: 1.5; }
-  .fields-group { margin-bottom: 1.5rem; }
   .fields-group-title { margin: 0 0 1rem 0; color: var(--arc-body); font-size: 0.925rem; font-weight: 600; }
-  .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
-  .fields-grid .full-width { grid-column: 1 / -1; }
-  .optional-group { border: 1px solid var(--arc-line, #e8edf3); border-radius: 0.75rem; padding: 1rem; background: var(--arc-ground, #f8fafc); }
-  .fields-group-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; background: none; border: none; cursor: pointer; padding: 0; color: inherit; box-shadow: none; }
-  .fields-group-toggle:hover { background: none; transform: none; box-shadow: none; }
-  .fields-group-toggle .fields-group-title { margin: 0; color: var(--arc-muted); }
-  .toggle-icon { font-size: 1rem; color: var(--arc-faint); }
   .children-info { margin-top: 1.5rem; padding: 1rem; background: var(--arc-ground, #f8fafc); border: 1px solid var(--arc-line, #e8edf3); border-radius: 0.75rem; }
   .children-info .fields-group-title { margin-bottom: 0.5rem; }
   .helper-text { margin: 0 0 0.75rem 0; color: var(--arc-muted); font-size: 0.8rem; }
@@ -266,5 +239,5 @@
      only the taller footer and this page's wider buttons are layered on top. */
   .form-actions { margin-top: 2rem; border-top-color: var(--arc-line, #e8edf3); }
   .btn { padding: 0.75rem 2rem; font-size: 0.925rem; }
-  @media (max-width: 768px) { .aip-container { margin: 1rem; padding: 1.5rem; } .form-row, .fields-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 768px) { .aip-container { margin: 1rem; padding: 1.5rem; } .form-row { grid-template-columns: 1fr; } }
 </style>

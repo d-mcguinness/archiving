@@ -7,8 +7,10 @@
   import { GET_INTAKE, GET_ALL_USERS, GET_ALL_INTAKES_V2 } from '$lib/graphql/queries';
   import { gql } from '@apollo/client/core';
   import { toasts } from '$lib/stores/toastStore';
+  import EntityForm from '$lib/components/EntityForm.svelte';
+  import { getScheme, getEntity, getChildEntities, emptyValues, type EntityDefinition, type SchemeDefinition } from '$lib/schemes';
   import { auth } from '$lib/stores/authStore';
-  import { standardFileMap, graphqlToKey } from '$lib/standards';
+  import { graphqlToKey } from '$lib/standards';
   import ElementTree from '$lib/components/ElementTree.svelte';
   import { authHeaders, API_BASE } from '$lib/api';
 
@@ -91,8 +93,7 @@
   let linking = false;
 
   // Schema data
-  let schemaData: any = null;
-  let schemaEntities: any[] = [];
+  let schemaData: SchemeDefinition | null = null;
 
   // Add child modal state
   let showAddChildModal = false;
@@ -171,17 +172,9 @@
     }
   }
 
-  async function loadSchema(standard: string) {
-    const file = standardFileMap[standard];
-    if (!file) return;
-    try {
-      const response = await fetch(`/schemeDefintions/${file}`);
-      if (!response.ok) return;
-      schemaData = await response.json();
-      schemaEntities = schemaData?.entities || [];
-    } catch (e) {
-      console.error('Failed to load schema:', e);
-    }
+  function loadSchema(standard: string) {
+    schemaData = getScheme(standard) ?? null;
+    if (!schemaData) console.warn(`No scheme definition for standard: ${standard}`);
   }
 
   async function loadUsers() {
@@ -198,16 +191,12 @@
     return user ? user.name : `User #${userId}`;
   }
 
-  function getEntityDef(entityName: string) {
-    return schemaEntities.find((e: any) => e.name === entityName);
+  function getEntityDef(entityName: string): EntityDefinition | undefined {
+    return getEntity(schemaData ?? undefined, entityName);
   }
 
-  function getChildEntityDefs(parentEntityName: string): any[] {
-    const parentDef = getEntityDef(parentEntityName);
-    if (!parentDef?.children?.length) return [];
-    return parentDef.children
-      .map((name: string) => getEntityDef(name))
-      .filter(Boolean);
+  function getChildEntityDefs(parentEntityName: string): EntityDefinition[] {
+    return getChildEntities(schemaData ?? undefined, parentEntityName);
   }
 
   // Add child handlers
@@ -224,12 +213,9 @@
 
   function selectChildEntity(entity: any) {
     selectedChildEntity = entity;
-    childFieldValues = {};
+    childFieldValues = emptyValues(entity);
     childTitle = '';
     childDescription = '';
-    if (entity.fields) {
-      entity.fields.forEach((f: any) => { childFieldValues[f.name] = ''; });
-    }
   }
 
   function closeAddChildModal() {
@@ -843,29 +829,7 @@
 
           {#if selectedChildEntity.fields && selectedChildEntity.fields.length > 0}
             <h4 class="modal-section-title">Fields</h4>
-            <div class="modal-fields-grid">
-              {#each selectedChildEntity.fields as field}
-                <div class="form-group" class:full-width={field.type === 'text'}>
-                  <label for={`child-field-${field.name}`}>
-                    {field.label}
-                    {#if field.required}<span class="req">*</span>{/if}
-                    <span class="field-type-tag">{field.type}</span>
-                  </label>
-                  {#if field.type === 'date'}
-                    <input type="date" id={`child-field-${field.name}`}
-                      bind:value={childFieldValues[field.name]} />
-                  {:else if field.type === 'number'}
-                    <input type="number" id={`child-field-${field.name}`}
-                      bind:value={childFieldValues[field.name]}
-                      placeholder={`Enter ${field.label}`} />
-                  {:else}
-                    <input type="text" id={`child-field-${field.name}`}
-                      bind:value={childFieldValues[field.name]}
-                      placeholder={`Enter ${field.label}`} />
-                  {/if}
-                </div>
-              {/each}
-            </div>
+            <EntityForm entity={selectedChildEntity} bind:values={childFieldValues} grouped={false} showEntityInfo={false} idPrefix="child-field" nativeRequired={false} />
           {/if}
         {/if}
       </div>
@@ -1480,16 +1444,6 @@
     font-weight: 600;
   }
 
-  .modal-fields-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0 1rem;
-  }
-
-  .modal-fields-grid .full-width {
-    grid-column: 1 / -1;
-  }
-
   /* Form — .form-group spacing and input chrome (width, border, radius,
      focus ring) come from app.css; only the compact scale stays local. */
   .form-group label {
@@ -1503,14 +1457,6 @@
   }
 
   .req { color: #ef4444; font-weight: 600; }
-
-  .field-type-tag {
-    font-size: 0.65rem;
-    color: var(--arc-faint);
-    font-weight: 400;
-    font-style: italic;
-    margin-left: auto;
-  }
 
   .form-group input,
   .form-group textarea {
@@ -1594,7 +1540,6 @@
     .header-actions { width: 100%; }
     .detail-row { flex-direction: column; gap: 0.25rem; }
     .detail-label { width: auto; }
-    .modal-fields-grid { grid-template-columns: 1fr; }
     .document-card { flex-direction: column; align-items: flex-start; }
   }
 
