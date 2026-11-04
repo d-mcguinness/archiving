@@ -48,15 +48,18 @@ public class Noark5IntakeGenerator extends AbstractIntakeGenerator {
     public Map<String, String> prefillFields(FileMetadataInput meta) {
         PrefillContext c = prefillContext(meta);
         Map<String, String> m = new LinkedHashMap<>();
+        // Keys are the Archive entity's field names in schemes/noark5.json — the
+        // form filters prefill results against that list, so the Norwegian
+        // element names (tittel, opprettetDato, …) belong in the XML writer only.
         m.put("systemID", c.id());
-        m.put("tittel", c.name());
-        m.put("beskrivelse", "");
-        m.put("arkivstatus", "Opprettet");
-        m.put("dokumentmedium", "Elektronisk arkiv");
-        m.put("opprettetDato", c.date());
-        m.put("opprettetAv", c.user());
-        m.put("avsluttetDato", c.date());
-        m.put("avsluttetAv", c.user());
+        m.put("title", c.name());
+        m.put("description", "");
+        m.put("archiveStatus", "Created");
+        m.put("documentMedium", "Electronic archive");
+        m.put("createdDate", c.date());
+        m.put("createdBy", c.user());
+        m.put("closedDate", c.date());
+        m.put("closedBy", c.user());
         return m;
     }
 }

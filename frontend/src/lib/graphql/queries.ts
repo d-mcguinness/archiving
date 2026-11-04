@@ -1366,6 +1366,33 @@ export const CREATE_PACKAGE: DocumentNode = gql`
   }
 `;
 
+// Archive standard definitions (served by the backend from classpath:schemes/*.json)
+export const ALL_STANDARD_DEFINITIONS: DocumentNode = gql`
+  query AllStandardDefinitions {
+    allStandardDefinitions {
+      standard
+      displayName
+      fullName
+      reference
+      description
+      version
+      xsdReference
+      url
+      stageEntities { intake preservation release }
+      entities {
+        name
+        type
+        description
+        parent
+        children
+        note
+        fields { name label type required }
+      }
+      vocabulariesJson
+    }
+  }
+`;
+
 export const GENERATE_PACKAGE: DocumentNode = gql`
   mutation GeneratePackage($packageId: ID!) {
     generatePackage(packageId: $packageId)

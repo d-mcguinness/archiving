@@ -478,6 +478,46 @@ input FileMetadataInput {
     fileCount: Int!
 }
 
+# Archive standard definitions (served from classpath:schemes/*.json; the single
+# source both the UI forms and the backend generators read)
+type SchemeFieldDefinition {
+    name: String!
+    label: String!
+    type: String!
+    required: Boolean!
+}
+
+type SchemeEntityDefinition {
+    name: String!
+    type: String!
+    description: String
+    parent: String
+    children: [String!]!
+    note: String
+    fields: [SchemeFieldDefinition!]!
+}
+
+type SchemeStageEntities {
+    intake: String!
+    preservation: String!
+    release: String!
+}
+
+type SchemeDefinition {
+    standard: ArchiveStandard!
+    displayName: String!
+    fullName: String!
+    reference: String
+    description: String
+    version: String
+    xsdReference: String
+    url: String
+    stageEntities: SchemeStageEntities!
+    entities: [SchemeEntityDefinition!]!
+    # The standard's controlled vocabularies, JSON-encoded (shapes vary per standard)
+    vocabulariesJson: String!
+}
+
 type PrefillField {
     name: String!
     value: String!
@@ -521,6 +561,10 @@ type Query {
     getIntakesByTenantV2(tenantId: ID!): [Intake!]!
     getIntake(id: ID!): Intake
     prefillIntakeFields(standard: ArchiveStandard!, fileMetadata: FileMetadataInput!): [PrefillField!]!
+
+    # Archive standard definitions (public; drives the create/edit forms)
+    standardDefinition(standard: ArchiveStandard!): SchemeDefinition
+    allStandardDefinitions: [SchemeDefinition!]!
 
     # PRESERVATION Queries
     getAllPreservations: [Preservation!]!

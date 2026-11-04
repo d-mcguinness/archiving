@@ -1,12 +1,19 @@
 /**
  * Typed access to the archive standard definitions.
  *
- * The JSON files are bundled at build time, so a missing or malformed
- * definition fails `vite build` instead of a user's page, and every page
- * gets the same object without a fetch. Lookups accept any of the three
- * identifiers in circulation — the display key ("E-ARK"), the GraphQL enum
- * value ("EARK") or the file name ("eark.json").
+ * The backend is the single source (classpath:schemes/*.json, served by the
+ * `allStandardDefinitions` query), so the forms here and the generators there
+ * read the same field names. The definitions are fetched once per app load
+ * with {@link loadSchemes} and cached; every lookup below is then synchronous.
+ * The authenticated layout awaits the load before rendering any page, and
+ * the public standards pages await it in onMount.
+ *
+ * Lookups accept any of the identifiers in circulation — the display key
+ * ("E-ARK"), the GraphQL enum value ("EARK") or the legacy file name
+ * ("eark.json").
  */
+import { client } from '$lib/apollo';
+import { ALL_STANDARD_DEFINITIONS } from '$lib/graphql/queries';
 import { standards, type StandardDefinition } from '$lib/standards';
 import type {
   EntityDefinition,
@@ -19,31 +26,100 @@ import type {
 export type { EntityDefinition, FieldDefinition, FieldInput, FieldType, PackageStage, SchemeDefinition } from './types';
 export { getStageDefaults, applyDefaults, type DefaultsContext } from './defaults';
 
-const modules = import.meta.glob<SchemeDefinition>('./definitions/*.json', {
-  eager: true,
-  import: 'default'
-});
+/** GraphQL enum value ("EARK") → definition */
+const byStandard = new Map<string, SchemeDefinition>();
+let loading: Promise<void> | null = null;
 
-/** file name ("noark5.json") → parsed definition */
-const byFile: Record<string, SchemeDefinition> = {};
-for (const [path, def] of Object.entries(modules)) {
-  byFile[path.slice(path.lastIndexOf('/') + 1)] = def;
+/** Exactly what the `allStandardDefinitions` query returns (vocabularies still JSON-encoded). */
+interface WireDefinition {
+  standard: string;
+  displayName: string;
+  fullName: string;
+  reference?: string | null;
+  description?: string | null;
+  version?: string | null;
+  xsdReference?: string | null;
+  url?: string | null;
+  stageEntities: Record<PackageStage, string>;
+  entities: EntityDefinition[];
+  vocabulariesJson: string;
+}
+
+function fromWire(w: WireDefinition): SchemeDefinition {
+  let vocabularies: Record<string, unknown> = {};
+  try {
+    vocabularies = JSON.parse(w.vocabulariesJson || '{}');
+  } catch {
+    console.warn(`Unparseable vocabularies for ${w.standard}`);
+  }
+  return {
+    ...vocabularies,
+    standard: w.standard,
+    displayName: w.displayName,
+    fullName: w.fullName,
+    reference: w.reference ?? '',
+    description: w.description ?? '',
+    version: w.version ?? '',
+    xsdReference: w.xsdReference ?? undefined,
+    url: w.url ?? undefined,
+    stageEntities: {
+      intake: w.stageEntities.intake,
+      preservation: w.stageEntities.preservation,
+      release: w.stageEntities.release
+    },
+    entities: w.entities.map((e) => ({
+      name: e.name,
+      type: e.type,
+      description: e.description,
+      parent: e.parent,
+      children: [...(e.children ?? [])],
+      note: e.note ?? undefined,
+      fields: e.fields.map((f) => ({ name: f.name, label: f.label, type: f.type, required: f.required }))
+    }))
+  };
+}
+
+/**
+ * Fetch the definitions once. Safe to call from many places: concurrent and
+ * later calls share the first request; a failed load can be retried.
+ */
+export function loadSchemes(): Promise<void> {
+  if (byStandard.size > 0) return Promise.resolve();
+  if (!loading) {
+    loading = client
+      .query<{ allStandardDefinitions: WireDefinition[] }>({ query: ALL_STANDARD_DEFINITIONS })
+      .then((result) => {
+        for (const w of result.data?.allStandardDefinitions ?? []) {
+          byStandard.set(w.standard, fromWire(w));
+        }
+        if (byStandard.size === 0) throw new Error('Backend returned no standard definitions');
+      })
+      .finally(() => {
+        loading = null;
+      });
+  }
+  return loading;
+}
+
+/** True once {@link loadSchemes} has completed. */
+export function schemesLoaded(): boolean {
+  return byStandard.size > 0;
 }
 
 function resolveStandard(id: string): StandardDefinition | undefined {
   return standards.find((s) => s.key === id || s.graphql === id || s.file === id);
 }
 
-/** The definition for a standard, by display key, GraphQL enum value or file name. */
+/** The definition for a standard, by display key, GraphQL enum value or file name. Undefined before load. */
 export function getScheme(standard: string | null | undefined): SchemeDefinition | undefined {
   if (!standard) return undefined;
   const std = resolveStandard(standard);
-  return byFile[std?.file ?? standard];
+  return byStandard.get(std?.graphql ?? standard);
 }
 
-/** Every bundled definition, in the order of `standards`. */
+/** Every loaded definition, in the order of `standards`. */
 export function allSchemes(): SchemeDefinition[] {
-  return standards.map((s) => byFile[s.file]).filter((d): d is SchemeDefinition => !!d);
+  return standards.map((s) => byStandard.get(s.graphql)).filter((d): d is SchemeDefinition => !!d);
 }
 
 export function getEntity(scheme: SchemeDefinition | undefined, entityName: string): EntityDefinition | undefined {
@@ -57,12 +133,10 @@ export function getChildEntities(scheme: SchemeDefinition | undefined, parentNam
   return parent.children.map((n) => getEntity(scheme, n)).filter((e): e is EntityDefinition => !!e);
 }
 
-/** The root entity a package of `stage` is built from, per the standard's mapping in standards.ts. */
+/** The root entity a package of `stage` is built from, as the definition declares it. */
 export function getStageEntity(standard: string, stage: PackageStage): EntityDefinition | undefined {
-  const std = resolveStandard(standard);
-  if (!std) return undefined;
-  const entityName = std[`${stage}Entity` as const];
-  return getEntity(byFile[std.file], entityName);
+  const scheme = getScheme(standard);
+  return scheme ? getEntity(scheme, scheme.stageEntities[stage]) : undefined;
 }
 
 /** Human label for the stage entity ("Archive (Arkiv)"), for section headings. */
