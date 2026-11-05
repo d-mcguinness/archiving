@@ -338,7 +338,7 @@ archiving/
 │   │   ├── lib/                 # Shared libraries
 │   │   │   ├── apollo.ts        # GraphQL client
 │   │   │   ├── components/      # Reusable components (EntityForm renders scheme fields)
-│   │   │   ├── schemes/         # Typed archive-standard definitions (JSON bundled at build)
+│   │   │   ├── schemes/         # Typed client for the standard definitions (fetched once per load)
 │   │   │   └── stores/          # State management
 │   │   └── app.css              # Global styles
 │   └── static/                  # Static assets

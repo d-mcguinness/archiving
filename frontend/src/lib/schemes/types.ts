@@ -29,14 +29,18 @@ export interface EntityDefinition {
 }
 
 export interface SchemeDefinition {
-  /** Matches the GraphQL ArchiveStandard enum value (e.g. "DUBLIN_CORE"). */
+  /** The GraphQL ArchiveStandard enum value (e.g. "DUBLIN_CORE"). */
   standard: string;
+  /** Short display name ("Dublin Core", "ISAD(G)"). */
+  displayName: string;
   fullName: string;
   reference: string;
   description: string;
   version: string;
   xsdReference?: string;
   url?: string;
+  /** Root entity name per lifecycle stage; the backend validates each names an entity. */
+  stageEntities: Record<PackageStage, string>;
   entities: EntityDefinition[];
   /** Standard-specific controlled vocabularies (statusValues, eventTypes, …). */
   [vocabulary: string]: unknown;

@@ -111,7 +111,7 @@
       schemaData = getScheme(selectedStandard.graphql) ?? null;
       if (!schemaData) throw new Error(`No scheme definition for ${selectedStandard.label}`);
       const entity = getStageEntity(selectedStandard.graphql, 'release');
-      if (!entity) throw new Error(`Release entity "${selectedStandard.releaseEntity}" not found in schema`);
+      if (!entity) throw new Error(`No release entity defined for ${selectedStandard.label}`);
       releaseEntityDef = entity;
       fieldValues = emptyValues(entity);
     } catch (e) {
