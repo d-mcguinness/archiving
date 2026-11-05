@@ -234,8 +234,16 @@
 
       const fields = toFieldInputs(preservationEntityDef!, fieldValues);
 
+      // The preservation belongs to its archive's tenant; the resolver refuses to
+      // guess for a caller who is a member of several tenants.
+      const sourceArchive = archives.find((a: any) => a.id === selectedArchiveId);
+      const tenantId = sourceArchive?.tenantId != null
+        ? String(sourceArchive.tenantId)
+        : (get(auth).tenantId != null ? String(get(auth).tenantId) : null);
+
       const input: Record<string, any> = {
         userId: selectedUserId,
+        tenantId,
         title: aipTitle,
         description: aipDescription || null,
         content: aipContent,

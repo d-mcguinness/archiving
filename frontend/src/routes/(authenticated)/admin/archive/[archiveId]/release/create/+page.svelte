@@ -135,7 +135,8 @@
       const dipContent = JSON.stringify({ dipType: selectedStandard!.releaseLabel, standard: selectedStandard!.key, entity: releaseEntityDef!.name, fields: fieldValues }, null, 2);
       const elementIdentifier = deriveElementIdentifier(fieldValues, `Release-${Date.now()}`);
       const fields = toFieldInputs(releaseEntityDef!, fieldValues);
-      const input: any = { userId: selectedUserId, title: dipTitle, description: dipDescription || null, content: dipContent, standard: selectedStandard!.graphql, elementIdentifier, entityName: releaseEntityDef!.name, entityType: releaseEntityDef!.type, elementTitle: dipTitle, elementDescription: dipDescription || null, createdBy: selectedUserId, fields };
+      // Admins must name the billing tenant: it is the archive's
+      const input: any = { userId: selectedUserId, tenantId: archive?.tenantId != null ? String(archive.tenantId) : null, title: dipTitle, description: dipDescription || null, content: dipContent, standard: selectedStandard!.graphql, elementIdentifier, entityName: releaseEntityDef!.name, entityType: releaseEntityDef!.type, elementTitle: dipTitle, elementDescription: dipDescription || null, createdBy: selectedUserId, fields };
       if (selectedPreservationId) input.sourcePreservationId = selectedPreservationId;
       await client.mutate({ mutation: CREATE_RELEASE, variables: { input }, refetchQueries: [{ query: GET_ALL_RELEASES }], awaitRefetchQueries: true });
       toasts.add(`Release "${dipTitle}" created successfully using ${selectedStandard!.label}`, 'success');
