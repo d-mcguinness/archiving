@@ -16,14 +16,22 @@ ON CONFLICT (email) DO NOTHING;
 UPDATE users SET username = 'admin',  role = 'ADMIN'  WHERE email = 'john.doe@example.com';
 UPDATE users SET username = 'tenant', role = 'TENANT' WHERE email = 'jane.smith@example.com';
 UPDATE users SET username = 'user',   role = 'USER'   WHERE email = 'bob.johnson@example.com';
+-- The remaining seeded members need a role too, or they cannot sign in / be
+-- impersonated (an account without a role gets no usable token).
+UPDATE users SET role = 'USER' WHERE role IS NULL AND email IN ('alice.williams@example.com', 'charlie.brown@example.com');
 
 -- Insert Tenants (skip if already exists based on domain)
 INSERT INTO tenants (name, domain, display_name, description, status, plan, created_at, updated_at, owner_id, max_users, max_archives, max_storage_bytes, allow_external_sharing, enable_audit_log, timezone, default_language) VALUES
-('Acme Corp', 'acme.example.com', 'Acme Corporation', 'Main corporate tenant for enterprise solutions', 'ACTIVE', 'ENTERPRISE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'user_001', 100, 1000, 107374182400, true, true, 'America/New_York', 'en'),
-('Tech Innovations', 'techinnovations.example.com', 'Tech Innovations Inc.', 'Technology division focused on R&D', 'ACTIVE', 'PROFESSIONAL', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'user_002', 50, 500, 53687091200, true, true, 'America/Los_Angeles', 'en'),
-('Global Services', 'globalservices.example.com', 'Global Services Ltd.', 'International service provider tenant', 'ACTIVE', 'BASIC', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'user_003', 20, 200, 10737418240, false, false, 'Europe/London', 'en'),
-('Startup Labs', 'startuplabs.example.com', 'Startup Labs', 'Agile startup environment', 'TRIAL', 'FREE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'user_004', 10, 50, 5368709120, false, false, 'UTC', 'en')
+('Acme Corp', 'acme.example.com', 'Acme Corporation', 'Main corporate tenant for enterprise solutions', 'ACTIVE', 'ENTERPRISE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '2', 100, 1000, 107374182400, true, true, 'America/New_York', 'en'),
+('Tech Innovations', 'techinnovations.example.com', 'Tech Innovations Inc.', 'Technology division focused on R&D', 'ACTIVE', 'PROFESSIONAL', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '2', 50, 500, 53687091200, true, true, 'America/Los_Angeles', 'en'),
+('Global Services', 'globalservices.example.com', 'Global Services Ltd.', 'International service provider tenant', 'ACTIVE', 'BASIC', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '3', 20, 200, 10737418240, false, false, 'Europe/London', 'en'),
+('Startup Labs', 'startuplabs.example.com', 'Startup Labs', 'Agile startup environment', 'TRIAL', 'FREE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '4', 10, 50, 5368709120, false, false, 'UTC', 'en')
 ON CONFLICT (domain) DO NOTHING;
+-- Repair databases seeded before owner_id held a real user id: the old seed
+-- wrote labels ('user_001'…), which nothing could resolve to an account.
+UPDATE tenants SET owner_id = '2' WHERE owner_id IN ('user_001', 'user_002');
+UPDATE tenants SET owner_id = '3' WHERE owner_id = 'user_003';
+UPDATE tenants SET owner_id = '4' WHERE owner_id = 'user_004';
 
 -- Insert User-Tenant relationships (skip duplicates)
 INSERT INTO user_tenant (tenant_id, user_id) VALUES

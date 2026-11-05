@@ -18,7 +18,8 @@ public interface TenancyService {
     List<Tenant> getTenantsByStatus(TenantStatus status);
     List<Tenant> getTenantsByOwner(Long ownerId);
     List<Tenant> getTenantsByUserId(Long userId);  // Get all tenants a user belongs to
-    List<Long> getTenantIdsByUserId(Long userId);  // Get tenant IDs for a user (exposed for other modules)
+    List<Long> getTenantIdsByUserId(Long userId);
+    List<Long> getUserIdsByTenantId(Long tenantId);  // Members of a tenant  // Get tenant IDs for a user (exposed for other modules)
     void addUserToTenant(Long userId, Long tenantId);
     void removeUserFromTenant(Long tenantId, Long userId);  // Remove a single membership (tenant-scoped)
     void removeUserFromAllTenants(Long userId);             // Remove every membership (e.g. user account deleted)

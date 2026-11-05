@@ -4,15 +4,27 @@ import { apiFetch } from './api';
 import { auth } from './stores/authStore';
 import { toasts } from './stores/toastStore';
 /**
- * Ask the backend for an impersonation token for `userId` (optionally scoped to
- * `tenantId`) and switch the UI session to it. Returns false (after a toast) when
- * the backend refuses.
+ * Ask the backend for an impersonation token and switch the UI session to it.
+ * Pass a `userId` to act as that user (optionally scoped to `tenantId`), or
+ * only a `tenantId` to act as the account that represents that tenant (its
+ * owner, or a tenant-role member when the stored owner is not usable).
+ * Returns false (after a toast) when the backend refuses.
  */
-export async function impersonate(userId: string | number, tenantId?: string | number | null): Promise<boolean> {
+export async function impersonate(
+  userId: string | number | null | undefined,
+  tenantId?: string | number | null
+): Promise<boolean> {
+  const payload: Record<string, string> = {};
+  if (userId != null && String(userId) !== '') payload.userId = String(userId);
+  if (tenantId != null && String(tenantId) !== '') payload.tenantId = String(tenantId);
+  if (!payload.userId && !payload.tenantId) {
+    toasts.error('Nothing to impersonate');
+    return false;
+  }
   const res = await apiFetch('/api/auth/impersonate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(tenantId != null ? { userId: String(userId), tenantId: String(tenantId) } : { userId: String(userId) })
+    body: JSON.stringify(payload)
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data?.token) {

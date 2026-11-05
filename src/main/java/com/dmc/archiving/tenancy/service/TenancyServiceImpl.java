@@ -155,6 +155,13 @@ public class TenancyServiceImpl implements TenancyService {
     }
 
     @Override
+    public List<Long> getUserIdsByTenantId(Long tenantId) {
+        return membershipRepository.findByTenantId(tenantId).stream()
+                .map(TenantMembership::getUserId)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public void addUserToTenant(Long userId, Long tenantId) {
         if (!userApi.userExists(userId)) {

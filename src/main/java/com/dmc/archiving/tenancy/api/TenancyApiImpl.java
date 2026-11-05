@@ -70,6 +70,11 @@ class TenancyApiImpl implements TenancyApi {
     }
 
     @Override
+    public List<Long> getUserIdsByTenantId(Long tenantId) {
+        return tenancyService.getUserIdsByTenantId(tenantId);
+    }
+
+    @Override
     public List<Tenant> getAllTenants() {
         return tenancyService.getAllTenants();
     }
