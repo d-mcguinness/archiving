@@ -4,6 +4,8 @@ type User {
     name: String!
     email: String!
     age: Int
+    # ADMIN, TENANT or USER (null for accounts seeded without one)
+    role: String
 }
 
 input CreateUserInput {

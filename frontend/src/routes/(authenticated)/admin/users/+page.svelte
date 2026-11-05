@@ -267,13 +267,15 @@
               </td>
               <td class="age-cell">{user.age || '-'}</td>
               <td class="actions-cell">
-                <button
-                  class="btn-action btn-mimic btn-chip violet"
-                  on:click={() => mimicUser(user)}
-                  title="Sign in as this user"
-                >
-                  🎭 Mimic
-                </button>
+                {#if user.role !== 'ADMIN'}
+                  <button
+                    class="btn-action btn-mimic btn-chip violet"
+                    on:click={() => mimicUser(user)}
+                    title="Sign in as this user"
+                  >
+                    🎭 Mimic
+                  </button>
+                {/if}
                 <button
                   class="btn-action btn-edit btn-chip indigo"
                   on:click={() => openEditModal(user)}
