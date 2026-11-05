@@ -3,6 +3,7 @@ package com.dmc.archiving.scheme;
 import com.dmc.archiving.archive.model.ArchiveStandard;
 import com.dmc.archiving.scheme.api.EntityDefinition;
 import com.dmc.archiving.scheme.api.FieldDefinition;
+import com.dmc.archiving.scheme.api.FieldOption;
 import com.dmc.archiving.scheme.api.SchemeDefinition;
 import com.dmc.archiving.scheme.api.SchemeDefinitionApi;
 import com.dmc.archiving.scheme.api.SchemeStage;
@@ -102,7 +103,11 @@ public class SchemeDefinitionLoader implements SchemeDefinitionApi {
                     throw new IllegalStateException(file + ": field \"" + text(f, "name")
                             + "\" has unsupported type \"" + type + "\"");
                 }
-                fields.add(new FieldDefinition(text(f, "name"), text(f, "label"), type, f.get("required").asBoolean()));
+                String vocabulary = text(f, "vocabulary");
+                List<FieldOption> options = vocabulary == null ? List.of()
+                        : resolveVocabulary(root, vocabulary, file, text(e, "name") + "." + text(f, "name"));
+                fields.add(new FieldDefinition(text(f, "name"), text(f, "label"), type,
+                        f.get("required").asBoolean(), vocabulary, options));
             }
             entities.add(new EntityDefinition(
                     text(e, "name"), text(e, "type"), text(e, "description"), text(e, "parent"),
@@ -141,6 +146,45 @@ public class SchemeDefinitionLoader implements SchemeDefinitionApi {
                 stageEntities,
                 entities,
                 vocabularies);
+    }
+
+    /**
+     * Resolve a field's {@code vocabulary} dot path against the definition. A
+     * vocabulary is either a list of values, or an object whose keys are the
+     * values and whose string values are their descriptions (used as labels).
+     */
+    private static List<FieldOption> resolveVocabulary(JsonNode root, String path, String file, String field) {
+        JsonNode node = root;
+        for (String segment : path.split("\\.")) {
+            node = node.get(segment);
+            if (node == null) {
+                throw new IllegalStateException(file + ": field " + field + " references unknown vocabulary \"" + path + "\"");
+            }
+        }
+        List<FieldOption> options = new ArrayList<>();
+        if (node.isArray()) {
+            for (JsonNode v : node) {
+                if (!v.isTextual()) {
+                    throw new IllegalStateException(file + ": vocabulary \"" + path + "\" must be a list of strings");
+                }
+                options.add(new FieldOption(v.asText(), null));
+            }
+        } else if (node.isObject()) {
+            node.fields().forEachRemaining(entry -> {
+                if (!entry.getValue().isTextual()) {
+                    throw new IllegalStateException(file + ": vocabulary \"" + path
+                            + "\" must map values to string descriptions (key \"" + entry.getKey() + "\")");
+                }
+                String label = entry.getValue().asText();
+                options.add(new FieldOption(entry.getKey(), label.equals(entry.getKey()) ? null : label));
+            });
+        } else {
+            throw new IllegalStateException(file + ": vocabulary \"" + path + "\" is neither a list nor an object");
+        }
+        if (options.isEmpty()) {
+            throw new IllegalStateException(file + ": vocabulary \"" + path + "\" is empty");
+        }
+        return options;
     }
 
     private static String text(JsonNode node, String field) {

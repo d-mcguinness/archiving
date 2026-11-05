@@ -33,7 +33,7 @@ class SchemeGraphQlEndpointTest {
     void standardDefinitionIsServedUnauthenticated() throws Exception {
         String q = "{ standardDefinition(standard: NOARK5) { standard displayName fullName "
                 + "stageEntities { intake preservation release } "
-                + "entities { name children fields { name label type required } } vocabulariesJson } }";
+                + "entities { name children fields { name label type required vocabulary options { value label } } } vocabulariesJson } }";
 
         mvc.perform(post("/graphql").contentType(MediaType.APPLICATION_JSON).content(body(q)))
                 .andExpect(status().isOk())
@@ -46,6 +46,11 @@ class SchemeGraphQlEndpointTest {
                 .andExpect(jsonPath("$.data.standardDefinition.entities[0].children", hasItem("Series")))
                 .andExpect(jsonPath("$.data.standardDefinition.entities[0].fields[*].name", hasItem("createdDate")))
                 .andExpect(jsonPath("$.data.standardDefinition.entities[0].fields[0].required").value(true))
+                .andExpect(jsonPath("$.data.standardDefinition.entities[0].fields[?(@.name=='archiveStatus')].vocabulary")
+                        .value(hasItem("statusValues.archiveStatus")))
+                .andExpect(jsonPath("$.data.standardDefinition.entities[0].fields[?(@.name=='archiveStatus')].options[*].value")
+                        .value(hasItem("Created")))
+                .andExpect(jsonPath("$.data.standardDefinition.entities[0].fields[?(@.name=='title')].options", hasItem(hasSize(0))))
                 .andExpect(jsonPath("$.data.standardDefinition.vocabulariesJson", containsString("statusValues")));
     }
 

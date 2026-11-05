@@ -46,13 +46,15 @@
           "name": "archiveStatus",
           "type": "string",
           "label": "Archive Status",
-          "required": false
+          "required": false,
+          "vocabulary": "statusValues.archiveStatus"
         },
         {
           "name": "documentMedium",
           "type": "string",
           "label": "Document Medium",
-          "required": false
+          "required": false,
+          "vocabulary": "documentMedium"
         },
         {
           "name": "storageLocation",
@@ -148,13 +150,15 @@
           "name": "seriesStatus",
           "type": "string",
           "label": "Series Status",
-          "required": true
+          "required": true,
+          "vocabulary": "statusValues.seriesStatus"
         },
         {
           "name": "documentMedium",
           "type": "string",
           "label": "Document Medium",
-          "required": false
+          "required": false,
+          "vocabulary": "documentMedium"
         },
         {
           "name": "storageLocation",
@@ -390,7 +394,8 @@
           "name": "documentMedium",
           "type": "string",
           "label": "Document Medium",
-          "required": false
+          "required": false,
+          "vocabulary": "documentMedium"
         },
         {
           "name": "storageLocation",
@@ -516,7 +521,8 @@
           "name": "documentMedium",
           "type": "string",
           "label": "Document Medium",
-          "required": false
+          "required": false,
+          "vocabulary": "documentMedium"
         },
         {
           "name": "storageLocation",
@@ -546,13 +552,15 @@
           "name": "documentType",
           "type": "string",
           "label": "Document Type",
-          "required": true
+          "required": true,
+          "vocabulary": "documentTypes"
         },
         {
           "name": "documentStatus",
           "type": "string",
           "label": "Document Status",
-          "required": true
+          "required": true,
+          "vocabulary": "statusValues.documentStatus"
         },
         {
           "name": "title",
@@ -588,7 +596,8 @@
           "name": "documentMedium",
           "type": "string",
           "label": "Document Medium",
-          "required": false
+          "required": false,
+          "vocabulary": "documentMedium"
         },
         {
           "name": "storageLocation",
@@ -652,7 +661,8 @@
           "name": "variantFormat",
           "type": "string",
           "label": "Variant Format",
-          "required": true
+          "required": true,
+          "vocabulary": "variantFormats"
         },
         {
           "name": "format",
@@ -715,7 +725,8 @@
           "name": "correspondencePartyType",
           "type": "string",
           "label": "Correspondence Party Type",
-          "required": true
+          "required": true,
+          "vocabulary": "correspondencePartyTypes"
         },
         {
           "name": "correspondencePartyName",
@@ -867,7 +878,8 @@
           "name": "noteType",
           "type": "string",
           "label": "Note Type",
-          "required": false
+          "required": false,
+          "vocabulary": "noteTypes"
         },
         {
           "name": "noteDate",
@@ -923,7 +935,8 @@
           "name": "disposalDecision",
           "type": "string",
           "label": "Disposal Decision",
-          "required": true
+          "required": true,
+          "vocabulary": "disposalDecisions"
         },
         {
           "name": "disposalAuthority",
@@ -979,7 +992,8 @@
           "name": "deletionType",
           "type": "string",
           "label": "Deletion Type",
-          "required": true
+          "required": true,
+          "vocabulary": "deletionTypes"
         },
         {
           "name": "deletedDate",
@@ -1007,7 +1021,8 @@
           "name": "accessRestriction",
           "type": "string",
           "label": "Access Restriction",
-          "required": true
+          "required": true,
+          "vocabulary": "accessRestrictions"
         },
         {
           "name": "screeningAuthority",
@@ -1221,7 +1236,8 @@
           "name": "followUpMethod",
           "type": "string",
           "label": "Follow-up Method",
-          "required": true
+          "required": true,
+          "vocabulary": "followUpMethods"
         },
         {
           "name": "referenceFollowedUpByJournalEntry",

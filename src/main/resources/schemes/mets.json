@@ -121,7 +121,8 @@
           "name": "agentRole",
           "type": "string",
           "label": "Role",
-          "required": true
+          "required": true,
+          "vocabulary": "agentRoles"
         },
         {
           "name": "otherRole",
@@ -133,7 +134,8 @@
           "name": "agentType",
           "type": "string",
           "label": "Type",
-          "required": false
+          "required": false,
+          "vocabulary": "agentTypes"
         },
         {
           "name": "otherType",
@@ -530,7 +532,8 @@
           "name": "checksumType",
           "type": "string",
           "label": "Checksum Type",
-          "required": false
+          "required": false,
+          "vocabulary": "checksumTypes"
         }
       ]
     },
@@ -599,7 +602,8 @@
           "name": "checksumType",
           "type": "string",
           "label": "Checksum Type",
-          "required": false
+          "required": false,
+          "vocabulary": "checksumTypes"
         }
       ]
     },
@@ -709,7 +713,8 @@
           "name": "checksumType",
           "type": "string",
           "label": "Checksum Type",
-          "required": false
+          "required": false,
+          "vocabulary": "checksumTypes"
         },
         {
           "name": "ownerID",
@@ -895,7 +900,8 @@
           "name": "transformType",
           "type": "string",
           "label": "Transform Type",
-          "required": true
+          "required": true,
+          "vocabulary": "transformTypes"
         },
         {
           "name": "transformAlgorithm",
@@ -1254,13 +1260,15 @@
           "name": "xlinkShow",
           "type": "string",
           "label": "Show",
-          "required": false
+          "required": false,
+          "vocabulary": "xlinkShowValues"
         },
         {
           "name": "xlinkActuate",
           "type": "string",
           "label": "Actuate",
-          "required": false
+          "required": false,
+          "vocabulary": "xlinkActuateValues"
         }
       ]
     },

@@ -39,7 +39,8 @@
           "name": "levelOfDescription",
           "type": "string",
           "label": "Level of Description",
-          "required": true
+          "required": true,
+          "vocabulary": "levelsOfDescription"
         }
       ]
     },
@@ -163,7 +164,8 @@
           "name": "dateType",
           "type": "string",
           "label": "Date Type",
-          "required": false
+          "required": false,
+          "vocabulary": "dateTypes"
         },
         {
           "name": "startDate",
@@ -297,7 +299,8 @@
           "name": "creatorType",
           "type": "string",
           "label": "Creator Type",
-          "required": false
+          "required": false,
+          "vocabulary": "creatorTypes"
         },
         {
           "name": "authorityRecord",
@@ -610,7 +613,8 @@
           "name": "restrictionType",
           "type": "string",
           "label": "Restriction Type",
-          "required": false
+          "required": false,
+          "vocabulary": "restrictionTypes"
         },
         {
           "name": "closurePeriod",
@@ -1086,7 +1090,8 @@
           "name": "levelOfDetail",
           "type": "string",
           "label": "Level of Detail",
-          "required": false
+          "required": false,
+          "vocabulary": "levelsOfDetail"
         },
         {
           "name": "languageOfDescription",

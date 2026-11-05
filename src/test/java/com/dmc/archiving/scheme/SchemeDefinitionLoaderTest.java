@@ -3,6 +3,7 @@ package com.dmc.archiving.scheme;
 import com.dmc.archiving.archive.model.ArchiveStandard;
 import com.dmc.archiving.scheme.api.EntityDefinition;
 import com.dmc.archiving.scheme.api.FieldDefinition;
+import com.dmc.archiving.scheme.api.FieldOption;
 import com.dmc.archiving.scheme.api.SchemeDefinition;
 import com.dmc.archiving.scheme.api.SchemeStage;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,6 +69,35 @@ class SchemeDefinitionLoaderTest {
                 .contains("systemID", "title", "createdDate", "closedBy");
         assertThat(n5.vocabularies()).containsKey("statusValues").doesNotContainKey("entities");
         assertThat(n5.childEntities("Archive")).extracting(EntityDefinition::name).contains("Series");
+    }
+
+    @Test
+    void enumeratedFieldsResolveToTheirVocabulary() {
+        SchemeDefinition n5 = loader.get(ArchiveStandard.NOARK5).orElseThrow();
+        FieldDefinition status = n5.entity("Archive").orElseThrow().fields().stream()
+                .filter(f -> f.name().equals("archiveStatus")).findFirst().orElseThrow();
+        assertThat(status.isEnumerated()).isTrue();
+        assertThat(status.vocabulary()).isEqualTo("statusValues.archiveStatus");
+        assertThat(status.options()).extracting(FieldOption::value)
+                .containsExactly("Created", "Closed", "Transferred", "Periodized", "Deleted");
+
+        // Object vocabularies: keys are the values, descriptions become labels
+        FieldDefinition medium = n5.entity("Archive").orElseThrow().fields().stream()
+                .filter(f -> f.name().equals("documentMedium")).findFirst().orElseThrow();
+        assertThat(medium.options()).extracting(FieldOption::value)
+                .contains("Electronic archive", "Physical medium");
+        assertThat(medium.options()).filteredOn(o -> o.value().startsWith("Mixed"))
+                .extracting(FieldOption::label).first().asString().contains("mix");
+
+        // Free-text fields carry no vocabulary
+        FieldDefinition title = n5.entity("Archive").orElseThrow().fields().stream()
+                .filter(f -> f.name().equals("title")).findFirst().orElseThrow();
+        assertThat(title.isEnumerated()).isFalse();
+        assertThat(title.vocabulary()).isNull();
+
+        long enumerated = loader.all().stream().flatMap(d -> d.entities().stream())
+                .flatMap(e -> e.fields().stream()).filter(FieldDefinition::isEnumerated).count();
+        assertThat(enumerated).as("fields linked to a vocabulary across all standards").isGreaterThan(90);
     }
 
     @Test

@@ -98,7 +98,8 @@
           "name": "titleType",
           "type": "string",
           "label": "Type (abbreviated, translated, alternative, uniform)",
-          "required": false
+          "required": false,
+          "vocabulary": "titleTypes"
         },
         {
           "name": "otherType",
@@ -300,7 +301,8 @@
           "name": "nameType",
           "type": "string",
           "label": "Type (personal, corporate, conference, family)",
-          "required": false
+          "required": false,
+          "vocabulary": "nameTypes"
         },
         {
           "name": "usage",
@@ -387,7 +389,8 @@
           "name": "namePartType",
           "type": "string",
           "label": "Type (date, family, given, termsOfAddress)",
-          "required": false
+          "required": false,
+          "vocabulary": "namePartTypes"
         }
       ]
     },
@@ -506,7 +509,8 @@
           "name": "identifierType",
           "type": "string",
           "label": "Type",
-          "required": false
+          "required": false,
+          "vocabulary": "identifierTypes"
         },
         {
           "name": "typeURI",
@@ -614,7 +618,8 @@
           "name": "typeOfResource",
           "type": "string",
           "label": "Type of Resource",
-          "required": true
+          "required": true,
+          "vocabulary": "typeOfResourceValues"
         },
         {
           "name": "collection",
@@ -843,7 +848,8 @@
           "name": "placeTermType",
           "type": "string",
           "label": "Type (text, code)",
-          "required": false
+          "required": false,
+          "vocabulary": "placeTermTypes"
         },
         {
           "name": "authority",
@@ -1368,7 +1374,8 @@
           "name": "issuance",
           "type": "string",
           "label": "Issuance",
-          "required": true
+          "required": true,
+          "vocabulary": "issuanceValues"
         }
       ]
     },
@@ -1489,7 +1496,8 @@
           "name": "languageTermType",
           "type": "string",
           "label": "Type (text, code)",
-          "required": false
+          "required": false,
+          "vocabulary": "languageTermTypes"
         },
         {
           "name": "authority",
@@ -1659,7 +1667,8 @@
           "name": "reformattingQuality",
           "type": "string",
           "label": "Reformatting Quality (access, preservation, replacement)",
-          "required": true
+          "required": true,
+          "vocabulary": "reformattingQualityValues"
         }
       ]
     },
@@ -1716,7 +1725,8 @@
           "name": "digitalOrigin",
           "type": "string",
           "label": "Digital Origin",
-          "required": true
+          "required": true,
+          "vocabulary": "digitalOriginValues"
         }
       ]
     },
@@ -2951,7 +2961,8 @@
           "name": "identifierType",
           "type": "string",
           "label": "Type",
-          "required": false
+          "required": false,
+          "vocabulary": "identifierTypes"
         },
         {
           "name": "typeURI",
@@ -3280,7 +3291,8 @@
           "name": "identifierType",
           "type": "string",
           "label": "Type",
-          "required": false
+          "required": false,
+          "vocabulary": "identifierTypes"
         }
       ]
     },
@@ -3311,7 +3323,8 @@
           "name": "accessConditionType",
           "type": "string",
           "label": "Type (restriction on access, use and reproduction)",
-          "required": false
+          "required": false,
+          "vocabulary": "accessConditionTypes"
         },
         {
           "name": "authority",

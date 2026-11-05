@@ -23,7 +23,8 @@ import type {
   SchemeDefinition
 } from './types';
 
-export type { EntityDefinition, FieldDefinition, FieldInput, FieldType, PackageStage, SchemeDefinition } from './types';
+export type { EntityDefinition, FieldDefinition, FieldInput, FieldOption, FieldType, PackageStage, SchemeDefinition } from './types';
+export { isEnumerated } from './types';
 export { getStageDefaults, applyDefaults, type DefaultsContext } from './defaults';
 
 /** GraphQL enum value ("EARK") → definition */
@@ -74,7 +75,14 @@ function fromWire(w: WireDefinition): SchemeDefinition {
       parent: e.parent,
       children: [...(e.children ?? [])],
       note: e.note ?? undefined,
-      fields: e.fields.map((f) => ({ name: f.name, label: f.label, type: f.type, required: f.required }))
+      fields: e.fields.map((f) => ({
+        name: f.name,
+        label: f.label,
+        type: f.type,
+        required: f.required,
+        vocabulary: f.vocabulary ?? null,
+        options: (f.options ?? []).map((o) => ({ value: o.value, label: o.label ?? null }))
+      }))
     }))
   };
 }

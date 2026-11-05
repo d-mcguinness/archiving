@@ -9,11 +9,27 @@
 
 export type FieldType = 'string' | 'text' | 'date' | 'number';
 
+/** One allowed value of an enumerated field. */
+export interface FieldOption {
+  value: string;
+  /** The vocabulary's description, when it says more than the value itself. */
+  label?: string | null;
+}
+
 export interface FieldDefinition {
   name: string;
   label: string;
   type: FieldType;
   required: boolean;
+  /** Dot path of the controlled vocabulary the field draws its values from, if any. */
+  vocabulary?: string | null;
+  /** Allowed values resolved from that vocabulary; empty for free-text fields. */
+  options?: FieldOption[];
+}
+
+/** True when the field should render as a select rather than free text. */
+export function isEnumerated(field: FieldDefinition): boolean {
+  return !!field.options && field.options.length > 0;
 }
 
 export interface EntityDefinition {
