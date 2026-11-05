@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { API_BASE } from '$lib/api';
+  import { apiFetch } from '$lib/api';
   import { onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
@@ -27,6 +27,7 @@
   let showExtractDialog = false;
   let selectedPreservationForExtract: any = null;
   let extractPassword = '';
+  let extractFormat: 'json' | 'xml' = 'json';
   let extracting = false;
   let extractError: string | null = null;
 
@@ -100,8 +101,9 @@
     return status.toLowerCase();
   }
 
-  function openExtractDialog(aip: any) {
+  function openExtractDialog(aip: any, format: 'json' | 'xml' = 'json') {
     selectedPreservationForExtract = aip;
+    extractFormat = format;
     extractPassword = '';
     extractError = null;
     showExtractDialog = true;
@@ -120,18 +122,24 @@
     extracting = true;
     extractError = null;
     try {
-      const response = await fetch(`${API_BASE}/api/archives/${selectedPreservationForExtract.id}/extract`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: extractPassword })
-      });
+      // The preservation extract: the standard-conformant package, the
+      // preservation itself and the details of the archive it was preserved
+      // from, as one JSON or XML document.
+      const response = await apiFetch(
+        `/api/preservations/${selectedPreservationForExtract.id}/extract?format=${extractFormat}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: extractPassword })
+        }
+      );
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `Server error: ${response.status}`);
       }
       const contentDisposition = response.headers.get('Content-Disposition');
       const filenameMatch = contentDisposition?.match(/filename="?(.+?)"?$/);
-      const filename = filenameMatch?.[1] || `aip_${selectedPreservationForExtract.id}_export.json`;
+      const filename = filenameMatch?.[1] || `preservation_${selectedPreservationForExtract.id}_extract.${extractFormat}`;
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -142,7 +150,7 @@
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       closeExtractDialog();
-      toasts.success('Preservation extracted successfully');
+      toasts.success(`Preservation extracted as ${extractFormat.toUpperCase()}`);
     } catch (e) {
       extractError = e instanceof Error ? e.message : 'Failed to extract Preservation';
     } finally {
@@ -258,8 +266,11 @@
                   <a href="/preservation/edit/{aip.id}" class="btn-action btn-edit btn-chip indigo">
                     ✏️ Edit
                   </a>
-                  <button class="btn-action btn-extract btn-chip green" on:click={() => openExtractDialog(aip)}>
-                    📥 Extract
+                  <button class="btn-action btn-extract btn-chip green" on:click={() => openExtractDialog(aip, 'json')} title="Download the preservation, its package and archive details as JSON">
+                    📥 Extract JSON
+                  </button>
+                  <button class="btn-action btn-extract btn-chip green" on:click={() => openExtractDialog(aip, 'xml')} title="The same extract as XML">
+                    📄 Extract XML
                   </button>
                 </td>
               </tr>
@@ -276,12 +287,19 @@
   <div class="modal-overlay" on:click={closeExtractDialog} role="dialog" aria-modal="true">
     <div class="modal-content modal" on:click|stopPropagation role="document">
       <div class="modal-header">
-        <h3>📥 Extract Preservation</h3>
+        <h3>📥 Extract Preservation ({extractFormat.toUpperCase()})</h3>
         <button class="modal-close" on:click={closeExtractDialog}>&times;</button>
       </div>
       <div class="modal-body">
         <p class="aip-info"><strong>{selectedPreservationForExtract?.title}</strong></p>
-        <p class="info-text">Enter a password to encrypt the extracted Preservation package.</p>
+        <p class="info-text">
+          Downloads the preservation, its standard-conformant package and the details of the archive it was preserved from, as one {extractFormat.toUpperCase()} file.
+        </p>
+        <div class="format-toggle" role="radiogroup" aria-label="Extract format">
+          <label><input type="radio" name="extract-format" value="json" bind:group={extractFormat} disabled={extracting} /> JSON</label>
+          <label><input type="radio" name="extract-format" value="xml" bind:group={extractFormat} disabled={extracting} /> XML</label>
+        </div>
+        <p class="info-text">Enter a password to confirm the extraction.</p>
         {#if extractError}
           <div class="alert alert-error">❌ {extractError}</div>
         {/if}
@@ -299,7 +317,7 @@
       <div class="modal-footer">
         <button class="btn-secondary" on:click={closeExtractDialog} disabled={extracting}>Cancel</button>
         <button class="btn-primary" on:click={handleExtract} disabled={extracting || !extractPassword}>
-          {extracting ? 'Extracting...' : '📥 Extract'}
+          {extracting ? 'Extracting...' : `📥 Extract ${extractFormat.toUpperCase()}`}
         </button>
       </div>
     </div>
@@ -518,4 +536,6 @@
     .tenant-aips-page { padding: 1rem; }
     .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
   }
+  .format-toggle { display: flex; gap: 1.25rem; margin: 0.25rem 0 1rem; font-size: 0.9rem; color: var(--arc-body); }
+  .format-toggle label { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; }
 </style>
