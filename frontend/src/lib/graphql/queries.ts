@@ -1386,7 +1386,7 @@ export const ALL_STANDARD_DEFINITIONS: DocumentNode = gql`
         parent
         children
         note
-        fields { name label type required }
+        fields { name label type required vocabulary options { value label } }
       }
       vocabulariesJson
     }

@@ -72,7 +72,8 @@
           "name": "packageType",
           "type": "string",
           "label": "Package Type",
-          "required": true
+          "required": true,
+          "vocabulary": "packageTypes"
         },
         {
           "name": "contentInformationType",
@@ -183,7 +184,8 @@
           "name": "packageType",
           "type": "string",
           "label": "Package Type",
-          "required": true
+          "required": true,
+          "vocabulary": "packageTypes"
         },
         {
           "name": "aicMembership",
@@ -317,7 +319,8 @@
           "name": "informationObjectType",
           "type": "string",
           "label": "Information Object Type",
-          "required": false
+          "required": false,
+          "vocabulary": "informationObjectTypes"
         }
       ]
     },
@@ -377,7 +380,8 @@
           "name": "checksumAlgorithm",
           "type": "string",
           "label": "Checksum Algorithm",
-          "required": true
+          "required": true,
+          "vocabulary": "checksumAlgorithms"
         },
         {
           "name": "checksumDate",
@@ -438,7 +442,8 @@
           "name": "formatRegistry",
           "type": "string",
           "label": "Format Registry",
-          "required": false
+          "required": false,
+          "vocabulary": "formatRegistries"
         },
         {
           "name": "formatRegistryKey",
@@ -697,7 +702,8 @@
           "name": "checksumAlgorithm",
           "type": "string",
           "label": "Checksum Algorithm",
-          "required": true
+          "required": true,
+          "vocabulary": "checksumAlgorithms"
         },
         {
           "name": "checksumDate",
@@ -754,7 +760,8 @@
           "name": "accessLevel",
           "type": "string",
           "label": "Access Level",
-          "required": true
+          "required": true,
+          "vocabulary": "accessLevels"
         },
         {
           "name": "accessConditions",
@@ -1267,7 +1274,8 @@
           "name": "eventType",
           "type": "string",
           "label": "Event Type",
-          "required": true
+          "required": true,
+          "vocabulary": "eventTypes"
         },
         {
           "name": "eventDateTime",
@@ -1330,13 +1338,15 @@
           "name": "agentType",
           "type": "string",
           "label": "Agent Type",
-          "required": true
+          "required": true,
+          "vocabulary": "agentTypes"
         },
         {
           "name": "role",
           "type": "string",
           "label": "Role",
-          "required": true
+          "required": true,
+          "vocabulary": "roles"
         },
         {
           "name": "contactInformation",
@@ -1376,7 +1386,8 @@
           "name": "transformationType",
           "type": "string",
           "label": "Transformation Type",
-          "required": true
+          "required": true,
+          "vocabulary": "transformationTypes"
         },
         {
           "name": "datePerformed",

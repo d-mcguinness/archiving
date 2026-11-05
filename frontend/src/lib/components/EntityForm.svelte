@@ -8,8 +8,8 @@
    * Every page that used to copy this markup (the stage create pages, the
    * add-child modals, the archive element designer) renders this instead.
    */
-  import type { EntityDefinition } from '$lib/schemes';
-  import { splitFields } from '$lib/schemes';
+  import type { EntityDefinition, FieldDefinition } from '$lib/schemes';
+  import { splitFields, isEnumerated } from '$lib/schemes';
 
   export let entity: EntityDefinition;
   /** name → value; bind it. Missing keys are treated as empty. */
@@ -33,6 +33,20 @@
     values[name] = value;
     values = values;
   }
+
+  /** The select's options, plus the current value when it is not in the vocabulary (legacy data). */
+  function optionsFor(field: FieldDefinition): { value: string; label: string }[] {
+    const opts = (field.options ?? []).map((o) => ({ value: o.value, label: o.label ? `${o.value} — ${o.label}` : o.value }));
+    const current = values[field.name];
+    if (current && !opts.some((o) => o.value === current)) {
+      opts.unshift({ value: current, label: `${current} (not in ${field.vocabulary ?? 'vocabulary'})` });
+    }
+    return opts;
+  }
+
+  function typeTag(field: FieldDefinition): string {
+    return isEnumerated(field) ? 'enum' : field.type;
+  }
 </script>
 
 {#if entity}
@@ -53,17 +67,32 @@
               <label for={`${idPrefix}-${field.name}`}>
                 {field.label}
                 <span class="req">*</span>
-                <span class="field-type-tag">{field.type}</span>
+                <span class="field-type-tag">{typeTag(field)}</span>
               </label>
-              <input
-                type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : 'text'}
-                id={`${idPrefix}-${field.name}`}
-                value={values[field.name] || ''}
-                required={nativeRequired}
-                {disabled}
-                placeholder={field.type === 'date' ? undefined : `Enter ${field.label}`}
-                on:input={(e) => update(field.name, e.currentTarget.value)}
-              />
+              {#if isEnumerated(field)}
+                <select
+                  id={`${idPrefix}-${field.name}`}
+                  value={values[field.name] || ''}
+                  required={nativeRequired}
+                  {disabled}
+                  on:change={(e) => update(field.name, e.currentTarget.value)}
+                >
+                  <option value="">Select {field.label}</option>
+                  {#each optionsFor(field) as opt (opt.value)}
+                    <option value={opt.value}>{opt.label}</option>
+                  {/each}
+                </select>
+              {:else}
+                <input
+                  type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : 'text'}
+                  id={`${idPrefix}-${field.name}`}
+                  value={values[field.name] || ''}
+                  required={nativeRequired}
+                  {disabled}
+                  placeholder={field.type === 'date' ? undefined : `Enter ${field.label}`}
+                  on:input={(e) => update(field.name, e.currentTarget.value)}
+                />
+              {/if}
             </div>
           {/each}
         </div>
@@ -88,16 +117,30 @@
               <div class="form-group" class:full-width={field.type === 'text'}>
                 <label for={`${idPrefix}-${field.name}`}>
                   {field.label}
-                  <span class="field-type-tag">{field.type}</span>
+                  <span class="field-type-tag">{typeTag(field)}</span>
                 </label>
-                <input
-                  type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : 'text'}
-                  id={`${idPrefix}-${field.name}`}
-                  value={values[field.name] || ''}
-                  {disabled}
-                  placeholder={field.type === 'date' ? undefined : `Enter ${field.label}`}
-                  on:input={(e) => update(field.name, e.currentTarget.value)}
-                />
+                {#if isEnumerated(field)}
+                  <select
+                    id={`${idPrefix}-${field.name}`}
+                    value={values[field.name] || ''}
+                    {disabled}
+                    on:change={(e) => update(field.name, e.currentTarget.value)}
+                  >
+                    <option value="">Select {field.label}</option>
+                    {#each optionsFor(field) as opt (opt.value)}
+                      <option value={opt.value}>{opt.label}</option>
+                    {/each}
+                  </select>
+                {:else}
+                  <input
+                    type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : 'text'}
+                    id={`${idPrefix}-${field.name}`}
+                    value={values[field.name] || ''}
+                    {disabled}
+                    placeholder={field.type === 'date' ? undefined : `Enter ${field.label}`}
+                    on:input={(e) => update(field.name, e.currentTarget.value)}
+                  />
+                {/if}
               </div>
             {/each}
           </div>
@@ -111,17 +154,32 @@
           <label for={`${idPrefix}-${field.name}`}>
             {field.label || field.name}
             {#if field.required}<span class="req">*</span>{/if}
-            <span class="field-type-tag">{field.type}</span>
+            <span class="field-type-tag">{typeTag(field)}</span>
           </label>
-          <input
-            type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : 'text'}
-            id={`${idPrefix}-${field.name}`}
-            value={values[field.name] || ''}
-            required={nativeRequired && field.required}
-            {disabled}
-            placeholder={field.type === 'date' ? undefined : `Enter ${field.label || field.name}`}
-            on:input={(e) => update(field.name, e.currentTarget.value)}
-          />
+          {#if isEnumerated(field)}
+            <select
+              id={`${idPrefix}-${field.name}`}
+              value={values[field.name] || ''}
+              required={nativeRequired && field.required}
+              {disabled}
+              on:change={(e) => update(field.name, e.currentTarget.value)}
+            >
+              <option value="">Select {field.label || field.name}</option>
+              {#each optionsFor(field) as opt (opt.value)}
+                <option value={opt.value}>{opt.label}</option>
+              {/each}
+            </select>
+          {:else}
+            <input
+              type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : 'text'}
+              id={`${idPrefix}-${field.name}`}
+              value={values[field.name] || ''}
+              required={nativeRequired && field.required}
+              {disabled}
+              placeholder={field.type === 'date' ? undefined : `Enter ${field.label || field.name}`}
+              on:input={(e) => update(field.name, e.currentTarget.value)}
+            />
+          {/if}
         </div>
       {/each}
     </div>
@@ -196,7 +254,8 @@
   }
 
   /* Input chrome (width, border, radius, focus ring) comes from app.css. */
-  .form-group input {
+  .form-group input,
+  .form-group select {
     padding: 0.625rem 0.75rem;
     font-size: 0.875rem;
   }

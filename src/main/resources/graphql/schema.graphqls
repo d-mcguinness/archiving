@@ -481,11 +481,21 @@ input FileMetadataInput {
 
 # Archive standard definitions (served from classpath:schemes/*.json; the single
 # source both the UI forms and the backend generators read)
+type SchemeFieldOption {
+    value: String!
+    # The vocabulary's description of the value, when it has one beyond the value itself
+    label: String
+}
+
 type SchemeFieldDefinition {
     name: String!
     label: String!
     type: String!
     required: Boolean!
+    # Dot path of the controlled vocabulary this field draws its values from, if any
+    vocabulary: String
+    # Allowed values resolved from that vocabulary; empty for free-text fields
+    options: [SchemeFieldOption!]!
 }
 
 type SchemeEntityDefinition {

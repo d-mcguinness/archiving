@@ -73,7 +73,8 @@
           "name": "bagItVersion",
           "type": "string",
           "label": "BagIt-Version",
-          "required": true
+          "required": true,
+          "vocabulary": "bagItVersions"
         },
         {
           "name": "tagFileCharacterEncoding",
@@ -149,7 +150,8 @@
           "name": "checksumAlgorithm",
           "type": "string",
           "label": "Checksum Algorithm",
-          "required": true
+          "required": true,
+          "vocabulary": "checksumAlgorithms"
         }
       ]
     },

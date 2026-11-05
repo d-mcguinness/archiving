@@ -42,7 +42,8 @@
           "name": "objectCategory",
           "type": "string",
           "label": "Object Category",
-          "required": true
+          "required": true,
+          "vocabulary": "objectCategories"
         },
         {
           "name": "preservationLevelType",
@@ -54,13 +55,15 @@
           "name": "preservationLevelValue",
           "type": "string",
           "label": "Preservation Level Value",
-          "required": false
+          "required": false,
+          "vocabulary": "preservationLevelValues"
         },
         {
           "name": "preservationLevelRole",
           "type": "string",
           "label": "Preservation Level Role",
-          "required": false
+          "required": false,
+          "vocabulary": "preservationLevelRoles"
         },
         {
           "name": "preservationLevelRationale",
@@ -126,13 +129,15 @@
           "name": "preservationLevelValue",
           "type": "string",
           "label": "Preservation Level Value",
-          "required": false
+          "required": false,
+          "vocabulary": "preservationLevelValues"
         },
         {
           "name": "preservationLevelRole",
           "type": "string",
           "label": "Preservation Level Role",
-          "required": false
+          "required": false,
+          "vocabulary": "preservationLevelRoles"
         },
         {
           "name": "preservationLevelRationale",
@@ -168,13 +173,15 @@
           "name": "environmentFunctionType",
           "type": "string",
           "label": "Environment Function Type",
-          "required": false
+          "required": false,
+          "vocabulary": "environmentFunctionTypes"
         },
         {
           "name": "environmentFunctionLevel",
           "type": "string",
           "label": "Environment Function Level",
-          "required": false
+          "required": false,
+          "vocabulary": "environmentFunctionLevels"
         },
         {
           "name": "environmentDesignationName",
@@ -252,13 +259,15 @@
           "name": "preservationLevelValue",
           "type": "string",
           "label": "Preservation Level Value",
-          "required": false
+          "required": false,
+          "vocabulary": "preservationLevelValues"
         },
         {
           "name": "preservationLevelRole",
           "type": "string",
           "label": "Preservation Level Role",
-          "required": false
+          "required": false,
+          "vocabulary": "preservationLevelRoles"
         },
         {
           "name": "preservationLevelRationale",
@@ -294,7 +303,8 @@
           "name": "contentLocationType",
           "type": "string",
           "label": "Content Location Type",
-          "required": false
+          "required": false,
+          "vocabulary": "contentLocationTypes"
         },
         {
           "name": "contentLocationValue",
@@ -306,7 +316,8 @@
           "name": "storageMedium",
           "type": "string",
           "label": "Storage Medium",
-          "required": false
+          "required": false,
+          "vocabulary": "storageMediumValues"
         }
       ]
     },
@@ -349,13 +360,15 @@
           "name": "preservationLevelValue",
           "type": "string",
           "label": "Preservation Level Value",
-          "required": false
+          "required": false,
+          "vocabulary": "preservationLevelValues"
         },
         {
           "name": "preservationLevelRole",
           "type": "string",
           "label": "Preservation Level Role",
-          "required": false
+          "required": false,
+          "vocabulary": "preservationLevelRoles"
         },
         {
           "name": "compositionLevel",
@@ -367,7 +380,8 @@
           "name": "messageDigestAlgorithm",
           "type": "string",
           "label": "Message Digest Algorithm",
-          "required": true
+          "required": true,
+          "vocabulary": "messageDigestAlgorithms"
         },
         {
           "name": "messageDigest",
@@ -403,7 +417,8 @@
           "name": "formatRegistryName",
           "type": "string",
           "label": "Format Registry Name",
-          "required": false
+          "required": false,
+          "vocabulary": "formatRegistryNames"
         },
         {
           "name": "formatRegistryKey",
@@ -445,7 +460,8 @@
           "name": "inhibitorType",
           "type": "string",
           "label": "Inhibitor Type",
-          "required": false
+          "required": false,
+          "vocabulary": "inhibitorTypes"
         },
         {
           "name": "inhibitorTarget",
@@ -469,7 +485,8 @@
           "name": "contentLocationType",
           "type": "string",
           "label": "Content Location Type",
-          "required": false
+          "required": false,
+          "vocabulary": "contentLocationTypes"
         },
         {
           "name": "contentLocationValue",
@@ -481,7 +498,8 @@
           "name": "storageMedium",
           "type": "string",
           "label": "Storage Medium",
-          "required": false
+          "required": false,
+          "vocabulary": "storageMediumValues"
         },
         {
           "name": "significantPropertiesType",
@@ -527,7 +545,8 @@
           "name": "messageDigestAlgorithm",
           "type": "string",
           "label": "Message Digest Algorithm",
-          "required": true
+          "required": true,
+          "vocabulary": "messageDigestAlgorithms"
         },
         {
           "name": "messageDigest",
@@ -563,7 +582,8 @@
           "name": "formatRegistryName",
           "type": "string",
           "label": "Format Registry Name",
-          "required": false
+          "required": false,
+          "vocabulary": "formatRegistryNames"
         },
         {
           "name": "formatRegistryKey",
@@ -581,7 +601,8 @@
           "name": "contentLocationType",
           "type": "string",
           "label": "Content Location Type",
-          "required": false
+          "required": false,
+          "vocabulary": "contentLocationTypes"
         },
         {
           "name": "contentLocationValue",
@@ -593,7 +614,8 @@
           "name": "storageMedium",
           "type": "string",
           "label": "Storage Medium",
-          "required": false
+          "required": false,
+          "vocabulary": "storageMediumValues"
         }
       ]
     },
@@ -636,7 +658,8 @@
           "name": "messageDigestAlgorithm",
           "type": "string",
           "label": "Message Digest Algorithm",
-          "required": true
+          "required": true,
+          "vocabulary": "messageDigestAlgorithms"
         },
         {
           "name": "messageDigest",
@@ -676,7 +699,8 @@
           "name": "formatRegistryName",
           "type": "string",
           "label": "Format Registry Name",
-          "required": false
+          "required": false,
+          "vocabulary": "formatRegistryNames"
         },
         {
           "name": "formatRegistryKey",
@@ -736,7 +760,8 @@
           "name": "inhibitorType",
           "type": "string",
           "label": "Inhibitor Type",
-          "required": true
+          "required": true,
+          "vocabulary": "inhibitorTypes"
         },
         {
           "name": "inhibitorTarget",
@@ -764,7 +789,8 @@
           "name": "contentLocationType",
           "type": "string",
           "label": "Content Location Type",
-          "required": true
+          "required": true,
+          "vocabulary": "contentLocationTypes"
         },
         {
           "name": "contentLocationValue",
@@ -776,7 +802,8 @@
           "name": "storageMedium",
           "type": "string",
           "label": "Storage Medium",
-          "required": false
+          "required": false,
+          "vocabulary": "storageMediumValues"
         }
       ]
     },
@@ -791,7 +818,8 @@
           "name": "signatureEncoding",
           "type": "string",
           "label": "Signature Encoding",
-          "required": true
+          "required": true,
+          "vocabulary": "signatureEncodings"
         },
         {
           "name": "signer",
@@ -847,13 +875,15 @@
           "name": "environmentFunctionType",
           "type": "string",
           "label": "Environment Function Type",
-          "required": true
+          "required": true,
+          "vocabulary": "environmentFunctionTypes"
         },
         {
           "name": "environmentFunctionLevel",
           "type": "string",
           "label": "Environment Function Level",
-          "required": true
+          "required": true,
+          "vocabulary": "environmentFunctionLevels"
         },
         {
           "name": "environmentDesignationName",
@@ -910,13 +940,15 @@
           "name": "environmentFunctionType",
           "type": "string",
           "label": "Environment Function Type",
-          "required": true
+          "required": true,
+          "vocabulary": "environmentFunctionTypes"
         },
         {
           "name": "environmentFunctionLevel",
           "type": "string",
           "label": "Environment Function Level",
-          "required": true
+          "required": true,
+          "vocabulary": "environmentFunctionLevels"
         }
       ]
     },
@@ -992,13 +1024,15 @@
           "name": "relationshipType",
           "type": "string",
           "label": "Relationship Type",
-          "required": true
+          "required": true,
+          "vocabulary": "relationshipTypes"
         },
         {
           "name": "relationshipSubType",
           "type": "string",
           "label": "Relationship Sub-Type",
-          "required": true
+          "required": true,
+          "vocabulary": "relationshipSubTypes"
         },
         {
           "name": "relatedObjectIdentifierType",
@@ -1074,7 +1108,8 @@
           "name": "eventType",
           "type": "string",
           "label": "Event Type",
-          "required": true
+          "required": true,
+          "vocabulary": "eventTypes"
         },
         {
           "name": "eventDateTime",
@@ -1168,7 +1203,8 @@
           "name": "agentType",
           "type": "string",
           "label": "Agent Type",
-          "required": false
+          "required": false,
+          "vocabulary": "agentTypes"
         },
         {
           "name": "agentVersion",
@@ -1256,7 +1292,8 @@
           "name": "rightsBasis",
           "type": "string",
           "label": "Rights Basis",
-          "required": true
+          "required": true,
+          "vocabulary": "rightsBasisValues"
         },
         {
           "name": "linkingObjectIdentifierType",
@@ -1535,13 +1572,15 @@
           "name": "act",
           "type": "string",
           "label": "Act",
-          "required": true
+          "required": true,
+          "vocabulary": "actValues"
         },
         {
           "name": "restriction",
           "type": "string",
           "label": "Restriction",
-          "required": false
+          "required": false,
+          "vocabulary": "restrictionValues"
         },
         {
           "name": "termOfGrantStartDate",
