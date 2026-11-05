@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { auth } from '$lib/stores/authStore';
   import { standards, type StandardDefinition } from '$lib/standards';
-  import { getScheme } from '$lib/schemes';
+  import { getScheme, loadSchemes } from '$lib/schemes';
   import StandardCard from './StandardCard.svelte';
 
   /** Page title: "Ingest", "Preserve", "Deliver" */
@@ -56,7 +56,12 @@
     dip: 'Release',
   };
 
-  onMount(() => {
+  onMount(async () => {
+    try {
+      await loadSchemes();
+    } catch (e) {
+      console.error('Failed to load standard definitions:', e);
+    }
     for (const s of standards) {
       const def = getScheme(s.key);
       if (def) {

@@ -81,7 +81,7 @@
       schemaData = getScheme(selectedStandard.graphql) ?? null;
       if (!schemaData) throw new Error(`No scheme definition for ${selectedStandard.label}`);
       const entity = getStageEntity(selectedStandard.graphql, 'intake');
-      if (!entity) throw new Error(`Intake entity "${selectedStandard.intakeEntity}" not found in schema`);
+      if (!entity) throw new Error(`No intake entity defined for ${selectedStandard.label}`);
       intakeEntityDef = entity;
       fieldValues = emptyValues(entity);
     } catch (e) {
