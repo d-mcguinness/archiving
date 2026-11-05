@@ -39,6 +39,7 @@ export const GET_ALL_USERS: DocumentNode = gql`
       name
       email
       age
+      role
     }
   }
 `;
@@ -50,6 +51,7 @@ export const GET_USER: DocumentNode = gql`
       name
       email
       age
+      role
     }
   }
 `;

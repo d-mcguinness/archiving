@@ -213,7 +213,9 @@
       </div>
       <div class="header-actions">
         <a href="/tenants/{data.tenantId}/users/{data.userId}/edit" class="btn-edit-profile btn-secondary">✏️ Edit Profile</a>
-        <button class="btn-mimic btn-chip violet" on:click={mimicUser}>🎭 Mimic</button>
+        {#if user?.role !== 'ADMIN'}
+          <button class="btn-mimic btn-chip violet" on:click={mimicUser}>🎭 Mimic</button>
+        {/if}
         <a href="/tenants/{data.tenantId}/users/{data.userId}/documents" class="btn-docs btn-primary">📄 Documents</a>
       </div>
     </div>

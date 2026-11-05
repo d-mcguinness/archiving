@@ -250,7 +250,7 @@
                   <a href="/tenants/{data.tenantId}/users/{user.id}" class="btn-action btn-view btn-chip indigo">
                     👤 View
                   </a>
-                  {#if !mimicking && String(user.id) !== authUserId}
+                  {#if !mimicking && String(user.id) !== authUserId && user.role !== 'ADMIN'}
                     <button
                       class="btn-action btn-mimic btn-chip violet"
                       on:click={() => mimicUser(user)}
