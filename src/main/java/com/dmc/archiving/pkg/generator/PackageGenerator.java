@@ -18,6 +18,9 @@ public interface PackageGenerator<P> {
     /** Generate from a stage-agnostic snapshot — the entry point for callers that hold no entity of type P. */
     String generate(PackageSnapshot snapshot);
 
+    /** Render the standard-conformant artifact (bytes, filename, content-type) without storing it. */
+    PackagePayload render(PackageSnapshot snapshot);
+
     /** The standard's name (e.g. "EARK", or "DEFAULT" for the fallback). Used in filenames and logs. */
     String getStandardName();
 

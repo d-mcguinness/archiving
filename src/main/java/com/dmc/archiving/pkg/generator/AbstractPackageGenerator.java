@@ -44,9 +44,14 @@ public abstract class AbstractPackageGenerator<P> implements PackageGenerator<P>
     }
 
     @Override
+    public PackagePayload render(PackageSnapshot snapshot) {
+        return buildPayload(snapshot);
+    }
+
+    @Override
     public String generate(PackageSnapshot snapshot) {
         try {
-            PackagePayload payload = buildPayload(snapshot);
+            PackagePayload payload = render(snapshot);
             String fileKey = packageType() + "s/" + snapshot.id() + "/" + payload.filename();
             // Intentional (task #15): the generated artifact is uploaded to storage
             // but NOT recorded as a billable Document, so its bytes never enter the

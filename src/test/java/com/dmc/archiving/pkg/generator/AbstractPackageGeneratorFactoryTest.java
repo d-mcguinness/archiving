@@ -14,6 +14,7 @@ class AbstractPackageGeneratorFactoryTest {
     private record Stub(ArchiveStandard supportedStandard, String packageType) implements PackageGenerator<Object> {
         @Override public String generate(Object pkg) { return "url"; }
         @Override public String generate(PackageSnapshot snapshot) { return "url"; }
+        @Override public PackagePayload render(PackageSnapshot snapshot) { return new PackagePayload(new byte[0], "x", "text/plain"); }
         @Override public String getStandardName() { return supportedStandard == null ? "DEFAULT" : supportedStandard.name(); }
     }
 

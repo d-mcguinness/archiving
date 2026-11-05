@@ -2,6 +2,7 @@ package com.dmc.archiving.pkg;
 
 import com.dmc.archiving.archive.model.ArchiveStandard;
 import com.dmc.archiving.pkg.generator.PackageGenerator;
+import com.dmc.archiving.pkg.generator.PackagePayload;
 import com.dmc.archiving.pkg.generator.PackageSnapshot;
 import com.dmc.archiving.pkg.model.PackageStage;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ class PackageGeneratorRegistryTest {
     private record Stub(ArchiveStandard supportedStandard, String packageType) implements PackageGenerator<Object> {
         @Override public String generate(Object pkg) { return "url"; }
         @Override public String generate(PackageSnapshot snapshot) { return "url"; }
+        @Override public PackagePayload render(PackageSnapshot snapshot) { return new PackagePayload(new byte[0], "x", "text/plain"); }
         @Override public String getStandardName() { return supportedStandard == null ? "DEFAULT" : supportedStandard.name(); }
     }
 
