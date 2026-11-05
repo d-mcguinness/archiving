@@ -5,6 +5,7 @@
   import { client } from '$lib/apollo';
   import { GET_ALL_TENANTS, UPDATE_TENANT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
+  import { impersonate } from '$lib/impersonate';
   import { auth } from '$lib/stores/authStore';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
@@ -161,17 +162,13 @@
     return classes[plan] || 'plan-default';
   }
 
-  function mimicTenant(tenant: any) {
-    const token = 'Bearer_mimic_' + tenant.ownerId + '_TENANT_' + Date.now();
-    const mimicData = {
-      id: tenant.ownerId,
-      username: (tenant.name || 'tenant').toLowerCase().replace(/\s+/g, ''),
-      name: tenant.displayName || tenant.name,
-      email: `${(tenant.name || 'tenant').toLowerCase().replace(/\s+/g, '')}@${tenant.domain || 'archiving.com'}`,
-      role: 'TENANT',
-      tenantId: parseInt(tenant.id, 10),
-    };
-    auth.login(token, mimicData, 'TENANT', parseInt(tenant.id, 10));
+  async function mimicTenant(tenant: any) {
+    if (!tenant.ownerId) {
+      toasts.error('This tenant has no owner account to impersonate');
+      return;
+    }
+    // Backend-issued impersonation token for the tenant's owner, scoped to this tenant.
+    if (!(await impersonate(tenant.ownerId, tenant.id))) return;
     toasts.success(`Now viewing as tenant: ${tenant.displayName || tenant.name}`);
     goto(`/tenants/${tenant.id}/users`);
   }

@@ -4,6 +4,7 @@
   import { client } from '$lib/apollo';
   import { GET_ALL_USERS, UPDATE_USER } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
+  import { impersonate } from '$lib/impersonate';
   import { auth } from '$lib/stores/authStore';
   import { authHeaders, API_BASE } from '$lib/api';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
@@ -51,15 +52,9 @@
   }
 
   async function mimicUser(user: any) {
-    const token = 'Bearer_mimic_' + user.id + '_USER_' + Date.now();
-    const mimicData = {
-      id: user.id,
-      username: user.name?.toLowerCase().replace(/\s+/g, '') || 'user',
-      name: user.name,
-      email: user.email,
-      role: 'USER',
-    };
-    auth.login(token, mimicData, 'USER', null);
+    // The backend issues a signed, short-lived impersonation token (ADMIN only
+    // for arbitrary users); a client-made token would be rejected everywhere.
+    if (!(await impersonate(user.id))) return;
     toasts.success(`Now viewing as ${user.name}`);
     goto('/');
   }

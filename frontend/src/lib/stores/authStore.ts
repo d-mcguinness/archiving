@@ -84,15 +84,6 @@ function createAuthStore() {
   }
 
   function login(token: string, user: any, role: string, tenantId?: number | null, refreshToken?: string | null) {
-    // Save original session before mimic
-    if (token.startsWith('Bearer_mimic_') && !localStorage.getItem('auth_original_token')) {
-      localStorage.setItem('auth_original_token', localStorage.getItem('auth_token') || '');
-      localStorage.setItem('auth_original_user', localStorage.getItem('auth_user') || '');
-      localStorage.setItem('auth_original_role', localStorage.getItem('auth_role') || '');
-      localStorage.setItem('auth_original_tenantId', localStorage.getItem('auth_tenantId') || '');
-      localStorage.setItem('auth_original_refresh_token', localStorage.getItem('auth_refresh_token') || '');
-    }
-
     localStorage.setItem('auth_token', token || '');
     localStorage.setItem('auth_user', JSON.stringify(user));
     localStorage.setItem('auth_role', role);
@@ -117,10 +108,27 @@ function createAuthStore() {
     });
   }
 
+  /**
+   * Start an impersonation ("mimic") session with a token the backend issued via
+   * POST /api/auth/impersonate. The caller's own session is parked so exitMimic()
+   * can restore it; the impersonation token carries no refresh token and expires
+   * on its own (the backend caps it at 30 minutes).
+   */
+  function startMimic(token: string, user: any, role: string, tenantId?: number | null) {
+    if (!isMimicking()) {
+      localStorage.setItem('auth_original_token', localStorage.getItem('auth_token') || '');
+      localStorage.setItem('auth_original_user', localStorage.getItem('auth_user') || '');
+      localStorage.setItem('auth_original_role', localStorage.getItem('auth_role') || '');
+      localStorage.setItem('auth_original_tenantId', localStorage.getItem('auth_tenantId') || '');
+      localStorage.setItem('auth_original_refresh_token', localStorage.getItem('auth_refresh_token') || '');
+    }
+    localStorage.setItem('auth_mimic', '1');
+    login(token, user, role, tenantId, null);
+  }
+
   function isMimicking(): boolean {
     try {
-      const token = localStorage.getItem('auth_token');
-      return token?.startsWith('Bearer_mimic_') || false;
+      return localStorage.getItem('auth_mimic') === '1';
     } catch {
       return false;
     }
@@ -153,10 +161,12 @@ function createAuthStore() {
       localStorage.removeItem('auth_original_role');
       localStorage.removeItem('auth_original_tenantId');
       localStorage.removeItem('auth_original_refresh_token');
+      localStorage.removeItem('auth_mimic');
 
       set(readFromLocalStorage());
       goto('/admin');
     } else {
+      localStorage.removeItem('auth_mimic');
       logout();
     }
   }
@@ -176,6 +186,7 @@ function createAuthStore() {
     } catch { /* storage unavailable */ }
 
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_mimic');
     localStorage.removeItem('auth_user');
     localStorage.removeItem('auth_role');
     localStorage.removeItem('auth_tenantId');
@@ -190,6 +201,7 @@ function createAuthStore() {
     login,
     logout,
     isMimicking,
+    startMimic,
     exitMimic
   };
 }
