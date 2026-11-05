@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository for Archive entities
@@ -81,6 +82,21 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long>, JpaSpec
     // Find SIPs by tenant
     @Query("SELECT a FROM Archive a WHERE a.tenantId = :tenantId AND a.rootElement IS NOT NULL")
     List<Archive> findIntakesByTenantId(@Param("tenantId") Long tenantId);
+
+    // ========== Reads whose results are CACHED by ArchiveService ==========
+    // Cached entities outlive their persistence context, so every relation a
+    // GraphQL selection can reach from Archive must already be loaded when the
+    // entity goes into the cache. Otherwise a later request that selects it hits
+    // LazyInitializationException while graphql-java iterates the collection —
+    // outside the data fetcher, so it surfaces as an HTTP 500, not a GraphQL error.
+
+    @EntityGraph(attributePaths = {"assignedUsers"})
+    @Query("SELECT a FROM Archive a WHERE a.id = :id")
+    Optional<Archive> findByIdForCache(@Param("id") Long id);
+
+    @EntityGraph(attributePaths = {"assignedUsers"})
+    @Query("SELECT DISTINCT a FROM Archive a WHERE a.tenantId = :tenantId")
+    List<Archive> findByTenantIdForCache(@Param("tenantId") Long tenantId);
 
     // ========== Performance Optimization Queries ==========
 

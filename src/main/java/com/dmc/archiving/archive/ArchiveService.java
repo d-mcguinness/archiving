@@ -180,14 +180,19 @@ public class ArchiveService {
         return archiveRepository.findIntakesByTenantId(tenantId);
     }
 
+    // The two reads below are cached as entities. They must load every lazy
+    // relation the GraphQL Archive type exposes (assignedUsers) before caching,
+    // or a later request selecting it fails with LazyInitializationException —
+    // see ArchiveRepository's "ForCache" queries and ArchiveCacheLazyRelationsTest.
+
     @Cacheable(key = "#tenantId", cacheNames = "archivesByTenant")
     public List<Archive> getArchivesByTenant(Long tenantId) {
-        return archiveRepository.findByTenantId(tenantId);
+        return archiveRepository.findByTenantIdForCache(tenantId);
     }
 
     @Cacheable(key = "#id")
     public Archive getArchiveById(Long id) {
-        return archiveRepository.findById(id)
+        return archiveRepository.findByIdForCache(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Archive", id));
     }
 
