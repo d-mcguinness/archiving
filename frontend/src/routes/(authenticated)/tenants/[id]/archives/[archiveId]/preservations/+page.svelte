@@ -100,7 +100,7 @@
           <p class="subtitle">Archive: {archive.title} ({archive.standard})</p>
         {/if}
       </div>
-      <a href="/preservation/create" class="btn-create btn-primary">+ Create Preservation</a>
+      <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/preservations/create" class="btn-create btn-primary">+ Create Preservation</a>
     </div>
 
     {#if filteredPreservations.length === 0}
