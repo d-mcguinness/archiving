@@ -235,12 +235,21 @@
       // Build fields array for the root element
       const fields = toFieldInputs(intakeEntityDef!, fieldValues);
 
+      // The intake belongs to its archive's tenant; the resolver refuses to guess
+      // when the caller is a member of several tenants.
+      const sourceArchive = archives.find((a: any) => a.id === selectedArchiveId);
+      const tenantId = sourceArchive?.tenantId != null
+        ? String(sourceArchive.tenantId)
+        : (get(auth).tenantId != null ? String(get(auth).tenantId) : null);
+
       // Single mutation: creates Intake + root Element + Fields
       const result = await client.mutate({
         mutation: CREATE_INTAKE,
         variables: {
           input: {
             userId: selectedUserId,
+            archiveId: selectedArchiveId,
+            tenantId,
             title: sipTitle,
             description: sipDescription || null,
             content: sipContent,

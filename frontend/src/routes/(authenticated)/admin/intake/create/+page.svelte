@@ -268,6 +268,11 @@
           input: {
             userId: selectedUserId,
             archiveId: selectedArchiveId,
+            // Admins must name the billing tenant; it is the selected archive's
+            tenantId: (() => {
+              const a = archives.find((x: any) => x.id === selectedArchiveId);
+              return a?.tenantId != null ? String(a.tenantId) : (selectedTenantId || null);
+            })(),
             title: sipTitle,
             description: sipDescription || null,
             content: sipContent,

@@ -229,7 +229,8 @@
         mutation: CREATE_INTAKE,
         variables: {
           input: {
-            userId: selectedUserId, archiveId: selectedArchiveId, title: sipTitle, description: sipDescription || null,
+            userId: selectedUserId, archiveId: selectedArchiveId, tenantId: data.tenantId,
+            title: sipTitle, description: sipDescription || null,
             content: sipContent, standard: selectedStandard!.graphql,
             elementIdentifier, entityName: intakeEntityDef!.name, entityType: intakeEntityDef!.type,
             elementTitle: sipTitle, elementDescription: sipDescription || null,

@@ -28,10 +28,13 @@
       const checksum = await computeSha256(firstFile);
       const totalSize = selected.reduce((sum, f) => sum + f.size, 0);
 
+      // Shape of the GraphQL FileMetadataInput. fileSize is a String there on
+      // purpose: byte counts can exceed GraphQL's 32-bit Int, and graphql-java
+      // (25+) no longer coerces a JS number into a String variable.
       const metadata = {
         filename: selected.length === 1 ? firstFile.name : `${selected.length} files`,
         contentType: firstFile.type || 'application/octet-stream',
-        fileSize: totalSize,
+        fileSize: String(totalSize),
         checksum,
         uploadedAt: new Date().toISOString().split('T')[0],
         uploaderName: '',
