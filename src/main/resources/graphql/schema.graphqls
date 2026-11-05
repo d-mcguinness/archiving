@@ -471,6 +471,7 @@ input CreatePackageInput {
 input FileMetadataInput {
     filename: String!
     contentType: String!
+    # Byte count as a decimal string: can exceed Int (32-bit); the client must send a String
     fileSize: String!
     checksum: String!
     uploadedAt: String!
