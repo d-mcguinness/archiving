@@ -5,6 +5,7 @@ import com.dmc.archiving.auth.RefreshTokenService;
 import com.dmc.archiving.auth.api.AuthContext;
 import com.dmc.archiving.auth.api.TokenSigner;
 import com.dmc.archiving.tenancy.api.TenancyApi;
+import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.user.api.UserApi;
 import com.dmc.archiving.user.model.User;
 import jakarta.servlet.http.HttpServletRequest;
@@ -188,7 +189,9 @@ public class AuthController {
 
     /**
      * Start an impersonation ("mimic") session: issue a short-lived, signed token
-     * for {@code userId} that records the caller as the actor. Who may do this:
+     * for {@code userId} — or, given only {@code tenantId}, for the account that
+     * represents that tenant (see {@link #resolveTenantAccount}) — recording the
+     * caller as the actor. Who may do this:
      * <ul>
      *   <li>ADMIN — any non-ADMIN account;</li>
      *   <li>TENANT — a USER-role account that shares a tenant with the caller.</li>
@@ -209,37 +212,54 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("success", false, "error", "Already impersonating; exit the current session first"));
         }
-        Object rawUserId = body != null ? body.get("userId") : null;
-        if (rawUserId == null || rawUserId.toString().isBlank()) {
+        Long requestedTenantId;
+        try {
+            requestedTenantId = optionalLong(body, "tenantId");
+        } catch (NumberFormatException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("success", false, "error", "userId is required"));
+                .body(Map.of("success", false, "error", "tenantId must be numeric"));
         }
         Long targetId;
         try {
-            targetId = Long.parseLong(rawUserId.toString());
+            targetId = optionalLong(body, "userId");
         } catch (NumberFormatException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("success", false, "error", "userId must be numeric"));
         }
-        Long requestedTenantId = null;
-        if (body.get("tenantId") != null && !body.get("tenantId").toString().isBlank()) {
-            try {
-                requestedTenantId = Long.parseLong(body.get("tenantId").toString());
-            } catch (NumberFormatException e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("success", false, "error", "tenantId must be numeric"));
-            }
+        if (targetId == null && requestedTenantId == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("success", false, "error", "userId or tenantId is required"));
         }
 
-        Optional<User> targetOpt = userApi.getUserById(targetId);
-        if (targetOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(Map.of("success", false, "error", "User not found"));
+        User target;
+        if (targetId != null) {
+            Optional<User> targetOpt = userApi.getUserById(targetId);
+            if (targetOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("success", false, "error", "User not found"));
+            }
+            target = targetOpt.get();
+        } else {
+            // "Mimic this tenant": act as the account that represents it
+            Tenant tenant = tenancyApi.getTenantById(requestedTenantId);
+            if (tenant == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("success", false, "error", "Tenant not found"));
+            }
+            target = resolveTenantAccount(tenant).orElse(null);
+            if (target == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("success", false, "error",
+                        "Tenant " + requestedTenantId + " has no impersonable owner or tenant-role member"));
+            }
         }
-        User target = targetOpt.get();
-        if (targetId.equals(actor.userId())) {
+        if (target.getId().equals(actor.userId())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("success", false, "error", "You are already signed in as this user"));
+        }
+        if (!"TENANT".equals(target.getRole()) && !"USER".equals(target.getRole()) && !"ADMIN".equals(target.getRole())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("success", false, "error", "User " + target.getId() + " has no assignable role"));
         }
 
         String denial = impersonationDenial(actor, target);
@@ -269,6 +289,36 @@ public class AuthController {
         response.put("expiresIn", tokenSigner.impersonationTtlSeconds());
         response.put("impersonatedBy", actor.userId());
         return ResponseEntity.ok(response);
+    }
+
+    private static Long optionalLong(Map<String, Object> body, String key) {
+        Object raw = body != null ? body.get(key) : null;
+        if (raw == null || raw.toString().isBlank()) return null;
+        return Long.parseLong(raw.toString().trim());
+    }
+
+    /**
+     * The account that represents a tenant for impersonation: its owner when
+     * owner_id is a real, non-ADMIN user id; otherwise the first TENANT-role
+     * member; otherwise the first member with a usable role. The seed data's
+     * owner_id values ("user_001") are labels, not ids, so the fallback is what
+     * makes "mimic tenant" work on demo data.
+     */
+    private Optional<User> resolveTenantAccount(Tenant tenant) {
+        try {
+            Long ownerId = Long.parseLong(tenant.getOwnerId());
+            Optional<User> owner = userApi.getUserById(ownerId).filter(u -> !"ADMIN".equals(u.getRole()));
+            if (owner.isPresent()) return owner;
+        } catch (NumberFormatException ignored) {
+            // not a numeric id — fall through to the membership-based resolution
+        }
+        List<User> members = tenancyApi.getUserIdsByTenantId(tenant.getId()).stream()
+                .map(userApi::getUserById).flatMap(Optional::stream)
+                .filter(u -> !"ADMIN".equals(u.getRole()))
+                .toList();
+        Optional<User> tenantRole = members.stream().filter(u -> "TENANT".equals(u.getRole())).findFirst();
+        if (tenantRole.isPresent()) return tenantRole;
+        return members.stream().filter(u -> "USER".equals(u.getRole())).findFirst();
     }
 
     /** Null when {@code actor} may impersonate {@code target}; otherwise the reason it may not. */

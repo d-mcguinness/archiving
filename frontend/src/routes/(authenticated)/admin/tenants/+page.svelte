@@ -163,12 +163,10 @@
   }
 
   async function mimicTenant(tenant: any) {
-    if (!tenant.ownerId) {
-      toasts.error('This tenant has no owner account to impersonate');
-      return;
-    }
-    // Backend-issued impersonation token for the tenant's owner, scoped to this tenant.
-    if (!(await impersonate(tenant.ownerId, tenant.id))) return;
+    // The backend picks the account that represents the tenant (its owner, or a
+    // tenant-role member when the stored owner id is not a real user) and issues
+    // a signed impersonation token scoped to this tenant.
+    if (!(await impersonate(null, tenant.id))) return;
     toasts.success(`Now viewing as tenant: ${tenant.displayName || tenant.name}`);
     goto(`/tenants/${tenant.id}/users`);
   }

@@ -4,6 +4,7 @@ import com.dmc.archiving.auth.RefreshTokenService;
 import com.dmc.archiving.auth.api.AuthContext;
 import com.dmc.archiving.auth.api.TokenSigner;
 import com.dmc.archiving.tenancy.api.TenancyApi;
+import com.dmc.archiving.tenancy.model.Tenant;
 import com.dmc.archiving.user.api.UserApi;
 import com.dmc.archiving.user.model.User;
 import org.junit.jupiter.api.Test;
@@ -58,6 +59,14 @@ class AuthControllerImpersonateTest {
     @SuppressWarnings("unchecked")
     private static Map<String, Object> body(ResponseEntity<?> r) {
         return (Map<String, Object>) r.getBody();
+    }
+
+    private static Tenant tenant(long id, String ownerId) {
+        Tenant t = new Tenant();
+        t.setId(id);
+        t.setName("t" + id);
+        t.setOwnerId(ownerId);
+        return t;
     }
 
     private void seed() {
@@ -135,5 +144,51 @@ class AuthControllerImpersonateTest {
         // Already impersonating: the impersonation token cannot be used to hop to a third user
         String hop = (String) body(controller.impersonate(tokenFor(admin), Map.of("userId", "3"))).get("token");
         assertThat(controller.impersonate(hop, Map.of("userId", "4")).getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    void tenantIdAloneResolvesTheTenantsOwner() {
+        seed();
+        when(tenancyApi.getTenantById(10L)).thenReturn(tenant(10L, "2")); // numeric owner → Jane (TENANT)
+        Map<String, Object> b = body(controller.impersonate(tokenFor(admin), Map.of("tenantId", "10")));
+        assertThat(b).containsEntry("success", true).containsEntry("role", "TENANT").containsEntry("tenantId", 10L);
+        assertThat(signer.verify((String) b.get("token")).userId()).isEqualTo(2L);
+    }
+
+    @Test
+    void labelOwnerIdFallsBackToATenantRoleMember() {
+        seed();
+        // seed-style owner label, members: admin(1) and owner(2)
+        when(tenancyApi.getTenantById(10L)).thenReturn(tenant(10L, "user_001"));
+        when(tenancyApi.getUserIdsByTenantId(10L)).thenReturn(List.of(1L, 2L, 3L));
+        Map<String, Object> b = body(controller.impersonate(tokenFor(admin), Map.of("tenantId", "10")));
+        assertThat(b).containsEntry("success", true).containsEntry("role", "TENANT");
+        assertThat(signer.verify((String) b.get("token")).userId()).isEqualTo(2L); // not the ADMIN member
+    }
+
+    @Test
+    void adminOwnerIsSkippedAndTenantWithoutAccountsIs404() {
+        seed();
+        when(tenancyApi.getTenantById(10L)).thenReturn(tenant(10L, "1")); // owner is the ADMIN
+        when(tenancyApi.getUserIdsByTenantId(10L)).thenReturn(List.of(1L, 3L));
+        Map<String, Object> b = body(controller.impersonate(tokenFor(admin), Map.of("tenantId", "10")));
+        assertThat(b).containsEntry("role", "USER"); // falls through to the USER member
+        assertThat(signer.verify((String) b.get("token")).userId()).isEqualTo(3L);
+
+        when(tenancyApi.getTenantById(11L)).thenReturn(tenant(11L, "user_009"));
+        when(tenancyApi.getUserIdsByTenantId(11L)).thenReturn(List.of(1L));
+        assertThat(controller.impersonate(tokenFor(admin), Map.of("tenantId", "11")).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(controller.impersonate(tokenFor(admin), Map.of("tenantId", "99")).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(controller.impersonate(tokenFor(admin), Map.of("tenantId", "x")).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void targetWithoutARoleIsRejected() {
+        seed();
+        User roleless = user(6L, "ghost", null);
+        when(userApi.getUserById(6L)).thenReturn(Optional.of(roleless));
+        ResponseEntity<?> r = controller.impersonate(tokenFor(admin), Map.of("userId", "6"));
+        assertThat(r.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(body(r).get("error").toString()).contains("no assignable role");
     }
 }
