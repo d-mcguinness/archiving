@@ -181,7 +181,7 @@
       const dipContent = JSON.stringify({ dipType: selectedStandard!.releaseLabel, standard: selectedStandard!.key, entity: releaseEntityDef!.name, fields: fieldValues }, null, 2);
       const elementIdentifier = deriveElementIdentifier(fieldValues, `Release-${Date.now()}`);
       const fields = toFieldInputs(releaseEntityDef!, fieldValues);
-      const input: any = { userId: selectedUserId, title: dipTitle, description: dipDescription || null, content: dipContent, standard: selectedStandard!.graphql, elementIdentifier, entityName: releaseEntityDef!.name, entityType: releaseEntityDef!.type, elementTitle: dipTitle, elementDescription: dipDescription || null, createdBy: selectedUserId, fields };
+      const input: any = { userId: selectedUserId, tenantId: data.tenantId, title: dipTitle, description: dipDescription || null, content: dipContent, standard: selectedStandard!.graphql, elementIdentifier, entityName: releaseEntityDef!.name, entityType: releaseEntityDef!.type, elementTitle: dipTitle, elementDescription: dipDescription || null, createdBy: selectedUserId, fields };
       if (selectedPreservationId) input.sourcePreservationId = selectedPreservationId;
       const result = await client.mutate({ mutation: CREATE_RELEASE, variables: { input }, refetchQueries: [{ query: GET_ALL_RELEASES }], awaitRefetchQueries: true });
       toasts.add(`Release "${dipTitle}" created successfully using ${selectedStandard!.label}`, 'success');

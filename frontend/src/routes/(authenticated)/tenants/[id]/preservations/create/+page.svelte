@@ -232,7 +232,7 @@
       const fields = toFieldInputs(preservationEntityDef!, fieldValues);
 
       const input: any = {
-        userId: selectedUserId, title: aipTitle, description: aipDescription || null,
+        userId: selectedUserId, tenantId: data.tenantId, title: aipTitle, description: aipDescription || null,
         content: aipContent, standard: selectedStandard!.graphql,
         elementIdentifier, entityName: preservationEntityDef!.name, entityType: preservationEntityDef!.type,
         elementTitle: aipTitle, elementDescription: aipDescription || null,
