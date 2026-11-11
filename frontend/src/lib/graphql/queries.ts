@@ -39,6 +39,7 @@ export const GET_ALL_USERS: DocumentNode = gql`
       name
       email
       age
+      role
     }
   }
 `;
@@ -50,6 +51,7 @@ export const GET_USER: DocumentNode = gql`
       name
       email
       age
+      role
     }
   }
 `;
@@ -1362,6 +1364,33 @@ export const CREATE_PACKAGE: DocumentNode = gql`
         elementIdentifier
         entityName
       }
+    }
+  }
+`;
+
+// Archive standard definitions (served by the backend from classpath:schemes/*.json)
+export const ALL_STANDARD_DEFINITIONS: DocumentNode = gql`
+  query AllStandardDefinitions {
+    allStandardDefinitions {
+      standard
+      displayName
+      fullName
+      reference
+      description
+      version
+      xsdReference
+      url
+      stageEntities { intake preservation release }
+      entities {
+        name
+        type
+        description
+        parent
+        children
+        note
+        fields { name label type required vocabulary options { value label } }
+      }
+      vocabulariesJson
     }
   }
 `;

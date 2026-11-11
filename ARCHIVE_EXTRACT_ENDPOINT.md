@@ -531,3 +531,37 @@ All functionality uses existing files:
 ---
 
 **The extract endpoint is fully functional and ready to use!** 🎉
+
+---
+
+## Preservation Extract Endpoint
+
+**URL**: `POST /api/preservations/{preservationId}/extract?format=json|xml`
+**Location**: `src/main/java/com/dmc/archiving/export/PreservationExtractController.java`
+**Auth**: bearer token required (`RestAuthInterceptor`); caller must be ADMIN or a member of the preservation's tenant.
+**Body**: `{ "password": "..." }` (required, same contract as the archive extract; not used for encryption yet).
+
+Unlike the archive extract, this composes a document for one preservation
+(`PreservationExtractService`) and can render it as JSON or XML
+(`XmlDocumentWriter`, same structure, lists as repeated `<item>`):
+
+```json
+{
+  "extract":      { "type": "PRESERVATION", "preservationId": 7, "extractedAt": "...",
+                    "standard": "EARK", "standardName": "...", "standardReference": "E-ARK CSIP 2.1.0", "standardVersion": "..." },
+  "preservation": { "id": 7, "title": "...", "rootElement": { ... } },
+  "package":      { "filename": "eark_aip.json", "contentType": "application/json",
+                    "content": { ...the standard-conformant AIP the generator renders... } },
+  "sourceIntake": { "intakeId": 3, "archiveId": 42 },
+  "archive":      { "id": 42, "standard": "EARK", "standardReference": "...",
+                    "details": { ...ArchiveStrategy.export(archive)... } }
+}
+```
+
+For standards whose generator emits XML (Noark 5 `arkivuttrekk`), `package.content`
+is that XML as text. `archive` is `null` when the preservation has no source intake
+or the intake is not linked to an archive.
+
+Filename: `preservation_{id}_{STANDARD}_extract.json|xml`.
+
+Used by `/tenants/{id}/preservations` ("Extract JSON" / "Extract XML").

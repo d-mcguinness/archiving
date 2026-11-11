@@ -155,7 +155,7 @@
       schemaData = getScheme(selectedStandard.graphql) ?? null;
       if (!schemaData) throw new Error(`No scheme definition for ${selectedStandard.label}`);
       const entity = getStageEntity(selectedStandard.graphql, 'release');
-      if (!entity) throw new Error(`Release entity "${selectedStandard.releaseEntity}" not found in schema`);
+      if (!entity) throw new Error(`No release entity defined for ${selectedStandard.label}`);
       releaseEntityDef = entity;
       fieldValues = emptyValues(entity);
     } catch (e) {
@@ -230,8 +230,16 @@
 
       const fields = toFieldInputs(releaseEntityDef!, fieldValues);
 
+      // The release belongs to its source preservation's tenant; the resolver
+      // refuses to guess for a caller who is a member of several tenants.
+      const sourceAip = aips.find((a: any) => a.id === selectedPreservationId);
+      const tenantId = sourceAip?.tenantId != null
+        ? String(sourceAip.tenantId)
+        : (get(auth).tenantId != null ? String(get(auth).tenantId) : null);
+
       const input: Record<string, any> = {
         userId: selectedUserId,
+        tenantId,
         title: dipTitle,
         description: dipDescription || null,
         content: dipContent,

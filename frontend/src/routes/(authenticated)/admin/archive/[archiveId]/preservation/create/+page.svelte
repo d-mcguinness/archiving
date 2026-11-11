@@ -75,7 +75,7 @@
       schemaData = getScheme(selectedStandard.graphql) ?? null;
       if (!schemaData) throw new Error(`No scheme definition for ${selectedStandard.label}`);
       const entity = getStageEntity(selectedStandard.graphql, 'preservation');
-      if (!entity) throw new Error(`Preservation entity "${selectedStandard.preservationEntity}" not found in schema`);
+      if (!entity) throw new Error(`No preservation entity defined for ${selectedStandard.label}`);
       preservationEntityDef = entity;
       fieldValues = emptyValues(entity);
     } catch (e) { error = e instanceof Error ? e.message : 'Failed to load schema'; preservationEntityDef = null; }
@@ -135,7 +135,8 @@
       const aipContent = JSON.stringify({ aipType: selectedStandard!.preservationLabel, standard: selectedStandard!.key, entity: preservationEntityDef!.name, fields: fieldValues }, null, 2);
       const elementIdentifier = deriveElementIdentifier(fieldValues, `Preservation-${Date.now()}`);
       const fields = toFieldInputs(preservationEntityDef!, fieldValues);
-      const input: any = { userId: selectedUserId, title: aipTitle, description: aipDescription || null, content: aipContent, standard: selectedStandard!.graphql, elementIdentifier, entityName: preservationEntityDef!.name, entityType: preservationEntityDef!.type, elementTitle: aipTitle, elementDescription: aipDescription || null, createdBy: selectedUserId, fields };
+      // Admins must name the billing tenant: it is the archive's
+      const input: any = { userId: selectedUserId, tenantId: archive?.tenantId != null ? String(archive.tenantId) : null, title: aipTitle, description: aipDescription || null, content: aipContent, standard: selectedStandard!.graphql, elementIdentifier, entityName: preservationEntityDef!.name, entityType: preservationEntityDef!.type, elementTitle: aipTitle, elementDescription: aipDescription || null, createdBy: selectedUserId, fields };
       if (selectedIntakeId) input.sourceIntakeId = selectedIntakeId;
       await client.mutate({ mutation: CREATE_PRESERVATION, variables: { input }, refetchQueries: [{ query: GET_ALL_PRESERVATIONS }], awaitRefetchQueries: true });
       toasts.add(`Preservation "${aipTitle}" created successfully using ${selectedStandard!.label}`, 'success');

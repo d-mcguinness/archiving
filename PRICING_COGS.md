@@ -95,3 +95,29 @@ and is noted at the upload seam so it is not "fixed" by accident.
 
 If a future plan wants to recover artifact storage COGS, prefer raising the
 per-package fee over adding a second meter on the same bytes.
+
+## 5. Platform fees — Professional and Enterprise (2026-10-07)
+
+**Status:** set on the marketing page; rate card still to be ratified.
+
+Until now every self-serve tier carried a $0 base fee and revenue came only
+from the $0.18/GB-month and $0.40/package overage rails. Against the market
+that captured almost none of the value buyers pay for (trust, compliance,
+longevity), so the two paid tiers now carry a recurring platform fee.
+
+| Tier | Monthly fee | Anchor |
+|---|---|---|
+| Professional | **$249/month** | Under Preservica Starter Plus ($290/month) while including the NOARK 5.5 / E-ARK premium bundle that Preservica reserves for higher tiers. |
+| Enterprise | **$1,499/month** | At Preservica Professional (£13,980/year ≈ $1,500/month for 1 TB), but unlimited storage, members and premium conformance. |
+
+Notes:
+- Free and Basic stay at $0 + usage so the funnel is unchanged.
+- Enterprise "unlimited storage" is an exposure at a flat fee: 50 TB of S3
+  Standard is ~$1,150/month of COGS. Expect to add a fair-use clause or move
+  Enterprise above ~20 TB onto the Custom plan before signing a large tenant.
+- Professional still includes only 10 GB (`TenantSettings.defaultsFor`). At
+  $249/month that allotment is thin next to Preservica's 1 TB; raising it is a
+  separate decision because it changes the backend plan defaults and overage
+  seeds, not just copy.
+- Fees live in the billing layer / Stripe price objects, not in `src/`; the
+  numbers above are page copy and card targets only.

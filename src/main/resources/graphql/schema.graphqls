@@ -4,6 +4,8 @@ type User {
     name: String!
     email: String!
     age: Int
+    # ADMIN, TENANT or USER (null for accounts seeded without one)
+    role: String
 }
 
 input CreateUserInput {
@@ -471,11 +473,62 @@ input CreatePackageInput {
 input FileMetadataInput {
     filename: String!
     contentType: String!
+    # Byte count as a decimal string: can exceed Int (32-bit); the client must send a String
     fileSize: String!
     checksum: String!
     uploadedAt: String!
     uploaderName: String!
     fileCount: Int!
+}
+
+# Archive standard definitions (served from classpath:schemes/*.json; the single
+# source both the UI forms and the backend generators read)
+type SchemeFieldOption {
+    value: String!
+    # The vocabulary's description of the value, when it has one beyond the value itself
+    label: String
+}
+
+type SchemeFieldDefinition {
+    name: String!
+    label: String!
+    type: String!
+    required: Boolean!
+    # Dot path of the controlled vocabulary this field draws its values from, if any
+    vocabulary: String
+    # Allowed values resolved from that vocabulary; empty for free-text fields
+    options: [SchemeFieldOption!]!
+}
+
+type SchemeEntityDefinition {
+    name: String!
+    type: String!
+    description: String
+    parent: String
+    children: [String!]!
+    note: String
+    fields: [SchemeFieldDefinition!]!
+}
+
+type SchemeStageEntities {
+    intake: String!
+    preservation: String!
+    release: String!
+}
+
+type SchemeDefinition {
+    standard: ArchiveStandard!
+    displayName: String!
+    fullName: String!
+    reference: String
+    description: String
+    version: String
+    xsdReference: String
+    url: String
+    stageEntities: SchemeStageEntities!
+    entities: [SchemeEntityDefinition!]!
+    # The standard's controlled vocabularies, JSON-encoded (shapes vary per standard)
+    vocabulariesJson: String!
 }
 
 type PrefillField {
@@ -521,6 +574,10 @@ type Query {
     getIntakesByTenantV2(tenantId: ID!): [Intake!]!
     getIntake(id: ID!): Intake
     prefillIntakeFields(standard: ArchiveStandard!, fileMetadata: FileMetadataInput!): [PrefillField!]!
+
+    # Archive standard definitions (public; drives the create/edit forms)
+    standardDefinition(standard: ArchiveStandard!): SchemeDefinition
+    allStandardDefinitions: [SchemeDefinition!]!
 
     # PRESERVATION Queries
     getAllPreservations: [Preservation!]!

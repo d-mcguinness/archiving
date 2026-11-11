@@ -123,7 +123,7 @@
       schemaData = getScheme(selectedStandard.graphql) ?? null;
       if (!schemaData) throw new Error(`No scheme definition for ${selectedStandard.label}`);
       const entity = getStageEntity(selectedStandard.graphql, 'preservation');
-      if (!entity) throw new Error(`Preservation entity "${selectedStandard.preservationEntity}" not found in schema`);
+      if (!entity) throw new Error(`No preservation entity defined for ${selectedStandard.label}`);
       preservationEntityDef = entity;
       fieldValues = emptyValues(entity);
     } catch (e) {
@@ -232,7 +232,7 @@
       const fields = toFieldInputs(preservationEntityDef!, fieldValues);
 
       const input: any = {
-        userId: selectedUserId, title: aipTitle, description: aipDescription || null,
+        userId: selectedUserId, tenantId: data.tenantId, title: aipTitle, description: aipDescription || null,
         content: aipContent, standard: selectedStandard!.graphql,
         elementIdentifier, entityName: preservationEntityDef!.name, entityType: preservationEntityDef!.type,
         elementTitle: aipTitle, elementDescription: aipDescription || null,

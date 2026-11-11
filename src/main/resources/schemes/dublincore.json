@@ -1,22 +1,57 @@
 {
   "standard": "Dublin Core",
+  "standardCode": "DUBLIN_CORE",
   "fullName": "Dublin Core Metadata Element Set",
   "reference": "ISO 15836-1:2017 / DCMI Metadata Terms",
   "description": "Simple and effective element set for describing a wide range of networked resources",
   "version": "1.1",
   "xsdReference": "http://dublincore.org/schemas/xmls/",
   "url": "https://www.dublincore.org/specifications/dublin-core/",
+  "stageEntities": {
+    "intake": "Resource",
+    "preservation": "Resource",
+    "release": "Resource"
+  },
   "entities": [
     {
       "name": "Resource",
       "type": "core_entity",
       "description": "Any resource described using Dublin Core metadata",
       "parent": null,
-      "children": ["Title", "Creator", "Subject", "Description", "Publisher", "Contributor", "Date", "Type", "Format", "Identifier", "Source", "Language", "Relation", "Coverage", "Rights", "Audience", "Provenance", "Rights Holder"],
+      "children": [
+        "Title",
+        "Creator",
+        "Subject",
+        "Description",
+        "Publisher",
+        "Contributor",
+        "Date",
+        "Type",
+        "Format",
+        "Identifier",
+        "Source",
+        "Language",
+        "Relation",
+        "Coverage",
+        "Rights",
+        "Audience",
+        "Provenance",
+        "Rights Holder"
+      ],
       "note": "Dublin Core describes any resource using 15 core elements (DCES) plus extended DCMI Terms. All elements are optional and repeatable.",
       "fields": [
-        { "name": "resourceIdentifier", "type": "string", "label": "Resource Identifier", "required": true },
-        { "name": "resourceType", "type": "string", "label": "Resource Type", "required": false }
+        {
+          "name": "resourceIdentifier",
+          "type": "string",
+          "label": "Resource Identifier",
+          "required": true
+        },
+        {
+          "name": "resourceType",
+          "type": "string",
+          "label": "Resource Type",
+          "required": false
+        }
       ]
     },
     {
@@ -24,11 +59,28 @@
       "type": "element",
       "description": "A name given to the resource (dc:title)",
       "parent": "Resource",
-      "children": ["Alternative Title"],
+      "children": [
+        "Alternative Title"
+      ],
       "fields": [
-        { "name": "title", "type": "string", "label": "Title", "required": true },
-        { "name": "titleType", "type": "string", "label": "Title Type", "required": false },
-        { "name": "titleLanguage", "type": "string", "label": "Language", "required": false }
+        {
+          "name": "title",
+          "type": "string",
+          "label": "Title",
+          "required": true
+        },
+        {
+          "name": "titleType",
+          "type": "string",
+          "label": "Title Type",
+          "required": false
+        },
+        {
+          "name": "titleLanguage",
+          "type": "string",
+          "label": "Language",
+          "required": false
+        }
       ]
     },
     {
@@ -38,8 +90,18 @@
       "parent": "Title",
       "children": [],
       "fields": [
-        { "name": "alternativeTitle", "type": "string", "label": "Alternative Title", "required": true },
-        { "name": "titleLanguage", "type": "string", "label": "Language", "required": false }
+        {
+          "name": "alternativeTitle",
+          "type": "string",
+          "label": "Alternative Title",
+          "required": true
+        },
+        {
+          "name": "titleLanguage",
+          "type": "string",
+          "label": "Language",
+          "required": false
+        }
       ]
     },
     {
@@ -49,9 +111,24 @@
       "parent": "Resource",
       "children": [],
       "fields": [
-        { "name": "creator", "type": "string", "label": "Creator", "required": true },
-        { "name": "creatorType", "type": "string", "label": "Creator Type", "required": false },
-        { "name": "creatorIdentifier", "type": "string", "label": "Creator Identifier", "required": false }
+        {
+          "name": "creator",
+          "type": "string",
+          "label": "Creator",
+          "required": true
+        },
+        {
+          "name": "creatorType",
+          "type": "string",
+          "label": "Creator Type",
+          "required": false
+        },
+        {
+          "name": "creatorIdentifier",
+          "type": "string",
+          "label": "Creator Identifier",
+          "required": false
+        }
       ]
     },
     {
@@ -61,9 +138,24 @@
       "parent": "Resource",
       "children": [],
       "fields": [
-        { "name": "subject", "type": "string", "label": "Subject", "required": true },
-        { "name": "subjectScheme", "type": "string", "label": "Subject Scheme", "required": false },
-        { "name": "subjectSchemeURI", "type": "string", "label": "Scheme URI", "required": false }
+        {
+          "name": "subject",
+          "type": "string",
+          "label": "Subject",
+          "required": true
+        },
+        {
+          "name": "subjectScheme",
+          "type": "string",
+          "label": "Subject Scheme",
+          "required": false
+        },
+        {
+          "name": "subjectSchemeURI",
+          "type": "string",
+          "label": "Scheme URI",
+          "required": false
+        }
       ]
     },
     {
@@ -71,11 +163,29 @@
       "type": "element",
       "description": "An account of the resource (dc:description). May include abstracts, tables of contents, or free-text accounts.",
       "parent": "Resource",
-      "children": ["Abstract", "Table of Contents"],
+      "children": [
+        "Abstract",
+        "Table of Contents"
+      ],
       "fields": [
-        { "name": "description", "type": "string", "label": "Description", "required": true },
-        { "name": "descriptionType", "type": "string", "label": "Description Type", "required": false },
-        { "name": "descriptionLanguage", "type": "string", "label": "Language", "required": false }
+        {
+          "name": "description",
+          "type": "string",
+          "label": "Description",
+          "required": true
+        },
+        {
+          "name": "descriptionType",
+          "type": "string",
+          "label": "Description Type",
+          "required": false
+        },
+        {
+          "name": "descriptionLanguage",
+          "type": "string",
+          "label": "Language",
+          "required": false
+        }
       ]
     },
     {
@@ -85,8 +195,18 @@
       "parent": "Description",
       "children": [],
       "fields": [
-        { "name": "abstract", "type": "string", "label": "Abstract", "required": true },
-        { "name": "abstractLanguage", "type": "string", "label": "Language", "required": false }
+        {
+          "name": "abstract",
+          "type": "string",
+          "label": "Abstract",
+          "required": true
+        },
+        {
+          "name": "abstractLanguage",
+          "type": "string",
+          "label": "Language",
+          "required": false
+        }
       ]
     },
     {
@@ -96,7 +216,12 @@
       "parent": "Description",
       "children": [],
       "fields": [
-        { "name": "tableOfContents", "type": "string", "label": "Table of Contents", "required": true }
+        {
+          "name": "tableOfContents",
+          "type": "string",
+          "label": "Table of Contents",
+          "required": true
+        }
       ]
     },
     {
@@ -106,9 +231,24 @@
       "parent": "Resource",
       "children": [],
       "fields": [
-        { "name": "publisher", "type": "string", "label": "Publisher", "required": true },
-        { "name": "publisherIdentifier", "type": "string", "label": "Publisher Identifier", "required": false },
-        { "name": "publisherType", "type": "string", "label": "Publisher Type", "required": false }
+        {
+          "name": "publisher",
+          "type": "string",
+          "label": "Publisher",
+          "required": true
+        },
+        {
+          "name": "publisherIdentifier",
+          "type": "string",
+          "label": "Publisher Identifier",
+          "required": false
+        },
+        {
+          "name": "publisherType",
+          "type": "string",
+          "label": "Publisher Type",
+          "required": false
+        }
       ]
     },
     {
@@ -118,9 +258,24 @@
       "parent": "Resource",
       "children": [],
       "fields": [
-        { "name": "contributor", "type": "string", "label": "Contributor", "required": true },
-        { "name": "contributorType", "type": "string", "label": "Contributor Type", "required": false },
-        { "name": "contributorRole", "type": "string", "label": "Role", "required": false }
+        {
+          "name": "contributor",
+          "type": "string",
+          "label": "Contributor",
+          "required": true
+        },
+        {
+          "name": "contributorType",
+          "type": "string",
+          "label": "Contributor Type",
+          "required": false
+        },
+        {
+          "name": "contributorRole",
+          "type": "string",
+          "label": "Role",
+          "required": false
+        }
       ]
     },
     {
@@ -131,9 +286,25 @@
       "children": [],
       "note": "Refinements: created, valid, available, issued, modified, dateAccepted, dateCopyrighted, dateSubmitted",
       "fields": [
-        { "name": "date", "type": "date", "label": "Date", "required": true },
-        { "name": "dateType", "type": "string", "label": "Date Type", "required": false },
-        { "name": "dateFormat", "type": "string", "label": "Date Format", "required": false }
+        {
+          "name": "date",
+          "type": "date",
+          "label": "Date",
+          "required": true
+        },
+        {
+          "name": "dateType",
+          "type": "string",
+          "label": "Date Type",
+          "required": false,
+          "vocabulary": "dateTypes"
+        },
+        {
+          "name": "dateFormat",
+          "type": "string",
+          "label": "Date Format",
+          "required": false
+        }
       ]
     },
     {
@@ -143,8 +314,18 @@
       "parent": "Resource",
       "children": [],
       "fields": [
-        { "name": "type", "type": "string", "label": "Type", "required": true },
-        { "name": "typeVocabulary", "type": "string", "label": "Type Vocabulary", "required": false }
+        {
+          "name": "type",
+          "type": "string",
+          "label": "Type",
+          "required": true
+        },
+        {
+          "name": "typeVocabulary",
+          "type": "string",
+          "label": "Type Vocabulary",
+          "required": false
+        }
       ]
     },
     {
@@ -152,11 +333,29 @@
       "type": "element",
       "description": "The file format, physical medium, or dimensions of the resource (dc:format). Recommended vocabulary: Internet Media Types (MIME).",
       "parent": "Resource",
-      "children": ["Extent", "Medium"],
+      "children": [
+        "Extent",
+        "Medium"
+      ],
       "fields": [
-        { "name": "format", "type": "string", "label": "Format", "required": true },
-        { "name": "formatMIMEType", "type": "string", "label": "MIME Type", "required": false },
-        { "name": "formatExtent", "type": "string", "label": "Extent/Size", "required": false }
+        {
+          "name": "format",
+          "type": "string",
+          "label": "Format",
+          "required": true
+        },
+        {
+          "name": "formatMIMEType",
+          "type": "string",
+          "label": "MIME Type",
+          "required": false
+        },
+        {
+          "name": "formatExtent",
+          "type": "string",
+          "label": "Extent/Size",
+          "required": false
+        }
       ]
     },
     {
@@ -166,7 +365,12 @@
       "parent": "Format",
       "children": [],
       "fields": [
-        { "name": "extent", "type": "string", "label": "Extent", "required": true }
+        {
+          "name": "extent",
+          "type": "string",
+          "label": "Extent",
+          "required": true
+        }
       ]
     },
     {
@@ -176,7 +380,12 @@
       "parent": "Format",
       "children": [],
       "fields": [
-        { "name": "medium", "type": "string", "label": "Medium", "required": true }
+        {
+          "name": "medium",
+          "type": "string",
+          "label": "Medium",
+          "required": true
+        }
       ]
     },
     {
@@ -184,11 +393,29 @@
       "type": "element",
       "description": "An unambiguous reference to the resource within a given context (dc:identifier). Should conform to a formal identification system.",
       "parent": "Resource",
-      "children": ["Bibliographic Citation"],
+      "children": [
+        "Bibliographic Citation"
+      ],
       "fields": [
-        { "name": "identifier", "type": "string", "label": "Identifier", "required": true },
-        { "name": "identifierType", "type": "string", "label": "Identifier Type", "required": false },
-        { "name": "identifierScheme", "type": "string", "label": "Identifier Scheme", "required": false }
+        {
+          "name": "identifier",
+          "type": "string",
+          "label": "Identifier",
+          "required": true
+        },
+        {
+          "name": "identifierType",
+          "type": "string",
+          "label": "Identifier Type",
+          "required": false,
+          "vocabulary": "identifierTypes"
+        },
+        {
+          "name": "identifierScheme",
+          "type": "string",
+          "label": "Identifier Scheme",
+          "required": false
+        }
       ]
     },
     {
@@ -198,7 +425,12 @@
       "parent": "Identifier",
       "children": [],
       "fields": [
-        { "name": "bibliographicCitation", "type": "string", "label": "Bibliographic Citation", "required": true }
+        {
+          "name": "bibliographicCitation",
+          "type": "string",
+          "label": "Bibliographic Citation",
+          "required": true
+        }
       ]
     },
     {
@@ -208,9 +440,24 @@
       "parent": "Resource",
       "children": [],
       "fields": [
-        { "name": "source", "type": "string", "label": "Source", "required": true },
-        { "name": "sourceIdentifier", "type": "string", "label": "Source Identifier", "required": false },
-        { "name": "sourceType", "type": "string", "label": "Source Type", "required": false }
+        {
+          "name": "source",
+          "type": "string",
+          "label": "Source",
+          "required": true
+        },
+        {
+          "name": "sourceIdentifier",
+          "type": "string",
+          "label": "Source Identifier",
+          "required": false
+        },
+        {
+          "name": "sourceType",
+          "type": "string",
+          "label": "Source Type",
+          "required": false
+        }
       ]
     },
     {
@@ -220,8 +467,18 @@
       "parent": "Resource",
       "children": [],
       "fields": [
-        { "name": "language", "type": "string", "label": "Language", "required": true },
-        { "name": "languageCode", "type": "string", "label": "Language Code (ISO 639)", "required": false }
+        {
+          "name": "language",
+          "type": "string",
+          "label": "Language",
+          "required": true
+        },
+        {
+          "name": "languageCode",
+          "type": "string",
+          "label": "Language Code (ISO 639)",
+          "required": false
+        }
       ]
     },
     {
@@ -232,9 +489,25 @@
       "children": [],
       "note": "Refinements: isVersionOf, hasVersion, isReplacedBy, replaces, isRequiredBy, requires, isPartOf, hasPart, isReferencedBy, references, isFormatOf, hasFormat, conformsTo",
       "fields": [
-        { "name": "relation", "type": "string", "label": "Relation", "required": true },
-        { "name": "relationType", "type": "string", "label": "Relation Type", "required": false },
-        { "name": "relatedResourceIdentifier", "type": "string", "label": "Related Resource ID", "required": false }
+        {
+          "name": "relation",
+          "type": "string",
+          "label": "Relation",
+          "required": true
+        },
+        {
+          "name": "relationType",
+          "type": "string",
+          "label": "Relation Type",
+          "required": false,
+          "vocabulary": "relationTypes"
+        },
+        {
+          "name": "relatedResourceIdentifier",
+          "type": "string",
+          "label": "Related Resource ID",
+          "required": false
+        }
       ]
     },
     {
@@ -242,10 +515,23 @@
       "type": "element",
       "description": "The spatial or temporal topic of the resource, spatial applicability, or jurisdiction (dc:coverage). Recommended vocabulary: TGN for spatial, W3CDTF/Period for temporal.",
       "parent": "Resource",
-      "children": ["Spatial Coverage", "Temporal Coverage"],
+      "children": [
+        "Spatial Coverage",
+        "Temporal Coverage"
+      ],
       "fields": [
-        { "name": "coverage", "type": "string", "label": "Coverage", "required": true },
-        { "name": "coverageType", "type": "string", "label": "Coverage Type", "required": false }
+        {
+          "name": "coverage",
+          "type": "string",
+          "label": "Coverage",
+          "required": true
+        },
+        {
+          "name": "coverageType",
+          "type": "string",
+          "label": "Coverage Type",
+          "required": false
+        }
       ]
     },
     {
@@ -255,9 +541,24 @@
       "parent": "Coverage",
       "children": [],
       "fields": [
-        { "name": "spatialCoverage", "type": "string", "label": "Spatial Coverage", "required": true },
-        { "name": "place", "type": "string", "label": "Place", "required": false },
-        { "name": "coordinates", "type": "string", "label": "Coordinates", "required": false }
+        {
+          "name": "spatialCoverage",
+          "type": "string",
+          "label": "Spatial Coverage",
+          "required": true
+        },
+        {
+          "name": "place",
+          "type": "string",
+          "label": "Place",
+          "required": false
+        },
+        {
+          "name": "coordinates",
+          "type": "string",
+          "label": "Coordinates",
+          "required": false
+        }
       ]
     },
     {
@@ -267,10 +568,30 @@
       "parent": "Coverage",
       "children": [],
       "fields": [
-        { "name": "temporalCoverage", "type": "string", "label": "Temporal Coverage", "required": true },
-        { "name": "periodName", "type": "string", "label": "Period Name", "required": false },
-        { "name": "startDate", "type": "date", "label": "Start Date", "required": false },
-        { "name": "endDate", "type": "date", "label": "End Date", "required": false }
+        {
+          "name": "temporalCoverage",
+          "type": "string",
+          "label": "Temporal Coverage",
+          "required": true
+        },
+        {
+          "name": "periodName",
+          "type": "string",
+          "label": "Period Name",
+          "required": false
+        },
+        {
+          "name": "startDate",
+          "type": "date",
+          "label": "Start Date",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "date",
+          "label": "End Date",
+          "required": false
+        }
       ]
     },
     {
@@ -278,12 +599,35 @@
       "type": "element",
       "description": "Information about rights held in and over the resource (dc:rights). Typically addresses intellectual property rights.",
       "parent": "Resource",
-      "children": ["Access Rights", "License"],
+      "children": [
+        "Access Rights",
+        "License"
+      ],
       "fields": [
-        { "name": "rights", "type": "string", "label": "Rights Statement", "required": true },
-        { "name": "rightsHolder", "type": "string", "label": "Rights Holder", "required": false },
-        { "name": "rightsURI", "type": "string", "label": "Rights URI", "required": false },
-        { "name": "licenseURI", "type": "string", "label": "License URI", "required": false }
+        {
+          "name": "rights",
+          "type": "string",
+          "label": "Rights Statement",
+          "required": true
+        },
+        {
+          "name": "rightsHolder",
+          "type": "string",
+          "label": "Rights Holder",
+          "required": false
+        },
+        {
+          "name": "rightsURI",
+          "type": "string",
+          "label": "Rights URI",
+          "required": false
+        },
+        {
+          "name": "licenseURI",
+          "type": "string",
+          "label": "License URI",
+          "required": false
+        }
       ]
     },
     {
@@ -293,8 +637,18 @@
       "parent": "Rights",
       "children": [],
       "fields": [
-        { "name": "accessRights", "type": "string", "label": "Access Rights", "required": true },
-        { "name": "accessRightsURI", "type": "string", "label": "Access Rights URI", "required": false }
+        {
+          "name": "accessRights",
+          "type": "string",
+          "label": "Access Rights",
+          "required": true
+        },
+        {
+          "name": "accessRightsURI",
+          "type": "string",
+          "label": "Access Rights URI",
+          "required": false
+        }
       ]
     },
     {
@@ -304,8 +658,18 @@
       "parent": "Rights",
       "children": [],
       "fields": [
-        { "name": "license", "type": "string", "label": "License", "required": true },
-        { "name": "licenseURI", "type": "string", "label": "License URI", "required": false }
+        {
+          "name": "license",
+          "type": "string",
+          "label": "License",
+          "required": true
+        },
+        {
+          "name": "licenseURI",
+          "type": "string",
+          "label": "License URI",
+          "required": false
+        }
       ]
     },
     {
@@ -316,9 +680,24 @@
       "children": [],
       "note": "DCMI Term (not part of the original 15 DCES elements). Refinements: educationLevel, mediator.",
       "fields": [
-        { "name": "audience", "type": "string", "label": "Audience", "required": true },
-        { "name": "educationLevel", "type": "string", "label": "Education Level", "required": false },
-        { "name": "mediator", "type": "string", "label": "Mediator", "required": false }
+        {
+          "name": "audience",
+          "type": "string",
+          "label": "Audience",
+          "required": true
+        },
+        {
+          "name": "educationLevel",
+          "type": "string",
+          "label": "Education Level",
+          "required": false
+        },
+        {
+          "name": "mediator",
+          "type": "string",
+          "label": "Mediator",
+          "required": false
+        }
       ]
     },
     {
@@ -329,7 +708,12 @@
       "children": [],
       "note": "DCMI Term (not part of the original 15 DCES elements).",
       "fields": [
-        { "name": "provenance", "type": "string", "label": "Provenance Statement", "required": true }
+        {
+          "name": "provenance",
+          "type": "string",
+          "label": "Provenance Statement",
+          "required": true
+        }
       ]
     },
     {
@@ -340,8 +724,18 @@
       "children": [],
       "note": "DCMI Term (not part of the original 15 DCES elements).",
       "fields": [
-        { "name": "rightsHolder", "type": "string", "label": "Rights Holder", "required": true },
-        { "name": "rightsHolderIdentifier", "type": "string", "label": "Rights Holder Identifier", "required": false }
+        {
+          "name": "rightsHolder",
+          "type": "string",
+          "label": "Rights Holder",
+          "required": true
+        },
+        {
+          "name": "rightsHolderIdentifier",
+          "type": "string",
+          "label": "Rights Holder Identifier",
+          "required": false
+        }
       ]
     }
   ],

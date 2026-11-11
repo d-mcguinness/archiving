@@ -182,7 +182,7 @@
       schemaData = getScheme(selectedStandard.graphql) ?? null;
       if (!schemaData) throw new Error(`No scheme definition for ${selectedStandard.label}`);
       const entity = getStageEntity(selectedStandard.graphql, 'intake');
-      if (!entity) throw new Error(`Intake entity "${selectedStandard.intakeEntity}" not found in schema`);
+      if (!entity) throw new Error(`No intake entity defined for ${selectedStandard.label}`);
       intakeEntityDef = entity;
       fieldValues = emptyValues(entity);
     } catch (e) {
@@ -268,6 +268,11 @@
           input: {
             userId: selectedUserId,
             archiveId: selectedArchiveId,
+            // Admins must name the billing tenant; it is the selected archive's
+            tenantId: (() => {
+              const a = archives.find((x: any) => x.id === selectedArchiveId);
+              return a?.tenantId != null ? String(a.tenantId) : (selectedTenantId || null);
+            })(),
             title: sipTitle,
             description: sipDescription || null,
             content: sipContent,

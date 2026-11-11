@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 class IntakeExportApiImpl implements IntakeExportApi {
@@ -28,6 +29,12 @@ class IntakeExportApiImpl implements IntakeExportApi {
     @Override
     public int countByTenant(Long tenantId) {
         return sipService.getIntakesByTenant(tenantId).size();
+    }
+
+    @Override
+    public Optional<Long> archiveIdOf(Long intakeId) {
+        if (intakeId == null) return Optional.empty();
+        return Optional.ofNullable(sipService.getIntake(intakeId)).map(Intake::getArchiveId);
     }
 
     private IntakeExportFile toFile(Intake sip) {

@@ -147,4 +147,42 @@ class TokenSignerTest {
         assertThatThrownBy(() -> new TokenSigner(null))
                 .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void impersonationTokenVerifiesToTheTargetWithTheActorRecorded() {
+        String token = signer.issueImpersonation(7L, "bob", "USER", 1L);
+        AuthContext ctx = signer.verify(token);
+        assertThat(ctx.isAuthenticated()).isTrue();
+        assertThat(ctx.userId()).isEqualTo(7L);
+        assertThat(ctx.username()).isEqualTo("bob");
+        assertThat(ctx.role()).isEqualTo("USER");
+        assertThat(ctx.actorId()).isEqualTo(1L);
+        assertThat(ctx.isImpersonated()).isTrue();
+        // Ordinary tokens carry no actor
+        assertThat(signer.verify(signer.issue(7L, "bob", "USER")).isImpersonated()).isFalse();
+    }
+
+    @Test
+    void impersonationTokenIsCappedAtThirtyMinutes() {
+        long[] now = {1_000_000L};
+        TokenSigner longLived = new TokenSigner("s", 24 * 60 * 60_000L, () -> now[0]);
+        String token = longLived.issueImpersonation(7L, "bob", "USER", 1L);
+        now[0] += 29 * 60_000L;
+        assertThat(longLived.verify(token).isAuthenticated()).isTrue();
+        now[0] += 2 * 60_000L;
+        assertThat(longLived.verify(token).isAuthenticated()).isFalse();
+        assertThat(longLived.impersonationTtlSeconds()).isEqualTo(30 * 60);
+    }
+
+    @Test
+    void actorClaimCannotBeForgedOrMalformed() {
+        String token = signer.issueImpersonation(7L, "bob", "USER", 1L);
+        // flip the actor id: the HMAC no longer matches
+        String tampered = token.replace("_act1_", "_act2_");
+        assertThat(tampered).isNotEqualTo(token);
+        assertThat(signer.verify(tampered).isAuthenticated()).isFalse();
+        // a 6th segment that is not act<digits> is rejected even if it were signed
+        assertThat(signer.verify("Bearer_7_bob_USER_9999999999999_nonce_xyz_deadbeef").isAuthenticated()).isFalse();
+        assertThat(signer.issueImpersonation(7L, "bob", "USER", 1L)).contains("_act1_");
+    }
 }

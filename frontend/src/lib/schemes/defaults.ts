@@ -75,7 +75,7 @@ function common(stage: PackageStage): Record<string, Defaults> {
     },
     'ISAD(G)': {
       descriptionID: (c) => c.id,
-      levelOfDescription: 'Fonds'
+      levelOfDescription: 'fonds'
     },
     MODS: {
       modsID: (c) => c.id,
@@ -117,9 +117,9 @@ const STAGE_SPECIFIC: Record<PackageStage, Record<string, Defaults>> = {
     PREMIS: {
       objectIdentifierType: 'local',
       objectIdentifierValue: (c) => c.id,
-      objectCategory: 'Representation',
+      objectCategory: 'representation',
       preservationLevelType: 'full',
-      preservationLevelValue: 'full preservation',
+      preservationLevelValue: 'full',
       preservationLevelRole: 'requirement',
       preservationLevelRationale: 'Default preservation policy',
       preservationLevelDateAssigned: (c) => c.today,
@@ -141,9 +141,9 @@ const STAGE_SPECIFIC: Record<PackageStage, Record<string, Defaults>> = {
     PREMIS: {
       objectIdentifierType: 'local',
       objectIdentifierValue: (c) => c.id,
-      objectCategory: 'Representation',
+      objectCategory: 'representation',
       preservationLevelType: 'full',
-      preservationLevelValue: 'full preservation',
+      preservationLevelValue: 'full',
       preservationLevelRole: 'requirement',
       preservationLevelRationale: 'Default preservation policy',
       preservationLevelDateAssigned: (c) => c.today,
@@ -168,10 +168,10 @@ const STAGE_SPECIFIC: Record<PackageStage, Record<string, Defaults>> = {
     PREMIS: {
       objectIdentifierType: 'local',
       objectIdentifierValue: (c) => c.id,
-      objectCategory: 'Representation',
+      objectCategory: 'representation',
       preservationLevelType: 'reference',
-      preservationLevelValue: 'reference copy',
-      preservationLevelRole: 'dissemination',
+      preservationLevelValue: 'logical',
+      preservationLevelRole: 'intention',
       preservationLevelRationale: 'Default preservation policy',
       preservationLevelDateAssigned: (c) => c.today,
       significantPropertiesType: 'content',

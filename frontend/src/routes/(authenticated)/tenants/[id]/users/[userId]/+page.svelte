@@ -6,6 +6,7 @@
   import { authHeaders, API_BASE } from '$lib/api';
   import { GET_USER, GET_TENANT, UPDATE_USER } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
+  import { impersonate } from '$lib/impersonate';
   import { auth } from '$lib/stores/authStore';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
@@ -155,15 +156,9 @@
 
   async function mimicUser() {
     if (!user) return;
-    const token = 'Bearer_mimic_' + user.id + '_USER_' + Date.now();
-    const mimicData = {
-      id: user.id,
-      username: user.name?.toLowerCase().replace(/\s+/g, '') || 'user',
-      name: user.name,
-      email: user.email,
-      role: 'USER',
-    };
-    auth.login(token, mimicData, 'USER', parseInt(data.tenantId, 10));
+    // Backend-issued impersonation token (admins, or the tenant's owner for its
+    // own users), scoped to this tenant.
+    if (!(await impersonate(user.id, data.tenantId))) return;
     toasts.success(`Now viewing as ${user.name}`);
     goto(`/tenants/${data.tenantId}/users/${user.id}`);
   }
@@ -218,7 +213,9 @@
       </div>
       <div class="header-actions">
         <a href="/tenants/{data.tenantId}/users/{data.userId}/edit" class="btn-edit-profile btn-secondary">✏️ Edit Profile</a>
-        <button class="btn-mimic btn-chip violet" on:click={mimicUser}>🎭 Mimic</button>
+        {#if user?.role !== 'ADMIN'}
+          <button class="btn-mimic btn-chip violet" on:click={mimicUser}>🎭 Mimic</button>
+        {/if}
         <a href="/tenants/{data.tenantId}/users/{data.userId}/documents" class="btn-docs btn-primary">📄 Documents</a>
       </div>
     </div>

@@ -13,7 +13,9 @@ import java.util.function.LongSupplier;
  * Issues and verifies the app's bearer token. The token is
  * {@code Bearer_{userId}_{username}_{role}_{expiresAt}_{nonce}_{hmac}}, where the
  * HMAC-SHA256 covers {@code userId_username_role_expiresAt_nonce} under a
- * server-held secret. A token therefore cannot be forged, nor its
+ * server-held secret. An impersonation token (issued to an admin or tenant
+ * owner acting as another user) appends a sixth signed segment
+ * {@code act<actorId>}; see {@link #issueImpersonation}. A token therefore cannot be forged, nor its
  * userId/role/username/expiry tampered, without that secret. The userId is the
  * REAL persisted user id, carried in the signed payload (no username-to-id
  * mapping), so it is correct for DB-backed accounts.
@@ -32,6 +34,9 @@ public final class TokenSigner {
     private static final String HMAC_ALG = "HmacSHA256";
     /** Default TTL when only a secret is supplied (back-compat / tests): 1 hour. */
     private static final long DEFAULT_TTL_MILLIS = 60 * 60_000L;
+    /** Impersonation tokens never outlive this, whatever the normal TTL: 30 minutes. */
+    static final long IMPERSONATION_MAX_TTL_MILLIS = 30 * 60_000L;
+    private static final String ACTOR_PREFIX = "act";
 
     private final byte[] secret;
     private final long ttlMillis;
@@ -63,6 +68,29 @@ public final class TokenSigner {
     }
 
     /**
+     * Issue a token for {@code userId} that records {@code actorId} as the person
+     * really holding it. It verifies to an {@link AuthContext} for the target user
+     * (so authorization behaves exactly as if they were signed in) with
+     * {@link AuthContext#actorId()} set, expires after at most
+     * {@link #IMPERSONATION_MAX_TTL_MILLIS}, and has no refresh token. Who may
+     * obtain one is decided by the caller (AuthController).
+     */
+    public String issueImpersonation(Long userId, String username, String role, Long actorId) {
+        if (actorId == null) {
+            throw new IllegalArgumentException("actorId is required for an impersonation token");
+        }
+        long expiresAt = clock.getAsLong() + Math.min(ttlMillis, IMPERSONATION_MAX_TTL_MILLIS);
+        String payload = userId + "_" + username + "_" + role + "_" + expiresAt + "_" + UUID.randomUUID()
+                + "_" + ACTOR_PREFIX + actorId;
+        return PREFIX + payload + "_" + sign(payload);
+    }
+
+    /** Seconds an impersonation token stays valid. */
+    public long impersonationTtlSeconds() {
+        return Math.min(ttlMillis, IMPERSONATION_MAX_TTL_MILLIS) / 1000;
+    }
+
+    /**
      * Verify the Authorization header and return its {@link AuthContext}.
      * Returns {@link AuthContext#ANONYMOUS} for any missing, malformed, tampered,
      * or EXPIRED token; verification never throws.
@@ -91,14 +119,16 @@ public final class TokenSigner {
                 return AuthContext.ANONYMOUS;
             }
 
-            // Split with -1 (keep trailing empties) and require EXACTLY 5 segments.
-            // userId/expiresAt are numeric, role is allow-listed, the nonce is a UUID —
-            // none contain '_'. A '_' in the username (the only attacker-influenced
-            // field) would yield != 5 segments and is rejected here, so a crafted
-            // username cannot shift the parse to read role=ADMIN. Usernames are also
-            // charset-restricted at registration; this is defence-in-depth.
-            String[] parts = payload.split("_", -1); // userId_username_role_expiresAt_nonce
-            if (parts.length != 5) {
+            // Split with -1 (keep trailing empties) and require EXACTLY 5 segments —
+            // or 6 for an impersonation token, whose extra segment must match
+            // "act<digits>". userId/expiresAt are numeric, role is allow-listed, the
+            // nonce is a UUID — none contain '_'. A '_' in the username (the only
+            // attacker-influenced field) would shift the segment count/shape and is
+            // rejected here, so a crafted username cannot read as role=ADMIN or as
+            // an actor claim. Usernames are also charset-restricted at registration;
+            // this is defence-in-depth.
+            String[] parts = payload.split("_", -1); // userId_username_role_expiresAt_nonce[_act<actorId>]
+            if (parts.length != 5 && parts.length != 6) {
                 return AuthContext.ANONYMOUS;
             }
             Long userId = Long.valueOf(parts[0]);     // tamper-proof: covered by the HMAC
@@ -108,10 +138,17 @@ public final class TokenSigner {
             if (username.isEmpty() || !isAllowedRole(role)) {
                 return AuthContext.ANONYMOUS;
             }
+            Long actorId = null;
+            if (parts.length == 6) {
+                if (!parts[5].startsWith(ACTOR_PREFIX) || parts[5].length() <= ACTOR_PREFIX.length()) {
+                    return AuthContext.ANONYMOUS;
+                }
+                actorId = Long.valueOf(parts[5].substring(ACTOR_PREFIX.length())); // NumberFormatException → ANONYMOUS
+            }
             if (clock.getAsLong() >= expiresAt) {
                 return AuthContext.ANONYMOUS; // expired
             }
-            return new AuthContext(userId, role, username);
+            return new AuthContext(userId, role, username, actorId);
         } catch (Exception e) {
             // Includes NumberFormatException on a non-numeric userId/expiresAt segment.
             return AuthContext.ANONYMOUS;

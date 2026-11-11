@@ -26,6 +26,9 @@ public interface TenancyApi {
 
     List<Long> getTenantIdsByUserId(Long userId);
 
+    /** Ids of every user who is a member of {@code tenantId} (empty for an unknown tenant). */
+    List<Long> getUserIdsByTenantId(Long tenantId);
+
     List<Tenant> getAllTenants();
 
     long countUsersInTenant(Long tenantId);

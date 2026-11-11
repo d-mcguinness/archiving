@@ -1,21 +1,44 @@
 package com.dmc.archiving.preservation.api;
 
-import com.dmc.archiving.preservation.PreservationService;
-import com.dmc.archiving.preservation.model.Preservation;
 import com.dmc.archiving.archive.element.ElementSerializer;
+import com.dmc.archiving.pkg.generator.PackagePayload;
+import com.dmc.archiving.pkg.generator.PackageSnapshot;
+import com.dmc.archiving.preservation.PreservationService;
+import com.dmc.archiving.preservation.generator.PreservationGeneratorFactory;
+import com.dmc.archiving.preservation.model.Preservation;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 class PreservationExportApiImpl implements PreservationExportApi {
 
     private final PreservationService aipService;
+    private final PreservationGeneratorFactory generatorFactory;
 
-    PreservationExportApiImpl(PreservationService aipService) {
+    PreservationExportApiImpl(PreservationService aipService, PreservationGeneratorFactory generatorFactory) {
         this.aipService = aipService;
+        this.generatorFactory = generatorFactory;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<PreservationExtract> extract(Long preservationId) {
+        Preservation aip = aipService.getPreservation(preservationId);
+        if (aip == null) return Optional.empty();
+        PackageSnapshot snapshot = PackageSnapshot.of(
+                aip.getId(), aip.getTitle(), aip.getDescription(),
+                aip.getStatus(), aip.getStandard(),
+                aip.getCreatedAtString(), aip.getUpdatedAtString(),
+                aip.getSourceIntakeId(), aip.getRootElement());
+        PackagePayload artifact = generatorFactory.getGenerator(aip.getStandard()).render(snapshot);
+        return Optional.of(new PreservationExtract(
+                aip.getId(), aip.getTitle(), aip.getTenantId(), aip.getStandard(),
+                aip.getSourceIntakeId(), toFile(aip).data(), artifact));
     }
 
     @Override

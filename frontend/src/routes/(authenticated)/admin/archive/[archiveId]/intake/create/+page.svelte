@@ -81,7 +81,7 @@
       schemaData = getScheme(selectedStandard.graphql) ?? null;
       if (!schemaData) throw new Error(`No scheme definition for ${selectedStandard.label}`);
       const entity = getStageEntity(selectedStandard.graphql, 'intake');
-      if (!entity) throw new Error(`Intake entity "${selectedStandard.intakeEntity}" not found in schema`);
+      if (!entity) throw new Error(`No intake entity defined for ${selectedStandard.label}`);
       intakeEntityDef = entity;
       fieldValues = emptyValues(entity);
     } catch (e) {
@@ -192,7 +192,9 @@
         mutation: CREATE_INTAKE,
         variables: {
           input: {
-            userId: selectedUserId, archiveId: data.archiveId, title: sipTitle, description: sipDescription || null,
+            userId: selectedUserId, archiveId: data.archiveId,
+            tenantId: archive?.tenantId != null ? String(archive.tenantId) : null,
+            title: sipTitle, description: sipDescription || null,
             content: sipContent, standard: selectedStandard!.graphql,
             elementIdentifier, entityName: intakeEntityDef!.name, entityType: intakeEntityDef!.type,
             elementTitle: sipTitle, elementDescription: sipDescription || null,

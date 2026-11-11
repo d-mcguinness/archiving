@@ -9,11 +9,27 @@
 
 export type FieldType = 'string' | 'text' | 'date' | 'number';
 
+/** One allowed value of an enumerated field. */
+export interface FieldOption {
+  value: string;
+  /** The vocabulary's description, when it says more than the value itself. */
+  label?: string | null;
+}
+
 export interface FieldDefinition {
   name: string;
   label: string;
   type: FieldType;
   required: boolean;
+  /** Dot path of the controlled vocabulary the field draws its values from, if any. */
+  vocabulary?: string | null;
+  /** Allowed values resolved from that vocabulary; empty for free-text fields. */
+  options?: FieldOption[];
+}
+
+/** True when the field should render as a select rather than free text. */
+export function isEnumerated(field: FieldDefinition): boolean {
+  return !!field.options && field.options.length > 0;
 }
 
 export interface EntityDefinition {
@@ -29,14 +45,18 @@ export interface EntityDefinition {
 }
 
 export interface SchemeDefinition {
-  /** Matches the GraphQL ArchiveStandard enum value (e.g. "DUBLIN_CORE"). */
+  /** The GraphQL ArchiveStandard enum value (e.g. "DUBLIN_CORE"). */
   standard: string;
+  /** Short display name ("Dublin Core", "ISAD(G)"). */
+  displayName: string;
   fullName: string;
   reference: string;
   description: string;
   version: string;
   xsdReference?: string;
   url?: string;
+  /** Root entity name per lifecycle stage; the backend validates each names an entity. */
+  stageEntities: Record<PackageStage, string>;
   entities: EntityDefinition[];
   /** Standard-specific controlled vocabularies (statusValues, eventTypes, …). */
   [vocabulary: string]: unknown;

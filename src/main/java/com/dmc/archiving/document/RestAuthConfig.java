@@ -5,7 +5,8 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Registers {@link RestAuthInterceptor} over the file/document REST endpoints.
+ * Registers {@link RestAuthInterceptor} over the file/document REST endpoints
+ * and the preservation extract download.
  * Explicit include patterns (rather than /api/**) keep open endpoints such as
  * /api/auth/** unaffected.
  */
@@ -24,6 +25,7 @@ public class RestAuthConfig implements WebMvcConfigurer {
                 .addPathPatterns(
                         "/api/documents/**",   // DocumentController
                         "/api/upload", "/api/upload/**",  // FileUploadController raw uploads
-                        "/api/download/**");   // FileUploadController raw download
+                        "/api/download/**",    // FileUploadController raw download
+                        "/api/preservations/**"); // PreservationExtractController (export module)
     }
 }

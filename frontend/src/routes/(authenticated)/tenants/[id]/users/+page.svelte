@@ -6,6 +6,7 @@
   import { GET_TENANT, GET_ALL_USERS } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
+  import { impersonate } from '$lib/impersonate';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 
   interface PageData {
@@ -27,12 +28,16 @@
   // Security
   let currentRole = '';
   let hasAccess = false;
+  let authUserId: string | null = null;
+  let mimicking = false;
 
   onMount(async () => {
     const authState = get(auth);
     currentRole = authState.role;
     const tenantId = authState.tenantId?.toString() ?? null;
     const authUser = authState.user;
+    authUserId = authUser?.id != null ? String(authUser.id) : null;
+    mimicking = auth.isMimicking();
 
     // Only ADMIN and TENANT can access tenant users page
     if (currentRole !== 'ADMIN' && currentRole !== 'TENANT') {
@@ -145,6 +150,13 @@
       toasts.error(`Failed to remove user: ${errorMsg}`);
     }
   }
+
+  /** A tenant row can be viewed as one of its users: the backend issues the impersonation token (TENANT → USER-role members of this tenant; ADMIN → anyone but admins). */
+  async function mimicUser(user: any) {
+    if (!(await impersonate(user.id, data.tenantId))) return;
+    toasts.success(`Now viewing as ${user.name}`);
+    goto(`/tenants/${data.tenantId}/users/${user.id}`);
+  }
 </script>
 
 <div class="tenant-users-page">
@@ -238,6 +250,15 @@
                   <a href="/tenants/{data.tenantId}/users/{user.id}" class="btn-action btn-view btn-chip indigo">
                     👤 View
                   </a>
+                  {#if !mimicking && String(user.id) !== authUserId && user.role !== 'ADMIN'}
+                    <button
+                      class="btn-action btn-mimic btn-chip violet"
+                      on:click={() => mimicUser(user)}
+                      title="View the app as {user.name}"
+                    >
+                      🎭 Mimic
+                    </button>
+                  {/if}
                   <button
                     class="btn-action btn-remove btn-chip red"
                     on:click={() => removeUserFromTenant(user.id, user.name)}
