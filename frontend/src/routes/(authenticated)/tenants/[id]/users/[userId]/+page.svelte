@@ -177,7 +177,7 @@
 </script>
 
 <svelte:head>
-  <title>{user ? `${user.name} - ` : ''}User Detail - Archiving System</title>
+  <title>{user ? `${user.name} - ` : ''}User Detail - Arcana</title>
 </svelte:head>
 
 <div class="user-detail-page">
@@ -213,7 +213,8 @@
       </div>
       <div class="header-actions">
         <a href="/tenants/{data.tenantId}/users/{data.userId}/edit" class="btn-edit-profile btn-secondary">✏️ Edit Profile</a>
-        {#if user?.role !== 'ADMIN'}
+        <!-- Mimic is for managers looking down the hierarchy — never members, never yourself. -->
+        {#if user?.role !== 'ADMIN' && $auth.role !== 'USER' && String($auth.user?.id) !== String(user?.id)}
           <button class="btn-mimic btn-chip violet" on:click={mimicUser}>🎭 Mimic</button>
         {/if}
         <a href="/tenants/{data.tenantId}/users/{data.userId}/documents" class="btn-docs btn-primary">📄 Documents</a>

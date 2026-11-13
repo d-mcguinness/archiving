@@ -400,7 +400,7 @@
 </script>
 
 <svelte:head>
-  <title>My Documents - Archiving System</title>
+  <title>My Documents - Arcana</title>
 </svelte:head>
 
 <div class="user-documents-page">

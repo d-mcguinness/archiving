@@ -36,7 +36,8 @@
 <style>
   .toast-container {
     position: fixed;
-    top: 1rem;
+    /* Sit below the sticky header so toasts never cover the nav or account menu. */
+    top: 4.75rem;
     right: 1rem;
     z-index: 9999;
     display: flex;

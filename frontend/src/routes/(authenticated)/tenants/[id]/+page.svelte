@@ -137,7 +137,7 @@
 </script>
 
 <svelte:head>
-  <title>{tenant ? tenant.displayName || tenant.name : 'Tenant'} - Archiving System</title>
+  <title>{tenant ? tenant.displayName || tenant.name : 'Tenant'} - Arcana</title>
 </svelte:head>
 
 <div class="tenant-detail-page">

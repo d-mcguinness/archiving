@@ -6,55 +6,100 @@
   import { afterNavigate } from '$app/navigation';
   import { auth } from '$lib/stores/authStore';
   import { theme } from '$lib/stores/themeStore';
+  import { navFor, isNavActive, roleHome, roleLabel } from '$lib/roles';
 
   export let data: any;
 
   // Reactive declaration ensures this updates whenever the route changes
   $: currentPath = $page.url.pathname;
 
+  // Primary navigation is derived from the signed-in role (see $lib/roles).
+  $: navGroups = navFor($auth);
+  $: homeHref = $auth.isLoggedIn ? roleHome($auth) : '/';
+
+  // Mimic state lives in localStorage; re-read it whenever the session changes.
+  $: mimicking = $auth.isLoggedIn && auth.isMimicking();
+  $: mimicOrigin = mimicking ? originalUserName() : '';
+
+  function originalUserName(): string {
+    try {
+      return JSON.parse(localStorage.getItem('auth_original_user') || '{}')?.name || '';
+    } catch {
+      return '';
+    }
+  }
+
+  $: initials = ($auth.user?.name || '?')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part: string) => part[0]?.toUpperCase())
+    .join('');
+
+  $: profileHref =
+    $auth.tenantId && $auth.user?.id
+      ? `/tenants/${$auth.tenantId}/users/${$auth.user.id}`
+      : '';
+
   // Mobile nav state — the links/auth collapse behind a hamburger on small screens.
   let mobileOpen = false;
   const toggleMenu = () => (mobileOpen = !mobileOpen);
   const closeMenu = () => (mobileOpen = false);
 
-  // Close the menu after any client-side navigation (e.g. tapping a link).
+  // Account dropdown (desktop). On mobile its contents render inline in the panel.
+  let accountOpen = false;
+  let accountEl: HTMLElement;
+  let accountTrigger: HTMLButtonElement;
+
+  function handleWindowClick(event: MouseEvent) {
+    if (accountOpen && accountEl && !accountEl.contains(event.target as Node)) {
+      accountOpen = false;
+    }
+  }
+
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key !== 'Escape') return;
+    if (accountOpen) {
+      accountOpen = false;
+      accountTrigger?.focus();
+    }
+    closeMenu();
+  }
+
+  // Close the menus after any client-side navigation (e.g. tapping a link).
   afterNavigate(() => {
     mobileOpen = false;
+    accountOpen = false;
   });
 
   function handleLogout() {
     mobileOpen = false;
+    accountOpen = false;
     auth.logout();
   }
 
   function handleExitMimic() {
     mobileOpen = false;
+    accountOpen = false;
     auth.exitMimic();
   }
-
-  // Check if a path is active based on current route
-  $: isActive = (path: string): boolean => {
-    if (path === '/') {
-      return currentPath === '/';
-    }
-    return currentPath === path || currentPath.startsWith(path + '/');
-  };
 
   onMount(() => {
     auth.init();
   });
 </script>
 
-<svelte:window on:keydown={(e) => e.key === 'Escape' && closeMenu()} />
+<svelte:window on:keydown={handleKeydown} on:click={handleWindowClick} />
 
 <div class="app">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <Toast />
 
   <header>
-    <nav>
+    <nav aria-label="Primary">
       <div class="nav-container">
         <div class="brand-section">
-          <h1><a href="/">Arcana</a></h1>
+          <a class="brand" href={homeHref}>Arcana</a>
         </div>
 
         <button
@@ -74,110 +119,28 @@
         {#if !$auth.isLoggedIn}
           <ul class="nav-links">
             <li>
-              <a href="/product" class="product-link" class:active={isActive('/product')}>
+              <a
+                href="/product"
+                class="product-link"
+                class:active={currentPath === '/product'}
+                aria-current={currentPath === '/product' ? 'page' : undefined}
+              >
                 Product
               </a>
             </li>
           </ul>
         {:else}
           <ul class="nav-links">
-
-            {#if $auth.role === 'ADMIN'}
-              <li>
-                <a href="/admin" class="tenants-link" class:active={isActive('/admin') && !isActive('/admin/')}>
-                  Dashboard
-                </a>
-              </li>
-              <li>
-                <a href="/admin/tenants" class="tenants-link" class:active={isActive('/admin/tenants') || isActive('/tenants/')}>
-                  🏢 Tenants
-                </a>
-              </li>
-              <li>
-                <a href="/admin/archives" class="archives-link" class:active={isActive('/admin/archives')}>
-                  📁 Archives
-                </a>
-              </li>
-              <li>
-                <a href="/admin/intake" class="intakes-link" class:active={isActive('/admin/intake')}>
-                  📦 Intakes
-                </a>
-              </li>
-              <li>
-                <a href="/admin/preservation" class="preservations-link" class:active={isActive('/admin/preservation')}>
-                  🏗️ Preservations
-                </a>
-              </li>
-              <li>
-                <a href="/admin/release" class="releases-link" class:active={isActive('/admin/release')}>
-                  📤 Releases
-                </a>
-              </li>
-              <li>
-                <a href="/admin/users" class="users-link" class:active={isActive('/admin/users')}>
-                  👥 Users
-                </a>
-              </li>
-              <li>
-                <a href="/admin/documents" class="documents-link" class:active={isActive('/admin/documents')}>
-                  📄 Documents
-                </a>
-              </li>
-
-            {:else if $auth.role === 'TENANT'}
-              <li>
-                <a href="/tenants/{$auth.tenantId}/archives" class="archives-link" class:active={isActive(`/tenants/${$auth.tenantId}/archives`)}>
-                  📁 Archives
-                </a>
-              </li>
-              <li>
-                <a href="/tenants/{$auth.tenantId}/intakes" class="intakes-link" class:active={isActive(`/tenants/${$auth.tenantId}/intakes`)}>
-                  📦 Intakes
-                </a>
-              </li>
-              <li>
-                <a href="/tenants/{$auth.tenantId}/preservations" class="preservations-link" class:active={isActive(`/tenants/${$auth.tenantId}/preservations`)}>
-                  🏗️ Preservations
-                </a>
-              </li>
-              <li>
-                <a href="/tenants/{$auth.tenantId}/releases" class="releases-link" class:active={isActive(`/tenants/${$auth.tenantId}/releases`)}>
-                  📤 Releases
-                </a>
-              </li>
-              <li>
-                <a href="/tenants/{$auth.tenantId}/users" class="users-link" class:active={isActive(`/tenants/${$auth.tenantId}/users`)}>
-                  👥 Users
-                </a>
-              </li>
-              <li>
-                <a href="/tenants/{$auth.tenantId}/documents" class="documents-link" class:active={isActive(`/tenants/${$auth.tenantId}/documents`)}>
-                  📄 Documents
-                </a>
-              </li>
-
-            {:else if $auth.role === 'USER'}
-              <!-- USER: Documents only -->
-              <li>
-                <a
-                  href={$auth.tenantId && $auth.user?.id ? `/tenants/${$auth.tenantId}/users/${$auth.user.id}/edit` : '/'}
-                  class="users-link"
-                  class:active={isActive(`/tenants/${$auth.tenantId}/users/${$auth.user?.id}`) && !isActive(`/tenants/${$auth.tenantId}/users/${$auth.user?.id}/documents`)}
-                >
-                  ✏️ Profile
-                </a>
-              </li>
-              <li>
-                <a
-                  href={$auth.tenantId && $auth.user?.id ? `/tenants/${$auth.tenantId}/users/${$auth.user.id}/documents` : '/documents'}
-                  class="documents-link"
-                  class:active={isActive(`/tenants/${$auth.tenantId}/users/${$auth.user?.id}/documents`)}
-                >
-                  📄 Documents
-                </a>
-              </li>
-            {/if}
-
+            {#each navGroups as group, groupIndex}
+              {#each group as item, itemIndex}
+                {@const active = isNavActive(item, currentPath)}
+                <li class:group-start={groupIndex > 0 && itemIndex === 0}>
+                  <a href={item.href} class:active aria-current={active ? 'page' : undefined}>
+                    {item.label}
+                  </a>
+                </li>
+              {/each}
+            {/each}
           </ul>
         {/if}
 
@@ -202,15 +165,42 @@
             {/if}
           </button>
           {#if $auth.isLoggedIn}
-            <span class="user-name-display">👤 {$auth.user?.name}</span>
-            {#if auth.isMimicking()}
-              <button class="exit-mimic-button" on:click={handleExitMimic}>
-                🎭 Exit Mimic
+            <div class="account" bind:this={accountEl}>
+              <button
+                class="account-trigger"
+                bind:this={accountTrigger}
+                aria-haspopup="true"
+                aria-expanded={accountOpen}
+                aria-controls="account-menu"
+                on:click={() => (accountOpen = !accountOpen)}
+              >
+                <span class="avatar" aria-hidden="true">{initials}</span>
+                <span class="account-id">
+                  <span class="account-name">{$auth.user?.name}</span>
+                  <span class="account-role">{roleLabel($auth.role)}</span>
+                </span>
+                <svg class="caret" viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M2.5 4.5 6 8l3.5-3.5" />
+                </svg>
               </button>
-            {/if}
-            <button class="logout-button" on:click={handleLogout}>
-              Logout
-            </button>
+
+              <div class="account-menu" class:open={accountOpen} id="account-menu">
+                <div class="account-summary">
+                  <span class="summary-name">{$auth.user?.name}</span>
+                  {#if $auth.user?.email}
+                    <span class="summary-email">{$auth.user.email}</span>
+                  {/if}
+                  <span class="role-chip role-{($auth.role || '').toLowerCase()}">{roleLabel($auth.role)}</span>
+                </div>
+                {#if profileHref && $auth.role !== 'ADMIN'}
+                  <a class="account-item" href={profileHref}>My profile</a>
+                {/if}
+                {#if mimicking}
+                  <button class="account-item" on:click={handleExitMimic}>Stop viewing as this user</button>
+                {/if}
+                <button class="account-item" on:click={handleLogout}>Sign out</button>
+              </div>
+            </div>
           {:else}
             <a href="/login" class="login-button">
               Sign In
@@ -223,13 +213,26 @@
         </div>
       </div>
     </nav>
+    {#if mimicking}
+      <div class="mimic-banner" role="status">
+        <div class="mimic-inner">
+          <p>
+            <strong>Viewing as {$auth.user?.name}</strong>
+            <span class="mimic-detail">
+              {roleLabel($auth.role)}. Anything you do here is done as this account{mimicOrigin ? `, not as ${mimicOrigin}` : ''}.
+            </span>
+          </p>
+          <button class="mimic-exit" on:click={handleExitMimic}>Stop viewing as {$auth.user?.name}</button>
+        </div>
+      </div>
+    {/if}
   </header>
 
   {#if mobileOpen}
     <button class="nav-backdrop" aria-label="Close navigation menu" on:click={closeMenu}></button>
   {/if}
 
-  <main>
+  <main id="main-content" tabindex="-1">
     <slot />
   </main>
 
@@ -248,8 +251,9 @@
   header {
     background: var(--arc-nav-bg);
     color: white;
-    padding: 1rem 0;
-    position: relative;
+    padding: 0.75rem 0;
+    position: sticky;
+    top: 0;
     z-index: 50;
     border-bottom: 1px solid rgba(148, 163, 184, 0.14);
     transition: background-color 0.25s ease;
@@ -262,9 +266,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 2rem;
+    gap: 1.25rem;
     position: relative;
-    flex-wrap: wrap; /* heavy authenticated navs wrap instead of overflowing */
+    flex-wrap: wrap; /* fallback: wrap rather than overflow on very long navs */
   }
 
   /* Hamburger toggle — hidden on desktop, shown below the breakpoint. */
@@ -323,11 +327,7 @@
     gap: 1rem;
   }
 
-  h1 {
-    margin: 0;
-  }
-
-  h1 a {
+  .brand {
     color: #f8fafc;
     text-decoration: none;
     font-size: 1.5rem;
@@ -340,7 +340,7 @@
   }
 
   /* Brand gradient dot beside the wordmark — echoes the indigo→violet→cyan accent. */
-  h1 a::before {
+  .brand::before {
     content: '';
     width: 0.6rem;
     height: 0.6rem;
@@ -353,10 +353,17 @@
   .nav-links {
     display: flex;
     list-style: none;
-    gap: 0.75rem;
+    gap: 0.15rem;
     margin: 0;
     padding: 0;
     align-items: center;
+  }
+
+  /* Divider between navigation groups (e.g. people | archive pipeline). */
+  .nav-links li.group-start {
+    margin-left: 0.55rem;
+    padding-left: 0.7rem;
+    border-left: 1px solid rgba(148, 163, 184, 0.3);
   }
 
   .nav-links li {
@@ -367,10 +374,10 @@
   .nav-links a {
     color: #e2e8f0;
     text-decoration: none;
-    padding: 0.6rem 1.1rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 0.6rem;
     transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease,
-      transform 0.18s ease, box-shadow 0.18s ease;
+      box-shadow 0.18s ease;
     font-weight: 600;
     font-size: 0.9rem;
     white-space: nowrap;
@@ -380,9 +387,7 @@
 
   .nav-links a:hover:not(.active) {
     background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(148, 163, 184, 0.35);
     color: white;
-    transform: translateY(-2px);
   }
 
   .nav-links a.active {
@@ -390,7 +395,6 @@
     color: white;
     border-color: transparent;
     box-shadow: 0 8px 22px -8px rgba(124, 58, 237, 0.7);
-    transform: none;
   }
 
   /* Single public "Product" entry point — echoes the brand indigo→violet→cyan gradient. */
@@ -406,7 +410,7 @@
   .auth-section {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     margin-left: auto;
   }
 
@@ -436,15 +440,7 @@
     box-shadow: none;
   }
 
-  .user-name-display {
-    color: white;
-    font-weight: 500;
-    font-size: 0.9rem;
-    white-space: nowrap;
-  }
-
-  .login-button,
-  .logout-button {
+  .login-button {
     padding: 0.6rem 1.25rem;
     background: rgba(255, 255, 255, 0.06);
     color: #e2e8f0;
@@ -461,8 +457,7 @@
     font-family: inherit;
   }
 
-  .login-button:hover,
-  .logout-button:hover {
+  .login-button:hover {
     background: rgba(255, 255, 255, 0.12);
     border-color: rgba(226, 232, 240, 0.7);
     color: white;
@@ -491,36 +486,240 @@
     box-shadow: 0 12px 28px -8px rgba(124, 58, 237, 0.8);
   }
 
-  .logout-button {
-    background: rgba(239, 68, 68, 0.18);
-    border-color: rgba(239, 68, 68, 0.45);
+  /* ── Account menu: who is signed in, at what level, and how to leave ── */
+  .account {
+    position: relative;
   }
 
-  .logout-button:hover {
-    background: rgba(239, 68, 68, 0.3);
-    border-color: rgba(239, 68, 68, 0.7);
-  }
-
-  .exit-mimic-button {
-    padding: 0.6rem 1.25rem;
-    background: rgba(139, 92, 246, 0.3);
-    color: white;
-    border: 1px solid rgba(139, 92, 246, 0.6);
-    border-radius: 0.6rem;
-    font-weight: 600;
+  .account-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.3rem 0.6rem 0.3rem 0.3rem;
+    background: rgba(255, 255, 255, 0.06);
+    color: #e2e8f0;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    border-radius: 999px;
+    font-family: inherit;
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
+    box-shadow: none;
+    transition: background 0.18s ease, border-color 0.18s ease;
+  }
+
+  .account-trigger:hover,
+  .account-trigger[aria-expanded='true'] {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(226, 232, 240, 0.7);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+  }
+
+  .account-id {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.2;
+    text-align: left;
+  }
+
+  .account-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #f8fafc;
+    white-space: nowrap;
+    max-width: 11rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .account-role {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #a5b4fc;
+    white-space: nowrap;
+  }
+
+  .caret {
+    color: #94a3b8;
+    transition: transform 0.18s ease;
+  }
+
+  .account-trigger[aria-expanded='true'] .caret {
+    transform: rotate(180deg);
+  }
+
+  .account-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 15rem;
+    padding: 0.4rem;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line-strong);
+    border-radius: 0.8rem;
+    box-shadow: var(--arc-shadow-lift);
+    z-index: 70;
+  }
+
+  .account-menu.open {
+    display: block;
+  }
+
+  .account-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    padding: 0.6rem 0.7rem 0.75rem;
+    margin-bottom: 0.3rem;
+    border-bottom: 1px solid var(--arc-line);
+  }
+
+  .summary-name {
+    font-weight: 700;
+    color: var(--arc-ink);
+    font-size: 0.92rem;
+  }
+
+  .summary-email {
+    color: var(--arc-muted);
+    font-size: 0.8rem;
+    word-break: break-all;
+  }
+
+  .role-chip {
+    margin-top: 0.4rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    background: var(--arc-chip-slate-bg);
+    color: var(--arc-chip-slate-ink);
+  }
+
+  .role-chip.role-admin { background: var(--arc-chip-violet-bg); color: var(--arc-chip-violet-ink); }
+  .role-chip.role-tenant { background: var(--arc-chip-indigo-bg); color: var(--arc-chip-indigo-ink); }
+  .role-chip.role-user { background: var(--arc-chip-cyan-bg); color: var(--arc-chip-cyan-ink); }
+
+  .account-item {
+    display: block;
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    background: transparent;
+    color: var(--arc-body);
+    border: none;
+    border-radius: 0.5rem;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: none;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .account-item:hover {
+    background: var(--arc-card-2);
+    color: var(--arc-ink);
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* ── Mimic banner: impossible to miss while acting as someone else ── */
+  .mimic-banner {
+    margin: 0.75rem 0 -0.75rem;
+    background: var(--arc-alert-amber-bg);
+    border-bottom: 1px solid var(--arc-alert-amber-border);
+    color: var(--arc-alert-amber-ink);
+  }
+
+  .mimic-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.55rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .mimic-inner p {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.4;
+  }
+
+  .mimic-detail {
+    margin-left: 0.4rem;
+  }
+
+  .mimic-exit {
+    padding: 0.4rem 0.9rem;
+    background: transparent;
+    color: inherit;
+    border: 1.5px solid currentColor;
+    border-radius: 0.55rem;
+    font-size: 0.85rem;
+    font-weight: 700;
     white-space: nowrap;
     box-shadow: none;
-    font-family: inherit;
   }
 
-  .exit-mimic-button:hover {
-    background: rgba(139, 92, 246, 0.5);
-    border-color: rgba(139, 92, 246, 0.8);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  .mimic-exit:hover {
+    background: var(--arc-alert-amber-border);
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Keyboard users: jump past the navigation. Visible only when focused. */
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    z-index: 200;
+    padding: 0.6rem 1rem;
+    background: var(--arc-card);
+    color: var(--arc-link);
+    border: 2px solid var(--arc-indigo);
+    border-radius: 0.6rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .skip-link:focus {
+    top: 0.75rem;
+  }
+
+  /* The nav is dark in both themes, so its focus ring needs a light hue. */
+  header :global(:focus-visible) {
+    outline-color: #c7d2fe;
+  }
+
+  header .account-menu :global(:focus-visible) {
+    outline-color: var(--arc-indigo);
+  }
+
+  main:focus {
+    outline: none;
   }
 
   main {
@@ -542,7 +741,7 @@
   }
 
   /* ── Responsive nav: collapse links + auth behind the hamburger ── */
-  @media (max-width: 900px) {
+  @media (max-width: 1040px) {
     .nav-container {
       flex-wrap: nowrap;
     }
@@ -554,7 +753,7 @@
     .nav-collapse {
       display: none;
       position: absolute;
-      top: calc(100% + 1rem);
+      top: calc(100% + 0.75rem);
       left: 0;
       right: 0;
       flex-direction: column;
@@ -582,7 +781,8 @@
 
     .nav-links a {
       display: block;
-      text-align: center;
+      width: 100%;
+      padding: 0.7rem 0.9rem;
     }
 
     .auth-section {
@@ -595,16 +795,57 @@
       border-top: 1px solid rgba(255, 255, 255, 0.12);
     }
 
-    .user-name-display {
-      text-align: center;
+    .nav-links li.group-start {
+      margin: 0.35rem 0 0;
+      padding: 0.6rem 0 0;
+      border-left: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
     }
 
     .login-button,
-    .register-button,
-    .logout-button,
-    .exit-mimic-button {
+    .register-button {
       width: 100%;
       text-align: center;
+    }
+
+    /* The account dropdown becomes a plain inline block inside the panel. */
+    .account-trigger {
+      width: 100%;
+      border-radius: 0.6rem;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .caret {
+      display: none;
+    }
+
+    .account-menu {
+      display: block;
+      position: static;
+      min-width: 0;
+      margin-top: 0.6rem;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+    }
+
+    .account-summary {
+      display: none;
+    }
+
+    .account-item {
+      color: #e2e8f0;
+      text-align: center;
+      padding: 0.7rem;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      margin-top: 0.5rem;
+    }
+
+    .account-item:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: white;
     }
 
     .theme-toggle {

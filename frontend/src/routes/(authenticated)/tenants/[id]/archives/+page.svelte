@@ -316,7 +316,7 @@
 </script>
 
 <svelte:head>
-  <title>{tenant ? `${tenant.displayName || tenant.name} - ` : ''}Archives - Archiving System</title>
+  <title>{tenant ? `${tenant.displayName || tenant.name} - ` : ''}Archives - Arcana</title>
 </svelte:head>
 
 <div class="tenant-archives-page">

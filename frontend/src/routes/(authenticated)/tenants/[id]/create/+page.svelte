@@ -187,7 +187,7 @@
 </script>
 
 <svelte:head>
-  <title>Create Archive - {tenant ? tenant.displayName || tenant.name : 'Tenant'} - Archiving System</title>
+  <title>Create Archive - {tenant ? tenant.displayName || tenant.name : 'Tenant'} - Arcana</title>
 </svelte:head>
 
 <div class="create-archive-page">
