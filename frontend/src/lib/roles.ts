@@ -51,7 +51,7 @@ export function navFor(state: AuthState): NavItem[][] {
         { label: 'Users', href: '/admin/users', match: ['/users'] }
       ],
       [
-        { label: 'Archives', href: '/admin/archives', match: ['/admin/archive', '/archives'] },
+        { label: 'Archives', href: '/admin/archives', match: ['/archives'] },
         { label: 'Intakes', href: '/admin/intake', match: ['/intake'] },
         { label: 'Preservations', href: '/admin/preservation', match: ['/preservation'] },
         { label: 'Releases', href: '/admin/release', match: ['/release'] },
