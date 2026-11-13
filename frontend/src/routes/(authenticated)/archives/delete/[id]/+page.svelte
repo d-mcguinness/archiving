@@ -97,7 +97,7 @@
 </script>
 
 <svelte:head>
-  <title>Delete Archive - Archiving System</title>
+  <title>Delete Archive - Arcana</title>
 </svelte:head>
 
 <div class="delete-page">

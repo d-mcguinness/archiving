@@ -152,7 +152,7 @@
 </script>
 
 <svelte:head>
-  <title>{tenant ? `${tenant.displayName || tenant.name} - ` : ''}Releases - Archiving System</title>
+  <title>{tenant ? `${tenant.displayName || tenant.name} - ` : ''}Releases - Arcana</title>
 </svelte:head>
 
 <div class="tenant-dips-page">

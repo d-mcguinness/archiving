@@ -124,7 +124,7 @@ function goBack() {
 </script>
 
 <svelte:head>
-  <title>{isCreateMode ? 'Create' : 'Update'} Tenant - Archiving System</title>
+  <title>{isCreateMode ? 'Create' : 'Update'} Tenant - Arcana</title>
 </svelte:head>
 
 <div class="update-tenant-page">

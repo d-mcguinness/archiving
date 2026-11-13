@@ -160,7 +160,7 @@
 </script>
 
 <svelte:head>
-  <title>{tenant ? `${tenant.displayName || tenant.name} - ` : ''}Preservations - Archiving System</title>
+  <title>{tenant ? `${tenant.displayName || tenant.name} - ` : ''}Preservations - Arcana</title>
 </svelte:head>
 
 <div class="tenant-aips-page">

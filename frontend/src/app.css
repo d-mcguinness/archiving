@@ -211,6 +211,13 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.16);
 }
 
+/* Visible keyboard focus everywhere (mouse clicks don't trigger it). Form
+   fields keep their own ring from the :focus rule above. */
+:focus-visible {
+  outline: 2px solid var(--arc-indigo);
+  outline-offset: 2px;
+}
+
 button {
   background: var(--arc-grad-brand);
   color: white;

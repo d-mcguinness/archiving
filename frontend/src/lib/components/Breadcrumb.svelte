@@ -54,8 +54,11 @@
       segs.push({ label: ctx.userName || 'User', href: userHref });
     }
 
-    // Append extra items
+    // Append extra items, skipping one that repeats the previous crumb (pages
+    // that pass their own "Admin" root would otherwise render "Admin / Admin").
     for (const item of extraItems) {
+      const prev = segs[segs.length - 1];
+      if (prev && prev.label === item.label && (prev.href ?? '') === (item.href ?? prev.href ?? '')) continue;
       segs.push({ ...item });
     }
 
@@ -67,12 +70,12 @@
   <nav class="breadcrumb" aria-label="Breadcrumb">
     {#each segments as seg, i}
       {#if i > 0}
-        <span class="sep">/</span>
+        <span class="sep" aria-hidden="true">/</span>
       {/if}
       {#if seg.href && i < segments.length - 1}
         <a href={seg.href}>{seg.label}</a>
       {:else}
-        <span class="current">{seg.label}</span>
+        <span class="current" aria-current={i === segments.length - 1 ? 'page' : undefined}>{seg.label}</span>
       {/if}
     {/each}
   </nav>

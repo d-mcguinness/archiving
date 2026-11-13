@@ -84,7 +84,7 @@
 </script>
 
 <svelte:head>
-  <title>Releases - Archiving System</title>
+  <title>Releases - Arcana</title>
 </svelte:head>
 
 <div class="dips-page">

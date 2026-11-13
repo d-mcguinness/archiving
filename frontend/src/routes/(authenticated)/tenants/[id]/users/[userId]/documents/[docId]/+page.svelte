@@ -182,7 +182,7 @@
 </script>
 
 <svelte:head>
-  <title>{doc ? doc.title : 'Document'} - Archiving System</title>
+  <title>{doc ? doc.title : 'Document'} - Arcana</title>
 </svelte:head>
 
 <div class="doc-detail-page">

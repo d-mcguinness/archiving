@@ -142,7 +142,7 @@
 </script>
 
 <svelte:head>
-  <title>Intakes - Archiving System</title>
+  <title>Intakes - Arcana</title>
 </svelte:head>
 
 <div class="sips-page">

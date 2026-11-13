@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { API_BASE } from '../api';
+import { roleHome } from '../roles';
 
 export interface AuthState {
   isLoggedIn: boolean;
@@ -163,8 +164,10 @@ function createAuthStore() {
       localStorage.removeItem('auth_original_refresh_token');
       localStorage.removeItem('auth_mimic');
 
-      set(readFromLocalStorage());
-      goto('/admin');
+      const restored = readFromLocalStorage();
+      set(restored);
+      // Admins and tenant owners can both mimic; send each back to their own home.
+      goto(roleHome(restored));
     } else {
       localStorage.removeItem('auth_mimic');
       logout();

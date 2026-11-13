@@ -680,7 +680,7 @@
 </script>
 
 <svelte:head>
-  <title>Update Archive - Archiving System</title>
+  <title>Update Archive - Arcana</title>
 </svelte:head>
 
 <div class="update-page">

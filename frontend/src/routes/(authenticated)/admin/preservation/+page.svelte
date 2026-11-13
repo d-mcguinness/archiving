@@ -142,7 +142,7 @@
 </script>
 
 <svelte:head>
-  <title>Preservations - Archiving System</title>
+  <title>Preservations - Arcana</title>
 </svelte:head>
 
 <div class="aips-page">

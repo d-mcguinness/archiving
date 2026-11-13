@@ -204,7 +204,7 @@
 </script>
 
 <svelte:head>
-  <title>Documents - Archiving System</title>
+  <title>Documents - Arcana</title>
 </svelte:head>
 
 <div class="documents-page">

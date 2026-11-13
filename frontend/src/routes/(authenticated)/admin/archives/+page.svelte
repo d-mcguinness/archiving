@@ -161,7 +161,7 @@
 </script>
 
 <svelte:head>
-  <title>Archives - Archiving System</title>
+  <title>Archives - Arcana</title>
 </svelte:head>
 
 <div class="archives-page">

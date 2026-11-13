@@ -130,7 +130,7 @@
 </script>
 
 <svelte:head>
-  <title>{tenant ? `${tenant.displayName || tenant.name} - ` : ''}Documents - Archiving System</title>
+  <title>{tenant ? `${tenant.displayName || tenant.name} - ` : ''}Documents - Arcana</title>
 </svelte:head>
 
 <div class="tenant-documents-page">

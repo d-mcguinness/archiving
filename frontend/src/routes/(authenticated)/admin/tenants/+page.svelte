@@ -173,7 +173,7 @@
 </script>
 
 <svelte:head>
-  <title>Tenants - Archiving System</title>
+  <title>Tenants - Arcana</title>
 </svelte:head>
 
 <div class="tenants-page">

@@ -8,6 +8,8 @@
   import { auth } from '$lib/stores/authStore';
   import { authHeaders, API_BASE } from '$lib/api';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
+  import { roleHome, roleLabel } from '$lib/roles';
+  import { get } from 'svelte/store';
 
   let users: any[] = [];
   let loading = true;
@@ -34,6 +36,9 @@
     await loadUsers();
   });
 
+  const isSelf = (user: any) => String(user.id) === String($auth.user?.id);
+  const roleHue = (role: string) => (role === 'ADMIN' ? 'violet' : role === 'TENANT' ? 'indigo' : 'cyan');
+
   async function loadUsers() {
     try {
       loading = true;
@@ -56,7 +61,7 @@
     // for arbitrary users); a client-made token would be rejected everywhere.
     if (!(await impersonate(user.id))) return;
     toasts.success(`Now viewing as ${user.name}`);
-    goto('/');
+    goto(roleHome(get(auth)));
   }
 
   function handleFileSelect(event: Event) {
@@ -173,7 +178,7 @@
 </script>
 
 <svelte:head>
-  <title>Users - Archiving System</title>
+  <title>Users - Arcana</title>
 </svelte:head>
 
 <div class="users-page">
@@ -186,9 +191,86 @@
     <a href="/users/create" class="add-user-btn btn-primary">Add User</a>
   </div>
 
-  <!-- File Upload Section -->
-  <div class="file-upload-section">
-    <h2>📤 Upload Users File</h2>
+  {#if error}
+    <div class="error">
+      Error: {error}
+    </div>
+  {/if}
+
+  {#if loading}
+    <div class="loading">
+      <div class="spinner"></div>
+    </div>
+  {:else if users.length === 0}
+    <div class="empty-state">
+      <p>No users found. Create your first user to get started!</p>
+    </div>
+  {:else}
+    <div class="table-container table-card">
+      <table class="data-table arc-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>User</th>
+            <th>Role</th>
+            <th>Age</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each users as user (user.id)}
+            <tr>
+              <td class="id-cell">{user.id}</td>
+              <td class="title-cell">
+                <div class="title-wrapper">
+                  <div class="user-title">
+                    {user.name}
+                    {#if isSelf(user)}<span class="you-tag">You</span>{/if}
+                  </div>
+                  <div class="user-email">{user.email}</div>
+                </div>
+              </td>
+              <td>
+                {#if user.role}
+                  <span class="badge {roleHue(user.role)}">{roleLabel(user.role)}</span>
+                {:else}
+                  <span class="no-role" title="This account has no role and cannot sign in">No role</span>
+                {/if}
+              </td>
+              <td class="age-cell">{user.age || '-'}</td>
+              <td class="actions-cell">
+                {#if user.role !== 'ADMIN'}
+                  <button
+                    class="btn-action btn-mimic btn-chip violet"
+                    on:click={() => mimicUser(user)}
+                    title="Sign in as this user"
+                  >
+                    🎭 Mimic
+                  </button>
+                {/if}
+                <button
+                  class="btn-action btn-edit btn-chip indigo"
+                  on:click={() => openEditModal(user)}
+                  title="Edit user"
+                >
+                  ✏️ Edit
+                </button>
+                {#if !isSelf(user)}
+                  <a href="/users/delete?userId={user.id}" class="btn-action btn-delete btn-chip red">
+                    🗑️ Delete
+                  </a>
+                {/if}
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
+  {/if}
+
+  <!-- Bulk import is an occasional task: keep it below the list, collapsed. -->
+  <details class="file-upload-section">
+    <summary>Import users from a file</summary>
     <div class="upload-card">
       <div class="upload-area">
         <input
@@ -225,74 +307,10 @@
         on:click={handleUpload}
         disabled={!selectedFile || uploading}
       >
-        {uploading ? '⏳ Uploading...' : '📤 Upload File'}
+        {uploading ? 'Uploading…' : 'Upload file'}
       </button>
     </div>
-  </div>
-
-  {#if error}
-    <div class="error">
-      Error: {error}
-    </div>
-  {/if}
-
-  {#if loading}
-    <div class="loading">
-      <div class="spinner"></div>
-    </div>
-  {:else if users.length === 0}
-    <div class="empty-state">
-      <p>No users found. Create your first user to get started!</p>
-    </div>
-  {:else}
-    <div class="table-container table-card">
-      <table class="data-table arc-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>User</th>
-            <th>Age</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each users as user (user.id)}
-            <tr>
-              <td class="id-cell">{user.id}</td>
-              <td class="title-cell">
-                <div class="title-wrapper">
-                  <div class="user-title">{user.name}</div>
-                  <div class="user-email">{user.email}</div>
-                </div>
-              </td>
-              <td class="age-cell">{user.age || '-'}</td>
-              <td class="actions-cell">
-                {#if user.role !== 'ADMIN'}
-                  <button
-                    class="btn-action btn-mimic btn-chip violet"
-                    on:click={() => mimicUser(user)}
-                    title="Sign in as this user"
-                  >
-                    🎭 Mimic
-                  </button>
-                {/if}
-                <button
-                  class="btn-action btn-edit btn-chip indigo"
-                  on:click={() => openEditModal(user)}
-                  title="Edit user"
-                >
-                  ✏️ Edit
-                </button>
-                <a href="/users/delete?userId={user.id}" class="btn-action btn-delete btn-chip red">
-                  🗑️ Delete
-                </a>
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
-  {/if}
+  </details>
 </div>
 
 <!-- Edit Modal -->
@@ -401,13 +419,32 @@
 
   /* File Upload Section */
   .file-upload-section {
-    margin-bottom: 2rem;
+    margin-top: 2rem;
   }
 
-  .file-upload-section h2 {
+  .file-upload-section summary {
+    display: inline-block;
     margin-bottom: 1rem;
-    color: var(--arc-ink, #0f172a);
-    font-size: 1.25rem;
+    color: var(--arc-link, #4f46e5);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  .you-tag {
+    margin-left: 0.4rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: var(--arc-chip-slate-bg);
+    color: var(--arc-chip-slate-ink);
+    font-size: 0.68rem;
+    font-weight: 700;
+    vertical-align: middle;
+  }
+
+  .no-role {
+    color: var(--arc-faint);
+    font-size: 0.85rem;
   }
 
   .upload-card {
