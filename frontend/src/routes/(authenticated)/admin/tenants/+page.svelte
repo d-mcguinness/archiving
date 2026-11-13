@@ -231,7 +231,7 @@
               <td class="id-cell">{tenant.id}</td>
               <td class="title-cell">
                 <div class="title-wrapper">
-                  <div class="tenant-title">{tenant.displayName || tenant.name}</div>
+                  <a class="tenant-title" href="/tenants/{tenant.id}" title="Open this tenant's overview">{tenant.displayName || tenant.name}</a>
                   {#if tenant.description}
                     <div class="tenant-description">{tenant.description}</div>
                   {/if}
@@ -256,7 +256,7 @@
                   🎭 Mimic
                 </button>
                 <button
-                  class="btn-action btn-edit btn-chip"
+                  class="btn-action btn-edit btn-chip indigo"
                   on:click={() => openEditModal(tenant)}
                   title="Edit tenant"
                 >
@@ -264,21 +264,6 @@
                 </button>
                 <a href="/tenants/delete?tenantId={tenant.id}" class="btn-action btn-delete btn-chip red">
                   🗑️ Delete
-                </a>
-                <a href="/tenants/{tenant.id}/users" class="btn-action btn-users btn-chip slate">
-                  👥 Users
-                </a>
-                <a href="/tenants/{tenant.id}/archives" class="btn-action btn-archives btn-chip cyan">
-                  📁 Archives
-                </a>
-                <a href="/tenants/{tenant.id}/intakes" class="btn-action btn-sips btn-chip pink">
-                  📦 Intakes
-                </a>
-                <a href="/tenants/{tenant.id}/preservations" class="btn-action btn-aips btn-chip indigo">
-                  🏗️ Preservations
-                </a>
-                <a href="/tenants/{tenant.id}/releases" class="btn-action btn-dips btn-chip orange">
-                  📤 Releases
                 </a>
               </td>
             </tr>
@@ -510,6 +495,16 @@
   .tenant-title {
     font-weight: 500;
     color: var(--arc-ink, #1e293b);
+  }
+
+  a.tenant-title {
+    display: block;
+    text-decoration: none;
+  }
+
+  a.tenant-title:hover {
+    color: var(--arc-link, #4f46e5);
+    text-decoration: underline;
   }
 
   .tenant-description {

@@ -427,22 +427,7 @@
                   <a href="/tenants/{data.tenantId}/archives/{archive.id}/update" class="btn-action btn-edit btn-chip indigo">
                     ✏️ Edit
                   </a>
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/intakes" class="btn-action btn-sips btn-chip pink">
-                    📦 Intakes
-                  </a>
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/preservations" class="btn-action btn-aips">
-                    🏗️ Preservations
-                  </a>
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/releases" class="btn-action btn-dips btn-chip orange">
-                    📤 Releases
-                  </a>
-                  <a href="/tenants/{data.tenantId}/archives/{archive.id}/users" class="btn-action btn-users btn-chip amber">
-                    👥 Users
-                  </a>
                   {#if currentRole === 'ADMIN'}
-                    <a href="/archives/delete/{archive.id}" class="btn-action btn-delete btn-chip red">
-                      🗑️ Delete
-                    </a>
                     <a
                       href="/tenants/{data.tenantId}/archives/{archive.id}/extract"
                       class="btn-action btn-extract btn-chip green"
@@ -458,6 +443,9 @@
                     >
                       {exporting ? '...' : '📦 Package'}
                     </button>
+                    <a href="/archives/delete/{archive.id}" class="btn-action btn-delete btn-chip red">
+                      🗑️ Delete
+                    </a>
                   {/if}
                 </td>
               </tr>
