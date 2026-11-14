@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { API_BASE } from '$lib/api';
+  import { apiFetch } from '$lib/api';
   import { onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
@@ -164,7 +164,7 @@
     extractError = null;
 
     try {
-      const response = await fetch(`${API_BASE}/api/archives/${selectedArchiveForExtract.id}/extract`, {
+      const response = await apiFetch(`/api/archives/${selectedArchiveForExtract.id}/extract`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: extractPassword })
@@ -203,7 +203,7 @@
   async function handleExportPackage(archive: any) {
     exporting = true;
     try {
-      const response = await fetch(`${API_BASE}/api/archives/${archive.id}/export-package`, {
+      const response = await apiFetch(`/api/archives/${archive.id}/export-package`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({})
