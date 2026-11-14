@@ -21,8 +21,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * H1-elem) — the basis for element/link tenant-ownership checks.
  */
 @DataJpaTest
-@Import(ElementService.class)
+@Import({ElementService.class, ElementArchiveTenantTest.StubOwners.class})
 class ElementArchiveTenantTest {
+
+    /** Stands in for the intake/preservation/release modules, which own archive-less trees. */
+    @org.springframework.boot.test.context.TestConfiguration
+    static class StubOwners {
+        static final java.util.Map<Long, Long> ROOT_TENANTS = new java.util.concurrent.ConcurrentHashMap<>();
+
+        @org.springframework.context.annotation.Bean
+        com.dmc.archiving.archive.api.ElementTreeOwner stubOwner() {
+            return rootId -> java.util.Optional.ofNullable(ROOT_TENANTS.get(rootId));
+        }
+    }
 
     @Autowired private ArchiveRepository archives;
     @Autowired private ElementRepository elements;
@@ -58,6 +69,28 @@ class ElementArchiveTenantTest {
         Element e = elements.save(element(a));
 
         assertThat(elementService.getArchiveTenantId(e.getId())).isEqualTo(100L);
+    }
+
+    @Test
+    void resolvesTenantOfAPackageTreeElementThroughItsRoot() {
+        // Intake / preservation / release trees have no archive attached.
+        Element root = elements.save(element(null));
+        Element child = element(null);
+        child.setElementIdentifier("E2");
+        child.setParent(root);
+        child = elements.save(child);
+        StubOwners.ROOT_TENANTS.put(root.getId(), 200L);
+
+        assertThat(elementService.getArchiveTenantId(child.getId())).isEqualTo(200L);
+        assertThat(elementService.getArchiveTenantId(root.getId())).isEqualTo(200L);
+    }
+
+    @Test
+    void elementWithNoArchiveAndNoOwningPackageIsNotFound() {
+        Element orphan = elements.save(element(null));
+
+        assertThatThrownBy(() -> elementService.getArchiveTenantId(orphan.getId()))
+                .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test

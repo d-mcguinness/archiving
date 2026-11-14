@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface IntakeRepository extends JpaRepository<Intake, Long> {
@@ -19,4 +20,8 @@ public interface IntakeRepository extends JpaRepository<Intake, Long> {
     @Query("SELECT COUNT(i) > 0 FROM Intake i LEFT JOIN i.assignedUsers u "
             + "WHERE i.id = :intakeId AND (i.ownerId = :userId OR u.id = :userId)")
     boolean isOwnerOrAssigned(@Param("intakeId") Long intakeId, @Param("userId") Long userId);
+
+    // Tenant of the intake whose element tree starts at the given root element
+    @Query("SELECT i.tenantId FROM Intake i WHERE i.rootElement.id = :rootElementId")
+    Optional<Long> findTenantIdByRootElementId(@Param("rootElementId") Long rootElementId);
 }
