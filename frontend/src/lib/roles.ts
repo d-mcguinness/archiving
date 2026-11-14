@@ -51,7 +51,7 @@ export function navFor(state: AuthState): NavItem[][] {
         { label: 'Users', href: '/admin/users', match: ['/users'] }
       ],
       [
-        { label: 'Archives', href: '/admin/archives', match: ['/admin/archive', '/archives'] },
+        { label: 'Archives', href: '/admin/archives', match: ['/archives'] },
         { label: 'Intakes', href: '/admin/intake', match: ['/intake'] },
         { label: 'Preservations', href: '/admin/preservation', match: ['/preservation'] },
         { label: 'Releases', href: '/admin/release', match: ['/release'] },
@@ -76,12 +76,8 @@ export function navFor(state: AuthState): NavItem[][] {
 
   if (role === 'USER' && tenantId && user?.id) {
     const self = `/tenants/${tenantId}/users/${user.id}`;
-    return [
-      [
-        { label: 'My documents', href: `${self}/documents` },
-        { label: 'My profile', href: self, exclude: [`${self}/documents`] }
-      ]
-    ];
+    // A member's profile is reached from their name in the header, not the nav.
+    return [[{ label: 'My documents', href: `${self}/documents` }]];
   }
 
   return [];

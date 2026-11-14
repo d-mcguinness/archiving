@@ -439,6 +439,23 @@ table.arc-table tbody tr:hover {
   background: var(--arc-card-2);
 }
 
+/* Row actions stay pinned to the right edge when a wide table scrolls
+   sideways, so they are never hidden off-screen. */
+table.arc-table td.actions-cell,
+table.arc-table:has(td.actions-cell) thead th:last-child {
+  position: sticky;
+  right: 0;
+  box-shadow: -1px 0 0 var(--arc-line);
+}
+
+table.arc-table td.actions-cell {
+  background: var(--arc-card);
+}
+
+table.arc-table tbody tr:hover td.actions-cell {
+  background: var(--arc-card-2);
+}
+
 /* ── Shared modal pattern ───────────────────────────────────
    <div class="modal-overlay"><div class="modal">…  */
 .modal-overlay {

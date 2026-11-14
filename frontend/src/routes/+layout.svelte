@@ -41,6 +41,12 @@
       ? `/tenants/${$auth.tenantId}/users/${$auth.user.id}`
       : '';
 
+  // On the member's own profile pages (but not their documents, which is a nav item).
+  $: onProfile =
+    !!profileHref &&
+    (currentPath === profileHref || currentPath.startsWith(profileHref + '/')) &&
+    !currentPath.startsWith(profileHref + '/documents');
+
   // Mobile nav state — the links/auth collapse behind a hamburger on small screens.
   let mobileOpen = false;
   const toggleMenu = () => (mobileOpen = !mobileOpen);
@@ -164,7 +170,23 @@
               </svg>
             {/if}
           </button>
-          {#if $auth.isLoggedIn}
+          {#if $auth.isLoggedIn && $auth.role === 'USER' && profileHref}
+            <!-- Members have one personal destination, so the name itself links to it. -->
+            <a
+              class="account-trigger account-link"
+              class:active={onProfile}
+              href={profileHref}
+              title="View your profile"
+              aria-current={onProfile ? 'page' : undefined}
+            >
+              <span class="avatar" aria-hidden="true">{initials}</span>
+              <span class="account-id">
+                <span class="account-name">{$auth.user?.name}</span>
+                <span class="account-role">{roleLabel($auth.role)}</span>
+              </span>
+            </a>
+            <button class="signout-button" on:click={handleLogout}>Sign out</button>
+          {:else if $auth.isLoggedIn}
             <div class="account" bind:this={accountEl}>
               <button
                 class="account-trigger"
@@ -514,6 +536,40 @@
     box-shadow: none;
   }
 
+  .account-link {
+    text-decoration: none;
+  }
+
+  .account-link:hover,
+  .account-link.active {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(226, 232, 240, 0.7);
+  }
+
+  .account-link.active {
+    border-color: #a5b4fc;
+  }
+
+  .signout-button {
+    padding: 0.5rem 0.9rem;
+    background: transparent;
+    color: #e2e8f0;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    border-radius: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: none;
+  }
+
+  .signout-button:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(226, 232, 240, 0.7);
+    color: white;
+    transform: none;
+    box-shadow: none;
+  }
+
   .avatar {
     display: inline-flex;
     align-items: center;
@@ -814,6 +870,16 @@
       border-radius: 0.6rem;
       cursor: default;
       pointer-events: none;
+    }
+
+    .account-link {
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .signout-button {
+      width: 100%;
+      padding: 0.7rem;
     }
 
     .caret {

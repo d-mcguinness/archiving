@@ -248,7 +248,7 @@
       <div class="panel">
         <div class="panel-top">
           <h2>👥 Assigned Users</h2>
-          <a href="/tenants/{data.tenantId}/users" class="link">View All →</a>
+          <a href="/tenants/{data.tenantId}/archives/{data.archiveId}/users" class="link">Manage →</a>
         </div>
         {#if assignedUsers.length === 0}
           <p class="muted">No users assigned</p>

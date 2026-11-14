@@ -269,31 +269,7 @@
                 {/if}
               </td>
               <td class="actions-cell">
-                <a
-                  href="/admin/archive/{archive.id}/intake/create"
-                  class="btn-action btn-sip btn-chip pink"
-                  title="Create Intake from this archive"
-                >
-                  📦 Create Intake
-                </a>
-                <a
-                  href="/admin/archive/{archive.id}/preservation/create"
-                  class="btn-action btn-aip btn-chip indigo"
-                  title="Create Preservation from this archive"
-                >
-                  🏗️ Create Preservation
-                </a>
-                <a
-                  href="/admin/archive/{archive.id}/release/create"
-                  class="btn-action btn-dip btn-chip orange"
-                  title="Create Release from this archive"
-                >
-                  📤 Create Release
-                </a>
-                <a href="/archives/delete/{archive.id}" class="btn-action btn-delete btn-chip red">
-                  🗑️ Delete
-                </a>
-                <a href="/archives/update/{archive.id}" class="btn-action btn-edit btn-chip slate">
+                <a href="/archives/update/{archive.id}" class="btn-action btn-edit btn-chip indigo">
                   ✏️ Edit
                 </a>
                 <button
@@ -303,6 +279,9 @@
                 >
                   📥 Extract
                 </button>
+                <a href="/archives/delete/{archive.id}" class="btn-action btn-delete btn-chip red">
+                  🗑️ Delete
+                </a>
               </td>
             </tr>
           {/each}
