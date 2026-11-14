@@ -13,7 +13,6 @@ import com.dmc.archiving.web.BaseGraphQlController;
 import com.dmc.archiving.tenancy.api.BillingTenantResolver;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.schema.DataFetchingEnvironment;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,9 +21,7 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -252,85 +249,6 @@ public class ArchiveController extends BaseGraphQlController {
     @SuppressWarnings("ModuleDependency") // Tenant is in same Maven module, IntelliJ false positive
     public Tenant tenant(Archive archive) {
         return resolveTenant(archive.getTenantId(), archive.getId(), "archive");
-    }
-
-    // REST Endpoint for Archive Extraction/Download
-    @PostMapping("/api/archives/{archiveId}/extract")
-    @ResponseBody
-    public ResponseEntity<?> extractArchive(
-            @PathVariable Long archiveId,
-            @RequestBody Map<String, String> request) {
-
-        try {
-            String password = request.get("password");
-
-            // Validate password is provided
-            if (password == null || password.trim().isEmpty()) {
-                return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of(
-                        "success", false,
-                        "error", "Password is required"
-                    ));
-            }
-
-            // Get the archive with full element tree
-            Archive archive = archiveService.getArchiveForExport(archiveId);
-            if (archive == null) {
-                return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(Map.of(
-                        "success", false,
-                        "error", "Archive not found"
-                    ));
-            }
-
-            // TODO: Implement actual password validation
-            // For now, accept any password except "wrong"
-            if ("wrong".equals(password)) {
-                return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of(
-                        "success", false,
-                        "error", "Invalid password"
-                    ));
-            }
-
-            // Use strategy pattern to export based on standard
-            ArchiveStrategy strategy = strategyFactory.getStrategy(archive.getStandard());
-
-            log.info("Extracting archive {} using {} strategy", archiveId, strategy.getStandardName());
-
-            // Export using standard-specific strategy
-            Map<String, Object> exportData = strategy.export(archive);
-
-            // Convert to JSON with Java 8 date/time support
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
-            mapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-            String archiveJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(exportData);
-
-            // Set headers for file download
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setContentDispositionFormData("attachment",
-                "archive_" + archiveId + "_" + archive.getStandard().name() + "_export.json");
-
-            return ResponseEntity
-                .ok()
-                .headers(headers)
-                .body(archiveJson);
-
-        } catch (Exception e) {
-            // Log the full exception for debugging
-            log.error("Failed to extract archive {}: {}", archiveId, e.getMessage(), e);
-            return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of(
-                    "success", false,
-                    "error", "Failed to extract archive: " + e.getMessage()
-                ));
-        }
     }
 
     // REST Endpoint for Archive Validation
