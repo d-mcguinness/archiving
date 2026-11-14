@@ -1,8 +1,10 @@
 package com.dmc.archiving.archive.element;
 
+import com.dmc.archiving.archive.api.ElementTreeOwner;
 import com.dmc.archiving.archive.element.field.Field;
 import com.dmc.archiving.archive.model.Archive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,8 @@ import java.util.Optional;
 public class ElementService {
 
     private final ElementRepository elementRepository;
+    /** Modules (intake, preservation, release) that own element trees outside any archive. */
+    private final ObjectProvider<ElementTreeOwner> treeOwners;
 
     /**
      * Create a new element in an archive
@@ -75,19 +79,34 @@ public class ElementService {
     }
 
     /**
-     * Resolve the tenant of the element's owning archive. Runs in a transaction
-     * so the lazy archive association is initialized (no reliance on OSIV).
-     * Used for tenant-ownership checks on element/link mutations.
+     * Resolve the tenant that owns an element. Runs in a transaction so the lazy
+     * associations are initialized (no reliance on OSIV). Used for
+     * tenant-ownership checks on element/link mutations.
+     *
+     * An element belongs either to an archive, or to the tree of an intake,
+     * preservation or release — those keep their own root element with no
+     * archive attached, so the tenant comes from the record that owns the root.
      */
     @Transactional(readOnly = true)
     public Long getArchiveTenantId(Long elementId) {
         Element element = elementRepository.findById(elementId)
                 .orElseThrow(() -> new com.dmc.archiving.common.exception.ResourceNotFoundException("Element", elementId));
         Archive archive = element.getArchive();
-        if (archive == null) {
-            throw new com.dmc.archiving.common.exception.ResourceNotFoundException("Element archive", elementId);
+        if (archive != null) {
+            return archive.getTenantId();
         }
-        return archive.getTenantId();
+
+        Element root = element;
+        while (root.getParent() != null) {
+            root = root.getParent();
+        }
+        Long rootId = root.getId();
+        return treeOwners.stream()
+                .map(owner -> owner.tenantOfRootElement(rootId))
+                .flatMap(Optional::stream)
+                .findFirst()
+                .orElseThrow(() -> new com.dmc.archiving.common.exception.ResourceNotFoundException(
+                        "Owner (archive, intake, preservation or release) of element", elementId));
     }
 
     /**
