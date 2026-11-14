@@ -5,6 +5,8 @@ import com.dmc.archiving.archive.api.ArchiveAccessInfo;
 import com.dmc.archiving.auth.api.AuthContext;
 import com.dmc.archiving.document.model.Document;
 import com.dmc.archiving.document.model.DocumentStatus;
+import com.dmc.archiving.intake.api.IntakeAccessApi;
+import com.dmc.archiving.intake.api.IntakeAccessInfo;
 import com.dmc.archiving.storage.CloudStorageService;
 import com.dmc.archiving.tenancy.api.BillingTenantResolver;
 import com.dmc.archiving.tenancy.api.TenancyApi;
@@ -33,13 +35,17 @@ class DocumentRestAuthzTest {
     private static final Long DOC_ID = 7L;
     private static final Long DOC_TENANT = 100L;
     private static final Long ARCHIVE_ID = 55L;
+    private static final Long INTAKE_ID = 66L;
+    /** Uploader of the test document. */
+    private static final Long DOC_OWNER = 3L;
 
     private final DocumentService service = mock(DocumentService.class);
     private final TenancyApi tenancyApi = mock(TenancyApi.class);
     private final ArchiveAccessApi archiveAccessApi = mock(ArchiveAccessApi.class);
+    private final IntakeAccessApi intakeAccessApi = mock(IntakeAccessApi.class);
     private final DocumentController controller = new DocumentController(
             service, mock(CloudStorageService.class), mock(BillingTenantResolver.class), tenancyApi,
-            archiveAccessApi);
+            archiveAccessApi, intakeAccessApi);
 
     private static HttpServletRequest reqAs(AuthContext ctx) {
         HttpServletRequest req = mock(HttpServletRequest.class);
@@ -51,6 +57,7 @@ class DocumentRestAuthzTest {
         Document d = new Document();
         d.setId(DOC_ID);
         d.setTenantId(tenantId);
+        d.setUserId(DOC_OWNER);
         d.setStatus(DocumentStatus.ACTIVE);
         d.setCreatedAt(LocalDateTime.now());
         return d;
@@ -194,5 +201,89 @@ class DocumentRestAuthzTest {
         assertThat(controller.associateWithArchive(DOC_ID, 404L, reqAs(admin)).getStatusCode())
                 .isEqualTo(HttpStatus.NOT_FOUND);
         verify(service, never()).associateWithArchive(DOC_ID, 404L);
+    }
+
+    // ---- associate-sip: same rule as associate-archive ----
+
+    @Test
+    void memberCannotLinkToIntakeTheyAreNotAssignedTo_orInAnotherTenant() {
+        memberOfDocTenant(3L);
+        when(intakeAccessApi.accessFor(INTAKE_ID, 3L))
+                .thenReturn(new IntakeAccessInfo(INTAKE_ID, DOC_TENANT, false));
+        when(intakeAccessApi.accessFor(67L, 3L))
+                .thenReturn(new IntakeAccessInfo(67L, 999L, true));
+        AuthContext member = new AuthContext(3L, "USER", "user");
+
+        assertThat(controller.associateWithIntake(DOC_ID, INTAKE_ID, reqAs(member)).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(controller.associateWithIntake(DOC_ID, 67L, reqAs(member)).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        verify(service, never()).associateWithIntake(anyLong(), anyLong());
+    }
+
+    @Test
+    void memberMayLinkToIntakeTheyOwnOrAreAssignedTo() {
+        memberOfDocTenant(3L);
+        when(intakeAccessApi.accessFor(INTAKE_ID, 3L))
+                .thenReturn(new IntakeAccessInfo(INTAKE_ID, DOC_TENANT, true));
+        when(service.associateWithIntake(DOC_ID, INTAKE_ID)).thenReturn(docInTenant(DOC_TENANT));
+
+        ResponseEntity<?> resp = controller.associateWithIntake(
+                DOC_ID, INTAKE_ID, reqAs(new AuthContext(3L, "USER", "user")));
+
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(service).associateWithIntake(DOC_ID, INTAKE_ID);
+    }
+
+    @Test
+    void tenantManagerMayLinkToAnyIntakeInTheirTenant_andMissingIntakeIsNotFound() {
+        memberOfDocTenant(2L);
+        when(intakeAccessApi.accessFor(INTAKE_ID, 2L))
+                .thenReturn(new IntakeAccessInfo(INTAKE_ID, DOC_TENANT, false));
+        when(intakeAccessApi.accessFor(404L, 2L)).thenReturn(null);
+        when(service.associateWithIntake(DOC_ID, INTAKE_ID)).thenReturn(docInTenant(DOC_TENANT));
+        AuthContext manager = new AuthContext(2L, "TENANT", "tenant");
+
+        assertThat(controller.associateWithIntake(DOC_ID, INTAKE_ID, reqAs(manager)).getStatusCode())
+                .isEqualTo(HttpStatus.OK);
+        assertThat(controller.associateWithIntake(DOC_ID, 404L, reqAs(manager)).getStatusCode())
+                .isEqualTo(HttpStatus.NOT_FOUND);
+        verify(service, never()).associateWithIntake(DOC_ID, 404L);
+    }
+
+    // ---- members may only change the links of documents they uploaded ----
+
+    @Test
+    void memberCannotChangeLinksOfAnotherMembersDocument() {
+        memberOfDocTenant(4L); // same tenant, but the document was uploaded by DOC_OWNER
+        when(archiveAccessApi.accessFor(ARCHIVE_ID, 4L))
+                .thenReturn(new ArchiveAccessInfo(ARCHIVE_ID, DOC_TENANT, true));
+        when(intakeAccessApi.accessFor(INTAKE_ID, 4L))
+                .thenReturn(new IntakeAccessInfo(INTAKE_ID, DOC_TENANT, true));
+        AuthContext other = new AuthContext(4L, "USER", "other");
+
+        assertThat(controller.associateWithArchive(DOC_ID, ARCHIVE_ID, reqAs(other)).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(controller.associateWithIntake(DOC_ID, INTAKE_ID, reqAs(other)).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(controller.disassociateFromIntake(DOC_ID, reqAs(other)).getStatusCode())
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        verify(service, never()).associateWithArchive(anyLong(), anyLong());
+        verify(service, never()).associateWithIntake(anyLong(), anyLong());
+        verify(service, never()).disassociateFromIntake(anyLong());
+    }
+
+    @Test
+    void uploaderAndTenantManagerMayUnlinkFromIntake() {
+        memberOfDocTenant(DOC_OWNER);
+        when(tenancyApi.isUserInTenant(2L, DOC_TENANT)).thenReturn(true);
+        when(service.disassociateFromIntake(DOC_ID)).thenReturn(docInTenant(DOC_TENANT));
+
+        assertThat(controller.disassociateFromIntake(
+                DOC_ID, reqAs(new AuthContext(DOC_OWNER, "USER", "user"))).getStatusCode())
+                .isEqualTo(HttpStatus.OK);
+        assertThat(controller.disassociateFromIntake(
+                DOC_ID, reqAs(new AuthContext(2L, "TENANT", "tenant"))).getStatusCode())
+                .isEqualTo(HttpStatus.OK);
     }
 }
