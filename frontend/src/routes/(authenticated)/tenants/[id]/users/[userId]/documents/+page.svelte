@@ -3,8 +3,8 @@
   import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { client } from '$lib/apollo';
-  import { authHeaders, API_BASE } from '$lib/api';
-  import { GET_INTAKES_BY_TENANT } from '$lib/graphql/queries';
+  import { authHeaders, apiFetch, API_BASE } from '$lib/api';
+  import { GET_ARCHIVES_BY_USER_ASSIGNMENT } from '$lib/graphql/queries';
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
@@ -27,10 +27,10 @@
   let showUploadModal = false;
   let uploadFile: File | null = null;
   let uploadTitle = '';
-  let uploadIntakeId = '';
+  let uploadArchiveId = '';
   let uploading = false;
   let uploadError: string | null = null;
-  let sips: any[] = [];
+  let archives: any[] = [];
   let fileInputEl: HTMLInputElement;
   let showMetadata = false;
   let metadata: Record<string, string> = {};
@@ -117,13 +117,13 @@
     ],
   };
 
-  // Get the selected Intake's standard
-  $: selectedIntake = sips.find((s: any) => s.id === uploadIntakeId) || null;
-  $: selectedStandard = selectedIntake?.standard || '';
+  // Get the selected archive's standard
+  $: selectedArchive = archives.find((a: any) => a.id === uploadArchiveId) || null;
+  $: selectedStandard = selectedArchive?.standard || '';
   $: currentFields = selectedStandard ? (standardFields[selectedStandard] || []) : [];
 
-  // Reset metadata when Intake changes
-  $: if (uploadIntakeId) {
+  // Reset metadata when the archive changes
+  $: if (uploadArchiveId) {
     metadata = {};
     showMetadata = false;
   }
@@ -151,7 +151,7 @@
     }
 
     hasAccess = true;
-    await Promise.all([loadDocuments(), loadIntakes()]);
+    await Promise.all([loadDocuments(), loadArchives()]);
   });
 
   async function loadDocuments() {
@@ -189,23 +189,28 @@
     }
   }
 
-  async function loadIntakes() {
+  // Only archives this user owns or has been assigned to, and only within this
+  // tenant: the upload is stored and billed under the tenant in the URL, so an
+  // archive the user holds in another tenant must not be offered here.
+  async function loadArchives() {
     try {
       const result = await client.query({
-        query: GET_INTAKES_BY_TENANT,
-        variables: { tenantId: data.tenantId },
+        query: GET_ARCHIVES_BY_USER_ASSIGNMENT,
+        variables: { userId: data.userId },
         fetchPolicy: 'network-only'
       });
-      sips = result?.data?.getIntakesByTenant || [];
+      archives = (result?.data?.getArchivesByUserAssignment || []).filter(
+        (a: any) => String(a.tenantId) === String(data.tenantId)
+      );
     } catch (e) {
-      console.error('Failed to load Intakes:', e);
+      console.error('Failed to load archives:', e);
     }
   }
 
   function openUploadModal() {
     uploadFile = null;
     uploadTitle = '';
-    uploadIntakeId = '';
+    uploadArchiveId = '';
     uploadError = null;
     metadata = {};
     showMetadata = false;
@@ -216,7 +221,7 @@
     showUploadModal = false;
     uploadFile = null;
     uploadTitle = '';
-    uploadIntakeId = '';
+    uploadArchiveId = '';
     uploadError = null;
     metadata = {};
     showMetadata = false;
@@ -262,8 +267,8 @@
       uploadError = 'Please enter a title';
       return;
     }
-    if (!uploadIntakeId) {
-      uploadError = 'Please select a Intake to link this document to';
+    if (!uploadArchiveId) {
+      uploadError = 'Please select an archive to add this document to';
       return;
     }
 
@@ -276,7 +281,6 @@
       formData.append('userId', data.userId);
       formData.append('tenantId', data.tenantId);
       formData.append('title', uploadTitle.trim());
-      formData.append('intakeId', uploadIntakeId);
 
       // Build description from standard metadata if any fields were filled
       const filledMeta = Object.entries(metadata).filter(([_, v]) => v && v.trim());
@@ -302,7 +306,24 @@
         throw new Error(result.error || 'Upload failed');
       }
 
-      toasts.success('Document uploaded successfully');
+      // The upload endpoint has no archive parameter; link the new document in a second call.
+      const archiveTitle = selectedArchive?.title || 'the archive';
+      let linked = false;
+      try {
+        const linkResponse = await apiFetch(
+          `/api/documents/${result.document.id}/associate-archive?archiveId=${encodeURIComponent(uploadArchiveId)}`,
+          { method: 'POST' }
+        );
+        linked = linkResponse.ok;
+      } catch {
+        linked = false;
+      }
+
+      if (linked) {
+        toasts.success(`Document added to ${archiveTitle}`);
+      } else {
+        toasts.error(`Document uploaded, but it could not be added to ${archiveTitle}`);
+      }
       closeUploadModal();
       await loadDocuments();
     } catch (e) {
@@ -560,21 +581,28 @@
           />
         </div>
 
-        <!-- Intake selector (required) -->
+        <!-- Archive selector (required): the archives this user owns or is assigned to -->
         <div class="form-group">
-          <label for="uploadIntake">Link to Intake <span class="required-marker">*</span></label>
-          <select id="uploadIntake" bind:value={uploadIntakeId} disabled={uploading} required>
-            <option value="">Select a Intake...</option>
-            {#each sips as sip}
-              <option value={sip.id}>{sip.title} ({sip.standard})</option>
+          <label for="uploadArchive">Archive <span class="required-marker">*</span></label>
+          <select id="uploadArchive" bind:value={uploadArchiveId} disabled={uploading || archives.length === 0} required>
+            <option value="">{archives.length === 0 ? 'No archives available' : 'Select an archive…'}</option>
+            {#each archives as archive (archive.id)}
+              <option value={archive.id}>{archive.title} ({archive.standard})</option>
             {/each}
           </select>
-          {#if sips.length === 0}
-            <p class="helper-text">No Intakes available. <a href="/intake/create">Create a Intake</a> first.</p>
+          {#if archives.length === 0}
+            <p class="helper-text">
+              {#if $auth.role === 'USER'}
+                You haven't been assigned to an archive yet. Ask your tenant manager to assign you to one.
+              {:else}
+                This user isn't assigned to any archive yet.
+                <a href="/tenants/{data.tenantId}/archives">Assign them from an archive's page</a>.
+              {/if}
+            </p>
           {/if}
         </div>
 
-        <!-- Standard-specific metadata (shown when a Intake is selected) -->
+        <!-- Standard-specific metadata (shown when an archive is selected) -->
         {#if selectedStandard && currentFields.length > 0}
           <div class="metadata-section">
             <div class="metadata-header">
