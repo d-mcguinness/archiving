@@ -67,6 +67,11 @@ public interface ArchiveRepository extends JpaRepository<Archive, Long>, JpaSpec
     @Query("SELECT DISTINCT a FROM Archive a LEFT JOIN a.assignedUsers u WHERE a.ownerId = :userId OR u.id = :userId")
     List<Archive> findArchivesByUserIdOwnerOrAssigned(@Param("userId") Long userId);
 
+    // Whether the user owns the archive or is assigned to it
+    @Query("SELECT COUNT(a) > 0 FROM Archive a LEFT JOIN a.assignedUsers u "
+            + "WHERE a.id = :archiveId AND (a.ownerId = :userId OR u.id = :userId)")
+    boolean isOwnerOrAssigned(@Param("archiveId") Long archiveId, @Param("userId") Long userId);
+
     // Find archives by title containing (case insensitive)
     List<Archive> findByTitleContainingIgnoreCase(String title);
 

@@ -441,6 +441,7 @@ export const GET_ARCHIVES_BY_USER_ASSIGNMENT: DocumentNode = gql`
     getArchivesByUserAssignment(userId: $userId) {
       id
       ownerId
+      tenantId
       title
       description
       content
