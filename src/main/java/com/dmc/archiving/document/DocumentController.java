@@ -101,7 +101,7 @@ public class DocumentController {
     private ResponseEntity<?> notYourDocument() {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("success", false,
-                        "error", "Access denied: you can only change the links of documents you uploaded"));
+                        "error", "Access denied: you can only change or delete documents you uploaded"));
     }
 
     private ResponseEntity<?> forbidden() {
@@ -308,9 +308,13 @@ public class DocumentController {
         try {
             Document existing = documentService.getDocumentById(id).orElse(null);
             if (existing == null) return notFound();
-            if (!canAccess(caller(request), existing.getTenantId())) return forbidden();
+            AuthContext ctx = caller(request);
+            if (!canAccess(ctx, existing.getTenantId())) return forbidden();
+            // Deleting also removes the document's elements from the archive tree,
+            // so a member may only delete a document they uploaded.
+            if (!mayChangeLinks(ctx, existing)) return notYourDocument();
 
-            boolean deleted = documentService.deleteDocument(id);
+            boolean deleted = archiveForms.deleteWithElements(existing);
 
             if (deleted) {
                 return ResponseEntity.ok(Map.of(

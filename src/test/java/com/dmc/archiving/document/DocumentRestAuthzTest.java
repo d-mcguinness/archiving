@@ -43,11 +43,13 @@ class DocumentRestAuthzTest {
     private final TenancyApi tenancyApi = mock(TenancyApi.class);
     private final ArchiveAccessApi archiveAccessApi = mock(ArchiveAccessApi.class);
     private final IntakeAccessApi intakeAccessApi = mock(IntakeAccessApi.class);
+    private final com.dmc.archiving.archive.api.ArchiveElementDepositApi depositApi =
+            mock(com.dmc.archiving.archive.api.ArchiveElementDepositApi.class);
     private final DocumentController controller = new DocumentController(
             service, mock(CloudStorageService.class), mock(BillingTenantResolver.class), tenancyApi,
             archiveAccessApi, intakeAccessApi,
             new DocumentArchiveForms(mock(com.dmc.archiving.scheme.api.SchemeDefinitionApi.class),
-                    mock(com.dmc.archiving.archive.api.ArchiveElementDepositApi.class), service));
+                    depositApi, service));
 
     private static HttpServletRequest reqAs(AuthContext ctx) {
         HttpServletRequest req = mock(HttpServletRequest.class);
@@ -88,6 +90,34 @@ class DocumentRestAuthzTest {
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
         verify(service).deleteDocument(DOC_ID);
+        // The elements its forms became go with it.
+        verify(depositApi).removeDeposited(DOC_TENANT, "{\"documentId\":" + DOC_ID + "}");
+    }
+
+    @Test
+    void memberMayDeleteTheirOwnDocument() {
+        when(service.getDocumentById(DOC_ID)).thenReturn(Optional.of(docInTenant(DOC_TENANT)));
+        when(tenancyApi.isUserInTenant(DOC_OWNER, DOC_TENANT)).thenReturn(true);
+        when(service.deleteDocument(DOC_ID)).thenReturn(true);
+
+        ResponseEntity<?> resp = controller.deleteDocument(
+                DOC_ID, reqAs(new AuthContext(DOC_OWNER, "USER", "user")));
+
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(service).deleteDocument(DOC_ID);
+    }
+
+    @Test
+    void memberCannotDeleteAnotherMembersDocument_norItsElements() {
+        when(service.getDocumentById(DOC_ID)).thenReturn(Optional.of(docInTenant(DOC_TENANT)));
+        when(tenancyApi.isUserInTenant(8L, DOC_TENANT)).thenReturn(true);
+
+        ResponseEntity<?> resp = controller.deleteDocument(
+                DOC_ID, reqAs(new AuthContext(8L, "USER", "other")));
+
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        verify(service, never()).deleteDocument(anyLong());
+        verify(depositApi, never()).removeDeposited(anyLong(), org.mockito.ArgumentMatchers.anyString());
     }
 
     @Test

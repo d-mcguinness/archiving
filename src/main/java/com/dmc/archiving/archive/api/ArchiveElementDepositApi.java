@@ -21,4 +21,12 @@ public interface ArchiveElementDepositApi {
      * @throws IllegalArgumentException if the archive does not exist
      */
     List<Long> deposit(Long archiveId, List<ElementDeposit> elements, String createdBy);
+
+    /**
+     * Removes what was deposited with exactly this {@link ElementDeposit#metadata()}
+     * from the tenant's archives — whichever archive it went into — and returns
+     * how many deposited elements were removed. Anything nested beneath them and
+     * any links to or from them go too.
+     */
+    int removeDeposited(Long tenantId, String metadata);
 }
