@@ -150,6 +150,25 @@ class DocumentArchiveFormsTest {
     }
 
     @Test
+    void deletingADocumentRemovesItsElementsFromItsTenantsArchives() {
+        Document d = document();
+        d.setTenantId(100L);
+        when(documentService.deleteDocument(7L)).thenReturn(true);
+
+        assertThat(forms.deleteWithElements(d)).isTrue();
+
+        verify(depositApi).removeDeposited(100L, "{\"documentId\":7}");
+        verify(documentService).deleteDocument(7L);
+    }
+
+    @Test
+    void theRemovalKeyIsTheMetadataDepositedElementsCarry() {
+        premisDefined();
+        ElementDeposit e = convert(new FormAnswer("File", Map.of("formatName", "x", "algorithm", "MD5"))).get(0);
+        assertThat(e.metadata()).isEqualTo(DocumentArchiveForms.sourceMetadata(7L));
+    }
+
+    @Test
     void addToArchiveWithoutFormsOnlyLinks() {
         forms.addToArchive(7L, 55L, List.of(), "user");
 

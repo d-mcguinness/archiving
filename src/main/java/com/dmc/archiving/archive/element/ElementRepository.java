@@ -50,6 +50,12 @@ public interface ElementRepository extends JpaRepository<Element, Long> {
     Optional<Element> findFirstByArchiveIdAndEntityNameOrderByCreatedAtDescIdDesc(Long archiveId, String entityName);
 
     /**
+     * Elements in a tenant's archives carrying exactly this metadata (how deposited elements name their source)
+     */
+    @Query("SELECT e FROM Element e WHERE e.archive.tenantId = :tenantId AND e.metadata = :metadata")
+    List<Element> findByTenantAndMetadata(@Param("tenantId") Long tenantId, @Param("metadata") String metadata);
+
+    /**
      * Search elements by title or description within an archive
      */
     @Query("SELECT e FROM Element e WHERE e.archive.id = :archiveId AND " +

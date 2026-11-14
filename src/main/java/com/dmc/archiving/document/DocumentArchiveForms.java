@@ -107,7 +107,7 @@ public class DocumentArchiveForms {
                     entity.parent(),
                     "DOC-" + document.getId() + "-" + n,
                     document.getTitle(),
-                    "{\"documentId\":" + document.getId() + "}",
+                    sourceMetadata(document.getId()),
                     fields));
         }
         return elements;
@@ -120,6 +120,25 @@ public class DocumentArchiveForms {
             depositApi.deposit(archiveId, elements, createdBy);
         }
         return documentService.associateWithArchive(documentId, archiveId);
+    }
+
+    /**
+     * Deletes the document and, in the same change, the elements its forms
+     * became — in whichever of the tenant's archives they were added to.
+     *
+     * @return false if the document no longer exists
+     */
+    @Transactional
+    public boolean deleteWithElements(Document document) {
+        if (document.getTenantId() != null) {
+            depositApi.removeDeposited(document.getTenantId(), sourceMetadata(document.getId()));
+        }
+        return documentService.deleteDocument(document.getId());
+    }
+
+    /** How a deposited element names the document it describes. */
+    static String sourceMetadata(Long documentId) {
+        return "{\"documentId\":" + documentId + "}";
     }
 
     private SchemeDefinition scheme(String standardName) {

@@ -24,7 +24,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * in the same deposit, else under the archive's latest element of the parent
  * entity, else under the archive's root.
  */
-@DataJpaTest
+// `fields.value` is an H2 keyword, so the default slice database cannot create or read
+// the fields table (which deleting an element cascades into). Allow it as an identifier.
+@DataJpaTest(properties = {
+        "spring.test.database.replace=none",
+        "spring.datasource.url=jdbc:h2:mem:element-deposit;NON_KEYWORDS=VALUE;DB_CLOSE_DELAY=-1",
+        "spring.datasource.driver-class-name=org.h2.Driver",
+        "spring.datasource.username=sa",
+        "spring.datasource.password=",
+        "spring.flyway.enabled=false",
+        "spring.jpa.hibernate.ddl-auto=create-drop"
+})
 @Import(ElementService.class)
 @ComponentScan(basePackages = "com.dmc.archiving.archive.api", useDefaultFilters = false,
         includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = ArchiveElementDepositApi.class))
@@ -33,6 +43,8 @@ class ArchiveElementDepositTest {
     @Autowired private ArchiveRepository archives;
     @Autowired private ElementRepository elements;
     @Autowired private ArchiveElementDepositApi depositApi;
+    @Autowired private jakarta.persistence.EntityManager entityManager;
+    @Autowired private com.dmc.archiving.archive.element.link.ElementLinkRepository links;
 
     private Archive archiveWithRoot() {
         Archive a = new Archive();
@@ -65,9 +77,7 @@ class ArchiveElementDepositTest {
     private static ElementDeposit deposit(String entity, String parentEntity) {
         return new ElementDeposit(entity, "record_unit", parentEntity, "DOC-1-" + entity, "Report",
                 "{\"documentId\":1}",
-                // No fields: the slice's H2 schema has no `fields` table (its `value`
-                // column is an H2 keyword), and field storage is ElementService's job.
-                List.of());
+                List.of(new ElementDeposit.Field("title", "Title", "string", "Report")));
     }
 
     @Test
@@ -84,6 +94,8 @@ class ArchiveElementDepositTest {
         assertThat(description.getArchive().getId()).isEqualTo(archive.getId());
         assertThat(description.getCreatedBy()).isEqualTo("user");
         assertThat(description.getMetadata()).isEqualTo("{\"documentId\":1}");
+        assertThat(description.getFields()).hasSize(1);
+        assertThat(description.getFields().get(0).getValue()).isEqualTo("Report");
     }
 
     @Test
@@ -120,6 +132,74 @@ class ArchiveElementDepositTest {
 
         assertThat(elements.findById(ids.get(0)).orElseThrow().getParent().getId())
                 .isEqualTo(archive.getRootElement().getId());
+    }
+
+    private static ElementDeposit depositFor(long documentId, String entity, String parentEntity) {
+        return new ElementDeposit(entity, "record_unit", parentEntity, "DOC-" + documentId + "-" + entity, "Report",
+                "{\"documentId\":" + documentId + "}",
+                List.of(new ElementDeposit.Field("title", "Title", "string", "Report")));
+    }
+
+    @Test
+    void removesOnlyWhatWasDepositedForThatDocument() {
+        Archive archive = archiveWithRoot();
+        Element file = existing(archive, archive.getRootElement(), "File");
+        List<Long> doc1 = depositApi.deposit(archive.getId(), List.of(
+                depositFor(1, "Registration", "File"),
+                depositFor(1, "Document Description", "Registration"),
+                depositFor(1, "Event", null)), "user");
+        List<Long> doc2 = depositApi.deposit(archive.getId(), List.of(depositFor(2, "Registration", "File")), "user");
+        flushAndClear();
+
+        int removed = depositApi.removeDeposited(1L, "{\"documentId\":1}");
+        flushAndClear();
+
+        assertThat(removed).isEqualTo(3);
+        assertThat(elements.findAllById(doc1)).isEmpty();
+        assertThat(elements.findById(doc2.get(0))).isPresent();
+        assertThat(elements.findById(file.getId())).isPresent();
+        assertThat(elements.findById(archive.getRootElement().getId())).isPresent();
+    }
+
+    @Test
+    void removesLinksPointingAtDepositedElements() {
+        Archive archive = archiveWithRoot();
+        Element file = existing(archive, archive.getRootElement(), "File");
+        List<Long> ids = depositApi.deposit(archive.getId(), List.of(depositFor(1, "Registration", "File")), "user");
+        com.dmc.archiving.archive.element.link.ElementLink link = new com.dmc.archiving.archive.element.link.ElementLink();
+        link.setSourceElement(file);
+        link.setTargetElement(elements.findById(ids.get(0)).orElseThrow());
+        link.setLinkType("references");
+        link.setDirectional(true);
+        link.setCreatedAt(LocalDateTime.now());
+        links.save(link);
+        flushAndClear();
+
+        depositApi.removeDeposited(1L, "{\"documentId\":1}");
+        flushAndClear();
+
+        assertThat(elements.findById(ids.get(0))).isEmpty();
+        assertThat(links.findAll()).isEmpty();
+        assertThat(elements.findById(file.getId())).isPresent();
+    }
+
+    @Test
+    void removalDoesNotReachAnotherTenantsArchives() {
+        Archive archive = archiveWithRoot(); // tenant 1
+        List<Long> ids = depositApi.deposit(archive.getId(), List.of(depositFor(1, "Registration", "File")), "user");
+        flushAndClear();
+
+        assertThat(depositApi.removeDeposited(2L, "{\"documentId\":1}")).isZero();
+        assertThat(depositApi.removeDeposited(null, "{\"documentId\":1}")).isZero();
+        assertThat(depositApi.removeDeposited(1L, " ")).isZero();
+        flushAndClear();
+
+        assertThat(elements.findById(ids.get(0))).isPresent();
+    }
+
+    private void flushAndClear() {
+        entityManager.flush();
+        entityManager.clear();
     }
 
     @Test
