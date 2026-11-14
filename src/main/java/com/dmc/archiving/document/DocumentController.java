@@ -6,6 +6,8 @@ import com.dmc.archiving.auth.api.AccessDeniedException;
 import com.dmc.archiving.auth.api.AuthContext;
 import com.dmc.archiving.document.model.Document;
 import com.dmc.archiving.document.model.DocumentStatus;
+import com.dmc.archiving.intake.api.IntakeAccessApi;
+import com.dmc.archiving.intake.api.IntakeAccessInfo;
 import com.dmc.archiving.storage.CloudStorageService;
 import com.dmc.archiving.storage.StorageException;
 import com.dmc.archiving.tenancy.api.BillingTenantResolver;
@@ -45,15 +47,17 @@ public class DocumentController {
     private final BillingTenantResolver billingTenantResolver;
     private final TenancyApi tenancyApi;
     private final ArchiveAccessApi archiveAccessApi;
+    private final IntakeAccessApi intakeAccessApi;
 
     public DocumentController(DocumentService documentService, CloudStorageService cloudStorageService,
                              BillingTenantResolver billingTenantResolver, TenancyApi tenancyApi,
-                             ArchiveAccessApi archiveAccessApi) {
+                             ArchiveAccessApi archiveAccessApi, IntakeAccessApi intakeAccessApi) {
         this.documentService = documentService;
         this.cloudStorageService = cloudStorageService;
         this.billingTenantResolver = billingTenantResolver;
         this.tenancyApi = tenancyApi;
         this.archiveAccessApi = archiveAccessApi;
+        this.intakeAccessApi = intakeAccessApi;
     }
 
     // ---- auth helpers (authentication is enforced by RestAuthInterceptor) ----
@@ -70,14 +74,30 @@ public class DocumentController {
     }
 
     /**
-     * Non-admin rule for linking a document to an archive: same tenant, and the
-     * caller either manages that tenant (TENANT role) or owns / is assigned to
-     * the archive.
+     * Non-admin rule for linking a document to an archive or intake: the target
+     * is in the document's tenant, and the caller either manages that tenant
+     * (TENANT role) or owns / is assigned to the target.
      */
-    private boolean mayLinkTo(AuthContext ctx, Document document, ArchiveAccessInfo archive) {
+    private boolean mayLinkTo(AuthContext ctx, Document document, Long targetTenantId, boolean ownerOrAssigned) {
         boolean sameTenant = document.getTenantId() != null
-                && document.getTenantId().equals(archive.tenantId());
-        return sameTenant && (ctx.isTenant() || archive.ownerOrAssigned());
+                && document.getTenantId().equals(targetTenantId);
+        return sameTenant && (ctx.isTenant() || ownerOrAssigned);
+    }
+
+    /**
+     * Who may change what a document is linked to: admins and the tenant's
+     * managers for any document they can access, plain members only for
+     * documents they uploaded themselves.
+     */
+    private boolean mayChangeLinks(AuthContext ctx, Document document) {
+        return ctx.isAdmin() || ctx.isTenant()
+                || (document.getUserId() != null && document.getUserId().equals(ctx.userId()));
+    }
+
+    private ResponseEntity<?> notYourDocument() {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("success", false,
+                        "error", "Access denied: you can only change the links of documents you uploaded"));
     }
 
     private ResponseEntity<?> forbidden() {
@@ -391,6 +411,7 @@ public class DocumentController {
             if (existing == null) return notFound();
             AuthContext ctx = caller(request);
             if (!canAccess(ctx, existing.getTenantId())) return forbidden();
+            if (!mayChangeLinks(ctx, existing)) return notYourDocument();
 
             // Being in the document's tenant is not enough to pick any archive id:
             // the archive must exist, belong to the same tenant as the document,
@@ -400,7 +421,7 @@ public class DocumentController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("success", false, "error", "Archive not found"));
             }
-            if (!ctx.isAdmin() && !mayLinkTo(ctx, existing, archive)) {
+            if (!ctx.isAdmin() && !mayLinkTo(ctx, existing, archive.tenantId(), archive.ownerOrAssigned())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("success", false,
                                 "error", "Access denied: you cannot add documents to this archive"));
@@ -438,7 +459,23 @@ public class DocumentController {
         try {
             Document existing = documentService.getDocumentById(id).orElse(null);
             if (existing == null) return notFound();
-            if (!canAccess(caller(request), existing.getTenantId())) return forbidden();
+            AuthContext ctx = caller(request);
+            if (!canAccess(ctx, existing.getTenantId())) return forbidden();
+            if (!mayChangeLinks(ctx, existing)) return notYourDocument();
+
+            // Same rule as associate-archive: the intake must exist, belong to the
+            // document's tenant, and (for plain members) be one the caller owns or
+            // is assigned to.
+            IntakeAccessInfo intake = intakeAccessApi.accessFor(intakeId, ctx.userId());
+            if (intake == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("success", false, "error", "Intake not found"));
+            }
+            if (!ctx.isAdmin() && !mayLinkTo(ctx, existing, intake.tenantId(), intake.ownerOrAssigned())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("success", false,
+                                "error", "Access denied: you cannot add documents to this intake"));
+            }
 
             Document document = documentService.associateWithIntake(id, intakeId);
 
@@ -468,7 +505,9 @@ public class DocumentController {
         try {
             Document existing = documentService.getDocumentById(id).orElse(null);
             if (existing == null) return notFound();
-            if (!canAccess(caller(request), existing.getTenantId())) return forbidden();
+            AuthContext ctx = caller(request);
+            if (!canAccess(ctx, existing.getTenantId())) return forbidden();
+            if (!mayChangeLinks(ctx, existing)) return notYourDocument();
 
             Document document = documentService.disassociateFromIntake(id);
 
