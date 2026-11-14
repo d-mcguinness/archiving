@@ -1,5 +1,7 @@
 package com.dmc.archiving.document;
 
+import com.dmc.archiving.archive.api.ArchiveAccessApi;
+import com.dmc.archiving.archive.api.ArchiveAccessInfo;
 import com.dmc.archiving.auth.api.AccessDeniedException;
 import com.dmc.archiving.auth.api.AuthContext;
 import com.dmc.archiving.document.model.Document;
@@ -42,13 +44,16 @@ public class DocumentController {
     private final CloudStorageService cloudStorageService;
     private final BillingTenantResolver billingTenantResolver;
     private final TenancyApi tenancyApi;
+    private final ArchiveAccessApi archiveAccessApi;
 
     public DocumentController(DocumentService documentService, CloudStorageService cloudStorageService,
-                             BillingTenantResolver billingTenantResolver, TenancyApi tenancyApi) {
+                             BillingTenantResolver billingTenantResolver, TenancyApi tenancyApi,
+                             ArchiveAccessApi archiveAccessApi) {
         this.documentService = documentService;
         this.cloudStorageService = cloudStorageService;
         this.billingTenantResolver = billingTenantResolver;
         this.tenancyApi = tenancyApi;
+        this.archiveAccessApi = archiveAccessApi;
     }
 
     // ---- auth helpers (authentication is enforced by RestAuthInterceptor) ----
@@ -62,6 +67,17 @@ public class DocumentController {
     /** ADMIN may access any tenant; others must be a member of the resource's tenant. */
     private boolean canAccess(AuthContext ctx, Long tenantId) {
         return ctx.isAdmin() || (tenantId != null && tenancyApi.isUserInTenant(ctx.userId(), tenantId));
+    }
+
+    /**
+     * Non-admin rule for linking a document to an archive: same tenant, and the
+     * caller either manages that tenant (TENANT role) or owns / is assigned to
+     * the archive.
+     */
+    private boolean mayLinkTo(AuthContext ctx, Document document, ArchiveAccessInfo archive) {
+        boolean sameTenant = document.getTenantId() != null
+                && document.getTenantId().equals(archive.tenantId());
+        return sameTenant && (ctx.isTenant() || archive.ownerOrAssigned());
     }
 
     private ResponseEntity<?> forbidden() {
@@ -373,7 +389,22 @@ public class DocumentController {
         try {
             Document existing = documentService.getDocumentById(id).orElse(null);
             if (existing == null) return notFound();
-            if (!canAccess(caller(request), existing.getTenantId())) return forbidden();
+            AuthContext ctx = caller(request);
+            if (!canAccess(ctx, existing.getTenantId())) return forbidden();
+
+            // Being in the document's tenant is not enough to pick any archive id:
+            // the archive must exist, belong to the same tenant as the document,
+            // and (for plain members) be one the caller owns or is assigned to.
+            ArchiveAccessInfo archive = archiveAccessApi.accessFor(archiveId, ctx.userId());
+            if (archive == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("success", false, "error", "Archive not found"));
+            }
+            if (!ctx.isAdmin() && !mayLinkTo(ctx, existing, archive)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("success", false,
+                                "error", "Access denied: you cannot add documents to this archive"));
+            }
 
             Document document = documentService.associateWithArchive(id, archiveId);
 

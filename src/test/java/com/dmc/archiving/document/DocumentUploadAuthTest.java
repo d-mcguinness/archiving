@@ -37,7 +37,8 @@ class DocumentUploadAuthTest {
     private final BillingTenantResolver resolver = mock(BillingTenantResolver.class);
     private final TenancyApi tenancyApi = mock(TenancyApi.class);
     private final DocumentController controller =
-            new DocumentController(service, mock(CloudStorageService.class), resolver, tenancyApi);
+            new DocumentController(service, mock(CloudStorageService.class), resolver, tenancyApi,
+                    mock(com.dmc.archiving.archive.api.ArchiveAccessApi.class));
 
     private static MultipartFile nonEmptyFile() {
         MultipartFile f = mock(MultipartFile.class);
