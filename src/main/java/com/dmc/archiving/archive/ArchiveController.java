@@ -9,11 +9,13 @@ import com.dmc.archiving.archive.model.ArchiveStatus;
 import com.dmc.archiving.archive.strategy.ArchiveStrategy;
 import com.dmc.archiving.archive.strategy.ArchiveStrategyFactory;
 import com.dmc.archiving.archive.strategy.ValidationResult;
+import com.dmc.archiving.auth.api.AuthContext;
 import com.dmc.archiving.web.BaseGraphQlController;
 import com.dmc.archiving.tenancy.api.BillingTenantResolver;
 import com.dmc.archiving.tenancy.api.TenancyApi;
 import com.dmc.archiving.tenancy.model.Tenant;
 import graphql.schema.DataFetchingEnvironment;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -254,13 +256,20 @@ public class ArchiveController extends BaseGraphQlController {
     // REST Endpoint for Archive Validation
     @PostMapping("/api/archives/{archiveId}/validate")
     @ResponseBody
-    public ResponseEntity<?> validateArchive(@PathVariable Long archiveId) {
+    public ResponseEntity<?> validateArchive(@PathVariable Long archiveId, HttpServletRequest httpRequest) {
+        AuthContext ctx = restCaller(httpRequest);
+        if (!ctx.isAuthenticated()) {
+            return restError(HttpStatus.UNAUTHORIZED, "Authentication required");
+        }
         try {
             Archive archive = archiveService.getArchiveById(archiveId);
             if (archive == null) {
                 return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body(Map.of("success", false, "error", "Archive not found"));
+            }
+            if (!canAccessTenant(ctx, archive.getTenantId())) {
+                return restError(HttpStatus.FORBIDDEN, "Access denied: not a member of tenant " + archive.getTenantId());
             }
 
             // Use strategy pattern for validation
@@ -301,5 +310,22 @@ public class ArchiveController extends BaseGraphQlController {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("success", false, "error", "Failed to get requirements"));
         }
+    }
+
+    // ---- REST auth helpers (the AuthContext is set by RestAuthInterceptor) ----
+
+    static final String REST_AUTH_CONTEXT = "authContext";
+
+    private static AuthContext restCaller(HttpServletRequest request) {
+        AuthContext ctx = (AuthContext) request.getAttribute(REST_AUTH_CONTEXT);
+        return ctx != null ? ctx : AuthContext.ANONYMOUS;
+    }
+
+    private boolean canAccessTenant(AuthContext ctx, Long tenantId) {
+        return ctx.isAdmin() || (tenantId != null && tenancyApi.isUserInTenant(ctx.userId(), tenantId));
+    }
+
+    private static ResponseEntity<Map<String, Object>> restError(HttpStatus status, String message) {
+        return ResponseEntity.status(status).body(Map.of("success", false, "error", message));
     }
 }

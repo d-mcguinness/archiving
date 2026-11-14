@@ -1,5 +1,8 @@
 package com.dmc.archiving.export;
 
+import com.dmc.archiving.auth.api.AuthContext;
+import com.dmc.archiving.tenancy.api.TenancyApi;
+import jakarta.servlet.http.HttpServletRequest;
 import com.dmc.archiving.preservation.api.PreservationExportApi;
 import com.dmc.archiving.preservation.api.PreservationExportFile;
 import com.dmc.archiving.archive.api.ArchiveExportApi;
@@ -29,6 +32,14 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * Archive downloads: the extract of one archive, and the zip of an archive with
+ * all of its tenant's intakes, preservations and releases.
+ *
+ * Authentication: the bearer token is checked by RestAuthInterceptor
+ * (registered on /api/archives/** in RestAuthConfig). Authorization: the
+ * caller must be ADMIN or a member of the archive's tenant.
+ */
 @RestController
 @RequestMapping("/api/archives")
 @CrossOrigin(origins = {"http://localhost:3001", "http://localhost:4173", "http://localhost:5173"})
@@ -41,13 +52,16 @@ public class ArchiveExportController {
     private final PreservationExportApi aipExportApi;
     private final ReleaseExportApi dipExportApi;
     private final ArchiveExtractService extracts;
+    private final TenancyApi tenancyApi;
     private final ObjectMapper mapper;
 
     public ArchiveExportController(ArchiveExportApi archiveExportApi,
                                    IntakeExportApi sipExportApi,
                                    PreservationExportApi aipExportApi,
                                    ReleaseExportApi dipExportApi,
+                                   TenancyApi tenancyApi,
                                    ArchiveExtractService extracts) {
+        this.tenancyApi = tenancyApi;
         this.archiveExportApi = archiveExportApi;
         this.sipExportApi = sipExportApi;
         this.aipExportApi = aipExportApi;
@@ -74,7 +88,14 @@ public class ArchiveExportController {
     public ResponseEntity<?> extract(
             @PathVariable Long archiveId,
             @RequestParam(name = "format", required = false) String format,
-            @RequestBody(required = false) Map<String, String> request) {
+            @RequestBody(required = false) Map<String, String> request,
+            HttpServletRequest httpRequest) {
+
+        AuthContext ctx = caller(httpRequest);
+        if (!ctx.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "error", "Authentication required"));
+        }
 
         String password = request != null ? request.get("password") : null;
         if (password == null || password.trim().isEmpty()) {
@@ -100,6 +121,12 @@ public class ArchiveExportController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("success", false, "error", "Archive not found"));
             }
+            // Nothing of the rendered archive leaves this method before the tenant check.
+            if (!canAccess(ctx, rendered.tenantId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("success", false, "error",
+                                "Access denied: not a member of tenant " + rendered.tenantId()));
+            }
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(rendered.contentType()));
             headers.setContentLength(rendered.bytes().length);
@@ -120,7 +147,14 @@ public class ArchiveExportController {
     @Transactional(readOnly = true)
     public ResponseEntity<?> exportPackage(
             @PathVariable Long archiveId,
-            @RequestBody(required = false) Map<String, String> request) {
+            @RequestBody(required = false) Map<String, String> request,
+            HttpServletRequest httpRequest) {
+
+        AuthContext ctx = caller(httpRequest);
+        if (!ctx.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "error", "Authentication required"));
+        }
 
         try {
             ArchiveExportInfo info = archiveExportApi.loadForExport(archiveId);
@@ -130,6 +164,10 @@ public class ArchiveExportController {
             }
 
             Long tenantId = info.tenantId();
+            if (!canAccess(ctx, tenantId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("success", false, "error", "Access denied: not a member of tenant " + tenantId));
+            }
             List<IntakeExportFile> sips = sipExportApi.exportByTenant(tenantId);
             List<PreservationExportFile> aips = aipExportApi.exportByTenant(tenantId);
             List<ReleaseExportFile> dips = dipExportApi.exportByTenant(tenantId);
@@ -180,6 +218,15 @@ public class ArchiveExportController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("success", false, "error", "Failed to export package: " + e.getMessage()));
         }
+    }
+
+    private static AuthContext caller(HttpServletRequest request) {
+        AuthContext ctx = (AuthContext) request.getAttribute(PreservationExtractController.AUTH_CONTEXT);
+        return ctx != null ? ctx : AuthContext.ANONYMOUS;
+    }
+
+    private boolean canAccess(AuthContext ctx, Long tenantId) {
+        return ctx.isAdmin() || (tenantId != null && tenancyApi.isUserInTenant(ctx.userId(), tenantId));
     }
 
     private void addJsonEntry(ZipOutputStream zos, String filename, Object data) throws Exception {
