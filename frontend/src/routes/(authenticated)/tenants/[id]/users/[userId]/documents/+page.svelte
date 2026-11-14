@@ -8,6 +8,17 @@
   import { toasts } from '$lib/stores/toastStore';
   import { auth } from '$lib/stores/authStore';
   import Breadcrumb from '$lib/components/Breadcrumb.svelte';
+  import EntityForm from '$lib/components/EntityForm.svelte';
+  import { validateRequired } from '$lib/schemes';
+  import {
+    documentFormSteps,
+    describeForms,
+    suggestValues,
+    sha256Hex,
+    type DocumentContext,
+    type DocumentFormStep
+  } from '$lib/schemes/documentForms';
+  import { graphqlToKey } from '$lib/standards';
 
   interface PageData {
     tenantId: string;
@@ -32,101 +43,25 @@
   let uploadError: string | null = null;
   let archives: any[] = [];
   let fileInputEl: HTMLInputElement;
-  let showMetadata = false;
-  let metadata: Record<string, string> = {};
+  let modalBodyEl: HTMLElement;
 
-  // Standard-specific optional metadata field definitions
-  type MetaField = { key: string; label: string; type: 'text' | 'select' | 'date' | 'textarea'; options?: string[]; placeholder?: string };
+  // Wizard: step 0 is the document itself (file, title, archive); steps 1..n
+  // are the forms the selected archive's standard requires for a document.
+  let wizardStep = 0;
+  let preparing = false;
+  /** entity name → field name → value */
+  let formValues: Record<string, Record<string, string>> = {};
+  let showOptional: Record<string, boolean> = {};
+  /** What formValues was last suggested for; see prepareForms. */
+  let preparedFor = '';
 
-  const standardFields: Record<string, MetaField[]> = {
-    NOARK5: [
-      { key: 'dokumentmedium', label: 'Document Medium', type: 'select', options: ['Elektronisk arkiv', 'Fysisk arkiv', 'Blandet arkiv'] },
-      { key: 'opprettetAv', label: 'Created By (opprettetAv)', type: 'text', placeholder: 'Name of creator' },
-      { key: 'opprettetDato', label: 'Created Date (opprettetDato)', type: 'date' },
-      { key: 'beskrivelse', label: 'Description (beskrivelse)', type: 'textarea', placeholder: 'Description of the document' },
-      { key: 'kassasjon', label: 'Disposal (kassasjon)', type: 'select', options: ['Bevares', 'Kasseres', 'Vurderes senere'] },
-      { key: 'skjerming', label: 'Screening (skjerming)', type: 'select', options: ['Ingen', 'Unntatt offentlighet', 'Strengt fortrolig'] },
-    ],
-    OAIS: [
-      { key: 'producer', label: 'Producer', type: 'text', placeholder: 'Submitting organization or person' },
-      { key: 'contentInformationType', label: 'Content Information Type', type: 'select', options: ['Simple', 'Complex', 'Physical', 'Digital'] },
-      { key: 'preservationLevel', label: 'Preservation Level', type: 'select', options: ['Bit-level', 'Full', 'Logical'] },
-      { key: 'accessRights', label: 'Access Rights', type: 'select', options: ['Open', 'Restricted', 'Closed', 'Embargoed'] },
-      { key: 'submissionAgreementRef', label: 'Submission Agreement Ref', type: 'text', placeholder: 'Agreement reference ID' },
-      { key: 'checksumAlgorithm', label: 'Checksum Algorithm', type: 'select', options: ['MD5', 'SHA-1', 'SHA-256', 'SHA-512'] },
-    ],
-    PREMIS: [
-      { key: 'objectCategory', label: 'Object Category', type: 'select', options: ['file', 'bitstream', 'representation', 'intellectualEntity'] },
-      { key: 'preservationLevel', label: 'Preservation Level', type: 'select', options: ['Bit-level', 'Full preservation', 'Logical preservation'] },
-      { key: 'originalName', label: 'Original Name', type: 'text', placeholder: 'Original filename' },
-      { key: 'messageDigestAlgorithm', label: 'Checksum Algorithm', type: 'select', options: ['MD5', 'SHA-1', 'SHA-256', 'SHA-512'] },
-      { key: 'significantProperties', label: 'Significant Properties', type: 'text', placeholder: 'Properties to preserve' },
-      { key: 'creatingApplicationName', label: 'Creating Application', type: 'text', placeholder: 'Software used to create' },
-    ],
-    DUBLIN_CORE: [
-      { key: 'creator', label: 'Creator (dc:creator)', type: 'text', placeholder: 'Author or organization' },
-      { key: 'subject', label: 'Subject (dc:subject)', type: 'text', placeholder: 'Topic keywords' },
-      { key: 'description', label: 'Description (dc:description)', type: 'textarea', placeholder: 'Brief description' },
-      { key: 'date', label: 'Date (dc:date)', type: 'date' },
-      { key: 'type', label: 'Type (dc:type)', type: 'select', options: ['Text', 'Image', 'Dataset', 'Collection', 'Sound', 'MovingImage', 'Software', 'Event'] },
-      { key: 'language', label: 'Language (dc:language)', type: 'text', placeholder: 'e.g. en, no, de' },
-      { key: 'rights', label: 'Rights (dc:rights)', type: 'text', placeholder: 'Copyright or license' },
-      { key: 'publisher', label: 'Publisher (dc:publisher)', type: 'text', placeholder: 'Publishing entity' },
-    ],
-    METS: [
-      { key: 'createDate', label: 'Creation Date', type: 'date' },
-      { key: 'recordStatus', label: 'Record Status', type: 'select', options: ['New', 'Revised', 'Deleted'] },
-      { key: 'agentRole', label: 'Agent Role', type: 'select', options: ['CREATOR', 'EDITOR', 'ARCHIVIST', 'PRESERVATION', 'DISSEMINATOR', 'CUSTODIAN'] },
-      { key: 'agentName', label: 'Agent Name', type: 'text', placeholder: 'Person or organization' },
-      { key: 'label', label: 'Label', type: 'text', placeholder: 'Display label for package' },
-      { key: 'profile', label: 'METS Profile', type: 'text', placeholder: 'Profile URI' },
-    ],
-    EAD: [
-      { key: 'unitdate', label: 'Unit Date', type: 'text', placeholder: 'e.g. 1990-2020' },
-      { key: 'origination', label: 'Origination (Creator)', type: 'text', placeholder: 'Creator of the materials' },
-      { key: 'scopecontent', label: 'Scope and Content', type: 'textarea', placeholder: 'Summary of content and scope' },
-      { key: 'physdesc', label: 'Physical Description', type: 'text', placeholder: 'e.g. 3 boxes, 1.5 linear feet' },
-      { key: 'accessrestrict', label: 'Access Restrictions', type: 'text', placeholder: 'Access conditions' },
-      { key: 'arrangement', label: 'Arrangement', type: 'text', placeholder: 'Organization of materials' },
-    ],
-    BAGIT: [
-      { key: 'sourceOrganization', label: 'Source Organization', type: 'text', placeholder: 'Organization creating the bag' },
-      { key: 'contactName', label: 'Contact Name', type: 'text', placeholder: 'Contact person' },
-      { key: 'contactEmail', label: 'Contact Email', type: 'text', placeholder: 'Contact email address' },
-      { key: 'externalDescription', label: 'External Description', type: 'textarea', placeholder: 'Brief description of the bag' },
-      { key: 'baggingDate', label: 'Bagging Date', type: 'date' },
-      { key: 'bagGroupIdentifier', label: 'Bag Group Identifier', type: 'text', placeholder: 'Group ID if part of a set' },
-    ],
-    ISADG: [
-      { key: 'referenceCode', label: 'Reference Code (3.1.1)', type: 'text', placeholder: 'e.g. NO/RA/PA-0001' },
-      { key: 'dateExpression', label: 'Date Expression (3.1.3)', type: 'text', placeholder: 'e.g. 1950-1980' },
-      { key: 'levelOfDescription', label: 'Level of Description (3.1.4)', type: 'select', options: ['Fonds', 'Sub-fonds', 'Series', 'Sub-series', 'File', 'Item'] },
-      { key: 'extentAndMedium', label: 'Extent and Medium (3.1.5)', type: 'text', placeholder: 'e.g. 5 boxes, paper records' },
-      { key: 'nameOfCreator', label: 'Name of Creator (3.2.1)', type: 'text', placeholder: 'Creator entity name' },
-      { key: 'scopeAndContent', label: 'Scope and Content (3.3.1)', type: 'textarea', placeholder: 'Summary of scope and content' },
-    ],
-    MODS: [
-      { key: 'creator', label: 'Creator Name', type: 'text', placeholder: 'Author or creator' },
-      { key: 'typeOfResource', label: 'Type of Resource', type: 'select', options: ['text', 'cartographic', 'notated music', 'sound recording', 'still image', 'moving image', 'three dimensional object', 'software, multimedia', 'mixed material'] },
-      { key: 'genre', label: 'Genre', type: 'text', placeholder: 'Specific genre or form' },
-      { key: 'dateCreated', label: 'Date Created', type: 'date' },
-      { key: 'publisher', label: 'Publisher', type: 'text', placeholder: 'Publishing entity' },
-      { key: 'languageCode', label: 'Language Code (ISO 639)', type: 'text', placeholder: 'e.g. eng, nor' },
-      { key: 'abstract', label: 'Abstract', type: 'textarea', placeholder: 'Summary of content' },
-      { key: 'subject', label: 'Subject', type: 'text', placeholder: 'Subject terms' },
-    ],
-  };
-
-  // Get the selected archive's standard
   $: selectedArchive = archives.find((a: any) => a.id === uploadArchiveId) || null;
   $: selectedStandard = selectedArchive?.standard || '';
-  $: currentFields = selectedStandard ? (standardFields[selectedStandard] || []) : [];
+  $: formSteps = documentFormSteps(selectedStandard);
+  $: stepTitles = ['Document', ...formSteps.map((s) => s.title)];
+  $: currentFormStep = wizardStep > 0 ? formSteps[wizardStep - 1] : null;
 
-  // Reset metadata when the archive changes
-  $: if (uploadArchiveId) {
-    metadata = {};
-    showMetadata = false;
-  }
+  const standardLabel = (standard: string) => graphqlToKey[standard] ?? standard;
 
   onMount(async () => {
     const authState = get(auth);
@@ -207,25 +142,27 @@
     }
   }
 
-  function openUploadModal() {
+  function resetUpload() {
     uploadFile = null;
     uploadTitle = '';
     uploadArchiveId = '';
     uploadError = null;
-    metadata = {};
-    showMetadata = false;
+    wizardStep = 0;
+    formValues = {};
+    showOptional = {};
+    preparedFor = '';
+    preparing = false;
+    uploading = false;
+  }
+
+  function openUploadModal() {
+    resetUpload();
     showUploadModal = true;
   }
 
   function closeUploadModal() {
     showUploadModal = false;
-    uploadFile = null;
-    uploadTitle = '';
-    uploadArchiveId = '';
-    uploadError = null;
-    metadata = {};
-    showMetadata = false;
-    uploading = false;
+    resetUpload();
   }
 
   function handleFileSelect(event: Event) {
@@ -258,19 +195,85 @@
     if (fileInputEl) fileInputEl.value = '';
   }
 
+  function validateDocumentStep(): string | null {
+    if (!uploadFile) return 'Please select a file';
+    if (!uploadTitle.trim()) return 'Please enter a title';
+    if (!uploadArchiveId) return 'Please select an archive to add this document to';
+    return null;
+  }
+
+  function validateFormStep(step: DocumentFormStep): string | null {
+    for (const entity of step.entities) {
+      const problem = validateRequired(entity, formValues[entity.name] ?? {});
+      if (problem) return step.entities.length > 1 ? `${entity.name}: ${problem}` : problem;
+    }
+    return null;
+  }
+
+  /**
+   * Start the forms from what is already known (identifiers, dates, the
+   * uploader, the file's name/size/format/checksum). Redone only when the
+   * file, title or archive changed, so going Back keeps what was typed.
+   */
+  async function prepareForms() {
+    if (!uploadFile) return;
+    const key = [uploadArchiveId, uploadFile.name, uploadFile.size, uploadFile.lastModified, uploadTitle.trim()].join('|');
+    if (key === preparedFor) return;
+    preparing = true;
+    try {
+      const now = new Date();
+      const ctx: DocumentContext = {
+        id: `DOC-${now.getTime().toString(36).toUpperCase()}`,
+        today: now.toISOString().split('T')[0],
+        now: now.toISOString(),
+        title: uploadTitle.trim(),
+        userName: $auth.user?.name || $auth.user?.email || '',
+        fileName: uploadFile.name,
+        fileSize: uploadFile.size,
+        format: uploadFile.type || uploadFile.name.split('.').pop() || '',
+        sha256: await sha256Hex(uploadFile)
+      };
+      const values: Record<string, Record<string, string>> = {};
+      for (const entity of formSteps.flatMap((s) => s.entities)) {
+        values[entity.name] = suggestValues(entity, ctx);
+      }
+      formValues = values;
+      showOptional = {};
+      preparedFor = key;
+    } finally {
+      preparing = false;
+    }
+  }
+
+  function goToStep(step: number) {
+    uploadError = null;
+    wizardStep = step;
+    if (modalBodyEl) modalBodyEl.scrollTop = 0;
+  }
+
+  async function nextStep() {
+    const problem = wizardStep === 0 ? validateDocumentStep() : validateFormStep(formSteps[wizardStep - 1]);
+    if (problem) {
+      uploadError = problem;
+      return;
+    }
+    if (wizardStep === 0) await prepareForms();
+    goToStep(wizardStep + 1);
+  }
+
+  /** Last step: check it, then upload. */
+  async function finish() {
+    const problem =
+      validateDocumentStep() ?? (wizardStep > 0 ? validateFormStep(formSteps[wizardStep - 1]) : null);
+    if (problem) {
+      uploadError = problem;
+      return;
+    }
+    await handleUpload();
+  }
+
   async function handleUpload() {
-    if (!uploadFile) {
-      uploadError = 'Please select a file';
-      return;
-    }
-    if (!uploadTitle.trim()) {
-      uploadError = 'Please enter a title';
-      return;
-    }
-    if (!uploadArchiveId) {
-      uploadError = 'Please select an archive to add this document to';
-      return;
-    }
+    if (!uploadFile) return;
 
     uploading = true;
     uploadError = null;
@@ -282,14 +285,9 @@
       formData.append('tenantId', data.tenantId);
       formData.append('title', uploadTitle.trim());
 
-      // Build description from standard metadata if any fields were filled
-      const filledMeta = Object.entries(metadata).filter(([_, v]) => v && v.trim());
-      if (filledMeta.length > 0 && selectedStandard) {
-        const metaLines = filledMeta.map(([k, v]) => {
-          const field = currentFields.find(f => f.key === k);
-          return `${field?.label || k}: ${v}`;
-        });
-        const description = `[${selectedStandard} Metadata]\n${metaLines.join('\n')}`;
+      // The standard's forms travel with the document as its description.
+      const description = describeForms(standardLabel(selectedStandard), formSteps, formValues);
+      if (description) {
         formData.append('description', description);
       }
 
@@ -331,67 +329,6 @@
     } finally {
       uploading = false;
     }
-  }
-
-  function fillRandomMetadata() {
-    const m: Record<string, string> = {};
-    for (const field of currentFields) {
-      if (field.type === 'select' && field.options && field.options.length > 0) {
-        m[field.key] = field.options[Math.floor(Math.random() * field.options.length)];
-      } else if (field.type === 'date') {
-        const d = new Date();
-        d.setDate(d.getDate() - Math.floor(Math.random() * 365));
-        m[field.key] = d.toISOString().split('T')[0];
-      } else if (field.type === 'textarea') {
-        const texts: Record<string, string[]> = {
-          beskrivelse: ['Saksdokument for intern bruk', 'Korrespondanse med ekstern part', 'Offisielt vedtak fra styremøte'],
-          scopecontent: ['Records relating to administrative operations', 'Correspondence and reports from field offices', 'Financial records and audit documentation'],
-          scopeAndContent: ['Fonds comprises administrative records', 'Series of case files from 1990-2020', 'Collection of official correspondence'],
-          externalDescription: ['Research dataset from field survey', 'Digitized historical photographs', 'Annual report collection'],
-          abstract: ['A comprehensive analysis of the subject matter', 'Survey results and statistical findings', 'Historical overview and primary source compilation'],
-          description: ['Resource covering organizational records', 'Collection of primary source materials', 'Digital preservation package contents'],
-        };
-        const pool = texts[field.key] || ['Sample metadata value for archival submission', 'Detailed description of document contents', 'Contextual information for preservation'];
-        m[field.key] = pool[Math.floor(Math.random() * pool.length)];
-      } else {
-        const vals: Record<string, string[]> = {
-          opprettetAv: ['Kari Nordmann', 'Ola Hansen', 'Erik Johansen'],
-          producer: ['National Archives', 'University Library', 'Research Institute'],
-          submissionAgreementRef: ['SA-2024-001', 'SA-2025-042', 'SA-2023-117'],
-          originalName: ['report_final.pdf', 'scan_001.tiff', 'dataset_v2.csv'],
-          significantProperties: ['Page count, image resolution', 'Text content, layout', 'Color depth, dimensions'],
-          creatingApplicationName: ['Microsoft Word 365', 'Adobe Acrobat Pro', 'LibreOffice Writer'],
-          creator: ['Jane Smith', 'Olav Berg', 'Maria Garcia'],
-          subject: ['Public administration', 'Environmental policy', 'Cultural heritage'],
-          language: ['en', 'no', 'de'],
-          rights: ['CC BY 4.0', 'All rights reserved', 'Public Domain'],
-          publisher: ['National Archives', 'University Press', 'Government Publishing'],
-          agentName: ['Archives Division', 'Digital Preservation Unit', 'Records Management Office'],
-          label: ['Annual Report Package', 'Correspondence Series', 'Research Data Collection'],
-          profile: ['http://www.loc.gov/METS/profiles/00000001.xml'],
-          unitdate: ['1995-2010', '2000-2023', '1980-1999'],
-          origination: ['Department of Records', 'Office of the Director', 'Field Survey Unit'],
-          physdesc: ['3 boxes, 1.5 linear feet', '2 folders, 45 pages', '1 box, 200 photographs'],
-          accessrestrict: ['Open access', 'Restricted for 25 years', 'Permission required'],
-          arrangement: ['Chronological', 'Alphabetical by subject', 'Original order maintained'],
-          sourceOrganization: ['National Library', 'State Archives', 'Research Council'],
-          contactName: ['Jan Eriksen', 'Anna Svensson', 'Peter Müller'],
-          contactEmail: ['archive@example.org', 'records@institution.no', 'preservation@lib.edu'],
-          bagGroupIdentifier: ['BAG-GRP-2024-A', 'BAG-GRP-2025-B', 'BAG-GRP-2023-C'],
-          referenceCode: ['NO/RA/PA-0001', 'NO/SA/S-1234', 'NO/KA/A-0567'],
-          dateExpression: ['1950-1980', '2001-2015', '1975-1999'],
-          extentAndMedium: ['5 boxes, paper records', '3 volumes, bound manuscripts', '12 folders, mixed media'],
-          nameOfCreator: ['Ministry of Culture', 'County Administration', 'Municipal Archives'],
-          genre: ['report', 'correspondence', 'dataset'],
-          languageCode: ['eng', 'nor', 'swe'],
-          typeOfResource: ['text', 'still image', 'mixed material'],
-          dateCreated: [], // handled by date type
-        };
-        const pool = vals[field.key] || [`Sample ${field.label}`];
-        m[field.key] = pool[Math.floor(Math.random() * pool.length)];
-      }
-    }
-    metadata = m;
   }
 
   function formatFileSize(bytes: number): string {
@@ -519,139 +456,163 @@
   {/if}
 </div>
 
-<!-- Upload Document Modal -->
+<!-- Add Document wizard: the document itself, then the forms its archive's standard requires -->
 {#if showUploadModal}
-  <div class="modal-overlay" on:click={closeUploadModal} role="dialog" aria-modal="true">
+  <div class="modal-overlay" on:click={closeUploadModal} role="dialog" aria-modal="true" aria-labelledby="uploadModalTitle">
     <div class="modal-content modal" on:click|stopPropagation role="document">
       <div class="modal-header">
-        <h3>📄 Add Document</h3>
+        <h3 id="uploadModalTitle">📄 Add Document</h3>
         <button class="modal-close" on:click={closeUploadModal} aria-label="Close">×</button>
       </div>
-      <div class="modal-body">
+
+      {#if formSteps.length > 0}
+        <ol class="wizard-steps" aria-label="Steps">
+          {#each stepTitles as title, i}
+            <li>
+              <button
+                type="button"
+                class="wizard-step"
+                class:current={i === wizardStep}
+                class:done={i < wizardStep}
+                aria-current={i === wizardStep ? 'step' : undefined}
+                disabled={uploading || preparing || i >= wizardStep}
+                on:click={() => goToStep(i)}
+              >
+                <span class="step-index">{i < wizardStep ? '✓' : i + 1}</span>
+                {title}
+              </button>
+            </li>
+          {/each}
+        </ol>
+      {/if}
+
+      <div class="modal-body" bind:this={modalBodyEl}>
         {#if uploadError}
-          <div class="alert alert-error">
+          <div class="alert alert-error" role="alert">
             <span>⚠️ {uploadError}</span>
           </div>
         {/if}
 
-        <!-- File Drop Zone -->
-        <div
-          class="drop-zone"
-          class:has-file={uploadFile}
-          on:drop={handleDrop}
-          on:dragover={handleDragOver}
-          role="button"
-          tabindex="0"
-          on:click={() => fileInputEl.click()}
-          on:keydown={(e) => e.key === 'Enter' && fileInputEl.click()}
-        >
-          {#if uploadFile}
-            <div class="file-preview">
-              <span class="file-icon">{getFileIcon(uploadFile.type)}</span>
-              <div class="file-details">
-                <span class="file-name">{uploadFile.name}</span>
-                <span class="file-size">{formatFileSize(uploadFile.size)}</span>
+        {#if wizardStep === 0}
+          <!-- File Drop Zone -->
+          <div
+            class="drop-zone"
+            class:has-file={uploadFile}
+            on:drop={handleDrop}
+            on:dragover={handleDragOver}
+            role="button"
+            tabindex="0"
+            on:click={() => fileInputEl.click()}
+            on:keydown={(e) => e.key === 'Enter' && fileInputEl.click()}
+          >
+            {#if uploadFile}
+              <div class="file-preview">
+                <span class="file-icon">{getFileIcon(uploadFile.type)}</span>
+                <div class="file-details">
+                  <span class="file-name">{uploadFile.name}</span>
+                  <span class="file-size">{formatFileSize(uploadFile.size)}</span>
+                </div>
+                <button class="btn-remove-file" on:click|stopPropagation={removeFile} aria-label="Remove file">×</button>
               </div>
-              <button class="btn-remove-file" on:click|stopPropagation={removeFile} aria-label="Remove file">×</button>
-            </div>
-          {:else}
-            <div class="drop-zone-content">
-              <span class="drop-icon">📁</span>
-              <p class="drop-text">Drop file here or click to browse</p>
-              <p class="drop-hint">Max 50MB</p>
-            </div>
-          {/if}
-        </div>
-        <input
-          type="file"
-          bind:this={fileInputEl}
-          on:change={handleFileSelect}
-          style="display: none"
-        />
-
-        <!-- Title -->
-        <div class="form-group">
-          <label for="uploadTitle">Title *</label>
-          <input
-            type="text"
-            id="uploadTitle"
-            bind:value={uploadTitle}
-            placeholder="Document title"
-            disabled={uploading}
-          />
-        </div>
-
-        <!-- Archive selector (required): the archives this user owns or is assigned to -->
-        <div class="form-group">
-          <label for="uploadArchive">Archive <span class="required-marker">*</span></label>
-          <select id="uploadArchive" bind:value={uploadArchiveId} disabled={uploading || archives.length === 0} required>
-            <option value="">{archives.length === 0 ? 'No archives available' : 'Select an archive…'}</option>
-            {#each archives as archive (archive.id)}
-              <option value={archive.id}>{archive.title} ({archive.standard})</option>
-            {/each}
-          </select>
-          {#if archives.length === 0}
-            <p class="helper-text">
-              {#if $auth.role === 'USER'}
-                You haven't been assigned to an archive yet. Ask your tenant manager to assign you to one.
-              {:else}
-                This user isn't assigned to any archive yet.
-                <a href="/tenants/{data.tenantId}/archives">Assign them from an archive's page</a>.
-              {/if}
-            </p>
-          {/if}
-        </div>
-
-        <!-- Standard-specific metadata (shown when an archive is selected) -->
-        {#if selectedStandard && currentFields.length > 0}
-          <div class="metadata-section">
-            <div class="metadata-header">
-              <button
-                type="button"
-                class="metadata-toggle"
-                on:click={() => showMetadata = !showMetadata}
-              >
-                <span class="toggle-icon">{showMetadata ? '▾' : '▸'}</span>
-                <span>{selectedStandard} Metadata</span>
-                <span class="optional">(optional)</span>
-              </button>
-              {#if showMetadata}
-                <button type="button" class="btn-fill" on:click|stopPropagation={fillRandomMetadata}>Fill Random</button>
-              {/if}
-            </div>
-
-            {#if showMetadata}
-              <div class="metadata-fields">
-                <p class="metadata-hint">Fill in these fields for a more complete {selectedStandard} submission.</p>
-                {#each currentFields as field (field.key)}
-                  <div class="form-group form-group-sm">
-                    <label for="meta_{field.key}">{field.label}</label>
-                    {#if field.type === 'select'}
-                      <select id="meta_{field.key}" bind:value={metadata[field.key]} disabled={uploading}>
-                        <option value="">—</option>
-                        {#each field.options || [] as opt}
-                          <option value={opt}>{opt}</option>
-                        {/each}
-                      </select>
-                    {:else if field.type === 'date'}
-                      <input type="date" id="meta_{field.key}" bind:value={metadata[field.key]} disabled={uploading} />
-                    {:else if field.type === 'textarea'}
-                      <textarea id="meta_{field.key}" bind:value={metadata[field.key]} placeholder={field.placeholder || ''} disabled={uploading} rows="2"></textarea>
-                    {:else}
-                      <input type="text" id="meta_{field.key}" bind:value={metadata[field.key]} placeholder={field.placeholder || ''} disabled={uploading} />
-                    {/if}
-                  </div>
-                {/each}
+            {:else}
+              <div class="drop-zone-content">
+                <span class="drop-icon">📁</span>
+                <p class="drop-text">Drop file here or click to browse</p>
+                <p class="drop-hint">Max 50MB</p>
               </div>
             {/if}
           </div>
+          <input
+            type="file"
+            bind:this={fileInputEl}
+            on:change={handleFileSelect}
+            style="display: none"
+          />
+
+          <!-- Title -->
+          <div class="form-group">
+            <label for="uploadTitle">Title <span class="required-marker">*</span></label>
+            <input
+              type="text"
+              id="uploadTitle"
+              bind:value={uploadTitle}
+              placeholder="Document title"
+              disabled={uploading}
+            />
+          </div>
+
+          <!-- Archive selector (required): the archives this user owns or is assigned to -->
+          <div class="form-group">
+            <label for="uploadArchive">Archive <span class="required-marker">*</span></label>
+            <select id="uploadArchive" bind:value={uploadArchiveId} disabled={uploading || archives.length === 0} required>
+              <option value="">{archives.length === 0 ? 'No archives available' : 'Select an archive…'}</option>
+              {#each archives as archive (archive.id)}
+                <option value={archive.id}>{archive.title} ({standardLabel(archive.standard)})</option>
+              {/each}
+            </select>
+            {#if archives.length === 0}
+              <p class="helper-text">
+                {#if $auth.role === 'USER'}
+                  You haven't been assigned to an archive yet. Ask your tenant manager to assign you to one.
+                {:else}
+                  This user isn't assigned to any archive yet.
+                  <a href="/tenants/{data.tenantId}/archives">Assign them from an archive's page</a>.
+                {/if}
+              </p>
+            {/if}
+          </div>
+
+          {#if formSteps.length > 0}
+            <p class="forms-hint">
+              {standardLabel(selectedStandard)} asks for {formSteps.length} form{formSteps.length === 1 ? '' : 's'}
+              with each document: {formSteps.map((s) => s.title).join(', ')}. What the file already tells us is filled in for you.
+            </p>
+          {/if}
+        {:else if currentFormStep}
+          <p class="step-intro">
+            Required by {standardLabel(selectedStandard)} for “{uploadTitle.trim()}” in {selectedArchive?.title}.
+          </p>
+          {#each currentFormStep.entities as entity (entity.name)}
+            <section class="entity-block">
+              {#if currentFormStep.entities.length > 1}
+                <h4 class="entity-title">{entity.name}</h4>
+              {/if}
+              <EntityForm
+                {entity}
+                bind:values={formValues[entity.name]}
+                bind:showOptional={showOptional[entity.name]}
+                idPrefix={`doc-${wizardStep}-${entity.name.replace(/\W+/g, '-')}`}
+                nativeRequired={false}
+                disabled={uploading}
+              />
+            </section>
+          {/each}
         {/if}
       </div>
+
       <div class="modal-footer">
         <button class="btn-secondary" on:click={closeUploadModal} disabled={uploading}>Cancel</button>
-        <button class="btn-primary" on:click={handleUpload} disabled={uploading || !uploadFile || !uploadTitle.trim()}>
-          {uploading ? 'Uploading...' : '📤 Upload'}
-        </button>
+        <span class="footer-spacer"></span>
+        {#if wizardStep > 0}
+          <button class="btn-secondary" on:click={() => goToStep(wizardStep - 1)} disabled={uploading}>← Back</button>
+        {/if}
+        {#if wizardStep < formSteps.length}
+          <button
+            class="btn-primary"
+            on:click={nextStep}
+            disabled={preparing || !uploadFile || !uploadTitle.trim() || !uploadArchiveId}
+          >
+            {preparing ? 'Reading file…' : `Continue to ${formSteps[wizardStep].title} →`}
+          </button>
+        {:else}
+          <button
+            class="btn-primary"
+            on:click={finish}
+            disabled={uploading || !uploadFile || !uploadTitle.trim() || !uploadArchiveId}
+          >
+            {uploading ? 'Uploading...' : '📤 Upload'}
+          </button>
+        {/if}
       </div>
     </div>
   </div>
@@ -864,6 +825,13 @@
   }
 
   .document-description {
+    /* The description can hold a document's standard forms; show the start only. */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: pre-line;
     margin: 0;
     color: var(--arc-muted, #64748b);
     font-size: 0.875rem;
@@ -920,8 +888,11 @@
   /* Modal — surface comes from the global .modal-overlay / .modal kit in app.css */
   .modal-content {
     padding: 0;
-    max-width: 550px;
-    width: 90%;
+    max-width: 680px;
+    width: 92%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
   }
 
   .modal-header {
@@ -946,7 +917,7 @@
 
   .modal-close:hover { color: var(--arc-ink, #0f172a); transform: none; box-shadow: none; }
 
-  .modal-body { padding: 1.5rem; }
+  .modal-body { padding: 1.5rem; overflow-y: auto; }
 
   .modal-footer {
     display: flex;
@@ -1067,11 +1038,6 @@
     font-size: 0.9rem;
   }
 
-  .optional {
-    color: var(--arc-faint, #94a3b8);
-    font-weight: 400;
-    font-size: 0.8rem;
-  }
 
   .required-marker {
     color: #ef4444;
@@ -1101,101 +1067,99 @@
     cursor: not-allowed;
   }
 
-  /* Metadata Section */
-  .metadata-section {
-    border: 1px solid var(--arc-line-strong, #e2e8f0);
-    border-radius: 0.5rem;
-    overflow: hidden;
-  }
-
-  .metadata-header {
+  /* Wizard */
+  .wizard-steps {
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid var(--arc-line, #e8edf3);
     background: var(--arc-card-2, #f8fafc);
   }
 
-  .metadata-toggle {
+  .wizard-step {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    flex: 1;
-    padding: 0.75rem 1rem;
+    gap: 0.4rem;
+    padding: 0.25rem 0.5rem 0.25rem 0.25rem;
     background: none;
     border: none;
     box-shadow: none;
-    border-radius: 0;
-    cursor: pointer;
+    border-radius: 999px;
+    font-size: 0.8rem;
     font-weight: 600;
-    font-size: 0.9rem;
-    color: var(--arc-body, #475569);
-    transition: background 0.2s;
-    text-align: left;
+    color: var(--arc-muted, #64748b);
+    cursor: pointer;
   }
 
-  .metadata-toggle:hover { background: var(--arc-chip-slate-bg, #f1f5f9); transform: none; box-shadow: none; }
-
-  .btn-fill {
-    padding: 0.3rem 0.65rem;
-    margin-right: 0.75rem;
-    background: var(--arc-chip-indigo-bg, #e0e7ff);
-    color: var(--arc-chip-indigo-ink, #4338ca);
-    border: 1px solid var(--arc-chip-indigo-hover, #c7d2fe);
-    border-radius: 0.375rem;
-    box-shadow: none;
-    font-weight: 600;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-
-  .btn-fill:hover {
-    background: var(--arc-chip-indigo-hover, #c7d2fe);
-    border-color: var(--arc-hover-border, #a5b4fc);
+  .wizard-step:hover:not(:disabled) {
+    background: var(--arc-chip-slate-bg, #f1f5f9);
     transform: none;
     box-shadow: none;
   }
 
-  .toggle-icon {
-    font-size: 0.75rem;
-    color: var(--arc-faint, #94a3b8);
-    width: 1rem;
-    text-align: center;
+  .wizard-step:disabled {
+    cursor: default;
+    opacity: 1;
   }
 
-  .metadata-fields {
-    padding: 1rem;
-    border-top: 1px solid var(--arc-line-strong, #e2e8f0);
-    background: var(--arc-card-2, #fafbfc);
+  .wizard-step .step-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    font-size: 0.72rem;
+    background: var(--arc-chip-slate-bg, #e2e8f0);
+    color: var(--arc-body, #475569);
   }
 
-  .metadata-hint {
-    margin: 0 0 1rem 0;
-    font-size: 0.8rem;
+  .wizard-step.done .step-index {
+    background: var(--arc-chip-green-bg, #dcfce7);
+    color: var(--arc-chip-green-ink, #166534);
+  }
+
+  .wizard-step.current {
+    color: var(--arc-ink, #0f172a);
+  }
+
+  .wizard-step.current .step-index {
+    background: var(--arc-indigo, #6366f1);
+    color: #fff;
+  }
+
+  .forms-hint {
+    margin: 1rem 0 0;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--arc-chip-indigo-ink, #4338ca);
+    background: var(--arc-chip-indigo-bg, #e0e7ff);
+  }
+
+  .step-intro {
+    margin: 0 0 1rem;
+    font-size: 0.85rem;
     color: var(--arc-muted, #64748b);
   }
 
-  .form-group-sm { margin-bottom: 0.75rem; }
-
-  .form-group-sm label {
-    font-size: 0.8rem;
-    margin-bottom: 0.25rem;
+  .entity-block + .entity-block {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--arc-line, #e8edf3);
   }
 
-  .form-group-sm input,
-  .form-group-sm select,
-  .form-group-sm textarea {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
+  .entity-title {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: var(--arc-ink, #0f172a);
   }
 
-  .form-group textarea {
-    resize: vertical;
-  }
-
-  .form-group textarea:disabled {
-    background: var(--arc-card-2, #f1f5f9);
-    cursor: not-allowed;
+  .footer-spacer {
+    flex: 1;
   }
 
   /* .btn-primary and .btn-secondary come from the global button kit in app.css */
