@@ -39,7 +39,8 @@ class DocumentUploadAuthTest {
     private final DocumentController controller =
             new DocumentController(service, mock(CloudStorageService.class), resolver, tenancyApi,
                     mock(com.dmc.archiving.archive.api.ArchiveAccessApi.class),
-                    mock(com.dmc.archiving.intake.api.IntakeAccessApi.class));
+                    mock(com.dmc.archiving.intake.api.IntakeAccessApi.class),
+                    mock(DocumentArchiveForms.class));
 
     private static MultipartFile nonEmptyFile() {
         MultipartFile f = mock(MultipartFile.class);

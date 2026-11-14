@@ -285,7 +285,8 @@
       formData.append('tenantId', data.tenantId);
       formData.append('title', uploadTitle.trim());
 
-      // The standard's forms travel with the document as its description.
+      // A readable copy of the forms stays with the document as its description;
+      // the forms themselves are stored in the archive's tree (see below).
       const description = describeForms(standardLabel(selectedStandard), formSteps, formValues);
       if (description) {
         formData.append('description', description);
@@ -304,15 +305,27 @@
         throw new Error(result.error || 'Upload failed');
       }
 
-      // The upload endpoint has no archive parameter; link the new document in a second call.
+      // The upload endpoint has no archive parameter; a second call links the new
+      // document and stores the filled-in forms as elements of the archive's tree.
       const archiveTitle = selectedArchive?.title || 'the archive';
+      const forms = formSteps
+        .flatMap((s) => s.entities)
+        .map((entity) => ({ entity: entity.name, values: formValues[entity.name] ?? {} }));
       let linked = false;
+      let linkError = '';
       try {
         const linkResponse = await apiFetch(
           `/api/documents/${result.document.id}/associate-archive?archiveId=${encodeURIComponent(uploadArchiveId)}`,
-          { method: 'POST' }
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ forms })
+          }
         );
         linked = linkResponse.ok;
+        if (!linked) {
+          linkError = (await linkResponse.json().catch(() => null))?.error ?? '';
+        }
       } catch {
         linked = false;
       }
@@ -320,7 +333,9 @@
       if (linked) {
         toasts.success(`Document added to ${archiveTitle}`);
       } else {
-        toasts.error(`Document uploaded, but it could not be added to ${archiveTitle}`);
+        toasts.error(
+          `Document uploaded, but it could not be added to ${archiveTitle}${linkError ? `: ${linkError}` : ''}`
+        );
       }
       closeUploadModal();
       await loadDocuments();

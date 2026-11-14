@@ -2,6 +2,7 @@ package com.dmc.archiving.document;
 
 import com.dmc.archiving.archive.api.ArchiveAccessApi;
 import com.dmc.archiving.archive.api.ArchiveAccessInfo;
+import com.dmc.archiving.archive.api.ElementDeposit;
 import com.dmc.archiving.auth.api.AccessDeniedException;
 import com.dmc.archiving.auth.api.AuthContext;
 import com.dmc.archiving.document.model.Document;
@@ -48,16 +49,19 @@ public class DocumentController {
     private final TenancyApi tenancyApi;
     private final ArchiveAccessApi archiveAccessApi;
     private final IntakeAccessApi intakeAccessApi;
+    private final DocumentArchiveForms archiveForms;
 
     public DocumentController(DocumentService documentService, CloudStorageService cloudStorageService,
                              BillingTenantResolver billingTenantResolver, TenancyApi tenancyApi,
-                             ArchiveAccessApi archiveAccessApi, IntakeAccessApi intakeAccessApi) {
+                             ArchiveAccessApi archiveAccessApi, IntakeAccessApi intakeAccessApi,
+                             DocumentArchiveForms archiveForms) {
         this.documentService = documentService;
         this.cloudStorageService = cloudStorageService;
         this.billingTenantResolver = billingTenantResolver;
         this.tenancyApi = tenancyApi;
         this.archiveAccessApi = archiveAccessApi;
         this.intakeAccessApi = intakeAccessApi;
+        this.archiveForms = archiveForms;
     }
 
     // ---- auth helpers (authentication is enforced by RestAuthInterceptor) ----
@@ -404,6 +408,7 @@ public class DocumentController {
     public ResponseEntity<?> associateWithArchive(
             @PathVariable Long id,
             @RequestParam Long archiveId,
+            @RequestBody(required = false) AssociateArchiveRequest body,
             HttpServletRequest request) {
 
         try {
@@ -427,14 +432,23 @@ public class DocumentController {
                                 "error", "Access denied: you cannot add documents to this archive"));
             }
 
-            Document document = documentService.associateWithArchive(id, archiveId);
+            // The standard's forms filled in for this document become elements of
+            // the archive's tree, in the same change that links the document.
+            List<ElementDeposit> elements = archiveForms.toElements(
+                    archive.standard(), existing, body == null ? null : body.forms());
+            Document document = archiveForms.addToArchive(id, archiveId, elements, ctx.username());
 
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "Document associated with archive successfully",
+                "elementsAdded", elements.size(),
                 "document", convertToMap(document)
             ));
 
+        } catch (DocumentArchiveForms.InvalidFormsException e) {
+            return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("success", false, "error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
@@ -445,6 +459,10 @@ public class DocumentController {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("success", false, "error", "Failed to associate document with archive"));
         }
+    }
+
+    /** Optional body of associate-archive: the standard's forms filled in for the document. */
+    public record AssociateArchiveRequest(List<DocumentArchiveForms.FormAnswer> forms) {
     }
 
     /**

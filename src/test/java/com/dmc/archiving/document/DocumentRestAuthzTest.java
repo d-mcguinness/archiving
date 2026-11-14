@@ -45,7 +45,9 @@ class DocumentRestAuthzTest {
     private final IntakeAccessApi intakeAccessApi = mock(IntakeAccessApi.class);
     private final DocumentController controller = new DocumentController(
             service, mock(CloudStorageService.class), mock(BillingTenantResolver.class), tenancyApi,
-            archiveAccessApi, intakeAccessApi);
+            archiveAccessApi, intakeAccessApi,
+            new DocumentArchiveForms(mock(com.dmc.archiving.scheme.api.SchemeDefinitionApi.class),
+                    mock(com.dmc.archiving.archive.api.ArchiveElementDepositApi.class), service));
 
     private static HttpServletRequest reqAs(AuthContext ctx) {
         HttpServletRequest req = mock(HttpServletRequest.class);
@@ -137,7 +139,7 @@ class DocumentRestAuthzTest {
                 .thenReturn(new ArchiveAccessInfo(ARCHIVE_ID, DOC_TENANT, false));
 
         ResponseEntity<?> resp = controller.associateWithArchive(
-                DOC_ID, ARCHIVE_ID, reqAs(new AuthContext(3L, "USER", "user")));
+                DOC_ID, ARCHIVE_ID, null, reqAs(new AuthContext(3L, "USER", "user")));
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         verify(service, never()).associateWithArchive(anyLong(), anyLong());
@@ -151,7 +153,7 @@ class DocumentRestAuthzTest {
         when(service.associateWithArchive(DOC_ID, ARCHIVE_ID)).thenReturn(docInTenant(DOC_TENANT));
 
         ResponseEntity<?> resp = controller.associateWithArchive(
-                DOC_ID, ARCHIVE_ID, reqAs(new AuthContext(3L, "USER", "user")));
+                DOC_ID, ARCHIVE_ID, null, reqAs(new AuthContext(3L, "USER", "user")));
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
         verify(service).associateWithArchive(DOC_ID, ARCHIVE_ID);
@@ -164,7 +166,7 @@ class DocumentRestAuthzTest {
                 .thenReturn(new ArchiveAccessInfo(ARCHIVE_ID, 999L, true));
 
         ResponseEntity<?> resp = controller.associateWithArchive(
-                DOC_ID, ARCHIVE_ID, reqAs(new AuthContext(3L, "USER", "user")));
+                DOC_ID, ARCHIVE_ID, null, reqAs(new AuthContext(3L, "USER", "user")));
 
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         verify(service, never()).associateWithArchive(anyLong(), anyLong());
@@ -180,9 +182,9 @@ class DocumentRestAuthzTest {
         when(service.associateWithArchive(DOC_ID, ARCHIVE_ID)).thenReturn(docInTenant(DOC_TENANT));
         AuthContext manager = new AuthContext(2L, "TENANT", "tenant");
 
-        assertThat(controller.associateWithArchive(DOC_ID, ARCHIVE_ID, reqAs(manager)).getStatusCode())
+        assertThat(controller.associateWithArchive(DOC_ID, ARCHIVE_ID, null, reqAs(manager)).getStatusCode())
                 .isEqualTo(HttpStatus.OK);
-        assertThat(controller.associateWithArchive(DOC_ID, 56L, reqAs(manager)).getStatusCode())
+        assertThat(controller.associateWithArchive(DOC_ID, 56L, null, reqAs(manager)).getStatusCode())
                 .isEqualTo(HttpStatus.FORBIDDEN);
         verify(service, never()).associateWithArchive(DOC_ID, 56L);
     }
@@ -196,9 +198,9 @@ class DocumentRestAuthzTest {
         when(service.associateWithArchive(DOC_ID, ARCHIVE_ID)).thenReturn(docInTenant(DOC_TENANT));
         AuthContext admin = new AuthContext(1L, "ADMIN", "admin");
 
-        assertThat(controller.associateWithArchive(DOC_ID, ARCHIVE_ID, reqAs(admin)).getStatusCode())
+        assertThat(controller.associateWithArchive(DOC_ID, ARCHIVE_ID, null, reqAs(admin)).getStatusCode())
                 .isEqualTo(HttpStatus.OK);
-        assertThat(controller.associateWithArchive(DOC_ID, 404L, reqAs(admin)).getStatusCode())
+        assertThat(controller.associateWithArchive(DOC_ID, 404L, null, reqAs(admin)).getStatusCode())
                 .isEqualTo(HttpStatus.NOT_FOUND);
         verify(service, never()).associateWithArchive(DOC_ID, 404L);
     }
@@ -262,7 +264,7 @@ class DocumentRestAuthzTest {
                 .thenReturn(new IntakeAccessInfo(INTAKE_ID, DOC_TENANT, true));
         AuthContext other = new AuthContext(4L, "USER", "other");
 
-        assertThat(controller.associateWithArchive(DOC_ID, ARCHIVE_ID, reqAs(other)).getStatusCode())
+        assertThat(controller.associateWithArchive(DOC_ID, ARCHIVE_ID, null, reqAs(other)).getStatusCode())
                 .isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(controller.associateWithIntake(DOC_ID, INTAKE_ID, reqAs(other)).getStatusCode())
                 .isEqualTo(HttpStatus.FORBIDDEN);

@@ -45,6 +45,11 @@ public interface ElementRepository extends JpaRepository<Element, Long> {
     List<Element> findByArchiveIdAndStatus(Long archiveId, String status);
 
     /**
+     * The archive's most recently created element of one entity ("File", "Representation")
+     */
+    Optional<Element> findFirstByArchiveIdAndEntityNameOrderByCreatedAtDescIdDesc(Long archiveId, String entityName);
+
+    /**
      * Search elements by title or description within an archive
      */
     @Query("SELECT e FROM Element e WHERE e.archive.id = :archiveId AND " +

@@ -23,7 +23,8 @@ class ArchiveAccessApiImpl implements ArchiveAccessApi {
                 .map(archive -> new ArchiveAccessInfo(
                         archive.getId(),
                         archive.getTenantId(),
-                        userId != null && archiveRepository.isOwnerOrAssigned(archiveId, userId)))
+                        userId != null && archiveRepository.isOwnerOrAssigned(archiveId, userId),
+                        archive.getStandard() != null ? archive.getStandard().name() : null))
                 .orElse(null);
     }
 }
