@@ -14,8 +14,10 @@
 		<script>
 			// Stamp the theme before first paint to avoid a flash of the wrong palette.
 			// Dark is the default; only a stored choice of light overrides it.
+			// The key is versioned: choices saved under the old 'arcana-theme' key
+			// predate the dark default and are deliberately ignored.
 			try {
-				var t = localStorage.getItem('arcana-theme');
+				var t = localStorage.getItem('arcana-theme-v2');
 				document.documentElement.dataset.theme = t === 'light' ? 'light' : 'dark';
 			} catch (e) {
 				document.documentElement.dataset.theme = 'dark';

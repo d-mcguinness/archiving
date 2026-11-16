@@ -3,7 +3,9 @@ import { browser } from '$app/environment';
 
 export type Theme = 'light' | 'dark';
 
-const STORAGE_KEY = 'arcana-theme';
+// Keep in sync with the inline script in app.html. Bumped to v2 when dark
+// became the default, so choices saved before then no longer apply.
+const STORAGE_KEY = 'arcana-theme-v2';
 
 // The inline script in app.html has already stamped <html data-theme="…">
 // (stored choice, else dark) before the app boots; trust it as the initial
