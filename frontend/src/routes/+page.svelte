@@ -192,18 +192,6 @@
         <a href="/register">Custom plans</a> are available.
       </p>
     </section>
-
-    <!-- FINAL CTA -->
-    <section class="container section">
-      <div class="cta">
-        <h2>Start preserving in minutes</h2>
-        <p>Spin up a free archive today. Upgrade when you need compliance-grade conformance.</p>
-        <div class="actions">
-          <a href="/register" class="btn btn-primary">Start free</a>
-          <a href="/login" class="btn btn-ghost">Sign in</a>
-        </div>
-      </div>
-    </section>
   </div>
 
 {:else}
@@ -300,6 +288,7 @@
   .landing {
     font-family: var(--arc-font-body);
     color: var(--arc-ink);
+    padding-bottom: 3rem;
   }
 
   /* The full-bleed hero spans 100vw; guard against the scrollbar-gutter
@@ -662,32 +651,6 @@
   .tier.popular .tier-cta:hover {
     background: var(--arc-grad-brand-hover);
     color: white;
-  }
-
-  /* ── Final CTA ── */
-  .cta {
-    background:
-      radial-gradient(70% 90% at 50% 0%, rgba(99, 102, 241, 0.3), transparent 70%),
-      var(--arc-grad-dark);
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    border-radius: 1.25rem;
-    padding: 4rem 1.5rem;
-    margin-bottom: 2rem;
-    text-align: center;
-  }
-
-  .cta h2 {
-    font-size: clamp(1.7rem, 3.2vw, 2.3rem);
-    margin: 0 0 0.75rem;
-    color: #f8fafc;
-  }
-
-  .cta p {
-    margin: 0 auto 2rem;
-    max-width: 32rem;
-    font-size: 1.05rem;
-    color: #cbd5e1;
-    line-height: 1.6;
   }
 
   /* ── Responsive ── */

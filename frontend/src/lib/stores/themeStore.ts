@@ -6,17 +6,11 @@ export type Theme = 'light' | 'dark';
 const STORAGE_KEY = 'arcana-theme';
 
 // The inline script in app.html has already stamped <html data-theme="…">
-// (stored choice, else OS preference) before the app boots; trust it as the
-// initial value so store and DOM never disagree.
+// (stored choice, else dark) before the app boots; trust it as the initial
+// value so store and DOM never disagree.
 function initialTheme(): Theme {
-	if (!browser) return 'light';
-	const stamped = document.documentElement.dataset.theme;
-	if (stamped === 'dark' || stamped === 'light') return stamped;
-	try {
-		return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-	} catch {
-		return 'light';
-	}
+	if (!browser) return 'dark';
+	return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
 }
 
 function createThemeStore() {
