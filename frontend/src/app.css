@@ -40,18 +40,32 @@
   --arc-disabled-bg: #c7cdd8;
   --arc-disabled-ink: #ffffff;
 
-  /* Dark chrome (nav) & hero panels — dark in BOTH themes */
-  --arc-dark: #0b1120;
-  --arc-dark-2: #1e293b;
-  --arc-dark-ink: #e2e8f0;
-  --arc-dark-muted: #94a3b8;
-  --arc-nav-bg: #1e293b;
+  /* Chrome (nav) & feature panels (heroes, call-to-action bands, empty states).
+     Light here, dark under [data-theme='dark'] — they follow the theme. */
+  --arc-nav-bg: #ffffff;
+  --arc-nav-line: #e2e8f0;
+  --arc-nav-ink: #334155;
+  --arc-nav-shadow: 0 20px 36px -14px rgba(15, 23, 42, 0.25);
+  --arc-panel-bg: radial-gradient(120% 120% at 50% -10%, #e0e7ff 0%, #eef2ff 50%, #f8fafc 100%);
+  --arc-panel-ink: #0f172a;        /* headings */
+  --arc-panel-body: #475569;
+  --arc-panel-muted: #64748b;
+  --arc-panel-accent: #4f46e5;     /* eyebrows, role labels, focus rings */
+  --arc-panel-line: rgba(100, 116, 139, 0.22);
+  --arc-panel-mix: #0f172a;        /* color-mix partner that keeps accent text readable */
+  --arc-panel-btn-bg: #0f172a;     /* inverse button on a panel */
+  --arc-panel-btn-ink: #ffffff;
+  --arc-panel-glow: 0.5;           /* opacity of the aurora blobs behind panel copy */
+  /* Ghost controls sitting on nav/panels */
+  --arc-tint: rgba(15, 23, 42, 0.04);
+  --arc-tint-strong: rgba(15, 23, 42, 0.08);
+  --arc-ghost-border: rgba(100, 116, 139, 0.4);
+  --arc-ghost-border-strong: rgba(51, 65, 85, 0.6);
 
   /* Gradients — theme-invariant */
   --arc-grad-brand: linear-gradient(135deg, #6366f1, #8b5cf6);
   --arc-grad-brand-hover: linear-gradient(135deg, #4f46e5, #7c3aed);
   --arc-grad-text: linear-gradient(110deg, #818cf8 0%, #c084fc 45%, #22d3ee 100%);
-  --arc-grad-dark: radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%);
 
   /* Tinted chips: soft bg + deep ink, per hue */
   --arc-chip-indigo-bg: #e0e7ff;   --arc-chip-indigo-ink: #4338ca;   --arc-chip-indigo-hover: #c7d2fe;
@@ -103,6 +117,23 @@
   --arc-disabled-ink: #64748b;
 
   --arc-nav-bg: #0f172a;
+  --arc-nav-line: rgba(148, 163, 184, 0.14);
+  --arc-nav-ink: #e2e8f0;
+  --arc-nav-shadow: 0 20px 36px -14px rgba(0, 0, 0, 0.65);
+  --arc-panel-bg: radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%);
+  --arc-panel-ink: #f8fafc;
+  --arc-panel-body: #cbd5e1;
+  --arc-panel-muted: #94a3b8;
+  --arc-panel-accent: #a5b4fc;
+  --arc-panel-line: rgba(148, 163, 184, 0.16);
+  --arc-panel-mix: #ffffff;
+  --arc-panel-btn-bg: #ffffff;
+  --arc-panel-btn-ink: #1e293b;
+  --arc-panel-glow: 1;
+  --arc-tint: rgba(255, 255, 255, 0.06);
+  --arc-tint-strong: rgba(255, 255, 255, 0.12);
+  --arc-ghost-border: rgba(148, 163, 184, 0.4);
+  --arc-ghost-border-strong: rgba(226, 232, 240, 0.7);
 
   --arc-chip-indigo-bg: rgba(99, 102, 241, 0.18);   --arc-chip-indigo-ink: #a5b4fc;   --arc-chip-indigo-hover: rgba(99, 102, 241, 0.3);
   --arc-chip-soft-indigo-bg: rgba(99, 102, 241, 0.12);

@@ -410,14 +410,14 @@
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    background: var(--arc-grad-dark, radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%));
+    background: var(--arc-panel-bg);
     border: 1px solid var(--arc-line);
     border-radius: 1rem;
   }
 
   .empty-icon { font-size: 5rem; display: block; margin-bottom: 1rem; }
-  .empty-state h3 { margin: 0 0 0.5rem 0; color: #f8fafc; }
-  .empty-state p { margin: 0 0 1.5rem 0; color: #cbd5e1; }
+  .empty-state h3 { margin: 0 0 0.5rem 0; color: var(--arc-panel-ink); }
+  .empty-state p { margin: 0 0 1.5rem 0; color: var(--arc-panel-body); }
 
   .aips-count {
     display: flex;

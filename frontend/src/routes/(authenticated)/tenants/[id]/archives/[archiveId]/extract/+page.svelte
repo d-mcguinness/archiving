@@ -236,14 +236,14 @@
   .card-header {
     display: flex; align-items: center; gap: 1rem;
     padding: 2rem;
-    background: var(--arc-grad-dark, radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%));
-    color: #cbd5e1;
+    background: var(--arc-panel-bg);
+    color: var(--arc-panel-body);
   }
 
   .card-icon { font-size: 2.5rem; }
 
-  .card-header h1 { margin: 0 0 0.25rem; font-size: 1.5rem; color: #f8fafc; }
-  .card-subtitle { margin: 0; color: #cbd5e1; font-size: 0.9rem; }
+  .card-header h1 { margin: 0 0 0.25rem; font-size: 1.5rem; color: var(--arc-panel-ink); }
+  .card-subtitle { margin: 0; color: var(--arc-panel-body); font-size: 0.9rem; }
 
   .archive-info {
     padding: 1.5rem 2rem;
