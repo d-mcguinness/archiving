@@ -123,14 +123,14 @@
   .feature-card p { margin: 0; color: var(--arc-muted, #64748b); font-size: 0.875rem; line-height: 1.55; }
 
   .cta-section {
-    background: var(--arc-grad-dark, radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%));
-    color: white;
+    background: var(--arc-panel-bg);
+    color: var(--arc-panel-ink);
     border: 1px solid var(--arc-line, #e8edf3);
     padding: 3.5rem 2rem; border-radius: 1rem; margin-bottom: 2rem;
   }
-  .cta-section h2 { margin: 0 0 0.5rem; font-size: 1.75rem; font-weight: 700; color: #f8fafc; }
-  .cta-section p { margin: 0 0 2rem; color: #cbd5e1; font-size: 1.05rem; }
-  .cta-section .btn-cta-inv { background: white; color: #1e293b; box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.4); }
+  .cta-section h2 { margin: 0 0 0.5rem; font-size: 1.75rem; font-weight: 700; color: var(--arc-panel-ink); }
+  .cta-section p { margin: 0 0 2rem; color: var(--arc-panel-body); font-size: 1.05rem; }
+  .cta-section .btn-cta-inv { background: var(--arc-panel-btn-bg); color: var(--arc-panel-btn-ink); box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.4); }
   .cta-section .btn-cta-inv:hover { box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.5); }
 
   @media (max-width: 640px) { .hero h1 { font-size: 2.25rem; } }

@@ -108,10 +108,10 @@
   .auth-brand {
     position: relative;
     overflow: hidden;
-    background: radial-gradient(120% 120% at 30% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%);
-    color: #e2e8f0;
+    background: var(--arc-panel-bg);
+    color: var(--arc-panel-body);
     display: flex;
-    /* Stays dark in both themes; hairline keeps it from dissolving into a dark ground. */
+    /* Hairline keeps it from dissolving into the page ground. */
     border-right: 1px solid var(--arc-line);
   }
 
@@ -124,6 +124,7 @@
       radial-gradient(40% 60% at 75% 18%, rgba(139, 92, 246, 0.42), transparent 70%),
       radial-gradient(35% 50% at 60% 70%, rgba(6, 182, 212, 0.3), transparent 70%);
     filter: blur(30px);
+    opacity: var(--arc-panel-glow);
     pointer-events: none;
   }
 
@@ -131,8 +132,8 @@
     position: absolute;
     inset: 0;
     background-image:
-      linear-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+      linear-gradient(var(--arc-panel-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--arc-panel-line) 1px, transparent 1px);
     background-size: 44px 44px;
     mask-image: radial-gradient(circle at 35% 30%, black, transparent 78%);
     pointer-events: none;
@@ -154,7 +155,7 @@
     font-family: 'Space Grotesk', 'Inter', sans-serif;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #f8fafc;
+    color: var(--arc-panel-ink);
     text-decoration: none;
     letter-spacing: -0.02em;
   }
@@ -165,7 +166,7 @@
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: #a5b4fc;
+    color: var(--arc-panel-accent);
     margin-bottom: 1rem;
   }
 
@@ -176,7 +177,7 @@
     line-height: 1.06;
     letter-spacing: -0.02em;
     margin: 0 0 1.75rem;
-    color: #f8fafc;
+    color: var(--arc-panel-ink);
   }
 
   .auth-grad {
@@ -199,7 +200,7 @@
     align-items: center;
     gap: 0.75rem;
     font-size: 0.95rem;
-    color: #cbd5e1;
+    color: var(--arc-panel-body);
     font-weight: 500;
   }
 
@@ -231,24 +232,27 @@
     gap: 0.15rem;
     padding: 0.7rem 0.6rem;
     border-radius: 0.65rem;
-    background: rgba(148, 163, 184, 0.07);
-    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: var(--arc-tint);
+    border: 1px solid var(--arc-panel-line);
   }
 
   .auth-pstage {
     font-family: 'Space Grotesk', sans-serif;
     font-size: 0.95rem;
     font-weight: 700;
-    color: #f8fafc;
+    color: var(--arc-panel-ink);
   }
 
-  .auth-pnode.n-0 .auth-pstage { color: #60a5fa; }
-  .auth-pnode.n-1 .auth-pstage { color: #818cf8; }
-  .auth-pnode.n-2 .auth-pstage { color: #fb923c; }
+  .auth-pnode.n-0 .auth-pstage { color: #2563eb; }
+  .auth-pnode.n-1 .auth-pstage { color: #4f46e5; }
+  .auth-pnode.n-2 .auth-pstage { color: #c2410c; }
+  :global(html[data-theme='dark']) .auth-pnode.n-0 .auth-pstage { color: #60a5fa; }
+  :global(html[data-theme='dark']) .auth-pnode.n-1 .auth-pstage { color: #818cf8; }
+  :global(html[data-theme='dark']) .auth-pnode.n-2 .auth-pstage { color: #fb923c; }
 
   .auth-pkicker {
     font-size: 0.68rem;
-    color: #94a3b8;
+    color: var(--arc-panel-muted);
     font-weight: 500;
   }
 
@@ -268,8 +272,8 @@
   .auth-tag {
     font-size: 0.66rem;
     font-weight: 700;
-    color: #c4b5fd;
-    background: rgba(139, 92, 246, 0.14);
+    color: var(--arc-chip-violet-ink);
+    background: var(--arc-chip-violet-bg);
     border: 1px solid rgba(139, 92, 246, 0.3);
     border-radius: 1rem;
     padding: 0.2rem 0.6rem;
@@ -279,7 +283,7 @@
     margin-left: auto;
     font-size: 0.7rem;
     font-weight: 700;
-    color: #34d399;
+    color: var(--arc-chip-green-ink);
   }
 
   /* ── Form panel ── */

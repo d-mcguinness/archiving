@@ -272,13 +272,13 @@
 
   header {
     background: var(--arc-nav-bg);
-    color: white;
+    color: var(--arc-nav-ink);
     padding: 0.75rem 0;
     position: sticky;
     top: 0;
     z-index: 50;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
-    transition: background-color 0.25s ease;
+    border-bottom: 1px solid var(--arc-nav-line);
+    transition: background-color 0.25s ease, border-color 0.25s ease;
   }
 
   .nav-container {
@@ -302,16 +302,16 @@
     width: 44px;
     height: 44px;
     padding: 0;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--arc-tint-strong);
+    border: 1px solid var(--arc-ghost-border);
     border-radius: 0.5rem;
     cursor: pointer;
     transition: background 0.2s ease, border-color 0.2s ease;
   }
 
   .nav-toggle:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.4);
+    background: var(--arc-tint-strong);
+    border-color: var(--arc-ghost-border-strong);
   }
 
   .nav-toggle-bar {
@@ -319,7 +319,7 @@
     width: 22px;
     height: 2px;
     margin: 0 auto;
-    background: white;
+    background: var(--arc-panel-ink);
     border-radius: 2px;
     transition: transform 0.2s ease, opacity 0.2s ease;
   }
@@ -350,7 +350,7 @@
   }
 
   .brand {
-    color: #f8fafc;
+    color: var(--arc-panel-ink);
     text-decoration: none;
     font-size: 1.5rem;
     display: flex;
@@ -385,7 +385,7 @@
   .nav-links li.group-start {
     margin-left: 0.55rem;
     padding-left: 0.7rem;
-    border-left: 1px solid rgba(148, 163, 184, 0.3);
+    border-left: 1px solid var(--arc-ghost-border);
   }
 
   .nav-links li {
@@ -394,7 +394,7 @@
 
   /* Unified brand pills — quiet ghost links, indigo→violet gradient when active. */
   .nav-links a {
-    color: #e2e8f0;
+    color: var(--arc-nav-ink);
     text-decoration: none;
     padding: 0.5rem 0.75rem;
     border-radius: 0.6rem;
@@ -408,8 +408,8 @@
   }
 
   .nav-links a:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.08);
-    color: white;
+    background: var(--arc-tint-strong);
+    color: var(--arc-panel-ink);
   }
 
   .nav-links a.active {
@@ -421,7 +421,7 @@
 
   /* Single public "Product" entry point — echoes the brand indigo→violet→cyan gradient. */
   .nav-links a.product-link {
-    border-color: rgba(148, 163, 184, 0.4);
+    border-color: var(--arc-ghost-border);
   }
 
   .nav-links a.product-link.active {
@@ -444,9 +444,9 @@
     width: 40px;
     height: 40px;
     padding: 0;
-    background: rgba(255, 255, 255, 0.06);
-    color: #e2e8f0;
-    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: var(--arc-tint);
+    color: var(--arc-nav-ink);
+    border: 1px solid var(--arc-ghost-border);
     border-radius: 50%;
     cursor: pointer;
     transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
@@ -455,18 +455,18 @@
   }
 
   .theme-toggle:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(226, 232, 240, 0.7);
-    color: white;
+    background: var(--arc-tint-strong);
+    border-color: var(--arc-ghost-border-strong);
+    color: var(--arc-panel-ink);
     transform: translateY(-2px);
     box-shadow: none;
   }
 
   .login-button {
     padding: 0.6rem 1.25rem;
-    background: rgba(255, 255, 255, 0.06);
-    color: #e2e8f0;
-    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: var(--arc-tint);
+    color: var(--arc-nav-ink);
+    border: 1px solid var(--arc-ghost-border);
     border-radius: 0.6rem;
     text-decoration: none;
     font-weight: 700;
@@ -480,9 +480,9 @@
   }
 
   .login-button:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(226, 232, 240, 0.7);
-    color: white;
+    background: var(--arc-tint-strong);
+    border-color: var(--arc-ghost-border-strong);
+    color: var(--arc-panel-ink);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   }
@@ -518,9 +518,9 @@
     align-items: center;
     gap: 0.6rem;
     padding: 0.3rem 0.6rem 0.3rem 0.3rem;
-    background: rgba(255, 255, 255, 0.06);
-    color: #e2e8f0;
-    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: var(--arc-tint);
+    color: var(--arc-nav-ink);
+    border: 1px solid var(--arc-ghost-border);
     border-radius: 999px;
     font-family: inherit;
     cursor: pointer;
@@ -530,8 +530,8 @@
 
   .account-trigger:hover,
   .account-trigger[aria-expanded='true'] {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(226, 232, 240, 0.7);
+    background: var(--arc-tint-strong);
+    border-color: var(--arc-ghost-border-strong);
     transform: none;
     box-shadow: none;
   }
@@ -542,19 +542,19 @@
 
   .account-link:hover,
   .account-link.active {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(226, 232, 240, 0.7);
+    background: var(--arc-tint-strong);
+    border-color: var(--arc-ghost-border-strong);
   }
 
   .account-link.active {
-    border-color: #a5b4fc;
+    border-color: var(--arc-panel-accent);
   }
 
   .signout-button {
     padding: 0.5rem 0.9rem;
     background: transparent;
-    color: #e2e8f0;
-    border: 1px solid rgba(148, 163, 184, 0.4);
+    color: var(--arc-nav-ink);
+    border: 1px solid var(--arc-ghost-border);
     border-radius: 0.6rem;
     font-size: 0.85rem;
     font-weight: 600;
@@ -563,9 +563,9 @@
   }
 
   .signout-button:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(226, 232, 240, 0.7);
-    color: white;
+    background: var(--arc-tint-strong);
+    border-color: var(--arc-ghost-border-strong);
+    color: var(--arc-panel-ink);
     transform: none;
     box-shadow: none;
   }
@@ -596,7 +596,7 @@
   .account-name {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #f8fafc;
+    color: var(--arc-panel-ink);
     white-space: nowrap;
     max-width: 11rem;
     overflow: hidden;
@@ -606,12 +606,12 @@
   .account-role {
     font-size: 0.7rem;
     font-weight: 500;
-    color: #a5b4fc;
+    color: var(--arc-panel-accent);
     white-space: nowrap;
   }
 
   .caret {
-    color: #94a3b8;
+    color: var(--arc-panel-muted);
     transition: transform 0.18s ease;
   }
 
@@ -765,9 +765,9 @@
     top: 0.75rem;
   }
 
-  /* The nav is dark in both themes, so its focus ring needs a light hue. */
+  /* Focus ring in the nav's own accent, which flips with the theme. */
   header :global(:focus-visible) {
-    outline-color: #c7d2fe;
+    outline-color: var(--arc-panel-accent);
   }
 
   header .account-menu :global(:focus-visible) {
@@ -816,9 +816,9 @@
       align-items: stretch;
       gap: 1rem;
       background: var(--arc-nav-bg);
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      border-top: 1px solid var(--arc-panel-line);
       padding: 1.25rem 1rem;
-      box-shadow: 0 20px 36px -14px rgba(0, 0, 0, 0.65);
+      box-shadow: var(--arc-nav-shadow);
       z-index: 60;
       max-height: calc(100vh - 5rem);
       overflow-y: auto;
@@ -848,14 +848,14 @@
       width: 100%;
       margin-left: 0;
       padding-top: 1rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      border-top: 1px solid var(--arc-panel-line);
     }
 
     .nav-links li.group-start {
       margin: 0.35rem 0 0;
       padding: 0.6rem 0 0;
       border-left: none;
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      border-top: 1px solid var(--arc-panel-line);
     }
 
     .login-button,
@@ -902,16 +902,16 @@
     }
 
     .account-item {
-      color: #e2e8f0;
+      color: var(--arc-nav-ink);
       text-align: center;
       padding: 0.7rem;
-      border: 1px solid rgba(148, 163, 184, 0.4);
+      border: 1px solid var(--arc-ghost-border);
       margin-top: 0.5rem;
     }
 
     .account-item:hover {
-      background: rgba(255, 255, 255, 0.12);
-      color: white;
+      background: var(--arc-tint-strong);
+      color: var(--arc-panel-ink);
     }
 
     .theme-toggle {
