@@ -17,6 +17,9 @@
   $: navGroups = navFor($auth);
   $: homeHref = $auth.isLoggedIn ? roleHome($auth) : '/';
 
+  // The product tour: /product/* plus Intake's page at /ingest (signed-out visitors only see this link).
+  $: onProduct = currentPath.startsWith('/product') || currentPath === '/ingest';
+
   // Mimic state lives in localStorage; re-read it whenever the session changes.
   $: mimicking = $auth.isLoggedIn && auth.isMimicking();
   $: mimicOrigin = mimicking ? originalUserName() : '';
@@ -128,8 +131,8 @@
               <a
                 href="/product"
                 class="product-link"
-                class:active={currentPath.startsWith('/product')}
-                aria-current={currentPath.startsWith('/product') ? 'page' : undefined}
+                class:active={onProduct}
+                aria-current={onProduct ? 'page' : undefined}
               >
                 Product
               </a>
