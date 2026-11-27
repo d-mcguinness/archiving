@@ -151,6 +151,21 @@
         {/if}
 
         <div class="auth-section">
+          {#if $auth.isLoggedIn}
+            <a
+              class="theme-toggle search-link"
+              class:active={currentPath === '/search'}
+              href="/search"
+              aria-label="Search"
+              title="Search"
+              aria-current={currentPath === '/search' ? 'page' : undefined}
+            >
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="6.5" />
+                <path d="M16 16l4.5 4.5" />
+              </svg>
+            </a>
+          {/if}
           <button
             class="theme-toggle"
             on:click={() => theme.toggle()}
@@ -460,6 +475,16 @@
     color: white;
     transform: translateY(-2px);
     box-shadow: none;
+  }
+
+  .search-link {
+    text-decoration: none;
+  }
+
+  .search-link.active {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(226, 232, 240, 0.7);
+    color: white;
   }
 
   .login-button {
