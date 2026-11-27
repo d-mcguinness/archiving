@@ -1,110 +1,106 @@
-// Content for the three public product pages (/product/intake, /product/preservation,
-// /product/release). One entry per stage of the OAIS workflow, in pipeline order;
-// ProductStagePage renders whichever one the route asks for.
+// Content for the three public product pages. One entry per stage of the OAIS
+// workflow, in pipeline order; ProductStagePage renders whichever one the route
+// asks for. Intake lives at /ingest (shown to signed-out visitors); the other two
+// are under /product.
 
 export interface ProductStage {
-  /** URL segment under /product. */
   slug: 'intake' | 'preservation' | 'release';
+  /** Where this stage's page lives. */
+  path: string;
   /** Accent used for this stage across the product pages (blue / indigo / orange). */
   tone: 'ingest' | 'preserve' | 'release';
   kicker: string;
   stage: string;
   pkg: string;
-  abbr: string;
   headline: string;
+  /** One sentence under the headline. */
   lede: string;
   /** Plain-text summary for the page's meta description. */
   description: string;
+  /** Heading of the "how it works" section. */
   subhead: string;
-  capabilities: string[];
-  note: string;
+  /** The stage in three steps; `icon` names an icon in ProductStagePage. */
+  steps: { icon: string; title: string; text: string }[];
+  capabilities: { icon: string; label: string }[];
   /** Status the pipeline shows once a record has passed this stage. */
   state: string;
-  produces: string;
-  key: string;
-  /** The standards deep-dive page for this stage. */
-  href: string;
-  cta: string;
 }
 
 export const productStages: ProductStage[] = [
   {
     slug: 'intake',
+    path: '/ingest',
     tone: 'ingest',
     kicker: 'Ingest',
     stage: 'Intake',
     pkg: 'Intake package',
-    abbr: 'SIP',
     headline: 'Accept submissions, not just files',
-    lede:
-      'The ingest workflow accepts Intake packages from producers and turns them into structured, standard-compliant records ready for preservation. Capture metadata at the door — never re-key it later.',
+    lede: 'Turn what producers send you into structured, standard-compliant records, with the metadata captured at the door.',
     description:
       'Arcana Ingest accepts Intake packages from producers and turns them into structured, standard-compliant records across ten open archival standards.',
-    subhead: 'Structured capture from the first submission',
-    capabilities: [
-      'Schema-driven forms with per-standard field definitions',
-      'Document attachment and cloud storage linking',
-      'Nested hierarchical element structures',
-      'Standard-specific validation and defaults'
+    subhead: 'From submission to record in three steps',
+    steps: [
+      { icon: 'layers', title: 'Pick a standard', text: 'Choose the one that fits your content.' },
+      { icon: 'form', title: 'Build the package', text: 'Fill in guided forms and attach documents.' },
+      { icon: 'check', title: 'Validate and submit', text: 'Checked against the standard, then queued.' }
     ],
-    note: 'Build to NOARK 5.5 and E-ARK conformance from the first submission — validation runs per standard, not as an afterthought.',
-    state: 'validated',
-    produces: 'Validated submissions',
-    key: 'Schema-driven capture across 10 standards',
-    href: '/ingest',
-    cta: 'Explore Ingest'
+    capabilities: [
+      { icon: 'form', label: 'Schema-driven forms' },
+      { icon: 'clip', label: 'Document attachments' },
+      { icon: 'tree', label: 'Nested hierarchies' },
+      { icon: 'shield', label: 'Per-standard validation' }
+    ],
+    state: 'validated'
   },
   {
     slug: 'preservation',
+    path: '/product/preservation',
     tone: 'preserve',
     kicker: 'Preserve',
     stage: 'Preservation',
     pkg: 'Preservation package',
-    abbr: 'AIP',
     headline: 'Storage that proves its own integrity',
-    lede:
-      'The preservation workflow seals Preservation packages for long-term storage with provenance tracking, integrity verification, and format-migration readiness. Every preservation action is captured, so the chain of custody is never in doubt.',
+    lede: 'Seal records for the long term, with every preservation action captured so the chain of custody is never in doubt.',
     description:
       'Arcana Preserve seals Preservation packages for long-term storage with provenance tracking, fixity verification and format-migration readiness.',
-    subhead: 'A chain of custody you can show',
-    capabilities: [
-      'Provenance tracking and audit trails',
-      'Integrity verification with fixity metadata',
-      'Format migration and representation support',
-      'Standard-specific preservation metadata'
+    subhead: 'A chain of custody in three steps',
+    steps: [
+      { icon: 'lock', title: 'Seal the package', text: 'Records are locked for long-term storage.' },
+      { icon: 'shield', title: 'Verify integrity', text: 'Fixity checks show nothing has changed.' },
+      { icon: 'history', title: 'Track every action', text: 'Each change is added to the audit trail.' }
     ],
-    note: 'Fixity, provenance, and audit trails are first-class — the foundations of a trustworthy repository under the OAIS reference model.',
-    state: 'sealed',
-    produces: 'Sealed long-term records',
-    key: 'Provenance, fixity & format migration',
-    href: '/preserve',
-    cta: 'Explore Preserve'
+    capabilities: [
+      { icon: 'history', label: 'Provenance and audit trail' },
+      { icon: 'shield', label: 'Fixity verification' },
+      { icon: 'refresh', label: 'Format migration' },
+      { icon: 'tag', label: 'Preservation metadata' }
+    ],
+    state: 'sealed'
   },
   {
     slug: 'release',
+    path: '/product/release',
     tone: 'release',
     kicker: 'Release',
     stage: 'Release',
     pkg: 'Release package',
-    abbr: 'DIP',
     headline: 'Deliver to every audience',
-    lede:
-      'The release workflow produces Release packages for end-user access, with metadata and access controls tailored to each audience. Disseminate the same archived record many ways without ever touching the preserved original.',
+    lede: 'Share the same archived record many ways, without ever touching the preserved original.',
     description:
       'Arcana Release produces Release packages for end-user access, with metadata and access controls tailored to each audience.',
-    subhead: 'One preserved record, many access copies',
-    capabilities: [
-      'User-tailored access packages',
-      'Granular access controls and permissions',
-      'Standard-compliant delivery metadata',
-      'Multi-format export support'
+    subhead: 'From archive to audience in three steps',
+    steps: [
+      { icon: 'users', title: 'Choose the audience', text: 'Decide who the package is for.' },
+      { icon: 'key', title: 'Set the access', text: 'Tailor metadata and permissions.' },
+      { icon: 'download', title: 'Export', text: 'Deliver in the format they need.' }
     ],
-    note: 'Release packages carry standard-compliant metadata, ready for download, integration, or distribution to external systems.',
-    state: 'ready',
-    produces: 'Tailored access copies',
-    key: 'Access control & multi-format export',
-    href: '/deliver',
-    cta: 'Explore Release'
+    capabilities: [
+      { icon: 'box', label: 'Tailored access packages' },
+      { icon: 'key', label: 'Granular permissions' },
+      { icon: 'tag', label: 'Delivery metadata' },
+      { icon: 'download', label: 'Multi-format export' }
+    ],
+    state: 'ready'
   }
 ];
 

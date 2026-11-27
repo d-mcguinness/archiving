@@ -1,8 +1,7 @@
 <script lang="ts">
-  // Public marketing page for one stage of the workflow — renders for everyone,
-  // no auth gating. /product/intake, /product/preservation and /product/release
-  // all render this component, so the three pages look alike and differ only in
-  // their content (see $lib/productStages).
+  // Public marketing page for one stage of the workflow. /ingest (signed out),
+  // /product/preservation and /product/release all render this component, so the
+  // three pages look alike and differ only in their content (see $lib/productStages).
   import { productStages, standards, premiumStandards, type ProductStage } from '$lib/productStages';
 
   export let stage: ProductStage;
@@ -10,6 +9,24 @@
   $: index = productStages.findIndex((s) => s.slug === stage.slug);
   $: previous = productStages[index - 1];
   $: next = productStages[index + 1];
+
+  // Line icons (24×24, stroked) for the steps and capabilities, keyed by name.
+  const icons: Record<string, string[]> = {
+    layers: ['M12 3 3 8l9 5 9-5-9-5z', 'M3 13l9 5 9-5'],
+    form: ['M5 4h14v16H5z', 'M8 9h8M8 13h8M8 17h5'],
+    check: ['M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z', 'M8 12.5l2.8 2.8L16 9.5'],
+    clip: ['M8 12.5l6.2-6.2a3 3 0 0 1 4.2 4.2l-7.6 7.6a5 5 0 0 1-7-7L10 4.8'],
+    tree: ['M10 3h4v4h-4zM4 17h4v4H4zM16 17h4v4h-4z', 'M12 7v5M6 17v-5h12v5'],
+    lock: ['M6 11h12v9H6z', 'M9 11V8a3 3 0 0 1 6 0v3'],
+    shield: ['M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6l8-3z', 'M9 12l2 2 4-4'],
+    history: ['M4 12a8 8 0 1 0 2.5-5.8M4 4v4h4', 'M12 8v4l3 2'],
+    refresh: ['M20 11a8 8 0 0 0-14.5-4M4 4v3.5h3.5', 'M4 13a8 8 0 0 0 14.5 4M20 20v-3.5h-3.5'],
+    tag: ['M3 12V4h8l10 10-8 8L3 12z', 'M7.5 8.5h.01'],
+    users: ['M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0', 'M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14.5a6.5 6.5 0 0 1 3.5 5.5'],
+    key: ['M8 15a4 4 0 1 1 3.9-5H21v3h-2v2.5h-3V13h-4.1A4 4 0 0 1 8 15z'],
+    download: ['M12 4v11M7.5 11l4.5 4.5 4.5-4.5', 'M4 20h16'],
+    box: ['M3 8l9-5 9 5v8l-9 5-9-5V8z', 'M3 8l9 5 9-5M12 13v8']
+  };
 
   // Lightweight scroll-reveal: fade/slide elements in as they enter the viewport.
   function reveal(node: HTMLElement, delay = 0) {
@@ -55,7 +72,7 @@
       <nav class="stage-tabs" aria-label="Product stages">
         {#each productStages as s, i}
           <a
-            href="/product/{s.slug}"
+            href={s.path}
             class="stage-tab {s.tone}"
             class:current={s.slug === stage.slug}
             aria-current={s.slug === stage.slug ? 'page' : undefined}
@@ -72,7 +89,7 @@
         <p class="lede">{stage.lede}</p>
         <div class="hero-actions">
           <a href="/register" class="btn btn-primary">Start free</a>
-          <a href={stage.href} class="btn btn-ghost">{stage.cta}</a>
+          <a href="/login" class="btn btn-ghost">Sign in</a>
         </div>
       </div>
 
@@ -109,64 +126,47 @@
     </div>
   </section>
 
-  <!-- WHAT THIS STAGE DOES -->
-  <section class="container section product-section {stage.tone}">
-    <div class="ps-visual" use:reveal>
-      <div class="ps-card">
-        <div class="ps-card-bar">
-          <span class="ps-dot" aria-hidden="true"></span>
-          <span class="ps-dot" aria-hidden="true"></span>
-          <span class="ps-dot" aria-hidden="true"></span>
-          <span class="ps-card-title">{stage.kicker.toLowerCase()} workflow</span>
-        </div>
-        <div class="ps-card-body">
-          <div class="ps-stage-row">
-            <div class="ps-stage-meta">
-              <span class="ps-stage-label">{stage.stage}</span>
-              <span class="ps-pkg">{stage.pkg} <span class="ps-abbr">{stage.abbr}</span></span>
-            </div>
-            <span class="ps-state">{stage.state}</span>
-          </div>
-          <dl class="ps-facts">
-            <div>
-              <dt>Produces</dt>
-              <dd>{stage.produces}</dd>
-            </div>
-            <div>
-              <dt>Key capability</dt>
-              <dd>{stage.key}</dd>
-            </div>
-          </dl>
-          <div class="ps-card-foot">
-            <span class="ps-tag">NOARK 5.5</span>
-            <span class="ps-tag">E-ARK</span>
-            <span class="ps-conform"><span aria-hidden="true">●</span> conformant</span>
-          </div>
-        </div>
-      </div>
+  <!-- HOW IT WORKS — three steps as a visual flow, then what you get -->
+  <section class="container section {stage.tone}">
+    <div class="section-head" use:reveal>
+      <span class="eyebrow eyebrow-dark">How it works</span>
+      <h2>{stage.subhead}</h2>
     </div>
 
-    <div class="ps-copy" use:reveal={120}>
-      <span class="ps-eyebrow">What {stage.kicker} does</span>
-      <h2 class="ps-headline">{stage.subhead}</h2>
-      <ul class="ps-caps">
-        {#each stage.capabilities as c}
-          <li><span class="ps-check" aria-hidden="true">✓</span>{c}</li>
-        {/each}
-      </ul>
-      <p class="ps-note"><span class="ps-note-label">Compliance</span>{stage.note}</p>
-    </div>
+    <ol class="flow" use:reveal>
+      {#each stage.steps as step, i}
+        <li class="flow-step">
+          <span class="flow-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              {#each icons[step.icon] ?? [] as d}<path {d} />{/each}
+            </svg>
+          </span>
+          <span class="flow-num" aria-hidden="true">0{i + 1}</span>
+          <h3>{step.title}</h3>
+          <p>{step.text}</p>
+        </li>
+      {/each}
+    </ol>
+
+    <ul class="tiles" use:reveal={120}>
+      {#each stage.capabilities as c}
+        <li class="tile">
+          <span class="tile-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              {#each icons[c.icon] ?? [] as d}<path {d} />{/each}
+            </svg>
+          </span>
+          {c.label}
+        </li>
+      {/each}
+    </ul>
   </section>
 
   <!-- STANDARDS -->
   <section class="container section">
     <div class="section-head" use:reveal>
       <span class="eyebrow eyebrow-dark">Standards</span>
-      <h2>{stage.kicker} on standards you trust</h2>
-      <p class="section-sub">
-        {stage.stage} speaks ten archival standards out of the box, including compliance-grade
-        <strong>NOARK&nbsp;5.5</strong> and <strong>E-ARK</strong> for regulated archives.
-      </p>
+      <h2>Ten standards, out of the box</h2>
     </div>
     <div class="chips" use:reveal>
       {#each standards as std}
@@ -176,20 +176,20 @@
       {/each}
     </div>
     <p class="chips-legend">
-      <span class="star" aria-hidden="true">★</span> Premium conformance — validated, regulator-ready NOARK&nbsp;5.5 / E-ARK packages
+      <span class="star" aria-hidden="true">★</span> Validated, regulator-ready conformance
     </p>
   </section>
 
   <!-- PREVIOUS / NEXT STAGE -->
   <nav class="container stage-pager" aria-label="Other product stages">
     {#if previous}
-      <a href="/product/{previous.slug}" class="previous">
+      <a href={previous.path} class="previous">
         <span class="pager-label"><span aria-hidden="true">←</span> Previous step</span>
         <span class="pager-title">{previous.stage}</span>
       </a>
     {/if}
     {#if next}
-      <a href="/product/{next.slug}" class="next">
+      <a href={next.path} class="next">
         <span class="pager-label">Next step <span aria-hidden="true">→</span></span>
         <span class="pager-title">{next.stage}</span>
       </a>
@@ -519,285 +519,112 @@
     margin: 0 0 0.85rem;
   }
 
-  .section-sub {
-    font-size: 1.05rem;
-    color: var(--arc-muted);
-    line-height: 1.6;
-    margin: 0;
-  }
+  /* ── Per-stage accent (blue / indigo / orange) ── */
+  .ingest { --tone: #3b82f6; }
+  .preserve { --tone: #6366f1; }
+  .release { --tone: #f97316; }
 
-  .section-sub strong {
-    color: var(--arc-body);
-  }
-
-  /* ── Alternating product feature sections ── */
-  .product-section {
-    display: grid;
-    grid-template-columns: 0.95fr 1.05fr;
-    gap: 3.5rem;
-    align-items: center;
-    padding-top: 4rem;
-  }
-
-  .ps-copy {
-    min-width: 0;
-  }
-
-  .ps-eyebrow {
-    display: inline-block;
-    font-size: 0.74rem;
-    font-weight: 700;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-    margin-bottom: 0.9rem;
-  }
-
-  .ingest .ps-eyebrow { color: #2563eb; }
-  .preserve .ps-eyebrow { color: #4f46e5; }
-  .release .ps-eyebrow { color: #ea580c; }
-
-  .ps-headline {
-    font-size: clamp(1.7rem, 3vw, 2.3rem);
-    font-weight: 700;
-    color: var(--arc-ink);
-    margin: 0 0 1rem;
-    line-height: 1.12;
-  }
-
-  .ps-caps {
+  /* ── How it works: three steps joined by arrows ── */
+  .flow {
     list-style: none;
-    margin: 0 0 1.75rem;
+    margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.6rem 1.25rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.75rem;
   }
 
-  .ps-caps li {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.6rem;
+  .flow-step {
+    position: relative;
+    padding: 1.75rem 1.5rem 1.5rem;
+    background: var(--arc-card);
+    border: 1px solid var(--arc-line);
+    border-radius: 1.1rem;
+    box-shadow: var(--arc-shadow-card);
+    text-align: center;
+  }
+
+  /* Arrow to the next step, drawn in the gap between cards. */
+  .flow-step:not(:last-child)::after {
+    content: '→';
+    position: absolute;
+    top: 50%;
+    right: -2.75rem;
+    width: 2.75rem;
+    transform: translateY(-50%);
+    text-align: center;
+    font-size: 1.4rem;
+    color: var(--tone);
+  }
+
+  .flow-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1.1rem;
+    color: white;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--tone) 75%, white), var(--tone));
+    box-shadow: 0 14px 28px -12px var(--tone);
+  }
+
+  .flow-num {
+    display: block;
+    margin-top: 1.1rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--tone);
+  }
+
+  .flow-step h3 {
+    margin: 0.3rem 0 0.45rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--arc-ink);
+  }
+
+  .flow-step p {
+    margin: 0;
     font-size: 0.92rem;
-    line-height: 1.45;
-    color: var(--arc-body);
-    font-weight: 500;
+    line-height: 1.5;
+    color: var(--arc-muted);
   }
 
-  .ps-check {
+  /* ── Capabilities as icon tiles ── */
+  .tiles {
+    list-style: none;
+    margin: 2rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.9rem;
+  }
+
+  .tile {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.85rem 1rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--arc-body);
+    background: var(--arc-card-2);
+    border: 1px solid var(--arc-line);
+    border-radius: 0.8rem;
+  }
+
+  .tile-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 1.3rem;
-    height: 1.3rem;
-    margin-top: 0.05rem;
-    border-radius: 50%;
-    color: white;
-    font-size: 0.7rem;
-    font-weight: 800;
-  }
-
-  .ingest .ps-check { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
-  .preserve .ps-check { background: linear-gradient(135deg, #818cf8, #6366f1); }
-  .release .ps-check { background: linear-gradient(135deg, #fb923c, #f97316); }
-
-  .ps-note {
-    position: relative;
-    margin: 0 0 1.75rem;
-    padding: 0.95rem 1.1rem 0.95rem 1.15rem;
-    border-radius: 0.7rem;
-    font-size: 0.88rem;
-    line-height: 1.55;
-    color: var(--arc-body);
-    background: var(--arc-card-2);
-    border: 1px solid var(--arc-line);
-    border-left-width: 3px;
-  }
-
-  .ingest .ps-note { border-left-color: #3b82f6; }
-  .preserve .ps-note { border-left-color: #6366f1; }
-  .release .ps-note { border-left-color: #f97316; }
-
-  .ps-note-label {
-    display: inline-block;
-    margin-right: 0.55rem;
-    font-size: 0.66rem;
-    font-weight: 800;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    vertical-align: 1px;
-  }
-
-  .ingest .ps-note-label { color: #2563eb; }
-  .preserve .ps-note-label { color: #4f46e5; }
-  .release .ps-note-label { color: #ea580c; }
-
-  /* ── Product visual card (light "console" treatment) ── */
-  .ps-visual {
-    perspective: 1200px;
-  }
-
-  .ps-card {
-    background: var(--arc-card);
-    border: 1px solid var(--arc-line);
-    border-radius: 1.1rem;
-    box-shadow: 0 30px 60px -28px rgba(15, 23, 42, 0.35);
-    overflow: hidden;
-    transform: rotateY(6deg) rotateX(3deg);
-    transition: transform 0.4s ease;
-  }
-
-  .ps-visual:hover .ps-card {
-    transform: rotateY(0deg) rotateX(0deg);
-  }
-
-  .ps-card-bar {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.9rem 1.1rem;
-    background: var(--arc-card-2);
-    border-bottom: 1px solid var(--arc-line);
-  }
-
-  .ps-dot {
-    width: 0.6rem;
-    height: 0.6rem;
-    border-radius: 50%;
-    background: #cbd5e1;
-  }
-
-  .ps-dot:nth-child(1) { background: #f87171; }
-  .ps-dot:nth-child(2) { background: #fbbf24; }
-  .ps-dot:nth-child(3) { background: #34d399; }
-
-  .ps-card-title {
-    margin-left: 0.6rem;
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--arc-faint);
-    font-weight: 600;
-  }
-
-  .ps-card-body {
-    padding: 1.4rem 1.4rem 1.3rem;
-  }
-
-  .ps-stage-row {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin-bottom: 1.2rem;
-    padding-bottom: 1.1rem;
-    border-bottom: 1px solid var(--arc-line);
-  }
-
-  .ps-stage-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    min-width: 0;
-  }
-
-  .ps-stage-label {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.55rem;
-    font-weight: 700;
-    line-height: 1;
-  }
-
-  .ingest .ps-stage-label { color: #2563eb; }
-  .preserve .ps-stage-label { color: #4f46e5; }
-  .release .ps-stage-label { color: #ea580c; }
-
-  .ps-pkg {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--arc-muted);
-  }
-
-  .ps-abbr {
-    display: inline-block;
-    margin-left: 0.2rem;
-    font-size: 0.6rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    color: var(--arc-chip-violet-ink);
-    background: var(--arc-chip-violet-bg);
-    border: 1px solid var(--arc-chip-violet-hover);
-    border-radius: 1rem;
-    padding: 0.08rem 0.42rem;
-    vertical-align: middle;
-  }
-
-  .ps-state {
-    flex-shrink: 0;
-    font-size: 0.62rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--arc-alert-green-ink);
-    background: var(--arc-alert-green-bg);
-    border: 1px solid var(--arc-alert-green-border);
-    border-radius: 1rem;
-    padding: 0.2rem 0.6rem;
-    font-weight: 700;
-  }
-
-  .ps-facts {
-    display: grid;
-    gap: 0.5rem;
-    margin: 0 0 1.2rem;
-  }
-
-  .ps-facts div {
-    background: var(--arc-card-2);
-    border: 1px solid var(--arc-line);
+    width: 2.2rem;
+    height: 2.2rem;
     border-radius: 0.6rem;
-    padding: 0.6rem 0.8rem;
-  }
-
-  .ps-facts dt {
-    font-size: 0.66rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--arc-muted);
-    margin-bottom: 0.15rem;
-  }
-
-  .ps-facts dd {
-    margin: 0;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--arc-body);
-  }
-
-  .ps-card-foot {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--arc-line);
-    flex-wrap: wrap;
-  }
-
-  .ps-tag {
-    font-size: 0.66rem;
-    font-weight: 700;
-    color: var(--arc-chip-violet-ink);
-    background: var(--arc-chip-violet-bg);
-    border: 1px solid var(--arc-chip-violet-hover);
-    border-radius: 1rem;
-    padding: 0.2rem 0.6rem;
-  }
-
-  .ps-conform {
-    margin-left: auto;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--arc-alert-green-ink);
+    color: var(--tone);
+    background: color-mix(in srgb, var(--tone) 14%, transparent);
   }
 
   /* ── Chips ── */
@@ -969,8 +796,7 @@
     .pc-pulse {
       animation: none;
     }
-    .pipeline-card,
-    .ps-card {
+    .pipeline-card {
       transform: none;
     }
   }
@@ -993,13 +819,24 @@
     .pipeline-card {
       transform: none;
     }
-    .product-section {
+    .flow {
       grid-template-columns: 1fr;
-      gap: 2.25rem;
+      gap: 2.5rem;
+      max-width: 26rem;
+      margin: 0 auto;
     }
-    .ps-visual {
-      max-width: 30rem;
+    .flow-step:not(:last-child)::after {
+      content: '↓';
+      top: auto;
+      right: 0;
+      bottom: -2.5rem;
       width: 100%;
+      height: 2.5rem;
+      line-height: 2.5rem;
+      transform: none;
+    }
+    .tiles {
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 
@@ -1018,7 +855,7 @@
       height: 0.9rem;
       align-self: center;
     }
-    .ps-caps {
+    .tiles {
       grid-template-columns: 1fr;
     }
     /* The tabs wrap to two rows here; a full pill radius would look lopsided. */
@@ -1043,24 +880,6 @@
 
   /* ── Dark-theme accent adjustments (no tokens exist for the per-product
      blue/orange accents; keep the hue, lift it for a dark ground) ── */
-  :global(html[data-theme='dark']) .ingest .ps-eyebrow,
-  :global(html[data-theme='dark']) .ingest .ps-note-label,
-  :global(html[data-theme='dark']) .ingest .ps-stage-label {
-    color: #60a5fa;
-  }
-
-  :global(html[data-theme='dark']) .preserve .ps-eyebrow,
-  :global(html[data-theme='dark']) .preserve .ps-note-label,
-  :global(html[data-theme='dark']) .preserve .ps-stage-label {
-    color: #818cf8;
-  }
-
-  :global(html[data-theme='dark']) .release .ps-eyebrow,
-  :global(html[data-theme='dark']) .release .ps-note-label,
-  :global(html[data-theme='dark']) .release .ps-stage-label {
-    color: #fb923c;
-  }
-
   :global(html[data-theme='dark']) .hero {
     --pv-card: linear-gradient(160deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.92));
     --pv-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.7);
