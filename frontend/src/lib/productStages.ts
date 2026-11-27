@@ -1,7 +1,7 @@
 // Content for the three public product pages. One entry per stage of the OAIS
 // workflow, in pipeline order; ProductStagePage renders whichever one the route
-// asks for. Intake lives at /ingest (shown to signed-out visitors); the other two
-// are under /product.
+// asks for. Intake lives at /ingest and Preservation at /preserve (both shown to
+// signed-out visitors); Release is under /product.
 
 export interface ProductStage {
   slug: 'intake' | 'preservation' | 'release';
@@ -54,7 +54,7 @@ export const productStages: ProductStage[] = [
   },
   {
     slug: 'preservation',
-    path: '/product/preservation',
+    path: '/preserve',
     tone: 'preserve',
     kicker: 'Preserve',
     stage: 'Preservation',

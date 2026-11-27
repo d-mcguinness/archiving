@@ -1,6 +1,6 @@
 <script lang="ts">
-  // Public marketing page for one stage of the workflow. /ingest (signed out),
-  // /product/preservation and /product/release all render this component, so the
+  // Public marketing page for one stage of the workflow. /ingest and /preserve
+  // (signed out) and /product/release all render this component, so the
   // three pages look alike and differ only in their content (see $lib/productStages).
   import { productStages, standards, premiumStandards, type ProductStage } from '$lib/productStages';
 

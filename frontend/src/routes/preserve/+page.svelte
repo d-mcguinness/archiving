@@ -1,30 +1,27 @@
 <script lang="ts">
   import StandardsPage from '$lib/components/StandardsPage.svelte';
+  import ProductStagePage from '$lib/components/ProductStagePage.svelte';
+  import { productStages } from '$lib/productStages';
+  import { auth } from '$lib/stores/authStore';
+
+  const preservation = productStages.find((s) => s.slug === 'preservation')!;
 </script>
 
 <svelte:head>
-  <title>Preserve - Arcana</title>
+  {#if $auth.isLoggedIn}<title>Preserve - Arcana</title>{/if}
 </svelte:head>
 
-<StandardsPage
-  title="Preserve"
-  oaisStep="Archival Packages"
-  heroDescription="The preservation workflow creates Preservation packages (AIPs) for long-term storage. Build Preservations using any of 10 archival standards with provenance tracking, integrity verification, and format migration support."
-  packageType="aip"
-  createPath="/preservation/create"
-  listPath="/preservation"
-  accentColor="#6366f1"
-  steps={[
-    { title: 'Select Standard', description: 'Choose the archival standard for your Preservation. Each standard defines preservation metadata, provenance models, and structural requirements.' },
-    { title: 'Define Preservation Metadata', description: 'Capture provenance, rights, technical metadata, and preservation actions using standard-compliant entity schemas.' },
-    { title: 'Store & Verify', description: 'Preservations are structured with integrity checks and full audit trails, ready for long-term archival storage.' },
-  ]}
-  capabilities={[
-    'All 10 archival standards supported',
-    'Provenance tracking and audit trails',
-    'Integrity verification with fixity metadata',
-    'Format migration and representation support',
-    'Standard-specific preservation metadata',
-    'Multi-tenant with role-based access control',
-  ]}
-/>
+{#if !$auth.isLoggedIn}
+  <!-- Signed out: the Preservation product page. -->
+  <ProductStagePage stage={preservation} />
+{:else}
+  <!-- Signed in: pick a standard to create a Preservation package. -->
+  <StandardsPage
+    title="Preserve"
+    oaisStep="Archival Packages"
+    packageType="aip"
+    createPath="/preservation/create"
+    listPath="/preservation"
+    accentColor="#6366f1"
+  />
+{/if}
