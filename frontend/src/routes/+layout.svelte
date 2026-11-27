@@ -17,8 +17,9 @@
   $: navGroups = navFor($auth);
   $: homeHref = $auth.isLoggedIn ? roleHome($auth) : '/';
 
-  // The product tour: /product/* plus Intake's page at /ingest (signed-out visitors only see this link).
-  $: onProduct = currentPath.startsWith('/product') || currentPath === '/ingest';
+  // The product tour: /product/* plus the stage pages at /ingest and /preserve
+  // (signed-out visitors only see this link).
+  $: onProduct = currentPath.startsWith('/product') || ['/ingest', '/preserve'].includes(currentPath);
 
   // Mimic state lives in localStorage; re-read it whenever the session changes.
   $: mimicking = $auth.isLoggedIn && auth.isMimicking();
