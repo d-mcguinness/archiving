@@ -424,8 +424,8 @@
   }
 
   .tenant-header-card {
-    background: var(--arc-grad-dark, radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%));
-    color: #cbd5e1;
+    background: var(--arc-panel-bg);
+    color: var(--arc-panel-body);
     padding: 2rem;
     border-radius: 1rem;
     border: 1px solid var(--arc-line);
@@ -446,12 +446,12 @@
   .tenant-header-content h2 {
     margin: 0 0 0.5rem 0;
     font-size: 2rem;
-    color: #f8fafc;
+    color: var(--arc-panel-ink);
   }
 
   .tenant-domain {
     margin: 0 0 1rem 0;
-    color: #cbd5e1;
+    color: var(--arc-panel-body);
     font-size: 1.125rem;
   }
 
