@@ -482,9 +482,9 @@
   }
 
   .search-link.active {
-    background: rgba(255, 255, 255, 0.16);
-    border-color: rgba(226, 232, 240, 0.7);
-    color: white;
+    background: var(--arc-tint-strong);
+    border-color: var(--arc-ghost-border-strong);
+    color: var(--arc-panel-ink);
   }
 
   .login-button {
