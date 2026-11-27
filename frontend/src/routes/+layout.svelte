@@ -128,8 +128,8 @@
               <a
                 href="/product"
                 class="product-link"
-                class:active={currentPath === '/product'}
-                aria-current={currentPath === '/product' ? 'page' : undefined}
+                class:active={currentPath.startsWith('/product')}
+                aria-current={currentPath.startsWith('/product') ? 'page' : undefined}
               >
                 Product
               </a>
