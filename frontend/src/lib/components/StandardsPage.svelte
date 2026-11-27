@@ -85,7 +85,7 @@
       <div class="hero-aurora" aria-hidden="true"></div>
       <div class="hero-inner">
         {#if oaisStep}
-          <div class="hero-badge" style="color: color-mix(in srgb, {accentColor} 45%, white); background: color-mix(in srgb, {accentColor} 22%, transparent);">{oaisStep}</div>
+          <div class="hero-badge" style="color: color-mix(in srgb, {accentColor} 45%, var(--arc-panel-mix)); background: color-mix(in srgb, {accentColor} 22%, transparent);">{oaisStep}</div>
         {/if}
         <h1>{title}</h1>
         <p class="hero-subtitle">{heroDescription}</p>
@@ -199,7 +199,7 @@
   .hero {
     position: relative;
     overflow: hidden;
-    background: var(--arc-grad-dark, radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%));
+    background: var(--arc-panel-bg);
     border: 1px solid var(--arc-line);
     border-radius: 1.25rem;
     padding: 4.5rem 2rem 4rem;
@@ -215,6 +215,7 @@
       radial-gradient(40% 60% at 80% 20%, rgba(139, 92, 246, 0.4), transparent 70%),
       radial-gradient(35% 50% at 60% 60%, rgba(6, 182, 212, 0.3), transparent 70%);
     filter: blur(30px);
+    opacity: var(--arc-panel-glow);
     pointer-events: none;
   }
 
@@ -234,13 +235,13 @@
   .hero h1 {
     font-size: 3rem;
     font-weight: 700;
-    color: #f8fafc;
+    color: var(--arc-panel-ink);
     margin: 0 0 1rem;
   }
 
   .hero-subtitle {
     font-size: 1.1rem;
-    color: #cbd5e1;
+    color: var(--arc-panel-body);
     max-width: 620px;
     margin: 0 auto 2.5rem;
     line-height: 1.7;
@@ -270,9 +271,9 @@
   .btn-outline {
     display: inline-block;
     padding: 0.85rem 2rem;
-    background: rgba(255, 255, 255, 0.06);
-    color: #e2e8f0;
-    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: var(--arc-tint);
+    color: var(--arc-panel-ink);
+    border: 1px solid var(--arc-ghost-border);
     border-radius: 0.65rem;
     text-decoration: none;
     font-weight: 700;
@@ -281,8 +282,8 @@
   }
 
   .btn-outline:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(226, 232, 240, 0.7);
+    background: var(--arc-tint-strong);
+    border-color: var(--arc-ghost-border-strong);
     transform: translateY(-2px);
   }
 
@@ -391,25 +392,25 @@
   .ref { display: block; font-size: 0.7rem; color: var(--arc-faint); font-family: monospace; }
 
   .cta-section {
-    background: var(--arc-grad-dark, radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%));
-    color: #f8fafc;
+    background: var(--arc-panel-bg);
+    color: var(--arc-panel-ink);
     padding: 3.5rem 2rem;
     border: 1px solid var(--arc-line);
     border-radius: 1.25rem;
     margin-bottom: 2rem;
   }
 
-  .cta-section h2 { margin: 0 0 0.5rem; font-size: 1.75rem; font-weight: 700; color: #f8fafc; }
-  .cta-section p { margin: 0 0 2rem; color: #cbd5e1; font-size: 1.05rem; }
+  .cta-section h2 { margin: 0 0 0.5rem; font-size: 1.75rem; font-weight: 700; color: var(--arc-panel-ink); }
+  .cta-section p { margin: 0 0 2rem; color: var(--arc-panel-body); font-size: 1.05rem; }
 
   .cta-section .btn-cta-inv {
-    background: white;
-    color: #1e293b;
+    background: var(--arc-panel-btn-bg);
+    color: var(--arc-panel-btn-ink);
     box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.4);
   }
 
   .cta-section .btn-cta-inv:hover {
-    background: white;
+    background: var(--arc-panel-btn-bg);
     box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.5);
   }
 

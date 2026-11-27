@@ -237,7 +237,7 @@
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: #a5b4fc;
+    color: var(--arc-panel-accent);
     margin-bottom: 1rem;
   }
 
@@ -247,13 +247,19 @@
 
   /* ── Hero ── */
   .hero {
+    /* Hero visuals (pipeline mock): light cards by default, dark under the dark theme. */
+    --pv-card: rgba(255, 255, 255, 0.86);
+    --pv-shadow: 0 30px 60px -24px rgba(15, 23, 42, 0.28);
+    --pv-blue: #2563eb;
+    --pv-indigo: #4f46e5;
+    --pv-orange: #c2410c;
     position: relative;
     overflow: hidden;
-    background: radial-gradient(120% 120% at 50% -10%, #1e293b 0%, #0b1120 55%, #070b16 100%);
-    color: #e2e8f0;
+    background: var(--arc-panel-bg);
+    color: var(--arc-panel-body);
     margin-top: -2rem; /* cancel <main> top padding so it meets the nav */
     padding: 5rem 0 5.5rem;
-    /* Stays dark in both themes; hairline keeps it from dissolving into a dark ground. */
+    /* Hairline keeps it from dissolving into the page ground. */
     border-bottom: 1px solid var(--arc-line);
   }
 
@@ -267,6 +273,7 @@
       radial-gradient(40% 60% at 52% 18%, rgba(99, 102, 241, 0.42), transparent 70%),
       radial-gradient(38% 55% at 84% 28%, rgba(249, 115, 22, 0.32), transparent 70%);
     filter: blur(30px);
+    opacity: var(--arc-panel-glow);
     pointer-events: none;
   }
 
@@ -274,8 +281,8 @@
     position: absolute;
     inset: 0;
     background-image:
-      linear-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+      linear-gradient(var(--arc-panel-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--arc-panel-line) 1px, transparent 1px);
     background-size: 44px 44px;
     mask-image: radial-gradient(circle at 50% 25%, black, transparent 75%);
     pointer-events: none;
@@ -294,13 +301,13 @@
     font-weight: 700;
     line-height: 1.05;
     margin: 0 0 1.4rem;
-    color: #f8fafc;
+    color: var(--arc-panel-ink);
   }
 
   .lede {
     font-size: 1.18rem;
     line-height: 1.7;
-    color: #cbd5e1;
+    color: var(--arc-panel-body);
     max-width: 36rem;
     margin: 0 0 2.2rem;
   }
@@ -334,14 +341,14 @@
   }
 
   .btn-ghost {
-    background: rgba(255, 255, 255, 0.06);
-    color: #e2e8f0;
-    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: var(--arc-tint);
+    color: var(--arc-panel-ink);
+    border: 1px solid var(--arc-ghost-border);
   }
 
   .btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(226, 232, 240, 0.7);
+    background: var(--arc-tint-strong);
+    border-color: var(--arc-ghost-border-strong);
     transform: translateY(-2px);
   }
 
@@ -351,11 +358,11 @@
   }
 
   .pipeline-card {
-    background: linear-gradient(160deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.92));
-    border: 1px solid rgba(148, 163, 184, 0.22);
+    background: var(--pv-card);
+    border: 1px solid var(--arc-panel-line);
     border-radius: 1.1rem;
     padding: 1.1rem 1.1rem 1.25rem;
-    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.7);
+    box-shadow: var(--pv-shadow);
     backdrop-filter: blur(8px);
     transform: rotateY(-8deg) rotateX(4deg);
     transition: transform 0.4s ease;
@@ -370,7 +377,7 @@
     align-items: center;
     gap: 0.4rem;
     padding-bottom: 0.9rem;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    border-bottom: 1px solid var(--arc-panel-line);
     margin-bottom: 1.1rem;
   }
 
@@ -390,7 +397,7 @@
     font-size: 0.72rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #64748b;
+    color: var(--arc-panel-muted);
     font-weight: 600;
   }
 
@@ -408,26 +415,26 @@
     gap: 0.25rem;
     padding: 1rem 0.4rem;
     border-radius: 0.75rem;
-    background: rgba(148, 163, 184, 0.06);
-    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: var(--arc-tint);
+    border: 1px solid var(--arc-panel-line);
   }
 
   .pc-stage {
     font-family: 'Space Grotesk', sans-serif;
     font-size: 1.2rem;
     font-weight: 700;
-    color: #f8fafc;
+    color: var(--arc-panel-ink);
     text-align: center;
   }
 
   /* Pipeline node accents mirror the three product accents. */
-  .n-ingest .pc-stage { color: #60a5fa; }
-  .n-preserve .pc-stage { color: #818cf8; }
-  .n-release .pc-stage { color: #fb923c; }
+  .n-ingest .pc-stage { color: var(--pv-blue); }
+  .n-preserve .pc-stage { color: var(--pv-indigo); }
+  .n-release .pc-stage { color: var(--pv-orange); }
 
   .pc-kicker {
     font-size: 0.72rem;
-    color: #94a3b8;
+    color: var(--arc-panel-muted);
     font-weight: 500;
   }
 
@@ -436,7 +443,7 @@
     font-size: 0.62rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #34d399;
+    color: var(--arc-chip-green-ink);
     background: rgba(52, 211, 153, 0.12);
     border-radius: 1rem;
     padding: 0.15rem 0.55rem;
@@ -473,14 +480,14 @@
     gap: 0.4rem;
     margin-top: 1.1rem;
     padding-top: 0.9rem;
-    border-top: 1px solid rgba(148, 163, 184, 0.18);
+    border-top: 1px solid var(--arc-panel-line);
     flex-wrap: wrap;
   }
 
   .pc-tag {
     font-size: 0.66rem;
     font-weight: 700;
-    color: #c4b5fd;
+    color: var(--arc-chip-violet-ink);
     background: rgba(139, 92, 246, 0.14);
     border: 1px solid rgba(139, 92, 246, 0.3);
     border-radius: 1rem;
@@ -491,7 +498,7 @@
     margin-left: auto;
     font-size: 0.7rem;
     font-weight: 700;
-    color: #34d399;
+    color: var(--arc-chip-green-ink);
   }
 
   /* ── Sections ── */
@@ -849,8 +856,8 @@
     gap: 0.35rem;
     padding: 0.3rem;
     margin-bottom: 2.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(148, 163, 184, 0.22);
+    background: var(--arc-tint);
+    border: 1px solid var(--arc-panel-line);
     border-radius: 999px;
   }
 
@@ -862,31 +869,31 @@
     border-radius: 999px;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #cbd5e1;
+    color: var(--arc-panel-body);
     text-decoration: none;
     transition: background 0.18s ease, color 0.18s ease;
   }
 
   .stage-tab:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: white;
+    background: var(--arc-tint);
+    color: var(--arc-panel-ink);
   }
 
   .stage-tab-step {
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.06em;
-    color: #94a3b8;
+    color: var(--arc-panel-muted);
   }
 
   .stage-tab.current {
-    background: rgba(255, 255, 255, 0.14);
-    color: white;
+    background: var(--arc-tint-strong);
+    color: var(--arc-panel-ink);
   }
 
-  .stage-tab.current.ingest .stage-tab-step { color: #60a5fa; }
-  .stage-tab.current.preserve .stage-tab-step { color: #818cf8; }
-  .stage-tab.current.release .stage-tab-step { color: #fb923c; }
+  .stage-tab.current.ingest .stage-tab-step { color: var(--pv-blue); }
+  .stage-tab.current.preserve .stage-tab-step { color: var(--pv-indigo); }
+  .stage-tab.current.release .stage-tab-step { color: var(--pv-orange); }
 
   /* The pipeline shows all three steps; the ones this page is not about recede. */
   .pc-node.dim {
@@ -1052,6 +1059,14 @@
   :global(html[data-theme='dark']) .release .ps-note-label,
   :global(html[data-theme='dark']) .release .ps-stage-label {
     color: #fb923c;
+  }
+
+  :global(html[data-theme='dark']) .hero {
+    --pv-card: linear-gradient(160deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.92));
+    --pv-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.7);
+    --pv-blue: #60a5fa;
+    --pv-indigo: #818cf8;
+    --pv-orange: #fb923c;
   }
 
   :global(html[data-theme='dark']) .chip.premium { border-color: rgba(139, 92, 246, 0.45); }
